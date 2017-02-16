@@ -11,6 +11,10 @@
 |
 */
 
-$app->get('/', function () use ($app) {
-    return $app->version();
+//$app->get('/', function () use ($app) {
+//    return $app->version();
+//});
+
+$app->get('/test', function () use ($app) {
+    return \App\Model\Users::first();
 });
