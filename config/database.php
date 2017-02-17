@@ -47,16 +47,30 @@ return [
     'connections' => [
         'sdkapi' => [
             'driver'    => 'mysql',
-            'host'      => env('DB_SDKAPI_HOST', '127.0.0.1'),
-            'port'      => env('DB_SDKAPI_PORT', 3306),
-            'database'  => env('DB_SDKAPI_DATABASE', 'sdkapi'),
-            'username'  => env('DB_SDKAPI_USERNAME', 'root'),
-            'password'  => env('DB_SDKAPI_PASSWORD', 'root'),
+            'host'      => env('DB_SDKAPI_HOST'),
+            'port'      => env('DB_SDKAPI_PORT'),
+            'database'  => env('DB_SDKAPI_DATABASE'),
+            'username'  => env('DB_SDKAPI_USERNAME'),
+            'password'  => env('DB_SDKAPI_PASSWORD'),
             'charset'   => env('DB_SDKAPI_CHARSET', 'utf8'),
             'collation' => env('DB_SDKAPI_COLLATION', 'utf8_unicode_ci'),
-            'prefix'    => env('DB_SDKAPI_PREFIX', 'af_'),
+            'prefix'    => env('DB_SDKAPI_PREFIX', ''),
             'timezone'  => env('DB_SDKAPI_TIMEZONE', '+00:00'),
             'strict'    => env('DB_SDKAPI_STRICT_MODE', false),
+        ],
+
+        'sdkapi_ext' => [
+            'driver'    => 'mysql',
+            'host'      => env('DB_SDKAPI_EXT_HOST'),
+            'port'      => env('DB_SDKAPI_EXT_PORT'),
+            'database'  => env('DB_SDKAPI_EXT_DATABASE'),
+            'username'  => env('DB_SDKAPI_EXT_USERNAME'),
+            'password'  => env('DB_SDKAPI_EXT_PASSWORD'),
+            'charset'   => env('DB_SDKAPI_EXT_CHARSET', 'utf8'),
+            'collation' => env('DB_SDKAPI_EXT_COLLATION', 'utf8_unicode_ci'),
+            'prefix'    => env('DB_SDKAPI_EXT_PREFIX', ''),
+            'timezone'  => env('DB_SDKAPI_EXT_TIMEZONE', '+00:00'),
+            'strict'    => env('DB_SDKAPI_EXT_STRICT_MODE', false),
         ],
 /*
         'testing' => [
