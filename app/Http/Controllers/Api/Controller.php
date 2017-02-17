@@ -36,11 +36,11 @@ class Controller extends \App\Controller
 		}
 	}
 
-	public function before($request, $parameter) {
+	public function before(Request $request, Parameter $parameter) {
 
 	}
 
-	public function after($request, $parameter) {
+	public function after(Request $request, Parameter $parameter) {
 
 	}
 }

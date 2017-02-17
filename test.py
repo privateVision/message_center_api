@@ -3,25 +3,49 @@ import Crypto
 from Crypto.Cipher import DES3
 import base64
 import urllib, urllib2
+import json
 
 DESKEY = '4c6e0a99384aff934c6e0a99'
-BASEURL = 'http://192.168.1.209/sdk/index.php'
+BASEURL = 'http://sdkapi.anfan.com/'
 
-def encrypt3des(data):
-	poststr = urllib.urlencode(data)
-	des3 = DES3.new(DESKEY, DES3.MODE_ECB)
-	str = des3.encrypt(poststr)
-	return base64.standard_b64encode(str)
+class Crypt3DES:
+	@staticmethod
+	def __pkcs5_pad(str):
+		s = DES3.block_size
+		return str + (s - len(str) % s) * chr(s - len(str) % s)
 
-"""
-print encrypt3des({
-  "id":"2099865",
-  "time":"1487210761003",
-  "token":"0e29e0c3-bfef-46d8-84c5-0cc065cc324a",
-})
-"""
-request = urllib2.Request('http://sdkapi.anfan.com/api/test', 'K+AmiLKQykh2d6wlaNc9rRhxVfi5ccjdo96VZu0Ke7iKND6v7Azxc/VDBlRFajFzi/XlOvy/C2G80CLoTkKDVjvMg92MctOiFnfZkj/UpoM=')
-response = urllib2.urlopen(request)
-print "----------------------------------"
-print response.read()
-print "----------------------------------"
+	@staticmethod
+	def __pkcs5_unpad(str):
+		return str[0:-ord(str[-1])]
+
+	@staticmethod
+	def encrypt(data):
+		des3 = DES3.new(DESKEY, DES3.MODE_ECB)
+		str = des3.encrypt(Crypt3DES.__pkcs5_pad(data))
+		return base64.b64encode(str)
+	
+	@staticmethod
+	def decrypt(data):
+		data = base64.b64decode(data)
+		des3 = DES3.new(DESKEY, DES3.MODE_ECB)
+		str = des3.decrypt(data);
+		return Crypt3DES.__pkcs5_unpad(str);
+
+class Http:
+	@staticmethod
+	def request(uri, **data):
+		str = Http.__encrypt_postdata(data)
+		request = urllib2.Request(BASEURL + uri, str)
+		response = urllib2.urlopen(request)
+		
+		return response.read()
+
+	@staticmethod
+	def __encrypt_postdata(data):
+		data = urllib.urlencode(data)
+		return Crypt3DES.encrypt(data);
+
+print "------------------------------------"
+result = Http.request('api/test', a = 1, b = 2)
+print json.loads(result);
+print "------------------------------------"
