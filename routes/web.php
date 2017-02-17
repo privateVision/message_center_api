@@ -17,5 +17,5 @@ $app->get('/', function () use ($app) {
 
 $app->group(['prefix' => 'api'], function () use ($app) {
 	$app->post('test', 'Api\\TestController@TestAction');
-	$app->post('app/initialize', 'Api\\AppController@InitializeAction')
+	$app->post('app/initialize', 'Api\\AppController@InitializeAction');
 });

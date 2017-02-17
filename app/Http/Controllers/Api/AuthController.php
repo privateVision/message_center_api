@@ -6,7 +6,7 @@ use App\Parameter;
 use App\Model\Session;
 use App\Model\Users;
 
-class AuthController extends Controller {
+class AuthController extends BaseController {
 
 	private $user = null;
 

@@ -45,7 +45,7 @@ class Http:
 		data = urllib.urlencode(data)
 		return Crypt3DES.encrypt(data);
 
-print "------------------------------------"
-result = Http.request('api/test', a = 1, b = 2)
-print json.loads(result);
+print "----------- api/app/initialize ---------"
+result = Http.request('api/app/initialize', game_id = 1, device_code = '3447264d06ff60e9cc415229a0583a29', device_name = 'iphone 6plus', device_platform = 16, version = '1.0.0')
+print result
 print "------------------------------------"
