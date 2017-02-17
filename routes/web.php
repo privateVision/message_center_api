@@ -11,10 +11,10 @@
 |
 */
 
-//$app->get('/', function () use ($app) {
-//    return $app->version();
-//});
+$app->get('/', function () use ($app) {
+	return $app->version();
+});
 
-$app->get('/test', function () use ($app) {
-    return \App\Model\Users::first();
+$app->group(['prefix' => 'api'], function () use ($app) {
+	$app->post('/test', 'Api\\TestController@TestAction');
 });

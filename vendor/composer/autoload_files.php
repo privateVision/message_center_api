@@ -12,4 +12,5 @@ return array(
     '1d1b89d124cc9cb8219922c9d5569199' => $vendorDir . '/hamcrest/hamcrest-php/hamcrest/Hamcrest.php',
     '253c157292f75eb38082b5acb06f3f01' => $vendorDir . '/nikic/fast-route/src/functions.php',
     'bee9632da3ca00a99623b9c35d0c4f8b' => $vendorDir . '/laravel/lumen-framework/src/helpers.php',
+    'f82e97c0dd2fb608b8cde919d54b1b0f' => $baseDir . '/app/functions.php',
 );
