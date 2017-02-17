@@ -12,10 +12,5 @@
 */
 
 $app->get('/', function () use ($app) {
-	http_response_code(404); exit;
-});
-
-$app->group(['prefix' => 'api'], function () use ($app) {
-	$app->post('test', 'Api\\TestController@TestAction');
-	$app->post('app/initialize', 'Api\\AppController@InitializeAction')
+    return $app->version();
 });
