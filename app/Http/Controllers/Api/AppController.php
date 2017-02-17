@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use Illuminate\Http\Request;
 use App\Parameter;
 use App\Model\Session;
+use App\Exceptions\ApiException;
 
 class AppController extends Controller
 {
