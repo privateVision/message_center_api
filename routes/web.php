@@ -12,7 +12,7 @@
 */
 
 $app->get('/', function () use ($app) {
-	http_response_code(404); exit;
+    return $app->version();
 });
 
 $app->group(['prefix' => 'api'], function () use ($app) {
