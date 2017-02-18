@@ -6,6 +6,7 @@ import base64
 import urllib, urllib2
 import json
 
+APPID = 778
 DESKEY = '4c6e0a99384aff934c6e0a99'
 BASEURL = 'http://sdkapi.anfan.com/'
 
@@ -36,9 +37,14 @@ class Http:
 	@staticmethod
 	def request(uri, **data):
 		print "\033[0mrequest:%s" % (uri)
-		str = Http.__encrypt_postdata(data)
+		
+		postdata = {
+			"param": Http.__encrypt_param(data), 
+			"appid": APPID
+		}
+		
 		try:
-			request = urllib2.Request(BASEURL + uri, str)
+			request = urllib2.Request(BASEURL + uri, urllib.urlencode(postdata))
 			response = urllib2.urlopen(request)
 		except Exception, e:
 			print "\033[1;31;40m%d,%s\033[0m" % (e.code, e.msg)
@@ -46,15 +52,16 @@ class Http:
 			data = response.read()
 			print "response data:%s" % (data)
 			data = json.loads(data)
+
 			if data["code"] > 0:
 				print "\033[1;31;40m%s(%d)\033[0m" % (data["msg"], data["code"])
 			else:
 				return data["data"]
-		
+
 		return None
 
 	@staticmethod
-	def __encrypt_postdata(data):
+	def __encrypt_param(data):
 		data = urllib.urlencode(data)
 		return Crypt3DES.encrypt(data);
 
@@ -62,6 +69,7 @@ print "------------ api/app/initialize ------------"
 data = Http.request('api/app/initialize', game_id = 1, device_code = '3447264d06ff60e9cc415229a0583a29', device_name = 'iphone 6plus', device_platform = 16, version = '1.0.0')
 if data == None or not data.has_key('token'):
 	print "\033[1;31;40m获取token失败，程序退出 \033[0m"
+	sys.exit(0)
 	
 TOKEN = data['token']
 print "\033[1;32;40mtoken:%s\033[0m" % (TOKEN)
