@@ -46,6 +46,7 @@ class Controller extends \App\Controller
 		} catch (ApiException $e) {
 			return array('code' => $e->getCode(), 'msg' => $e->getMessage(), 'data' => null);
 		} catch(\Exception $e) {
+			// todo: 打印这么详细的消息到客户端是不安全的，方便调试
 			return array('code' => ApiException::Error, 'msg' => sprintf('%s in %s(%d)', $e->getMessage(), $e->getFile(), $e->getLine()), 'data' => null);
 		}
 	}

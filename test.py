@@ -1,6 +1,5 @@
 #coding:utf-8
 import os,sys
-import Crypto
 from Crypto.Cipher import DES3
 import base64
 import urllib, urllib2
