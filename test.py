@@ -65,10 +65,15 @@ class Http:
 		return Crypt3DES.encrypt(data);
 
 print "------------ api/app/initialize ------------"
-data = Http.request('api/app/initialize', imei = '3447264d06ff60e9cc415229a0583a29', retailer = 255, device_code = '3447264d06ff60e9cc415229a0583a29', device_name = 'iphone 6plus', device_platform = 16, version = '1.0.0')
+data = Http.request('api/app/initialize', imei = '3447264d06ff60e9cc415229a0583a29', retailer = 255, device_code = '3447264d06ff60e9cc415229a0583a29', device_name = 'iphone 6plus', device_platform = 16, version = '1.0.0', app_version = '1.1.0')
 if data == None or not data.has_key('token'):
 	print "\033[1;31;40m获取token失败，程序退出 \033[0m"
 	sys.exit(0)
 	
 TOKEN = data['token']
+OLDTOKEN = open('old_token').read();
+open('old_token', 'w').write(TOKEN);
 print "\033[1;32;40mtoken:%s\033[0m" % (TOKEN)
+
+print "-----------api/account/loginToken-----------"
+data = Http.request('api/account/loginToken', token = TOKEN, old_token = OLDTOKEN);

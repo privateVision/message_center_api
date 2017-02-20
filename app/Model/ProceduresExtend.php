@@ -6,23 +6,23 @@ class ProceduresExtend extends Model
 	protected $table = 'procedures_extend';
 	protected $primaryKey = 'pid';
 
-	public function procedure() {
+	public function procedures() {
 		return  $this->belongsTo(Procedures::class, 'pid', 'pid');
 	}
 
-	public getBindPhoneNeedAttribute() {
+	public function getBindPhoneNeedAttribute() {
 		return $this->attributes['bind_phone_need'] == 1;
 	}
 
-	public getBindPhoneEnforceAttribute() {
+	public function getBindPhoneEnforceAttribute() {
 		return $this->attributes['bind_phone_enforce'] == 1;
 	}
 
-	public getRealNameNeedAttribute() {
+	public function getRealNameNeedAttribute() {
 		return $this->attributes['real_name_need'] == 1;
 	}
 
-	public getRealNameEnforceAttribute() {
+	public function getRealNameEnforceAttribute() {
 		return $this->attributes['real_name_enforce'] == 1;
 	}
 }

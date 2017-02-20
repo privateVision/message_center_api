@@ -6,8 +6,12 @@ class Procedures extends Model
 	protected $table = 'procedures';
 	protected $primaryKey = 'pid';
 
-	public function extend() {
+	public function procedures_extend() {
 		return $this->hasOne(ProceduresExtend::class, 'pid', 'pid');
+	}
+
+	public function update_apks() {
+		return $this->hasMany(UpdateApks::class, 'pid', 'pid');
 	}
 
 	public function deskey() {
