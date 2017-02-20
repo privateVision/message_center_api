@@ -1,5 +1,5 @@
 <?php
-namespace App\Gamebbs56\UC;
+namespace App\Model\Gamebbs56;
 
 class Model extends \App\Model
 {
