@@ -15,10 +15,7 @@ function decrypt3des($data, $key = null) {
 	return \App\Crypt3DES::decrypt($data, $key);
 }
 
-<<<<<<< HEAD
-
-function sendrequest($callback,$ispost=false,$data= array())
-    {
+ function sendrequest($callback,$ispost=false,$data= array()){
 
         date_default_timezone_set('PRC');
         $curlobj = curl_init();         // 初始化
@@ -40,13 +37,8 @@ function sendrequest($callback,$ispost=false,$data= array())
        //  $d = json_decode($output);
          //echo ($d->ret == 0)?json_encode(array("code"=>1,"msg"=>"成功")):json_encode(array("code"=>0,"msg"=>"发送失败"));
         // echo $output; //curl的方式获取当前的页面的信息
-    }
+  }
 
-		function uuid() {
-  			return md5(uniqid() . rand(0, 999999));
-		}
-=======
-function uuid() {
-	return md5(uniqid() . rand(0, 999999));
-}
->>>>>>> d003d56051f534bc582bb2020c6a3b0438eea1c3
+	function uuid() {
+			return md5(uniqid() . rand(0, 999999));
+	}
