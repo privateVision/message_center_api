@@ -28,6 +28,7 @@ class AppController extends Controller
         $session->device_code = $device_code;
         $session->expired_ts = time() + 2592000; // 1个月有效期
         $session->save();
+        
         return array('token' => $session->access_token);
     }
 }
