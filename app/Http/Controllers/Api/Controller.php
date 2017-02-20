@@ -8,11 +8,10 @@ use App\Parameter;
 
 class Controller extends \App\Controller
 {
-<<<<<<< HEAD
-=======
+
 	protected $procedure = null;
 
->>>>>>> d003d56051f534bc582bb2020c6a3b0438eea1c3
+
     public function execute(Request $request, $action, $parameters) {
 		try {
 			// 3DES
@@ -35,12 +34,9 @@ class Controller extends \App\Controller
 		} catch (ApiException $e) {
 			return array('code' => $e->getCode(), 'msg' => $e->getMessage(), 'data' => null);
 		} catch(\Exception $e) {
-<<<<<<< HEAD
-			return array('code' => ApiException::Error, 'msg' => $e->getMessage(),'data' => null);
-=======
+
 			// todo: 打印这么详细的消息到客户端是不安全的，方便调试
 			return array('code' => ApiException::Error, 'msg' => sprintf('%s in %s(%d)', $e->getMessage(), $e->getFile(), $e->getLine()), 'data' => null);
->>>>>>> d003d56051f534bc582bb2020c6a3b0438eea1c3
 		}
 	}
 
@@ -51,8 +47,5 @@ class Controller extends \App\Controller
 	public function after(Request $request, Parameter $parameter) {
 
 	}
-<<<<<<< HEAD
+
 }
-=======
-}
->>>>>>> d003d56051f534bc582bb2020c6a3b0438eea1c3

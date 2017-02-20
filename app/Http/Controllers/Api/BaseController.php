@@ -20,12 +20,9 @@ class BaseController extends Controller {
 
 		$this->session = $session;
 	}
-<<<<<<< HEAD
+
 
 	protected function getSession() {
 		return $this->session;
 	}
 }
-=======
-}
->>>>>>> d003d56051f534bc582bb2020c6a3b0438eea1c3

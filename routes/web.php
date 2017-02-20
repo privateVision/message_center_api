@@ -21,21 +21,18 @@ $app->get('/test',function(){
 						$key = "4c6e0a99384aff934c6e0a99";
 						$token_url = "http://127.0.0.1/api/app/initialize";
 						$dats = sendrequest($token_url,$ispost,encrypt3des("device_code='222'&device_name='w'&device_platform='ww'&version=1.0&imei='11'&retailer='222'",$key));
+						$st =  encrypt3des("device_code='222'&device_name='w'&device_platform='ww'&version=1.0&imei='11'&retailer='222'",$key);
+
 						$dt = json_decode($dats);
-						echo $dats;
-						$file = fopen('./ht.html','w');
-					  var_dump($dats);
-						fwrite($file, $dats);
-						fclose($file);
-						if(isset($dt) && !empty($dt)){
+						var_dump($dats);
+						if(isset($dt) && $dt->code == 0){
 							$token = $dt->data->token;
 							$sendurl  = "http://127.0.0.1/api/app/userRegister";
 							$data  = "name='mll'&age=12&fh=13578658&token=".$token;
 							$dat = sendrequest($sendurl,$ispost,encrypt3des($data,$key));
 							return $dat;
-						}else{
-							 throw new Exception("no Object had ", 1);
 						}
+						
 	});
 
 

@@ -17,10 +17,10 @@ class UserController extends BaseController
 {
 
     public function userRegisterAction(){
-      $username = printf("af%d",mt_rand(11111111,99999999));
-
-      $sql = "select uid from 56gamebbs.pre_ucenter_members where username='{$username}'";
-       DB::connect('uc')->query($sql);
+      $username = "af".mt_rand(11111111,99999999);
+      $sql = "select uid from 56gamebbs.pre_ucenter_members limit 1,10";
+      $dt = DB::select($sql);
+      if(count($dt));
        exit ;
         $dat =  app('db')->select($sql);
         var_dump($dat);
