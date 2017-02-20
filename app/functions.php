@@ -15,6 +15,7 @@ function decrypt3des($data, $key = null) {
 	return \App\Crypt3DES::decrypt($data, $key);
 }
 
+<<<<<<< HEAD
 
 function sendrequest($callback,$ispost=false,$data= array())
     {
@@ -44,3 +45,8 @@ function sendrequest($callback,$ispost=false,$data= array())
 		function uuid() {
   			return md5(uniqid() . rand(0, 999999));
 		}
+=======
+function uuid() {
+	return md5(uniqid() . rand(0, 999999));
+}
+>>>>>>> d003d56051f534bc582bb2020c6a3b0438eea1c3

@@ -59,18 +59,18 @@ return [
             'strict'    => env('DB_SDKAPI_STRICT_MODE', false),
         ],
 
-        'sdkapi_ext' => [
+        'uc' => [
             'driver'    => 'mysql',
-            'host'      => env('DB_SDKAPI_EXT_HOST'),
-            'port'      => env('DB_SDKAPI_EXT_PORT'),
-            'database'  => env('DB_SDKAPI_EXT_DATABASE'),
-            'username'  => env('DB_SDKAPI_EXT_USERNAME'),
-            'password'  => env('DB_SDKAPI_EXT_PASSWORD'),
-            'charset'   => env('DB_SDKAPI_EXT_CHARSET', 'utf8'),
-            'collation' => env('DB_SDKAPI_EXT_COLLATION', 'utf8_unicode_ci'),
-            'prefix'    => env('DB_SDKAPI_EXT_PREFIX', ''),
-            'timezone'  => env('DB_SDKAPI_EXT_TIMEZONE', '+00:00'),
-            'strict'    => env('DB_SDKAPI_EXT_STRICT_MODE', false),
+            'host'      => env('DB_UC_HOST'),
+            'port'      => env('DB_UC_EXT_PORT'),
+            'database'  => env('DB_UC_EXT_DATABASE'),
+            'username'  => env('DB_UC_EXT_USERNAME'),
+            'password'  => env('DB_UC_EXT_PASSWORD'),
+            'charset'   => env('DB_UC_EXT_CHARSET', 'utf8'),
+            'collation' => env('DB_UC_EXT_COLLATION', 'utf8_unicode_ci'),
+            'prefix'    => env('DB_UC_EXT_PREFIX', ''),
+            'timezone'  => env('DB_UC_EXT_TIMEZONE', '+00:00'),
+            'strict'    => env('DB_UC_EXT_STRICT_MODE', false),
         ],
 /*
         'testing' => [

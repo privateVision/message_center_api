@@ -1,8 +1,9 @@
 <?php
 namespace App\Model;
 
-class Users extends Model
+class Ucusers extends Model
 {
+<<<<<<< HEAD
 	protected $table = 'users';
 	protected $primaryKey = 'uid';
 
@@ -19,4 +20,8 @@ class Users extends Model
 
 
 
+=======
+	protected $table = 'ucusers';
+	protected $primaryKey = 'ucid';
+>>>>>>> d003d56051f534bc582bb2020c6a3b0438eea1c3
 }
