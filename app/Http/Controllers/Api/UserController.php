@@ -15,13 +15,12 @@ use Illuminate\Support\Facades\DB;
 */
 class UserController extends BaseController
 {
-
     public function userRegisterAction(){
-      $username = "af".mt_rand(11111111,99999999);
-      $sql = "select uid from 56gamebbs.pre_ucenter_members limit 1,10";
-      $dt = DB::select($sql);
-      if(count($dt));
-       exit ;
+        $username = "af".mt_rand(11111111,99999999);
+        $sql = "select uid from 56gamebbs.pre_ucenter_members limit 1,10";
+        $dt = DB::select($sql);
+        if(count($dt));
+        exit ;
         $dat =  app('db')->select($sql);
         var_dump($dat);
         return "赴京的是吉恩管的发展史";
@@ -31,14 +30,4 @@ class UserController extends BaseController
     public function quicknameAction(){
 
     }
-
-
-
-
-
-
 }
-
-
-
-?>
