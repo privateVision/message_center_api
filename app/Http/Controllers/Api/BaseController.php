@@ -1,5 +1,6 @@
 <?php
-
+namespace App\Http\Controllers\Api;
+use App\Http\Controllers\Api;
 use Illuminate\Http\Request;
 use App\Exceptions\ApiException;
 use App\Parameter;
@@ -11,7 +12,6 @@ class BaseController extends Controller {
 
 	public function before(Request $request, Parameter $parameter) {
 		parent::before($request, $parameter);
-
 		$access_token = $parameter->tough('token');
 		$session = Session::where('access_token', $access_token)->first();
 		if(!$session) {
@@ -20,4 +20,12 @@ class BaseController extends Controller {
 
 		$this->session = $session;
 	}
+<<<<<<< HEAD
+
+	protected function getSession() {
+		return $this->session;
+	}
 }
+=======
+}
+>>>>>>> d003d56051f534bc582bb2020c6a3b0438eea1c3

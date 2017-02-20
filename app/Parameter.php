@@ -23,7 +23,7 @@ class Parameter
 	public function tough($key) {
 		$data = @$this->_data[$key];
 		if($data === null) {
-			throw new ApiException (Exception::Error, 'param is missing:'.$key);
+			throw new ApiException (ApiException::Error, 'param is missing:'.$key);
 		}
 
 		return $data;
