@@ -9,7 +9,7 @@ use App\Model\Procedures;
 
 class Controller extends \App\Controller
 {
-	private $procedure = null;
+	protected $procedure = null;
 
     public function execute(Request $request, $action, $parameters) {
 		try {
@@ -57,9 +57,5 @@ class Controller extends \App\Controller
 
 	public function after(Request $request, Parameter $parameter) {
 
-	}
-
-	protected function getProcedure() {
-		return $this->procedure;
 	}
 }

@@ -8,12 +8,12 @@ use App\Model\Users;
 
 class AuthController extends BaseController {
 
-	private $user = null;
+	protected $user = null;
 
 	public function before(Request $request, Parameter $parameter) {
 		parent::before($request, $parameter);
 
-		$uid = $this->getSession()->uid;
+		$uid = $this->session->uid;
 		if(!$uid) {
 			throw new ApiException(ApiException::Remind, '请先登陆');
 		}
@@ -24,9 +24,5 @@ class AuthController extends BaseController {
 		}
 
 		$this->user = $user;
-	}
-
-	protected function getUser() {
-		return $this->user;
 	}
 }

@@ -7,7 +7,7 @@ use App\Model\Session;
 
 class BaseController extends Controller {
 
-	private $session = null;
+	protected $session = null;
 
 	public function before(Request $request, Parameter $parameter) {
 		parent::before($request, $parameter);
@@ -19,9 +19,5 @@ class BaseController extends Controller {
 		}
 
 		$this->session = $session;
-	}
-
-	protected function getSession() {
-		return $this->session;
 	}
 }
