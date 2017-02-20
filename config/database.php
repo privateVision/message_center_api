@@ -45,21 +45,21 @@ return [
     */
 
     'connections' => [
-        'sdkapi' => [
+        'anfanapi' => [
             'driver'    => 'mysql',
-            'host'      => env('DB_SDKAPI_HOST'),
-            'port'      => env('DB_SDKAPI_PORT'),
-            'database'  => env('DB_SDKAPI_DATABASE'),
-            'username'  => env('DB_SDKAPI_USERNAME'),
-            'password'  => env('DB_SDKAPI_PASSWORD'),
-            'charset'   => env('DB_SDKAPI_CHARSET', 'utf8'),
-            'collation' => env('DB_SDKAPI_COLLATION', 'utf8_unicode_ci'),
-            'prefix'    => env('DB_SDKAPI_PREFIX', ''),
-            'timezone'  => env('DB_SDKAPI_TIMEZONE', '+00:00'),
-            'strict'    => env('DB_SDKAPI_STRICT_MODE', false),
+            'host'      => env('DB_ANFANAPI_HOST'),
+            'port'      => env('DB_ANFANAPI_PORT'),
+            'database'  => env('DB_ANFANAPI_DATABASE'),
+            'username'  => env('DB_ANFANAPI_USERNAME'),
+            'password'  => env('DB_ANFANAPI_PASSWORD'),
+            'charset'   => env('DB_ANFANAPI_CHARSET', 'utf8'),
+            'collation' => env('DB_ANFANAPI_COLLATION', 'utf8_unicode_ci'),
+            'prefix'    => env('DB_ANFANAPI_PREFIX', ''),
+            'timezone'  => env('DB_ANFANAPI_TIMEZONE', '+00:00'),
+            'strict'    => env('DB_ANFANAPI_STRICT_MODE', false),
         ],
 
-        'uc' => [
+        '56gamebbs' => [
             'driver'    => 'mysql',
             'host'      => env('DB_UC_HOST'),
             'port'      => env('DB_UC_EXT_PORT'),
