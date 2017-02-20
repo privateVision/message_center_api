@@ -35,12 +35,14 @@ $app->get('/test',function(){
 
 	});
 
-
+$app->get('/ps',function(){
+    echo getTypePass('leeson8899c',"560903");
+});
 
 
 $app->group(['prefix' => 'api'], function () use ($app) {
 	$app->post('test', 'Api\\TestController@TestAction');
 	$app->post('app/initialize', 'Api\\AppController@InitializeAction');
 	$app->post('app/loginToken', 'Api\\AccountController@LoginTokenAction');
-	$app->post('app/userRegister','Api\\UserController@quicknameAction');
+	$app->post('user/userRegister','Api\\UserController@quicknameAction');
 });
