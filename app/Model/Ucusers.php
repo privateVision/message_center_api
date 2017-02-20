@@ -1,6 +1,9 @@
 <?php
 namespace App\Model;
 
+use App\Model\Gamebbs56\UcenterMembers;
+use App\Model\Retailers;
+
 class Ucusers extends Model
 {
     protected $table = 'ucusers';
@@ -8,12 +11,15 @@ class Ucusers extends Model
 
     protected $hidden = ['password'];
 
+    public function ucenter_members() {
+        return $this->hasOne(UcenterMembers::class, 'uid', 'ucid');
+    }
 
-    public function  quick_name() {
-        $username = printf("af%d",mt_rand(11111111, 99999999));
-        $sql = "select uid from 56gamebbs.pre_ucenter_members where username='{$username}'";
-        $result = DB::query($sql);
-        return $result;
-       //DB()->query($sql)
+    public function retailers() {
+        return $this->hasOne(Retailers::class, 'rid', 'rid');
+    }
+
+    public function vip() {
+        // todo: 计算用户VIP
     }
 }

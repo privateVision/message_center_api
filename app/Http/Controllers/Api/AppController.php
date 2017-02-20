@@ -11,7 +11,7 @@ class AppController extends Controller
 {
     public function InitializeAction(Request $request, Parameter $parameter) {
         $imei = $parameter->tough('imei');
-        $retailer = $parameter->tough('retailer');
+        $rid = $parameter->tough('rid');
         $device_code = $parameter->tough('device_code');
         $device_name = $parameter->tough('device_name');
         $device_platform = $parameter->tough('device_platform');
@@ -20,10 +20,10 @@ class AppController extends Controller
 
         // todo: 默认配置先写死在代码里
         $default = array(
-            'service_qq' => '4000274365',
+            'service_qq' => env('SERVICE_QQ'),
             'service_page' => '',
-            'service_phone' => '4000274365',
-            'service_share' => 'http://www.anfeng.cn/app',
+            'service_phone' => env('SERVICE_PHONE'),
+            'service_share' => env('SERVICE_SHARE'),
             'service_interval' => 300,
             'bind_phone_need' => true,
             'bind_phone_enforce' => false,
@@ -35,16 +35,19 @@ class AppController extends Controller
         // token
         $session = new Session;
         $session->access_token = uuid();
+        $session->pid = $this->procedure->pid;
         $session->imei = $imei;
-        $session->retailer = $retailer;
+        $session->rid = $rid;
         $session->device_code = $device_code;
         $session->device_name = $device_name;
         $session->device_platform = $device_platform;
         $session->version = $version;
         $session->device_code = $device_code;
         $session->expired_ts = time() + 2592000; // 1个月有效期
+        $session->date = date('Ymd');
         $session->save();
-        $data['token'] = $session->access_token;
+
+        $data['access_token'] = $session->access_token;
 
         // config
         $extend = $this->procedure->procedures_extend()->first();

@@ -6,6 +6,7 @@ import urllib, urllib2
 import json
 
 APPID = 778
+RID = 255
 DESKEY = '4c6e0a99384aff934c6e0a99'
 BASEURL = 'http://sdkapi.anfan.com/'
 
@@ -36,6 +37,7 @@ class Http:
 	@staticmethod
 	def request(uri, **data):
 		print "\033[0mrequest:%s" % (uri)
+		print "\033[0mrequest data:%s" % (json.dumps(data, indent=4, sort_keys=False, ensure_ascii=False))
 		
 		postdata = {
 			"param": Http.__encrypt_param(data), 
@@ -48,14 +50,20 @@ class Http:
 		except Exception, e:
 			print "\033[1;31;40m%d,%s\033[0m" % (e.code, e.msg)
 		else:
-			data = response.read()
-			print "response data:%s" % (data)
-			data = json.loads(data)
-
-			if data["code"] > 0:
-				print "\033[1;31;40m%s(%d)\033[0m" % (data["msg"], data["code"])
+			res = response.read()
+			#print "response data:%s" % (data)
+			try:
+				data = json.loads(res)
+			except Exception, e:
+				print "response data:%s" % (res)
+				print "\033[1;31;40m返回值无法解析\033[0m"
 			else:
-				return data["data"]
+				print "\033[0mresponse data:%s" % (json.dumps(data, indent=4, sort_keys=False, ensure_ascii=False))
+				
+				if data["code"] > 0:
+					print "\033[1;31;40m%s(%d)\033[0m" % (data["msg"], data["code"])
+				else:
+					return data["data"]
 
 		return None
 
@@ -65,15 +73,26 @@ class Http:
 		return Crypt3DES.encrypt(data);
 
 print "------------ api/app/initialize ------------"
-data = Http.request('api/app/initialize', imei = '3447264d06ff60e9cc415229a0583a29', retailer = 255, device_code = '3447264d06ff60e9cc415229a0583a29', device_name = 'iphone 6plus', device_platform = 16, version = '1.0.0', app_version = '1.1.0')
-if data == None or not data.has_key('token'):
+data = Http.request('api/app/initialize', 
+	imei = '3447264d06ff60e9cc415229a0583a29', 
+	rid = RID, 
+	device_code = '3447264d06ff60e9cc415229a0583a29', 
+	device_name = 'iphone 6plus', 
+	device_platform = 16, 
+	version = '1.0.0', 
+	app_version = '1.1.0'
+)
+if data == None:
 	print "\033[1;31;40m获取token失败，程序退出 \033[0m"
 	sys.exit(0)
 	
-TOKEN = data['token']
-OLDTOKEN = open('old_token').read();
-open('old_token', 'w').write(TOKEN);
-print "\033[1;32;40mtoken:%s\033[0m" % (TOKEN)
+ACCESS_TOKEN = data['access_token']
+print "\033[1;32;40mtoken:%s\033[0m" % (ACCESS_TOKEN)
 
 print "-----------api/account/loginToken-----------"
-data = Http.request('api/account/loginToken', token = TOKEN, old_token = OLDTOKEN);
+data = Http.request('api/account/loginToken', access_token = ACCESS_TOKEN, token = open('token').read());
+if data == None:
+	print "\033[1;31;40m自动登陆失败，程序退出 \033[0m"
+	sys.exit(0)
+
+open('token', 'w').write(data['token']);
