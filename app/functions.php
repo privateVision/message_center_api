@@ -14,3 +14,7 @@ function decrypt3des($data, $key = null) {
 
 	return \App\Crypt3DES::decrypt($data, $key);
 }
+
+function uuid() {
+	return md5(uniqid() . rand(0, 999999));
+}

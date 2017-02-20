@@ -10,15 +10,17 @@ use App\Exceptions\ApiException;
 class AppController extends Controller
 {
     public function InitializeAction(Request $request, Parameter $parameter) {
-    	$game_id = $parameter->tough('game_id');
+        $imei = $parameter->tough('imei');
+        $retailer = $parameter->tough('retailer');
     	$device_code = $parameter->tough('device_code');
     	$device_name = $parameter->tough('device_name');
     	$device_platform = $parameter->tough('device_platform');
     	$version = $parameter->tough('version');
 
     	$session = new Session;
-    	$session->access_token = md5(uniqid() . rand(0, 999999));
-    	$session->game_id = $game_id;
+    	$session->access_token = uuid();
+        $session->imei = $imei;
+        $session->retailer = $retailer;
     	$session->device_code = $device_code;
     	$session->device_name = $device_name;
     	$session->device_platform = $device_platform;

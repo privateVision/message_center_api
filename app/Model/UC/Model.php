@@ -1,9 +1,9 @@
 <?php
-namespace App\Model\SdkApiExt;
+namespace App\Model\UC;
 
 class Model extends \App\Model
 {
-	protected $connection = 'sdkapi_ext';
+	protected $connection = 'uc';
 
 	const CREATED_AT = null;
     const UPDATED_AT = null;
