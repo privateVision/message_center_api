@@ -32,7 +32,7 @@ $app->get('/test',function(){
 							$dat = sendrequest($sendurl,$ispost,encrypt3des($data,$key));
 							return $dat;
 						}
-						
+
 	});
 
 
@@ -42,5 +42,5 @@ $app->group(['prefix' => 'api'], function () use ($app) {
 	$app->post('test', 'Api\\TestController@TestAction');
 	$app->post('app/initialize', 'Api\\AppController@InitializeAction');
 	$app->post('app/loginToken', 'Api\\AccountController@LoginTokenAction');
-	$app->post('app/userRegister','Api\\UserController@userRegisterAction');
+	$app->post('app/userRegister','Api\\UserController@quicknameAction');
 });

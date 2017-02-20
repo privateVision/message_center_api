@@ -31,14 +31,15 @@ function decrypt3des($data, $key = null) {
         }
         curl_setopt($curlobj, CURLOPT_HTTPHEADER, array("application/x-www-form-urlencoded; charset=utf-8"));
         $output=curl_exec($curlobj);    // 执行
-
         curl_close($curlobj);// 关闭cURL
         return $output;
-       //  $d = json_decode($output);
-         //echo ($d->ret == 0)?json_encode(array("code"=>1,"msg"=>"成功")):json_encode(array("code"=>0,"msg"=>"发送失败"));
-        // echo $output; //curl的方式获取当前的页面的信息
   }
-
+//创建生成token
 	function uuid() {
 			return md5(uniqid() . rand(0, 999999));
 	}
+//用户密码格式化 明文pass 加密key
+
+function getTypePass($pass,$key){
+	return md5(md5($pass).$key);
+}

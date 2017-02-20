@@ -18,27 +18,19 @@ use App\Model\Gamebbs56\UcenterMembers;
 class UserController extends BaseController
 {
     public function userRegisterAction(){
-
-      $username = "af".mt_rand(11111111,99999999);
-      //$count = $this->where("username",$username)->find();
-      $dt = UcenterMembers::where("username",$username)->get();
-      var_dump($dt);
-      return $count;
-
-        $username = "af".mt_rand(11111111,99999999);
-        $sql = "select uid from 56gamebbs.pre_ucenter_members limit 1,10";
-        $dt = DB::select($sql);
-        if(count($dt));
-        exit ;
-        $dat =  app('db')->select($sql);
-        var_dump($dat);
-
-        return "赴京的是吉恩管的发展史";
+        $salt = mt_rand(111111,999999);
     }
 
 
     public function quicknameAction(){
-
+      do{
+        $username = "af".mt_rand(11111111,99999999);
+        $dt = UcenterMembers::where("username",$username)->get();
+        if(count($dt) == 0){
+          return $username;
+          exit;
+        }
+      }while (true);
     }
 
 }
