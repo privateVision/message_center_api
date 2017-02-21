@@ -10,37 +10,41 @@ use App\Model\Procedures;
 class Controller extends \App\Controller
 {
 	protected $procedure = null;
-	
+
     public function execute(Request $request, $action, $parameters) {
 		try {
 			// 3DES
 			$appid = $request->input('appid');
 			$param = $request->input('param');
+			if($action != 'TestAction') {
+				$procedure = Procedures::find($appid);
+				if (!$procedure) {
+					throw new ApiException(ApiException::Error, "appid不正确:" . $appid);
+				}
 
-			$procedure = Procedures::find($appid);
-			if(!$procedure) {
-				throw new ApiException(ApiException::Error, "appid不正确:" . $appid);
+				$this->procedure = $procedure;
+
+
+				if (empty($param)) {
+					throw new ApiException(ApiException::Error, "无法获取加密参数");
+				}
+
+				// todo: deskey是动态生成的，对性能有一点影响
+				$poststr = decrypt3des($param, $procedure->deskey());
+				if ($poststr === false) {
+					throw new ApiException(ApiException::Error, "参数无法解密");
+				}
+
+				// todo: 多一步parse_str，差评。想想更好的、parse效率更高的数据格式
+				parse_str($poststr, $postdata);
+				$parameter = new Parameter($postdata);
+
+				$this->before($request, $parameter);
+				$response = $this->$action($request, $parameter);
+				$this->after($request, $parameter);
+			}else{
+				$response = $this->$action($request);
 			}
-
-			$this->procedure = $procedure;
-
-			if(empty($param)) {
-				throw new ApiException(ApiException::Error, "无法获取加密参数");
-			}
-
-			// todo: deskey是动态生成的，对性能有一点影响
-			$poststr = decrypt3des($param, $procedure->deskey());
-			if($poststr === false) {
-				throw new ApiException(ApiException::Error, "参数无法解密");
-			}
-
-			// todo: 多一步parse_str，差评。想想更好的、parse效率更高的数据格式
-			parse_str($poststr, $postdata);
-			$parameter = new Parameter($postdata);
-
-			$this->before($request, $parameter);
-			$response = $this->$action($request, $parameter);
-			$this->after($request, $parameter);
 
 			return array('code' => ApiException::Success, 'msg' => null, 'data' => $response);
 		} catch (ApiException $e) {
