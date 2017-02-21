@@ -59,7 +59,7 @@ class Http:
 				print "\033[1;31;40m返回值无法解析\033[0m"
 			else:
 				print "\033[0mresponse data:%s" % (json.dumps(data, indent=4, sort_keys=False, ensure_ascii=False))
-				
+
 				if data["code"] > 0:
 					print "\033[1;31;40m%s(%d)\033[0m" % (data["msg"], data["code"])
 				else:
@@ -87,9 +87,8 @@ if data == None:
 	sys.exit(0)
 	
 ACCESS_TOKEN = data['access_token']
-print "\033[1;32;40mtoken:%s\033[0m" % (ACCESS_TOKEN)
 
-print "-----------api/account/loginToken-----------"
+print "\n-----------api/account/loginToken-----------\n"
 data = Http.request('api/account/loginToken', access_token = ACCESS_TOKEN, token = open('token').read());
 if data == None:
 	print "\033[1;31;40m自动登陆失败，程序退出 \033[0m"

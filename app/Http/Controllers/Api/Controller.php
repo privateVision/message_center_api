@@ -11,7 +11,7 @@ class Controller extends \App\Controller
 {
 	protected $procedure = null;
 	
-    public function execute(Request $request, $action, $parameters) {
+    public function execute(Request $request, $action, Parameter $parameters) {
 		try {
 			// 3DES
 			$appid = $request->input('appid');
