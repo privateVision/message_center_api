@@ -43,3 +43,15 @@ function decrypt3des($data, $key = null) {
 function getTypePass($pass,$key){
 	return md5(md5($pass).$key);
 }
+
+//检测手机的格式
+function checkMobile($mobile)
+{
+		return preg_match('/^(13|14|15|17|18)[0-9]{9}$/i', $mobile);
+}
+
+//检查当前用户名
+function checkName($name)
+{
+		return preg_match(' /^[\w\_\-\.\@\:]+$/',$name);
+}
