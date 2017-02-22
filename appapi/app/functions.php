@@ -1,4 +1,6 @@
 <?php
+use Illuminate\Support\Facades\Redis;
+
 function encrypt3des($data, $key = null) {
 	if(empty($key)) {
 		$key = env('API_3DES_KEY');
@@ -18,6 +20,10 @@ function decrypt3des($data, $key = null) {
 //创建生成token
 function uuid() {
 	return md5(uniqid() . rand(0, 999999));
+}
+
+function kafkaProducer($topic, $message) {
+	return Redis::lpush('kafka', json_encode(['topic' => $topic, 'message' => $message]));
 }
 
 /*

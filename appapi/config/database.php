@@ -26,7 +26,7 @@ return [
     |
     */
 
-    'default' => env('DB_CONNECTION', 'mysql'),
+    'default' => env('DB_CONNECTION'),
 
     /*
     |--------------------------------------------------------------------------
@@ -54,7 +54,7 @@ return [
             'password'  => env('DB_ANFANAPI_PASSWORD'),
             'charset'   => env('DB_ANFANAPI_CHARSET', 'utf8'),
             'collation' => env('DB_ANFANAPI_COLLATION', 'utf8_unicode_ci'),
-            'prefix'    => env('DB_ANFANAPI_PREFIX', ''),
+            'prefix'    => env('DB_ANFANAPI_PREFIX'),
             'timezone'  => env('DB_ANFANAPI_TIMEZONE', '+00:00'),
             'strict'    => env('DB_ANFANAPI_STRICT_MODE', false),
         ],
@@ -68,58 +68,10 @@ return [
             'password'  => env('DB_56GAMEBBS_PASSWORD'),
             'charset'   => env('DB_56GAMEBBS_CHARSET', 'utf8'),
             'collation' => env('DB_56GAMEBBS_COLLATION', 'utf8_unicode_ci'),
-            'prefix'    => env('DB_56GAMEBBS_PREFIX', ''),
+            'prefix'    => env('DB_56GAMEBBS_PREFIX'),
             'timezone'  => env('DB_56GAMEBBS_TIMEZONE', '+00:00'),
             'strict'    => env('DB_56GAMEBBS_STRICT_MODE', false),
         ],
-/*
-        'testing' => [
-            'driver' => 'sqlite',
-            'database' => ':memory:',
-        ],
-
-        'sqlite' => [
-            'driver'   => 'sqlite',
-            'database' => env('DB_DATABASE', base_path('database/database.sqlite')),
-            'prefix'   => env('DB_PREFIX', ''),
-        ],
-
-        'mysql' => [
-            'driver'    => 'mysql',
-            'host'      => env('DB_HOST', 'localhost'),
-            'port'      => env('DB_PORT', 3306),
-            'database'  => env('DB_DATABASE', 'forge'),
-            'username'  => env('DB_USERNAME', 'forge'),
-            'password'  => env('DB_PASSWORD', ''),
-            'charset'   => env('DB_CHARSET', 'utf8'),
-            'collation' => env('DB_COLLATION', 'utf8_unicode_ci'),
-            'prefix'    => env('DB_PREFIX', ''),
-            'timezone'  => env('DB_TIMEZONE', '+00:00'),
-            'strict'    => env('DB_STRICT_MODE', false),
-        ],
-
-        'pgsql' => [
-            'driver'   => 'pgsql',
-            'host'     => env('DB_HOST', 'localhost'),
-            'port'     => env('DB_PORT', 5432),
-            'database' => env('DB_DATABASE', 'forge'),
-            'username' => env('DB_USERNAME', 'forge'),
-            'password' => env('DB_PASSWORD', ''),
-            'charset'  => env('DB_CHARSET', 'utf8'),
-            'prefix'   => env('DB_PREFIX', ''),
-            'schema'   => env('DB_SCHEMA', 'public'),
-        ],
-
-        'sqlsrv' => [
-            'driver'   => 'sqlsrv',
-            'host'     => env('DB_HOST', 'localhost'),
-            'database' => env('DB_DATABASE', 'forge'),
-            'username' => env('DB_USERNAME', 'forge'),
-            'password' => env('DB_PASSWORD', ''),
-            'charset'  => env('DB_CHARSET', 'utf8'),
-            'prefix'   => env('DB_PREFIX', ''),
-        ],
-*/
     ],
 
     /*
@@ -148,13 +100,13 @@ return [
 
     'redis' => [
 
-        'cluster' => env('REDIS_CLUSTER', false),
+        'cluster' => env('REDIS_CLUSTER'),
 
         'default' => [
-            'host'     => env('REDIS_HOST', '127.0.0.1'),
-            'port'     => env('REDIS_PORT', 6379),
-            'database' => env('REDIS_DATABASE', 0),
-            'password' => env('REDIS_PASSWORD', null),
+            'host'     => env('REDIS_HOST'),
+            'port'     => env('REDIS_PORT'),
+            'database' => env('REDIS_DATABASE'),
+            'password' => env('REDIS_PASSWORD'),
         ],
 
     ],

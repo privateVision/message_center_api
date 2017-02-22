@@ -1,11 +1,12 @@
 #coding:utf-8
 import os,sys
 from Crypto.Cipher import DES3
+import md5
 import base64
 import urllib, urllib2
 import json
 import random
-import string 
+import string
 
 APPID = 778
 RID = 255
@@ -74,6 +75,7 @@ class Http:
 		data = urllib.urlencode(data)
 		return Crypt3DES.encrypt(data);
 
+
 print "------------ api/app/initialize ------------"
 data = Http.request('api/app/initialize', 
 	imei = '3447264d06ff60e9cc415229a0583a29', 
@@ -89,6 +91,7 @@ if data == None:
 	sys.exit(0)
 	
 ACCESS_TOKEN = data['access_token']
+
 """
 print "\n-----------api/account/loginToken-----------\n"
 data = Http.request('api/account/loginToken', access_token = ACCESS_TOKEN, token = open('token').read());
@@ -99,12 +102,36 @@ if data == None:
 open('token', 'w').write(data['token']);
 """
 """
-print "---------- api/account/userRegister ----------\n"
+print "\n---------- api/account/username ----------\n"
+data = Http.request('api/account/username', access_token = ACCESS_TOKEN)
 
-def username():
-	r = random.uniform(10000000, 99999999)
-	return 'a' + str(int(r))
-data = Http.request('api/account/userRegister', access_token = ACCESS_TOKEN, username = username(), password = 123456);
+print "\n---------- api/account/register ----------\n"
+if data != None:
+	Http.request('api/account/register', access_token = ACCESS_TOKEN, username = data['username'], password = 123456)
 """
-print "-------------- api/account/login --------------\n"
-data = Http.request('api/account/login', access_token = ACCESS_TOKEN, username = 'a81922755', password = 123456);
+"""
+print "\n-------------- api/account/login --------------\n"
+Http.request('api/account/login', access_token = ACCESS_TOKEN, username = 'a81922755', password = 123456);
+"""
+print "\n--------------- yunpian/callback ---------------\n"
+data = {
+	"base_extend": "8888",
+	"extend": "01",
+	"id": "2a70c6bb4f2845da816ea1bfe5732747",
+	"mobile": "159" + str(random.random())[2:10],
+	"reply_time": "2014-03-17 22:55:21",
+	"text": ACCESS_TOKEN,
+}
+
+str = ''
+key = ['base_extend', 'extend', 'id', 'mobile', 'reply_time', 'text'];
+for k in ['base_extend', 'extend', 'id', 'mobile', 'reply_time', 'text']:
+	str = str + data[k] + ',';
+str = str + '0dbc5a50c034a8396b50f3a80609497d'
+m = md5.new()
+m.update(str)
+data['_sign'] = m.hexdigest()
+req = urllib2.Request(BASEURL + 'yunpian/callback', urllib.urlencode({"sms_reply": json.dumps(data)}))
+print urllib2.urlopen(req).read()
+print "\n------------ api/account/phoneLogin ------------\n"
+Http.request('api/account/phoneLogin', access_token = ACCESS_TOKEN);
