@@ -94,12 +94,12 @@ ACCESS_TOKEN = data['access_token']
 
 """
 print "\n-----------api/account/loginToken-----------\n"
-data = Http.request('api/account/loginToken', access_token = ACCESS_TOKEN, token = open('token').read());
+data = Http.request('api/account/loginToken', access_token = ACCESS_TOKEN, token = open('.token').read());
 if data == None:
 	print "\033[1;31;40m自动登陆失败，程序退出 \033[0m"
 	sys.exit(0)
 
-open('token', 'w').write(data['token']);
+open('.token', 'w').write(data['token']);
 """
 """
 print "\n---------- api/account/username ----------\n"
