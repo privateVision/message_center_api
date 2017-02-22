@@ -41,6 +41,7 @@ class ComposerStaticInit7920f5af7a2779f08ce7e6693369c5f0
         'P' => 
         array (
             'Psr\\Log\\' => 8,
+            'Predis\\' => 7,
         ),
         'M' => 
         array (
@@ -57,6 +58,7 @@ class ComposerStaticInit7920f5af7a2779f08ce7e6693369c5f0
             'Illuminate\\Translation\\' => 23,
             'Illuminate\\Support\\' => 19,
             'Illuminate\\Session\\' => 19,
+            'Illuminate\\Redis\\' => 17,
             'Illuminate\\Queue\\' => 17,
             'Illuminate\\Pipeline\\' => 20,
             'Illuminate\\Pagination\\' => 22,
@@ -152,6 +154,10 @@ class ComposerStaticInit7920f5af7a2779f08ce7e6693369c5f0
         array (
             0 => __DIR__ . '/..' . '/psr/log/Psr/Log',
         ),
+        'Predis\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/predis/predis/src',
+        ),
         'Monolog\\' => 
         array (
             0 => __DIR__ . '/..' . '/monolog/monolog/src/Monolog',
@@ -179,6 +185,10 @@ class ComposerStaticInit7920f5af7a2779f08ce7e6693369c5f0
         'Illuminate\\Session\\' => 
         array (
             0 => __DIR__ . '/..' . '/illuminate/session',
+        ),
+        'Illuminate\\Redis\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/illuminate/redis',
         ),
         'Illuminate\\Queue\\' => 
         array (
@@ -758,6 +768,7 @@ class ComposerStaticInit7920f5af7a2779f08ce7e6693369c5f0
         'PHP_Token_XOR_EQUAL' => __DIR__ . '/..' . '/phpunit/php-token-stream/src/Token.php',
         'PHP_Token_YIELD' => __DIR__ . '/..' . '/phpunit/php-token-stream/src/Token.php',
         'PHP_Token_YIELD_FROM' => __DIR__ . '/..' . '/phpunit/php-token-stream/src/Token.php',
+        'Register' => __DIR__ . '/../..' . '/tests/Register.php',
         'SebastianBergmann\\CodeCoverage\\CodeCoverage' => __DIR__ . '/..' . '/phpunit/php-code-coverage/src/CodeCoverage.php',
         'SebastianBergmann\\CodeCoverage\\CoveredCodeNotExecutedException' => __DIR__ . '/..' . '/phpunit/php-code-coverage/src/Exception/CoveredCodeNotExecutedException.php',
         'SebastianBergmann\\CodeCoverage\\Driver\\Driver' => __DIR__ . '/..' . '/phpunit/php-code-coverage/src/Driver/Driver.php',

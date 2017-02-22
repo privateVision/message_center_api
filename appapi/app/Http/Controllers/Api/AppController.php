@@ -58,7 +58,7 @@ class AppController extends Controller
         }
 
         // check update
-        $update = $this->procedure->update_apks()->orderBy('dt', 'desc')->take(1)->first();
+        $update = $this->procedure->update_apks()->orderBy('dt', 'desc')->first();
         if($update && $update->version != $app_version) {
             $data['update'] = array(
                 'down_url' => $update->down_uri,

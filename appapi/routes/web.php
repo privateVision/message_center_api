@@ -17,9 +17,13 @@ $app->get('/', function () use ($app) {
 
 $app->get('test', 'TestController@TestAction');
 
+$app->post('yunpian/callback', 'YunpianController@CallbackAction');
+
 $app->group(['prefix' => 'api'], function () use ($app) {
 	$app->post('app/initialize', 'Api\\AppController@InitializeAction');
 	$app->post('account/loginToken', 'Api\\AccountController@LoginTokenAction');
     $app->post('account/login', 'Api\\AccountController@LoginAction');
-	$app->post('account/userRegister','Api\\AccountController@userRegisterAction');
+	$app->post('account/register','Api\\AccountController@RegisterAction');
+    $app->post('account/username','Api\\AccountController@UsernameAction');
+    $app->post('account/phoneLogin','Api\\AccountController@PhoneLoginAction');
 });
