@@ -111,8 +111,6 @@ class AccountController extends BaseController {
             return null;
         }
 
-//Redis::lpush("queue_send_sms", ['mobile' => '15021829660', 'content' => '恭喜您注册成功，你的用户名是：15021829660，密码是：123456']);
-
         $mobile = $yunpiansms->mobile;
 
         // 登陆
@@ -141,7 +139,7 @@ class AccountController extends BaseController {
         ]);
 
         // 将密码发给用户，通过队列异步发送
-        kafkaProducer('sendsms', ['mobile' => $mobile, 'content' => "恭喜您注册成功，你的用户名:{15021829660}，密码是:{$password}"]);
+        kafkaProducer('sendsms', ['mobile' => $mobile, 'content' => "恭喜您注册成功，你的用户名:{$mobile}，密码是:{$password}"]);
 
         return Event::onRegister($ucuser, $this->session);
     }
