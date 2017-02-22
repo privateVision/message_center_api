@@ -17,7 +17,7 @@ use Illuminate\Http\Request;
 use App\Parameter;
 use App\Event;
 
-class UserController extends BaseController
+class UserController extends AuthController
 {
 
 }

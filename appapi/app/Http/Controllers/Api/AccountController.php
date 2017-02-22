@@ -8,6 +8,7 @@ use App\Model\Session;
 use App\Event;
 use App\Model\Ucusers;
 use App\Model\Gamebbs56\UcenterMembers;
+use App\Model\YunpianSms;
 
 class AccountController extends BaseController {
 
@@ -37,23 +38,22 @@ class AccountController extends BaseController {
         $username = $parameter->tough('username');
         $password = $parameter->tough('password');
 
-        $UcenterMembers = UcenterMembers::where('username', $username)->get();
-        $UcenterMember = null;
-        foreach($UcenterMembers as $v) {
-            if($v->checkPassword($password)) {
-                $UcenterMember = $v;
-                break;
+        $ucuser = null;
+        $ucusers = Ucusers::where('uid', $username)->orWhere('mobile', $username)->get();
+        foreach($ucusers as $v) {
+            if($v->ucenter_members->checkPassword($password)) {
+                $ucuser = $v;
             }
         }
 
-        if(!$UcenterMember) {
+        if(!$ucuser) {
             throw new ApiException(ApiException::Remind, "登陆失败，用户名或者密码不正确");
         }
 
-        return Event::onLogin($UcenterMember->ucusers, $this->session);
+        return Event::onLogin($ucuser, $this->session);
     }
 
-    public function userRegisterAction(Request $request, Parameter $parameter){
+    public function RegisterAction(Request $request, Parameter $parameter){
         $username   = $parameter->tough('username') ;
         $password   = $parameter->tough('password') ;
 
@@ -89,6 +89,57 @@ class AccountController extends BaseController {
             'rid' => $this->session->rid,
             'pid' => $this->session->pid,
         ]);
+
+        return Event::onRegister($ucuser, $this->session);
+    }
+
+    public function UsernameAction(Request $request, Parameter $parameter) {
+        $username = null;
+
+        $chars = 'abcdefghjkmnpqrstuvwxy';
+        do {
+            $username = $chars[rand(0, 21)] . rand(10000, 99999999);
+            $count = Ucusers::where('uid', $username)->count();
+        } while($count > 0);
+
+        return ['username' => $username];
+    }
+
+    public function PhoneLoginAction(Request $request, Parameter $parameter) {
+        $yunpiansms = YunpianSms::where('text', $this->session->access_token)->first();
+        if(!$yunpiansms) {
+            return null;
+        }
+
+        $mobile = $yunpiansms->mobile;
+
+        // 登陆
+        $ucuser = Ucusers::where('uid', $mobile)->orWhere('mobile', $mobile)->first();
+        if($ucuser) {
+            return Event::onLogin($ucuser, $this->session);
+        }
+
+        // 注册
+        $password = rand(100000, 999999);
+
+        $UcenterMember = new UcenterMembers;
+        $UcenterMember->password = $password;
+        $UcenterMember->email = $mobile . "@anfan.com";;
+        $UcenterMember->regip = $request->ip();
+        $UcenterMember->username = $mobile;
+        $UcenterMember->regdate = time();
+        $UcenterMember->save();
+
+        $ucuser = $UcenterMember->ucusers()->create([
+            'uid' => $mobile,
+            'mobile' => $mobile,
+            'uuid' => $this->session->access_token,
+            'rid' => $this->session->rid,
+            'pid' => $this->session->pid,
+        ]);
+
+        // 将密码发给用户，通过队列异步发送
+        kafkaProducer('sendsms', ['mobile' => $mobile, 'content' => "恭喜您注册成功，你的用户名:{$mobile}，密码是:{$password}"]);
 
         return Event::onRegister($ucuser, $this->session);
     }
