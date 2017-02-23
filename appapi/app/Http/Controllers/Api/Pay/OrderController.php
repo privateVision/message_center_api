@@ -33,10 +33,8 @@ class OrderController extends Controller {
 
         return [
             'order_id' => $order->sn,
-            'fee' => $fee,
-            'way' => [
-                1, 2, 3
-            ],
+            'fee' => $order->fee(),
+            'way' => [1, 2, 3],
         ];
     }
 }

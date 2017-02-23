@@ -16,8 +16,14 @@ $app->get('/', function () use ($app) {
 });
 
 $app->get('test', 'TestController@TestAction');
-
+// 云片手机短信回调
 $app->post('yunpian/callback', 'YunpianController@CallbackAction');
+// 现代支付，微信支付回调
+$app->post('pay_callback/nowpay_wechat', 'PayCallback\\NowpayWechatController@CallbackAction');
+// 现代支付，支付宝支付回调
+$app->post('pay_callback/nowpay_alipay', 'PayCallback\\NowpayAlipayController@CallbackAction');
+// 现代支付，银联支付回调
+$app->post('pay_callback/nowpay_union', 'PayCallback\\NowpayUnionController@CallbackAction');
 
 $app->group(['prefix' => 'api'], function () use ($app) {
 	$app->post('app/initialize', 'Api\\AppController@InitializeAction');
@@ -30,5 +36,7 @@ $app->group(['prefix' => 'api'], function () use ($app) {
     $app->post('account/phoneLogin', 'Api\\AccountController@PhoneLoginAction');
 
     $app->post('pay/order/new', 'Api\\Pay\\OrderController@NewAction');
-    $app->post('pay/wechat/request', 'Api\\Pay\\WechatController@RequestAction');
+    $app->post('pay/nowpay/wechat', 'Api\\Pay\\NowpayController@WechatAction');
+    $app->post('pay/nowpay/alipay', 'Api\\Pay\\NowpayController@AlipayAction');
+    $app->post('pay/nowpay/union', 'Api\\Pay\\NowpayController@UnionAction');
 });

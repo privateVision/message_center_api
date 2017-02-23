@@ -23,4 +23,9 @@ class Orders extends Model
 	public function setHideAttribute($value) {
 		$this->attributes['hide'] = $value ? 1 : 0;
 	}
+
+	public function fee() {
+		// todo: 计算订单实际支付金额
+		return $this->fee;
+	}
 }
