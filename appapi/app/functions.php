@@ -1,8 +1,5 @@
 <?php
-//use Illuminate\Support\Facades\Queue;
 use Illuminate\Support\Facades\Redis;
-//use App\Jobs\SendSMS;
-//use App\Jobs\Log;
 use Illuminate\Http\Request;
 
 function encrypt3des($data, $key = null) {
@@ -26,67 +23,68 @@ function uuid() {
 }
 
 function send_sms($mobile, $content, $code = 0) {
-	return Redis::lpush("queue", json_encode(['topic' => 'sendsms', 'mobile' => $mobile, 'content' => $content, 'code' => $code]));
+	return Redis::lpush("queue", json_encode([
+        'topic' => 'sendsms', 
+        'mobile' => $mobile, 
+        'content' => $content, 
+        'code' => $code
+    ]));
 }
 
 function log_debug ($keyword, $content) {
     global $app;
 
-    $ip = '0.0.0.0';
-    $pid = '0';
-    if(php_sapi_name() !== 'cli') {
-        $ip = $app->request->ip();
-        $pid = getmypid();
-    }
-
-    $content = sprintf("%s %s.%s.DEBUG [%s]%s", date('Y-m-d H:i:s'), $ip, $pid, $keyword, json_encode($content));
-
-	return Redis::lpush("queue", json_encode(['topic' => 'log', 'level' => 1, 'content' => $content]));
+	return Redis::lpush("queue", json_encode([
+        'topic' => 'log', 
+        'level' => 100, 
+        'content' => $content,
+        'ip' => $app->request->ip(),
+        'pid' => getmypid(),
+        'keyword' => $keyword,
+        'content' => $content
+    ]));
 }
 
 function log_info ($keyword, $content) {
 	global $app;
 
-    $ip = '0.0.0.0';
-    $pid = '0';
-    if(php_sapi_name() !== 'cli') {
-        $ip = $app->request->ip();
-        $pid = getmypid();
-    }
-
-    $content = sprintf("%s %s.%s.INFO [%s]%s", date('Y-m-d H:i:s'), $ip, $pid, $keyword, json_encode($content));
-
-    return Redis::lpush("queue", json_encode(['topic' => 'log', 'level' => 2, 'content' => $content]));
+    return Redis::lpush("queue", json_encode([
+        'topic' => 'log', 
+        'level' => 200, 
+        'content' => $content,
+        'ip' => $app->request->ip(),
+        'pid' => getmypid(),
+        'keyword' => $keyword,
+        'content' => $content
+    ]));
 }
 
 function log_warning ($keyword, $content) {
     global $app;
 
-    $ip = '0.0.0.0';
-    $pid = '0';
-    if(php_sapi_name() !== 'cli') {
-        $ip = $app->request->ip();
-        $pid = getmypid();
-    }
-
-    $content = sprintf("%s %s.%s.WARNING [%s]%s", date('Y-m-d H:i:s'), $ip, $pid, $keyword, json_encode($content));
-
-    return Redis::lpush("queue", json_encode(['topic' => 'log', 'level' => 3, 'content' => $content]));
+    return Redis::lpush("queue", json_encode([
+        'topic' => 'log', 
+        'level' => 300, 
+        'content' => $content,
+        'ip' => $app->request->ip(),
+        'pid' => getmypid(),
+        'keyword' => $keyword,
+        'content' => $content
+    ]));
 }
 
 function log_error ($keyword, $content) {
 	global $app;
 
-    $ip = '0.0.0.0';
-    $pid = '0';
-    if(php_sapi_name() !== 'cli') {
-        $ip = $app->request->ip();
-        $pid = getmypid();
-    }
-
-    $content = sprintf("%s %s.%s.ERROR [%s]%s", date('Y-m-d H:i:s'), $ip, $pid, $keyword, json_encode($content));
-
-    return Redis::lpush("queue", json_encode(['topic' => 'log', 'level' => 4, 'content' => $content]));
+    return Redis::lpush("queue", json_encode([
+        'topic' => 'log', 
+        'level' => 400, 
+        'content' => $content,
+        'ip' => $app->request->ip(),
+        'pid' => getmypid(),
+        'keyword' => $keyword,
+        'content' => $content
+    ]));
 }
 
 function http_request($url, $data, $is_post = true) {

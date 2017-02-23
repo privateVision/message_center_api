@@ -4,11 +4,15 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Model\YunpianSms;
+use Illuminate\Support\Facades\Config;
 
 class YunpianController extends \App\Controller
 {
     public function CallbackAction(Request $request) {
         $sms_reply = $request->input('sms_reply');
+
+        log_info('yunpian/callback', $sms_reply);
+
         $sms_reply = @json_decode($sms_reply, true);
         if(!$sms_reply) {
             return 'SUCCESS';
@@ -18,7 +22,7 @@ class YunpianController extends \App\Controller
         unset($sms_reply['_sign']);
         ksort($sms_reply);
 
-        $str = implode(',', $sms_reply) .','. env('YUNPIAN_APPKEY');
+        $str = implode(',', $sms_reply) .','. config('common.yunpian.apikey');
         if($sign !== md5($str)) {
             return 'FAILURE';
         }

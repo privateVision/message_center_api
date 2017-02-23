@@ -17,8 +17,6 @@ class Controller extends \App\Controller
 			$appid = $request->input('appid');
 			$param = $request->input('param');
 
-			log_debug('request', ['appid' => $appid, 'param' => $param]);
-
 			$procedure = Procedures::find($appid);
 			if (!$procedure) {
 				throw new ApiException(ApiException::Error, "appid不正确:" . $appid);
@@ -39,6 +37,8 @@ class Controller extends \App\Controller
 			// todo: 多一步parse_str，差评。想想更好的、parse效率更高的数据格式
 			parse_str($poststr, $postdata);
 			$parameter = new Parameter($postdata);
+
+			log_info('request', $postdata);
 
 			$this->before($request, $parameter);
 			$response = $this->$action($request, $parameter);
