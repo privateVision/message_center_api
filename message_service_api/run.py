@@ -1,11 +1,13 @@
 # _*_ coding: utf-8 _*_
+import threading
+
 from flask import Flask
 from flask_mongoengine import MongoEngine
 from kafka import KafkaConsumer
 from kafka import KafkaProducer
 
 from Blueprint.RegisterBlueprint import init_blueprint
-from Service.KafkaHandler import MQConsumeHandler
+from Service.KafkaHandler import kafka_consume_func
 from config.config import config
 
 
@@ -37,8 +39,9 @@ db.init_app(app)
 kafka_producer = KafkaProducer(bootstrap_servers=app.config.get('KAFKA_URL'))
 kafka_consumer = KafkaConsumer(bootstrap_servers=app.config.get('KAFKA_URL'))
 kafka_consumer.subscribe([app.config.get('KAFKA_TOPIC')])
-# for msg in kafka_consumer:
-#     MQConsumeHandler(msg)
+kafka_consumer_thread = threading.Thread(target=kafka_consume_func, args=(kafka_consumer,))
+kafka_consumer_thread.setDaemon(True)
+kafka_consumer_thread.start()
 
 init_blueprint(app)     # 注册蓝图模块
 

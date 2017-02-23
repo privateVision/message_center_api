@@ -1,9 +1,7 @@
 # _*_ coding:utf-8 _*_
 
 class Config:
-    SQLALCHEMY_COMMIT_ON_TEARDOWN = True
-    FLASKY_MAIL_SUBJECT_PREFIX = '[Flasky]'
-    FLASKY_MAIL_SENDER = '879651072@qq.com'
+    MD5_SIGN_KEY = "868a4601f68867aff87950532857da34"
 
     @staticmethod
     def init_app(app):
@@ -18,7 +16,7 @@ class DevelopmentConfig(Config):
     CSRF_ENABLED = False
     SECRET_KEY = 'yuwqedbcaewfdsa813asjdfw'
     # ----- Kafka 配置 ------- #
-    KAFKA_URL = "192.168.1.128:9092"
+    KAFKA_URL = "192.168.1.246:9092"
     KAFKA_TOPIC = "message-service"
     # ----- MongoDB 配置 ----- #
     MONGODB_DATABASE_HOST = 'localhost'
@@ -34,7 +32,7 @@ class ProductionConfig(Config):
     CSRF_ENABLED = False
     SECRET_KEY = 'yuwqedbcaewfdsa813asjdfw'
     # ----- Kafka 配置 ------- #
-    KAFKA_URL = "192.168.1.128:9092"
+    KAFKA_URL = "192.168.1.246:9092"
     KAFKA_TOPIC = "message-service"
     # ----- MongoDB 配置 ----- #
     MONGODB_DATABASE_HOST = 'localhost'
