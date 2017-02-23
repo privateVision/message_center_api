@@ -75,8 +75,9 @@ class Http:
 		data = urllib.urlencode(data)
 		return Crypt3DES.encrypt(data);
 
+#######################################################################################################################
 
-print "------------ api/app/initialize ------------"
+print "\n------------ api/app/initialize ------------\n"
 data = Http.request('api/app/initialize', 
 	imei = '3447264d06ff60e9cc415229a0583a29', 
 	rid = RID, 
@@ -91,7 +92,7 @@ if data == None:
 	sys.exit(0)
 	
 ACCESS_TOKEN = data['access_token']
-
+#######################################################################################################################
 """
 print "\n-----------api/account/loginToken-----------\n"
 data = Http.request('api/account/loginToken', access_token = ACCESS_TOKEN, token = open('.token').read());
@@ -101,6 +102,7 @@ if data == None:
 
 open('.token', 'w').write(data['token']);
 """
+#######################################################################################################################
 """
 print "\n---------- api/account/username ----------\n"
 data = Http.request('api/account/username', access_token = ACCESS_TOKEN)
@@ -109,11 +111,13 @@ print "\n---------- api/account/register ----------\n"
 if data != None:
 	Http.request('api/account/register', access_token = ACCESS_TOKEN, username = data['username'], password = 123456)
 """
-"""
+#######################################################################################################################
+
 print "\n-------------- api/account/login --------------\n"
 Http.request('api/account/login', access_token = ACCESS_TOKEN, username = 'a81922755', password = 123456);
-"""
 
+#######################################################################################################################
+"""
 print "\n--------------- yunpian/callback ---------------\n"
 data = {
 	"base_extend": "8888",
@@ -136,7 +140,19 @@ req = urllib2.Request(BASEURL + 'yunpian/callback', urllib.urlencode({"sms_reply
 print urllib2.urlopen(req).read()
 print "\n------------ api/account/phoneLogin ------------\n"
 Http.request('api/account/phoneLogin', access_token = ACCESS_TOKEN);
-
-
+"""
+#######################################################################################################################
+"""
 print "\n-------------- api/account/logout --------------\n"
 Http.request('api/account/logout', access_token = ACCESS_TOKEN);
+"""
+#######################################################################################################################
+
+print "\n-------------- api/pay/order/new ---------------\n"
+data = Http.request('api/pay/order/new', access_token = ACCESS_TOKEN, fee = 10, body = "10 Gold", subject = "10 Gold", notify_url = "http://www.baidu.com/", vorderid = str(random.random())[2:]);
+if data == None:
+	sys.exit(0)
+
+ORDER_ID = data['order_id'];
+
+print "\n------------ api/pay/wechat/request -------------\n"
