@@ -10,7 +10,6 @@ namespace App\Http\Controllers\Api;
 
 use App\Exceptions\ApiException;
 use App\Model;
-use App\Http\Controllers\Api;
 use App\Model\Gamebbs56\UcenterMembers;
 use App\Model\Ucusers;
 use Illuminate\Http\Request;
@@ -19,5 +18,10 @@ use App\Event;
 
 class UserController extends AuthController
 {
+
+    public function LogoutAction(Request $request, Parameter $parameter) {
+        Event::onLogout($this->ucuser, $this->session);
+        return ['result' => true];
+    }
 
 }

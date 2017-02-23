@@ -1,6 +1,6 @@
 <?php
 namespace App\Http\Controllers\Api;
-use App\Http\Controllers\Api\BaseController;
+
 use Illuminate\Support\Facades\Request;
 
 /*
@@ -8,7 +8,7 @@ use Illuminate\Support\Facades\Request;
  * */
 class PhoneController extends BaseController{
     //发送短信
-    public function sendCodeAction(Request $request){
+    public function sendCodeAction(Request $request) {
 
     }
 

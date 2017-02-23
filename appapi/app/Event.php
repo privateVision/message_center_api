@@ -1,9 +1,15 @@
 <?php
 namespace App;
 
+use App\Exceptions\ApiException;
+
 class Event
 {
 	public static function onLogin(&$ucuser, &$session) {
+        if($session->ucid) {
+            throw new ApiException(ApiException::Error, 'access_token已被使用，请重新启动游戏获取');
+        }
+
 		$session->ucid = $ucuser->ucid;
 		$session->save();
 

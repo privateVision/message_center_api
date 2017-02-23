@@ -139,7 +139,7 @@ class AccountController extends BaseController {
         ]);
 
         // 将密码发给用户，通过队列异步发送
-        kafkaProducer('sendsms', ['mobile' => $mobile, 'content' => "恭喜您注册成功，你的用户名:{$mobile}，密码是:{$password}"]);
+        send_sms($mobile, "恭喜您注册成功，你的用户名:{$mobile}，密码是:{$password}【爪游】");
 
         return Event::onRegister($ucuser, $this->session);
     }
