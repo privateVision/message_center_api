@@ -18,7 +18,8 @@ class DevelopmentConfig(Config):
     CSRF_ENABLED = False
     SECRET_KEY = 'yuwqedbcaewfdsa813asjdfw'
     # ----- Kafka 配置 ------- #
-    KAFKA_URL = "localhost:9092"
+    KAFKA_URL = "192.168.1.128:9092"
+    KAFKA_TOPIC = "message-service"
     # ----- MongoDB 配置 ----- #
     MONGODB_DATABASE_HOST = 'localhost'
     MONGODB_DATABASE_PORT = 27017
@@ -33,7 +34,8 @@ class ProductionConfig(Config):
     CSRF_ENABLED = False
     SECRET_KEY = 'yuwqedbcaewfdsa813asjdfw'
     # ----- Kafka 配置 ------- #
-    KAFKA_URL = "localhost:9092"
+    KAFKA_URL = "192.168.1.128:9092"
+    KAFKA_TOPIC = "message-service"
     # ----- MongoDB 配置 ----- #
     MONGODB_DATABASE_HOST = 'localhost'
     MONGODB_DATABASE_PORT = 27017
