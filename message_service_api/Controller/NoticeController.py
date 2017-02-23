@@ -80,26 +80,31 @@ def v4_sdk_get_notice_list():
             start_index = (form.data['page'] - 1) * form.data['count']
             end_index = start_index + form.data['count']
             # 查询用户相关的公告列表
-            message_list_total_count = SystemAnnouncements.objects(
-                                    (Q(type='notice')
-                                  & Q(apk_id=form.data['apk_id'])
-                                  & Q(area=form.data['area'])
-                                  & Q(user_type=form.data['user_type'])
-                                  & Q(vip=form.data['vip']))
-                                 | Q(ucid_list=form.data['ucid']))\
-                .count()
-            message_list = SystemAnnouncements.objects(Q(type='notice')
-                                & (Q(apk_id=form.data['apk_id'])
-                                & Q(area=form.data['area'])
-                                & Q(user_type=form.data['user_type'])
-                                & Q(vip=form.data['vip']))
-                                | Q(ucid_list=form.data['ucid']))\
-                .order_by('-create_time')\
-                [start_index:end_index]
-            data = {
-                "total_count": message_list_total_count,
-                "data": message_list
-            }
+            # message_list_total_count = SystemAnnouncements.objects(
+            #                         (Q(app__apk_id=form.data['apk_id'])
+            #                       & Q(app__zone_id_list=form.data['area'])
+            #                       & Q(rtype=form.data['user_type'])
+            #                       & Q(vip=form.data['vip']))
+            #                      | Q(users=form.data['ucid']))\
+            #     .count()
+            # message_list = SystemAnnouncements.objects(
+            #                     (Q(app__apk_id=form.data['apk_id'])
+            #                     & Q(app__zone_id_list=form.data['area'])
+            #                     & Q(rtype=form.data['user_type'])
+            #                     & Q(vip=form.data['vip']))
+            #                     | Q(users=form.data['ucid']))\
+            #     .order_by('-create_time')\
+            #     [start_index:end_index]
+            # data = {
+            #     "total_count": message_list_total_count,
+            #     "data": message_list
+            # }
+            data = SystemAnnouncements.objects(
+                                (Q(app__apk_id=form.data['apk_id'])
+                                & Q(app__zone_id_list=form.data['area']))
+                                |Q(users=form.data['ucid']))\
+            .order_by('-create_time')\
+            [start_index:end_index]
             return response_data(http_code=200, data=data)
 
 
