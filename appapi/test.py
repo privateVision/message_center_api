@@ -155,5 +155,11 @@ if data == None:
 
 ORDER_ID = data['order_id'];
 
+"""
 print "\n------------ api/pay/nowpay/wechat -------------\n"
 Http.request('api/pay/nowpay/wechat', access_token = ACCESS_TOKEN, order_id = ORDER_ID);
+"""
+#######################################################################################################################
+
+print "\n------------ api/pay/nowpay/alipay -------------\n"
+Http.request('api/pay/nowpay/alipay', access_token = ACCESS_TOKEN, order_id = ORDER_ID);

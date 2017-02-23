@@ -15,6 +15,12 @@ return [
             'mhtOrderType' => '01',
             'payChannelType' => '13',
             'mhtSignType' => 'MD5',
-        ]
+        ],
+
+        'alipay' => [
+            'AppID' => "2088411293741002",
+            'PriKey' => __DIR__ . '/nowpay_alipay_prikey.pem',
+            'PubKey' => __DIR__ . '/nowpay_alipay_pubkey.pem',
+        ],
     ],
 ];
