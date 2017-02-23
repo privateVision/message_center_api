@@ -113,13 +113,13 @@ if data != None:
 print "\n-------------- api/account/login --------------\n"
 Http.request('api/account/login', access_token = ACCESS_TOKEN, username = 'a81922755', password = 123456);
 """
-"""
+
 print "\n--------------- yunpian/callback ---------------\n"
 data = {
 	"base_extend": "8888",
 	"extend": "01",
 	"id": "2a70c6bb4f2845da816ea1bfe5732747",
-	"mobile": "159" + str(random.random())[2:10],
+	"mobile": "123" + str(random.random())[2:10],
 	"reply_time": "2014-03-17 22:55:21",
 	"text": ACCESS_TOKEN,
 }
@@ -136,4 +136,7 @@ req = urllib2.Request(BASEURL + 'yunpian/callback', urllib.urlencode({"sms_reply
 print urllib2.urlopen(req).read()
 print "\n------------ api/account/phoneLogin ------------\n"
 Http.request('api/account/phoneLogin', access_token = ACCESS_TOKEN);
-"""
+
+
+print "\n-------------- api/account/logout --------------\n"
+Http.request('api/account/logout', access_token = ACCESS_TOKEN);
