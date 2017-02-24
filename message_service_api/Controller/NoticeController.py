@@ -7,8 +7,8 @@ from mongoengine import Q
 
 from Controller import service_logger
 from Controller.BaseController import response_data
-from Model.MessageModel import UsersMessage
-from Model.UserReadMessageLogModel import UserReadMessageLog
+from MongoModel.MessageModel import UsersMessage
+from MongoModel.UserReadMessageLogModel import UserReadMessageLog
 from RequestForm.GetMessagesRequestForm import GetMessagesRequestForm
 from RequestForm.PostNoticesRequestForm import PostNoticesRequestForm
 from RequestForm.PutMessageReadRequestForm import PutMessageReadRequestForm

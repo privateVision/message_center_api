@@ -6,7 +6,7 @@ import time
 from mongoengine import Q
 
 from Controller import service_logger
-from Model.MessageModel import UsersMessage
+from MongoModel.MessageModel import UsersMessage
 
 
 def system_announcements_persist(data_json=None):

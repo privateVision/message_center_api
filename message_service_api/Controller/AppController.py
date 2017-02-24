@@ -1,14 +1,13 @@
 # _*_ coding: utf-8 _*_
-import json
 
 from flask import Blueprint
 from flask import request
-from mongoengine import Q
 
 from Controller import service_logger
 from Controller.BaseController import response_data
-from Model.AppsModel import Apps
-from Model.ZonelistsModel import Zonelists
+from MongoModel.AppsModel import Apps
+from MongoModel.ZonelistsModel import Zonelists
+from MysqlModel.RoleDatasModel import RoleDatas
 from RequestForm.GetDataListRequestForm import GetDataListRequestForm
 
 app_controller = Blueprint('AppController', __name__)
@@ -17,6 +16,8 @@ app_controller = Blueprint('AppController', __name__)
 # 获取游戏列表
 @app_controller.route('/v4/apps', methods=['GET'])
 def v4_get_app_list():
+    admin = RoleDatas.query.filter_by(ucid=1978293).first()
+    print admin
     form = GetDataListRequestForm(request.args)
     start_index = (form.data['page'] - 1) * form.data['count']
     end_index = start_index + form.data['count']

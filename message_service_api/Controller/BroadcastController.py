@@ -7,7 +7,7 @@ from mongoengine import Q
 
 from Controller import service_logger
 from Controller.BaseController import response_data
-from Model.MessageModel import UsersMessage
+from MongoModel.MessageModel import UsersMessage
 from RequestForm.GetMessagesRequestForm import GetMessagesRequestForm
 from RequestForm.PostBroadcastsRequestForm import PostBroadcastsRequestForm
 from Service.StorageService import system_broadcast_persist

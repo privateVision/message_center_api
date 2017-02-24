@@ -7,7 +7,7 @@ from mongoengine import Q
 
 from Controller import service_logger
 from Controller.BaseController import response_data
-from Model.MessageModel import UsersMessage
+from MongoModel.MessageModel import UsersMessage
 from RequestForm.PostMessagesRequestForm import PostMessagesRequestForm
 
 message_controller = Blueprint('MessageController', __name__)
