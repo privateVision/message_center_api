@@ -113,7 +113,20 @@ class NowpayController extends Controller {
 
         $res = http_request($config['trade_url'], $data, true);
 
-        return ['data' => $res];
+        log_info('unionpayRequest', ['reqdata' => $data, 'resdata' => $res]);
+
+        if(!$res) {
+            throw new ApiException(ApiException::Remind, '银联支付请求失败');
+        }
+
+        parse_str($res, $resdata);
+
+        // todo: 是否该把银联返回的错误消息返回给用户
+        if($resdata['respCode'] !== '00') {
+            throw new ApiException(ApiException::Remind, '银联支付请求失败 ' . $resdata['respMsg']);
+        }
+
+        return ['tn' => $resdata['tn']];
     }
 
     protected static function encode($data) {

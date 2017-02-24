@@ -15,28 +15,26 @@ $app->get('/', function () use ($app) {
 	http_response_code(404); exit;
 });
 
-$app->get('test', 'TestController@TestAction');
-// 云片手机短信回调
-$app->post('yunpian/callback', 'YunpianController@CallbackAction');
-// 现代支付，微信支付回调
-$app->post('pay_callback/nowpay_wechat', 'PayCallback\\NowpayWechatController@CallbackAction');
-// 现代支付，支付宝支付回调
-$app->post('pay_callback/nowpay_alipay', 'PayCallback\\NowpayAlipayController@CallbackAction');
-// 现代支付，银联支付回调
-$app->post('pay_callback/nowpay_unionpay', 'PayCallback\\NowpayUnionpayController@CallbackAction');
+$app->get('test', 'TestController@TestAction');                                                         // test
+$app->post('yunpian/callback', 'YunpianController@CallbackAction');                                     // 云片手机短信回调
+$app->post('pay_callback/nowpay_wechat', 'PayCallback\\NowpayWechatController@CallbackAction');         // 现代支付，微信支付回调
+$app->post('pay_callback/nowpay_alipay', 'PayCallback\\NowpayAlipayController@CallbackAction');         // 现代支付，支付宝支付回调
+$app->post('pay_callback/nowpay_unionpay', 'PayCallback\\NowpayUnionpayController@CallbackAction');     // 现代支付，银联支付回调
 
 $app->group(['prefix' => 'api'], function () use ($app) {
-	$app->post('app/initialize', 'Api\\AppController@InitializeAction');
+	$app->post('app/initialize', 'Api\\AppController@InitializeAction');                                // 初始化
+	$app->post('account/login_token', 'Api\\AccountController@LoginTokenAction');                       // 自动登陆
+    $app->post('account/login', 'Api\\AccountController@LoginAction');                                  // 用户名或手机号码登陆
+    $app->post('account/logout', 'Api\\UserController@LogoutAction');                                   // 退出登录
+	$app->post('account/register', 'Api\\AccountController@RegisterAction');                            // 用户名注册
+    $app->post('account/username', 'Api\\AccountController@UsernameAction');                            // 生成随机用户名
+    $app->post('account/login_phone', 'Api\\AccountController@LoginPhoneAction');                       // 手机号码一键登陆
+    $app->post('pay/order/new', 'Api\\Pay\\OrderController@NewAction');                                 // 创建订单
+    $app->post('pay/nowpay/wechat', 'Api\\Pay\\NowpayController@WechatAction');                         // 现在支付，微信
+    $app->post('pay/nowpay/alipay', 'Api\\Pay\\NowpayController@AlipayAction');                         // 现在支付，支付宝
+    $app->post('pay/nowpay/unionpay', 'Api\\Pay\\NowpayController@UnionpayAction');                     // 现在支付，银联
+});
 
-	$app->post('account/loginToken', 'Api\\AccountController@LoginTokenAction');
-    $app->post('account/login', 'Api\\AccountController@LoginAction');
-    $app->post('account/logout', 'Api\\UserController@LogoutAction');
-	$app->post('account/register', 'Api\\AccountController@RegisterAction');
-    $app->post('account/username', 'Api\\AccountController@UsernameAction');
-    $app->post('account/phoneLogin', 'Api\\AccountController@PhoneLoginAction');
+$app->group(['prefix' => 'tool'], function () use ($app) {
 
-    $app->post('pay/order/new', 'Api\\Pay\\OrderController@NewAction');
-    $app->post('pay/nowpay/wechat', 'Api\\Pay\\NowpayController@WechatAction');
-    $app->post('pay/nowpay/alipay', 'Api\\Pay\\NowpayController@AlipayAction');
-    $app->post('pay/nowpay/unionpay', 'Api\\Pay\\NowpayController@UnionpayAction');
 });

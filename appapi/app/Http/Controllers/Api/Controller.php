@@ -38,7 +38,7 @@ class Controller extends \App\Controller
 			parse_str($poststr, $postdata);
 			$parameter = new Parameter($postdata);
 
-			log_info('request', $postdata);
+			log_info('request', ['route' => $request->path(), 'appid' => $appid, 'param' => $postdata]);
 
 			$this->before($request, $parameter);
 			$response = $this->$action($request, $parameter);
@@ -46,10 +46,11 @@ class Controller extends \App\Controller
 
 			return array('code' => ApiException::Success, 'msg' => null, 'data' => $response);
 		} catch (ApiException $e) {
+			log_error('requestError', ['message' => $e->getMessage(), 'code' => $e->getCode()]);
 			return array('code' => $e->getCode(), 'msg' => $e->getMessage(), 'data' => null);
 		} catch(\Exception $e) {
-			// todo: 打印这么详细的消息到客户端是不安全的，方便调试
-			return array('code' => ApiException::Error, 'msg' => sprintf('%s in %s(%d)', $e->getMessage(), $e->getFile(), $e->getLine()), 'data' => null);
+			log_error('systemError', ['message' => $e->getMessage(), 'code' => $e->getCode(), 'file' => $e->getFile(), 'line' => $e->getLine()]);
+			return array('code' => ApiException::Error, 'msg' => 'system error', 'data' => null);
 		}
 	}
 

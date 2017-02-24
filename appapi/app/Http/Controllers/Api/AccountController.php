@@ -105,7 +105,7 @@ class AccountController extends BaseController {
         return ['username' => $username];
     }
 
-    public function PhoneLoginAction(Request $request, Parameter $parameter) {
+    public function LoginPhoneAction(Request $request, Parameter $parameter) {
         $yunpiansms = YunpianSms::where('text', $this->session->access_token)->first();
         if(!$yunpiansms) {
             return null;
