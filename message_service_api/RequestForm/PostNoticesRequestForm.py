@@ -4,7 +4,7 @@ from wtforms.validators import InputRequired
 
 
 class PostNoticesRequestForm(Form):
-    game = StringField('area', [InputRequired()])
+    game = StringField('game', [InputRequired()])
     users_type = StringField('user_type', [InputRequired()])
     vip_user = StringField('vip_user', [InputRequired()])
     specify_user = StringField('specify_user', [InputRequired()])
