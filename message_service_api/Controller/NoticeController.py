@@ -11,7 +11,7 @@ from Model.MessageModel import UsersMessage
 from Model.UserReadMessageLogModel import UserReadMessageLog
 from RequestForm.GetMessagesRequestForm import GetMessagesRequestForm
 from RequestForm.PostNoticesRequestForm import PostNoticesRequestForm
-from RequestForm.PutNoticesRequestForm import PutMessageReadRequestForm
+from RequestForm.PutMessageReadRequestForm import PutMessageReadRequestForm
 from Service.StorageService import system_announcements_persist
 
 notice_controller = Blueprint('NoticeController', __name__)
@@ -126,7 +126,7 @@ def v4_sdk_get_notice_list():
         return response_data(http_code=200, data=data)
 
 
-# SDK 设置消息已读
+# SDK 设置消息已读（消息通用）
 @notice_controller.route('/v4/message/read', methods=['POST'])
 def v4_sdk_set_notice_have_read():
     form = PutMessageReadRequestForm(request.form)  # POST 表单参数封装
@@ -152,10 +152,3 @@ def v4_sdk_set_notice_have_read():
                         service_logger.error(err)
                         return response_data(http_code=500, message="服务器出错啦/(ㄒoㄒ)/~~")
         return response_data(http_code=204)
-
-
-# 检查消息是否存在用户消息表中
-def check_is_exist_in_users_message(type=None, message_id=None):
-    if type is None or message_id is None:
-        return False
-    pass

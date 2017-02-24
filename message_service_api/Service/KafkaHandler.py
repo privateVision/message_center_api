@@ -2,7 +2,7 @@
 import json
 
 from Controller import service_logger
-from Service.StorageService import system_announcements_persist, system_broadcast_persist
+from Service.StorageService import system_announcements_persist, system_broadcast_persist, system_message_persist
 
 
 def kafka_consume_func(kafka_consumer):
@@ -19,7 +19,7 @@ def ConsumeHandler(message=None):
     elif message_info['type'] == 'broadcast':
         system_broadcast_persist(message_info['message'])
     elif message_info['type'] == 'message':
-        pass
+        system_message_persist(message_info['message'])
     elif message_info['type'] == 'coupon':
         pass
     else:

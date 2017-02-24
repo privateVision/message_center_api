@@ -62,3 +62,27 @@ def system_broadcast_persist(data_json=None):
             users_message.save()
         except Exception, err:
             service_logger.error(err.message)
+
+
+def system_message_persist(data_json=None):
+    if data_json is not None:
+        users_message = UsersMessage()
+        users_message.id = '%s%s' % ('message', data_json['id'])
+        users_message.mysql_id = data_json['id']
+        users_message.type = 'message'
+        users_message.title = data_json['title']
+        users_message.description = data_json['description']
+        users_message.content = data_json['content']
+        users_message.img = data_json['img']
+        users_message.url = data_json['url']
+        users_message.dis_time = data_json['send_time']
+        users_message.sys = data_json['sys']
+        users_message.users = data_json['specify_user'].split(",")
+        users_message.rtype = data_json['users_type'].split(",")
+        users_message.app = json.loads(data_json['game'])
+        users_message.vip = data_json['vip_user'].split(",")
+        users_message.expire_at = users_message.dis_time
+        try:
+            users_message.save()
+        except Exception, err:
+            service_logger.error(err.message)
