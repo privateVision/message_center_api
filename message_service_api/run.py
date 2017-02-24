@@ -3,6 +3,7 @@ import threading
 
 from flask import Flask
 from flask_mongoengine import MongoEngine
+from flask_sqlalchemy import SQLAlchemy
 from kafka import KafkaConsumer
 from kafka import KafkaProducer
 
@@ -35,6 +36,9 @@ app.config['MONGODB_SETTINGS'] = {
 
 db = MongoEngine()  # 建立MongoDB Engine
 db.init_app(app)
+
+app.config['SQLALCHEMY_DATABASE_URI'] = app.config.get('SQLALCHEMY_DATABASE_URI')
+mysql_db = SQLAlchemy(app)
 
 kafka_producer = KafkaProducer(bootstrap_servers=app.config.get('KAFKA_URL'))
 kafka_consumer = KafkaConsumer(bootstrap_servers=app.config.get('KAFKA_URL'))
