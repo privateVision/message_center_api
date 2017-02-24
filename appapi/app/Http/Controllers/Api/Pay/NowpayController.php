@@ -67,10 +67,53 @@ class NowpayController extends Controller {
         $data.= '&_input_charset="UTF-8"';
         $data.= '&payment_type="1"';
         $data.= sprintf('&seller_id="%s"', $config['AppID']);
-        $data.= sprintf('&sign="%s"', static::rsaSign($data, file_get_contents($config['PriKey'])));
+        $data.= sprintf('&sign="%s"', urlencode(static::rsaSign($data, file_get_contents($config['PriKey']))));
         $data.= '&sign_type="RSA"';
 
         return ['data' => $data];
+    }
+
+    public function UnionpayAction(Request $request, Parameter $parameter) {
+        $order_id = $parameter->tough('order_id');
+
+        $order = Orders::where('sn', $order_id)->first();
+        if(!$order) {
+            throw new ApiException(ApiException::Remind, '订单不存在');
+        }
+
+        if($order->status != Orders::Status_WaitPay) {
+            throw new ApiException(ApiException::Remind, '订单状态不正确');
+        }
+
+        $config = config('common.nowpay.unionpay');
+
+        openssl_pkcs12_read(base64_decode($config['pfx']), $cert, $config['pfx_pwd']);
+        $x509 = openssl_x509_read($cert['cert']);
+        $certinfo = openssl_x509_parse($x509);
+        openssl_x509_free($x509);
+        $certid = $certinfo['serialNumber'];
+
+        $data['version'] = '5.0.0';
+        $data['encoding'] = 'utf-8';
+        $data['backUrl'] = url('pay_callback/nowpay_unionpay');
+        $data['accessType'] = '0';
+        $data['merId'] = $config['merid'];
+        $data['currencyCode'] = '156';
+        $data['signMethod'] = '01';
+        $data['certId'] = $certid;
+        $data['orderId'] = $order->sn;
+        $data['txnTime'] = date('YmdHis');
+        $data['txnAmt']  = $order->fee() * 100;
+        $data['txnType'] = '01';
+        $data['bizType'] = '000201';
+        $data['txnSubType'] = '01';
+        $data['channelType'] ='08';
+        ksort($data);
+        $data['signature'] = static::rsaSign(sha1(static::encode($data)), $cert['pkey']);
+
+        $res = http_request($config['trade_url'], $data, true);
+
+        return ['data' => $res];
     }
 
     protected static function encode($data) {
@@ -88,6 +131,6 @@ class NowpayController extends Controller {
         $key = openssl_get_privatekey($prikey);
         openssl_sign($str, $sign, $key);
         openssl_free_key($key);
-        return urlencode(base64_encode($sign));
+        return base64_encode($sign);
     }
 }

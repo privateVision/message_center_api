@@ -160,6 +160,11 @@ print "\n------------ api/pay/nowpay/wechat -------------\n"
 Http.request('api/pay/nowpay/wechat', access_token = ACCESS_TOKEN, order_id = ORDER_ID);
 """
 #######################################################################################################################
-
+"""
 print "\n------------ api/pay/nowpay/alipay -------------\n"
 Http.request('api/pay/nowpay/alipay', access_token = ACCESS_TOKEN, order_id = ORDER_ID);
+"""
+#######################################################################################################################
+
+print "\n----------- api/pay/nowpay/unionpay ------------\n"
+Http.request('api/pay/nowpay/unionpay', access_token = ACCESS_TOKEN, order_id = ORDER_ID);

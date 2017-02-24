@@ -22,9 +22,9 @@ class Controller extends \App\Controller
                 throw ToolException(ToolException::Error, 'token错误');
             }
 
-            $this->before($request, $parameter);
-            $response = $this->$action($request, $parameter);
-            $this->after($request, $parameter);
+            $this->before($request);
+            $response = $this->$action($request);
+            $this->after($request);
 
             return array('code' => ToolException::Success, 'msg' => null, 'data' => $response);
         } catch (ToolException $e) {
@@ -35,12 +35,11 @@ class Controller extends \App\Controller
         }
     }
 
-    public function before(Request $request, Parameter $parameter) {
+    public function before(Request $request) {
 
     }
 
-    public function after(Request $request, Parameter $parameter) {
+    public function after(Request $request) {
 
     }
-
 }

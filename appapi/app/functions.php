@@ -22,6 +22,10 @@ function uuid() {
 	return md5(uniqid() . rand(0, 999999) . microtime());
 }
 
+function order_notify($order) {
+    
+}
+
 function send_sms($mobile, $content, $code = 0) {
 	return Redis::lpush("queue", json_encode([
         'topic' => 'sendsms', 

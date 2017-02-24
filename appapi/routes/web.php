@@ -23,7 +23,7 @@ $app->post('pay_callback/nowpay_wechat', 'PayCallback\\NowpayWechatController@Ca
 // 现代支付，支付宝支付回调
 $app->post('pay_callback/nowpay_alipay', 'PayCallback\\NowpayAlipayController@CallbackAction');
 // 现代支付，银联支付回调
-$app->post('pay_callback/nowpay_union', 'PayCallback\\NowpayUnionController@CallbackAction');
+$app->post('pay_callback/nowpay_unionpay', 'PayCallback\\NowpayUnionpayController@CallbackAction');
 
 $app->group(['prefix' => 'api'], function () use ($app) {
 	$app->post('app/initialize', 'Api\\AppController@InitializeAction');
@@ -38,5 +38,5 @@ $app->group(['prefix' => 'api'], function () use ($app) {
     $app->post('pay/order/new', 'Api\\Pay\\OrderController@NewAction');
     $app->post('pay/nowpay/wechat', 'Api\\Pay\\NowpayController@WechatAction');
     $app->post('pay/nowpay/alipay', 'Api\\Pay\\NowpayController@AlipayAction');
-    $app->post('pay/nowpay/union', 'Api\\Pay\\NowpayController@UnionAction');
+    $app->post('pay/nowpay/unionpay', 'Api\\Pay\\NowpayController@UnionpayAction');
 });
