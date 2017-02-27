@@ -8,11 +8,10 @@ use App\Parameter;
 
 class Controller extends \App\Controller
 {
-    public function execute(Request $request, $action, Parameter $parameters) {
+    public function execute(Request $request, $action, $parameters) {
         try {
             // 两个公共参数：_appid, _token
             $postdata = $_POST;
-
             $token = @$postdata['_token'];
             unset($postdata['_token']);
             ksort($postdata);
@@ -20,15 +19,14 @@ class Controller extends \App\Controller
             $_token = md5(http_build_query($postdata) . env('APP_' . @$postdata['_appid']));
 
             if($_token !== $token) {
-                throw ToolException(ToolException::Error, 'token错误');
+                throw new ToolException(ToolException::Error, 'token错误');
             }
 
-            log_info('request', ['route' => $request->path(), 'appid' => $appid, 'param' => $postdata]);
-
-            $parameter = new Parameter($postdata);
+           log_info('request', ['route' => $request->path(), 'appid' => $postdata["_appid"], 'param' => $postdata]);
+            //$parameter = new Parameter($postdata);
 
             $this->before($request);
-            $response = $this->$action($request, $parameter);
+            $response = $this->$action($request, $postdata);
             $this->after($request);
 
             return array('code' => ToolException::Success, 'msg' => null, 'data' => $response);
@@ -39,12 +37,9 @@ class Controller extends \App\Controller
             log_error('requestError', ['message' => $e->getMessage(), 'code' => $e->getCode()]);
             return array('code' => ToolException::Error, 'msg' => $e->getMessage(), 'data' => null);
         } catch(\Exception $e) {
-<<<<<<< HEAD
-            return array('code' => ToolException::Error, 'msg' => sprintf('%s in %s(%d)', $e->getMessage(), $e->getFile(), $e->getLine()), 'data' => null);
-=======
+
             log_error('systemError', ['message' => $e->getMessage(), 'code' => $e->getCode(), 'file' => $e->getFile(), 'line' => $e->getLine()]);
             return array('code' => ToolException::Error, 'msg' => 'system error', 'data' => null);
->>>>>>> d76510107536e31d55936d244d24839ef3ecc526
         }
     }
 

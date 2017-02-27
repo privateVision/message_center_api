@@ -8,14 +8,10 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 
 class ExampleListener
 {
-    /**
-     * Create the event listener.
-     *
-     * @return void
-     */
+
     public function __construct()
     {
-        //
+
     }
 
     /**
@@ -27,5 +23,7 @@ class ExampleListener
     public function handle(ExampleEvent $event)
     {
         //
+        $event->broadcastOn();
+        echo "消息duilie";
     }
 }
