@@ -10,36 +10,49 @@ class Controller extends \App\Controller
 {
     public function execute(Request $request, $action, Parameter $parameters) {
         try {
+            // 两个公共参数：_appid, _token
             $postdata = $_POST;
 
-            $token = @$postdata['token'];
-            unset($postdata['token']);
+            $token = @$postdata['_token'];
+            unset($postdata['_token']);
             ksort($postdata);
 
-            $_token = md5(http_build_query($postdata) . env('TOOL_KEY'));
+            $_token = md5(http_build_query($postdata) . env('APP_' . @$postdata['_appid']));
 
             if($_token !== $token) {
                 throw ToolException(ToolException::Error, 'token错误');
             }
 
-            $this->before($request, $parameter);
+            log_info('request', ['route' => $request->path(), 'appid' => $appid, 'param' => $postdata]);
+
+            $parameter = new Parameter($postdata);
+
+            $this->before($request);
             $response = $this->$action($request, $parameter);
-            $this->after($request, $parameter);
+            $this->after($request);
 
             return array('code' => ToolException::Success, 'msg' => null, 'data' => $response);
         } catch (ToolException $e) {
+            log_error('requestError', ['message' => $e->getMessage(), 'code' => $e->getCode()]);
             return array('code' => $e->getCode(), 'msg' => $e->getMessage(), 'data' => null);
+        } catch (ApiException $e) {
+            log_error('requestError', ['message' => $e->getMessage(), 'code' => $e->getCode()]);
+            return array('code' => ToolException::Error, 'msg' => $e->getMessage(), 'data' => null);
         } catch(\Exception $e) {
+<<<<<<< HEAD
             return array('code' => ToolException::Error, 'msg' => sprintf('%s in %s(%d)', $e->getMessage(), $e->getFile(), $e->getLine()), 'data' => null);
+=======
+            log_error('systemError', ['message' => $e->getMessage(), 'code' => $e->getCode(), 'file' => $e->getFile(), 'line' => $e->getLine()]);
+            return array('code' => ToolException::Error, 'msg' => 'system error', 'data' => null);
+>>>>>>> d76510107536e31d55936d244d24839ef3ecc526
         }
     }
 
-    public function before(Request $request, Parameter $parameter) {
+    public function before(Request $request) {
 
     }
 
-    public function after(Request $request, Parameter $parameter) {
+    public function after(Request $request) {
 
     }
-
 }

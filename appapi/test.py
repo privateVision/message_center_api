@@ -75,8 +75,8 @@ class Http:
 		data = urllib.urlencode(data)
 		return Crypt3DES.encrypt(data);
 
-
-print "------------ api/app/initialize ------------"
+####################################################################################################################### 初始化
+print "\n------------ api/app/initialize ------------\n"
 data = Http.request('api/app/initialize', 
 	imei = '3447264d06ff60e9cc415229a0583a29', 
 	rid = RID, 
@@ -91,16 +91,17 @@ if data == None:
 	sys.exit(0)
 	
 ACCESS_TOKEN = data['access_token']
-
+####################################################################################################################### 自动登陆
 """
-print "\n-----------api/account/loginToken-----------\n"
-data = Http.request('api/account/loginToken', access_token = ACCESS_TOKEN, token = open('.token').read());
+print "\n-----------api/account/login_token-----------\n"
+data = Http.request('api/account/login_token', access_token = ACCESS_TOKEN, token = open('.token').read());
 if data == None:
 	print "\033[1;31;40m自动登陆失败，程序退出 \033[0m"
 	sys.exit(0)
 
 open('.token', 'w').write(data['token']);
 """
+####################################################################################################################### 生成用户名
 """
 print "\n---------- api/account/username ----------\n"
 data = Http.request('api/account/username', access_token = ACCESS_TOKEN)
@@ -109,11 +110,18 @@ print "\n---------- api/account/register ----------\n"
 if data != None:
 	Http.request('api/account/register', access_token = ACCESS_TOKEN, username = data['username'], password = 123456)
 """
-"""
+####################################################################################################################### 用户名或手机号码登陆
+
 print "\n-------------- api/account/login --------------\n"
 Http.request('api/account/login', access_token = ACCESS_TOKEN, username = 'a81922755', password = 123456);
+<<<<<<< HEAD
 """
 
+=======
+
+####################################################################################################################### 云片偷偷发短信回调
+"""
+>>>>>>> d76510107536e31d55936d244d24839ef3ecc526
 print "\n--------------- yunpian/callback ---------------\n"
 data = {
 	"base_extend": "8888",
@@ -134,9 +142,45 @@ m.update(str)
 data['_sign'] = m.hexdigest()
 req = urllib2.Request(BASEURL + 'yunpian/callback', urllib.urlencode({"sms_reply": json.dumps(data)}))
 print urllib2.urlopen(req).read()
+<<<<<<< HEAD
 print "\n------------ api/account/phoneLogin ------------\n"
 Http.request('api/account/phoneLogin', access_token = ACCESS_TOKEN);
 
 
 print "\n-------------- api/account/logout --------------\n"
 Http.request('api/account/logout', access_token = ACCESS_TOKEN);
+=======
+print "\n------------ api/account/login_phone ------------\n"
+Http.request('api/account/login_phone', access_token = ACCESS_TOKEN);
+"""
+####################################################################################################################### 用户退出
+"""
+print "\n-------------- api/account/logout --------------\n"
+Http.request('api/account/logout', access_token = ACCESS_TOKEN);
+"""
+####################################################################################################################### 创建订单
+
+print "\n-------------- api/pay/order/new ---------------\n"
+data = Http.request('api/pay/order/new', access_token = ACCESS_TOKEN, fee = 10, body = "10 Gold", subject = "10 Gold", notify_url = "http://www.baidu.com/", vorderid = str(random.random())[2:]);
+if data == None:
+	sys.exit(0)
+
+ORDER_ID = data['order_id'];
+
+####################################################################################################################### 微信支付
+"""
+print "\n------------ api/pay/nowpay/wechat -------------\n"
+Http.request('api/pay/nowpay/wechat', access_token = ACCESS_TOKEN, order_id = ORDER_ID);
+"""
+####################################################################################################################### 支付宝支付
+"""
+print "\n------------ api/pay/nowpay/alipay -------------\n"
+Http.request('api/pay/nowpay/alipay', access_token = ACCESS_TOKEN, order_id = ORDER_ID);
+"""
+####################################################################################################################### 银联支付
+
+print "\n----------- api/pay/nowpay/unionpay ------------\n"
+Http.request('api/pay/nowpay/unionpay', access_token = ACCESS_TOKEN, order_id = ORDER_ID);
+
+#######################################################################################################################
+>>>>>>> d76510107536e31d55936d244d24839ef3ecc526
