@@ -1,6 +1,7 @@
 # _*_ coding: utf-8 _*_
 import logging
 
+
 service_logger = logging.getLogger('message_service')
 service_logger.setLevel(logging.DEBUG)
 fh = logging.FileHandler('./logs/message_service_api.log')

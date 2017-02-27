@@ -2,6 +2,7 @@
 import base64
 import hashlib
 import json
+import urlparse
 
 from Crypto.Cipher import DES3
 
@@ -48,3 +49,25 @@ def decrypt_des(data, des_key):
     str = des3.decrypt(data)
     result_str = str[0:-ord(str[-1])]
     return result_str
+
+
+def url2Dict(url):
+    url = "http://prefix.com/?%s" % (url,)
+    query = urlparse.urlparse(url).query
+    return dict([(k, v[0]) for k, v in urlparse.parse_qs(query).items()])
+
+
+def sdk_api_check_key(request):
+    appid = request.form['appid']
+    param = request.form['param']
+    from run import mysql_session
+    find_prikey_sql = 'select priKey from procedures where pid = %s' % (appid,)
+    app_info = mysql_session.execute(find_prikey_sql).first()
+    if app_info:
+        pri_key = app_info['priKey']
+        m = hashlib.md5()
+        m.update(pri_key)
+        md5_key = m.hexdigest()
+        sign_str = "%s%s" % (md5_key[0:16], md5_key[0:8])
+        return url2Dict(decrypt_des(param, sign_str))
+    return False

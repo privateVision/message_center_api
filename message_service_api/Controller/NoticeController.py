@@ -8,11 +8,13 @@ from mongoengine import Q
 from Controller import service_logger
 from Controller.BaseController import response_data
 from MongoModel.MessageModel import UsersMessage
+from MongoModel.UserMessageModel import UserMessage
 from MongoModel.UserReadMessageLogModel import UserReadMessageLog
 from RequestForm.GetMessagesRequestForm import GetMessagesRequestForm
 from RequestForm.PostNoticesRequestForm import PostNoticesRequestForm
 from RequestForm.PutMessageReadRequestForm import PutMessageReadRequestForm
 from Service.StorageService import system_announcements_persist
+from Service.UsersService import getNoticeMessageDetailInfo, getUcidByAccessToken
 
 notice_controller = Blueprint('NoticeController', __name__)
 
@@ -90,40 +92,42 @@ def v4_cms_set_post_notice_open():
 
 
 # SDK 获取公告列表
-@notice_controller.route('/v4/notice', methods=['GET'])
+@notice_controller.route('/v4/notices', methods=['POST'])
 def v4_sdk_get_notice_list():
-    form = GetMessagesRequestForm(request.args)  # GET 参数封装
-    if not form.validate():
-        print form.errors
+    appid = request.form['appid']
+    param = request.form['param']
+    if appid is None or param is None:
         return response_data(400, 400, '客户端请求错误')
-    else:
-        start_index = (form.data['page'] - 1) * form.data['count']
-        end_index = start_index + form.data['count']
-        # 查询用户相关的公告列表
-        message_list_total_count = UsersMessage.objects(
-            Q(type='notice')
-            & Q(closed=0)
-            & ((Q(app__apk_id=form.data['apk_id'])
-                & Q(app__zone_id_list=form.data['area'])
-                & Q(rtype=form.data['user_type'])
-                & Q(vip=form.data['vip']))
-               | Q(users=form.data['ucid']))) \
-            .count()
-        message_list = UsersMessage.objects(
-            Q(type='notice')
-            & Q(closed=0)
-            & ((Q(app__apk_id=form.data['apk_id'])
-                & Q(app__zone_id_list=form.data['area'])
-                & Q(rtype=form.data['user_type'])
-                & Q(vip=form.data['vip']))
-               | Q(users=form.data['ucid']))) \
-                           .order_by('-create_time') \
-            [start_index:end_index]
-        data = {
-            "total_count": message_list_total_count,
-            "data": message_list
-        }
-        return response_data(http_code=200, data=data)
+    from Utils.EncryptUtils import sdk_api_check_key
+    params = sdk_api_check_key(request)
+    if params:
+        ucid = getUcidByAccessToken(params['access_token'])
+        if ucid:
+            page = params['page'] if params.has_key('page') and params['page'] else 1
+            count = params['count'] if params.has_key('count') and params['count'] else 10
+            start_index = (page - 1) * count
+            end_index = start_index + count
+            # 查询用户相关的公告列表
+            message_list_total_count = UserMessage.objects(
+                Q(type='notice')
+                & Q(closed=0)
+                & Q(ucid=ucid)) \
+                .count()
+            message_list = UserMessage.objects(
+                Q(type='notice')
+                & Q(closed=0)
+                & Q(ucid=ucid)).order_by('-create_time')[start_index:end_index]
+            data_list = []
+            for message in message_list:
+                message_info = getNoticeMessageDetailInfo(message['mysql_id'])
+                data_list.append(message_info)
+            data = {
+                "total_count": message_list_total_count,
+                "data": data_list
+            }
+            return response_data(http_code=200, data=data)
+        else:
+            return response_data(400, 400, '根据access_token获取用户id失败，请重新登录')
 
 
 # SDK 设置消息已读（消息通用）
