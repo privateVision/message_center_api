@@ -10,9 +10,7 @@ from Controller.BaseController import response_data
 from MongoModel.MessageModel import UsersMessage
 from MongoModel.UserMessageModel import UserMessage
 from MongoModel.UserReadMessageLogModel import UserReadMessageLog
-from RequestForm.GetMessagesRequestForm import GetMessagesRequestForm
 from RequestForm.PostNoticesRequestForm import PostNoticesRequestForm
-from RequestForm.PutMessageReadRequestForm import PutMessageReadRequestForm
 from Service.StorageService import system_announcements_persist
 from Service.UsersService import getNoticeMessageDetailInfo, getUcidByAccessToken
 

@@ -5,11 +5,11 @@ import threading
 from Controller import service_logger
 from MongoModel.MessageModel import UsersMessage
 from MongoModel.UserMessageModel import UserMessage
-from Service.UsersService import get_game_and_area_users
+from Service.UsersService import get_game_and_area_and_user_type_and_vip_users
 
 
 def add_message_to_user_message_list(game, users_type, vip_user, specify_user, type, msg_id):
-    users_list = get_game_and_area_users(game, users_type, vip_user)
+    users_list = get_game_and_area_and_user_type_and_vip_users(game, users_type, vip_user)
     try:
         for user in users_list:
             user_message = UserMessage()
