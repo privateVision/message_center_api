@@ -57,7 +57,7 @@ def v4_cms_update_post_notice():
         return response_data(400, 400, '客户端请求错误')
     else:
         try:
-            system_announcements_persist(form.data)
+            system_announcements_persist(form.data, False)
         except Exception, err:
             service_logger.error(err.message)
     return response_data(http_code=200)
@@ -120,7 +120,30 @@ def v4_sdk_get_notice_list():
             data_list = []
             for message in message_list:
                 message_info = getNoticeMessageDetailInfo(message['mysql_id'])
-                data_list.append(message_info)
+                message_resp = {
+                    "meta_info": {},
+                    "head": {},
+                    "body": {}
+                }
+                message_resp['meta_info']['app'] = message_info['app']
+                message_resp['meta_info']['rtype'] = message_info['rtype']
+                message_resp['meta_info']['vip'] = message_info['vip']
+                message_resp['head']['title'] = message_info['title']
+                message_resp['head']['type'] = message_info['type']
+                message_resp['head']['atype'] = message_info['atype']
+                message_resp['body']['content'] = message_info['content']
+                message_resp['body']['button_content'] = message_info['button_content']
+                message_resp['body']['button_type'] = message_info['button_type']
+                message_resp['body']['button_url'] = message_info['button_url']
+                message_resp['body']['end_time'] = message_info['end_time']
+                message_resp['body']['enter_status'] = message_info['enter_status']
+                message_resp['body']['img'] = message_info['img']
+                message_resp['body']['mysql_id'] = message_info['mysql_id']
+                message_resp['body']['open_type'] = message_info['open_type']
+                message_resp['body']['start_time'] = message_info['start_time']
+                message_resp['body']['url'] = message_info['url']
+                message_resp['body']['url_type'] = message_info['url_type']
+                data_list.append(message_resp)
             data = {
                 "total_count": message_list_total_count,
                 "data": data_list
@@ -133,26 +156,29 @@ def v4_sdk_get_notice_list():
 # SDK 设置消息已读（消息通用）
 @notice_controller.route('/v4/message/read', methods=['POST'])
 def v4_sdk_set_notice_have_read():
-    form = PutMessageReadRequestForm(request.form)  # POST 表单参数封装
-    if not form.validate():
-        print form.errors
+    appid = request.form['appid']
+    param = request.form['param']
+    if appid is None or param is None:
         return response_data(400, 400, '客户端请求错误')
-    else:
-        message_info = form.data['message_info']
-        message_info_json = json.loads(message_info)
-        for message in message_info_json:
-            for message_id in message['message_ids']:
-                is_exist = UserReadMessageLog.objects(Q(type=message['type'])
-                                     & Q(message_id=message_id)
-                                     & Q(ucid=form.data['ucid'])).count()
-                print is_exist
-                if is_exist == 0:
-                    user_read_message_log = UserReadMessageLog(type=message['type'],
-                                                               message_id=message_id,
-                                                               ucid=form.data['ucid'])
-                    try:
-                        user_read_message_log.save()
-                    except Exception as err:
-                        service_logger.error(err)
-                        return response_data(http_code=500, message="服务器出错啦/(ㄒoㄒ)/~~")
-        return response_data(http_code=204)
+    from Utils.EncryptUtils import sdk_api_check_key
+    params = sdk_api_check_key(request)
+    ucid = params['ucid']
+    message_info = params['message_info']
+    if message_info['type'] is None or message_info['message_ids'] is None:
+        return response_data(400, 400, '客户端请求错误')
+    message_info_json = json.loads(message_info)
+    for message in message_info_json:
+        for message_id in message['message_ids']:
+            is_exist = UserReadMessageLog.objects(Q(type=message['type'])
+                                                  & Q(message_id=message_id)
+                                                  & Q(ucid=ucid)).count()
+            if is_exist == 0:
+                user_read_message_log = UserReadMessageLog(type=message['type'],
+                                                           message_id=message_id,
+                                                           ucid=ucid)
+                try:
+                    user_read_message_log.save()
+                except Exception as err:
+                    service_logger.error(err)
+                    return response_data(http_code=500, message="服务器出错啦/(ㄒoㄒ)/~~")
+    return response_data(http_code=204)

@@ -5,11 +5,11 @@ import threading
 from Controller import service_logger
 from MongoModel.MessageModel import UsersMessage
 from MongoModel.UserMessageModel import UserMessage
-from Service.UsersService import getGameAndAreaUsers
+from Service.UsersService import get_game_and_area_users
 
 
 def add_message_to_user_message_list(game, users_type, vip_user, specify_user, type, msg_id):
-    users_list = getGameAndAreaUsers(game, users_type, vip_user)
+    users_list = get_game_and_area_users(game, users_type, vip_user)
     try:
         for user in users_list:
             user_message = UserMessage()
@@ -22,7 +22,16 @@ def add_message_to_user_message_list(game, users_type, vip_user, specify_user, t
         service_logger.error(err.message)
 
 
-def system_announcements_persist(data_json=None):
+def add_to_every_related_users_message_list(users_message):
+    add_user_message_thread = threading.Thread(target=add_message_to_user_message_list,
+                                               args=(users_message.app, users_message.rtype,
+                                                     users_message.vip, users_message.users,
+                                                     users_message.type, users_message.mysql_id))
+    add_user_message_thread.setDaemon(True)
+    add_user_message_thread.start()
+
+
+def system_announcements_persist(data_json=None, update_user_message=True):
     if data_json is not None:
         users_message = UsersMessage()
         users_message.id = '%s%s' % ('notice', data_json['id'])
@@ -53,15 +62,11 @@ def system_announcements_persist(data_json=None):
             users_message.save()
         except Exception, err:
             service_logger.error(err.message)
-        add_user_message_thread = threading.Thread(target=add_message_to_user_message_list,
-                                                   args=(users_message.app, users_message.rtype,
-                                                         users_message.vip, users_message.users,
-                                                         users_message.type, users_message.mysql_id))
-        add_user_message_thread.setDaemon(True)
-        add_user_message_thread.start()
+        if update_user_message:
+            add_to_every_related_users_message_list(users_message)
 
 
-def system_broadcast_persist(data_json=None):
+def system_broadcast_persist(data_json=None, update_user_message=True):
     if data_json is not None:
         users_message = UsersMessage()
         users_message.id = '%s%s' % ('broadcast', data_json['id'])
@@ -81,9 +86,11 @@ def system_broadcast_persist(data_json=None):
             users_message.save()
         except Exception, err:
             service_logger.error(err.message)
+        if update_user_message:
+            add_to_every_related_users_message_list(users_message)
 
 
-def system_message_persist(data_json=None):
+def system_message_persist(data_json=None, update_user_message=True):
     if data_json is not None:
         users_message = UsersMessage()
         users_message.id = '%s%s' % ('message', data_json['id'])
@@ -105,3 +112,5 @@ def system_message_persist(data_json=None):
             users_message.save()
         except Exception, err:
             service_logger.error(err.message)
+        if update_user_message:
+            add_to_every_related_users_message_list(users_message)
