@@ -11,5 +11,6 @@ class UserMessage(DynamicDocument):
     type = StringField(required=True)
     mysql_id = IntField(required=True)
     closed = IntField(required=True, default=0)
+    is_read = IntField(required=True, default=0)
     create_time = DateTimeField(required=True, default=datetime.now())
 

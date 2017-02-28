@@ -34,11 +34,15 @@ def get_vip_users(vip):
     pass
 
 
-def getNoticeMessageDetailInfo(msg_id=None):
+def get_notice_message_detail_info(msg_id=None):
     return UsersMessage.objects(Q(type='notice') & Q(mysql_id=msg_id)).first()
 
 
-def getUcidByAccessToken(access_token=None):
+def get_broadcast_message_detail_info(msg_id=None):
+    return UsersMessage.objects(Q(type='broadcast') & Q(mysql_id=msg_id)).first()
+
+
+def get_ucid_by_access_token(access_token=None):
     from run import mysql_session
     find_ucid_sql = "select ucid from session where access_token = '%s'" % (access_token,)
     user_info = mysql_session.execute(find_ucid_sql).first()

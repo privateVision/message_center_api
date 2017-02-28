@@ -8,9 +8,10 @@ from mongoengine import Q
 from Controller import service_logger
 from Controller.BaseController import response_data
 from MongoModel.MessageModel import UsersMessage
-from RequestForm.GetMessagesRequestForm import GetMessagesRequestForm
+from MongoModel.UserMessageModel import UserMessage
 from RequestForm.PostBroadcastsRequestForm import PostBroadcastsRequestForm
 from Service.StorageService import system_broadcast_persist
+from Service.UsersService import get_ucid_by_access_token, get_broadcast_message_detail_info
 
 broadcast_controller = Blueprint('BroadcastController', __name__)
 
@@ -40,7 +41,7 @@ def v4_cms_post_broadcast():
         return response_data(http_code=200)
 
 
-# CMS 广播
+# CMS 更新广播
 @broadcast_controller.route('/v4/broadcast', methods=['PUT'])
 def v4_cms_update_broadcast():
     pass
@@ -72,6 +73,7 @@ def v4_cms_delete_post_broadcast():
         return response_data(400, 400, '客户端请求错误')
     try:
         UsersMessage.objects(Q(type='broadcast') & Q(mysql_id=broadcast_id)).delete()
+        UserMessage.objects(Q(type='broadcast') & Q(mysql_id=broadcast_id)).delete()
     except Exception, err:
         service_logger.error(err.message)
         return response_data(http_code=500, code=500002, message="删除广播失败")
@@ -79,37 +81,56 @@ def v4_cms_delete_post_broadcast():
 
 
 # SDK 获取广播列表
-@broadcast_controller.route('/v4/broadcast', methods=['GET'])
+@broadcast_controller.route('/v4/broadcasts', methods=['POST'])
 def v4_sdk_get_broadcast_list():
-    form = GetMessagesRequestForm(request.args)  # GET 参数封装
-    if not form.validate():
-        print form.errors
+    appid = request.form['appid']
+    param = request.form['param']
+    if appid is None or param is None:
         return response_data(400, 400, '客户端请求错误')
-    else:
-        start_index = (form.data['page'] - 1) * form.data['count']
-        end_index = start_index + form.data['count']
-        # 查询用户相关的公告列表
-        message_list_total_count = UsersMessage.objects(
-            Q(type='broadcast')
-            & Q(closed=0)
-            & ((Q(app__apk_id=form.data['apk_id'])
-                & Q(app__zone_id_list=form.data['area'])
-                & Q(rtype=form.data['user_type'])
-                & Q(vip=form.data['vip']))
-               | Q(users=form.data['ucid']))) \
-            .count()
-        message_list = UsersMessage.objects(
-            Q(type='broadcast')
-            & Q(closed=0)
-            & ((Q(app__apk_id=form.data['apk_id'])
-                & Q(app__zone_id_list=form.data['area'])
-                & Q(rtype=form.data['user_type'])
-                & Q(vip=form.data['vip']))
-               | Q(users=form.data['ucid']))) \
-                           .order_by('-create_time') \
-            [start_index:end_index]
-        data = {
-            "total_count": message_list_total_count,
-            "data": message_list
-        }
-        return response_data(http_code=200, data=data)
+    from Utils.EncryptUtils import sdk_api_check_key
+    params = sdk_api_check_key(request)
+    if params:
+        ucid = get_ucid_by_access_token(params['access_token'])
+        if ucid:
+            page = params['page'] if params.has_key('page') and params['page'] else 1
+            count = params['count'] if params.has_key('count') and params['count'] else 10
+            start_index = (page - 1) * count
+            end_index = start_index + count
+            # 查询用户相关的公告列表
+            message_list_total_count = UserMessage.objects(
+                Q(type='broadcast')
+                & Q(closed=0)
+                & Q(is_read=0)
+                & Q(ucid=ucid)) \
+                .count()
+            message_list = UserMessage.objects(
+                Q(type='broadcast')
+                & Q(closed=0)
+                & Q(is_read=0)
+                & Q(ucid=ucid)).order_by('-create_time')[start_index:end_index]
+            data_list = []
+            for message in message_list:
+                message_info = get_broadcast_message_detail_info(message['mysql_id'])
+                message_resp = {
+                    "meta_info": {},
+                    "head": {},
+                    "body": {}
+                }
+                message_resp['meta_info']['app'] = message_info['app']
+                message_resp['meta_info']['rtype'] = message_info['rtype']
+                message_resp['meta_info']['vip'] = message_info['vip']
+                message_resp['head']['title'] = message_info['title']
+                message_resp['head']['type'] = message_info['type']
+                message_resp['head']['mysql_id'] = message_info['mysql_id']
+                message_resp['body']['content'] = message_info['content']
+                message_resp['body']['start_time'] = message_info['start_time']
+                message_resp['body']['end_time'] = message_info['end_time']
+                message_resp['body']['close_time'] = message_info['close_time']
+                data_list.append(message_resp)
+            data = {
+                "total_count": message_list_total_count,
+                "data": data_list
+            }
+            return response_data(http_code=200, data=data)
+        else:
+            return response_data(400, 400, '根据access_token获取用户id失败，请重新登录')
