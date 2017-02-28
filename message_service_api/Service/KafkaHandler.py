@@ -7,10 +7,10 @@ from Service.StorageService import system_announcements_persist, system_broadcas
 
 def kafka_consume_func(kafka_consumer):
     for msg in kafka_consumer:
-        ConsumeHandler(msg)
+        consume_handler(msg)
 
 
-def ConsumeHandler(message=None):
+def consume_handler(message=None):
     message_info = json.loads(message.value)
     service_logger.info(message_info['type'])
     service_logger.info(message.value)

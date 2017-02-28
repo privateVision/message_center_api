@@ -60,8 +60,8 @@ def url2Dict(url):
 def sdk_api_check_key(request):
     appid = request.form['appid']
     param = request.form['param']
-    from run import mysql_session
     find_prikey_sql = 'select priKey from procedures where pid = %s' % (appid,)
+    from run import mysql_session
     app_info = mysql_session.execute(find_prikey_sql).first()
     if app_info:
         pri_key = app_info['priKey']

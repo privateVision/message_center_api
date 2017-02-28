@@ -10,6 +10,7 @@ from Service.UsersService import get_game_and_area_and_user_type_and_vip_users
 
 def add_message_to_user_message_list(game, users_type, vip_user, specify_user, type, msg_id):
     users_list = get_game_and_area_and_user_type_and_vip_users(game, users_type, vip_user)
+    users_list.extend(specify_user)
     try:
         for user in users_list:
             user_message = UserMessage()

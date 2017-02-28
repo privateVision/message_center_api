@@ -13,6 +13,7 @@ from Service.KafkaHandler import kafka_consume_func
 from config.config import config
 
 import sys
+
 reload(sys)
 sys.setdefaultencoding('utf-8')
 
@@ -29,6 +30,8 @@ def create_app():
 
     db = MongoEngine()  # 建立MongoDB Engine
     db.init_app(app)
+
+    app.mysql_session = init_mysql_db(app)
 
     @app.before_request
     def before_request():
@@ -58,6 +61,7 @@ kafka_consumer_thread.setDaemon(True)
 kafka_consumer_thread.start()
 
 init_blueprint(app)     # 注册蓝图模块
+
 
 if __name__ == '__main__':
     host = app.config.get('HOST')
