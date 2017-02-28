@@ -95,3 +95,4 @@ ENV/
 appapi/.env
 appapi/test.py
 appapi/.token
+config.py
