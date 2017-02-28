@@ -5,8 +5,8 @@ from flask import Blueprint
 from flask import request
 from mongoengine import Q
 
-from Controller import service_logger
 from Controller.BaseController import response_data
+from MiddleWare import service_logger
 from MongoModel.AppRulesModel import AppVipRules
 from MongoModel.AppsModel import Apps
 from MongoModel.MessageModel import UsersMessage
@@ -88,3 +88,13 @@ def v4_cms_message_revocation():
         service_logger.error(err.message)
         return response_data(http_code=500, code=500003, message="mongo写入失败")
     return response_data(http_code=200, message="消息撤回成功")
+
+
+# 心跳
+@app_controller.route('/v4/app/heartbeat', methods=['POST'])
+def v4_sdk_heartbeat():
+    from Utils.EncryptUtils import generate_checksum
+    check_result, check_exception = generate_checksum(request)
+    if not check_result:
+        return check_exception
+    return response_data(data=None)

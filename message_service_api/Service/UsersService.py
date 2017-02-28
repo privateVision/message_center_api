@@ -7,15 +7,16 @@ from MongoModel.MessageModel import UsersMessage
 
 def get_game_and_area_and_user_type_and_vip_users(game=None, user_type=None, vips=None):
     game_users_list = []
-    for game_info in game:
-        if game_info.has_key('zone_id_list'):
-            for zone in game_info['zone_id_list']:
-                find_users_in_game_area_sql = "select ucid from roleDatas where vid = %s and zoneName = '%s'"\
-                                              % (game_info['apk_id'], zone)
-                from run import mysql_session
-                tmp_user_list = mysql_session.execute(find_users_in_game_area_sql)
-                for ucid in tmp_user_list:
-                    game_users_list.append(ucid[0])
+    if game is not None:
+        for game_info in game:
+            if game_info.has_key('zone_id_list'):
+                for zone in game_info['zone_id_list']:
+                    find_users_in_game_area_sql = "select ucid from roleDatas where vid = %s and zoneName = '%s'"\
+                                                  % (game_info['apk_id'], zone)
+                    from run import mysql_session
+                    tmp_user_list = mysql_session.execute(find_users_in_game_area_sql)
+                    for ucid in tmp_user_list:
+                        game_users_list.append(ucid[0])
     user_type_users_list = get_user_type_users(user_type)
     vip_users_list = get_vip_users(vips)
     uses_list = list(set(user_type_users_list).intersection(set(game_users_list)).intersection(set(vip_users_list)))
@@ -24,24 +25,26 @@ def get_game_and_area_and_user_type_and_vip_users(game=None, user_type=None, vip
 
 def get_user_type_users(user_type):
     users_list = []
-    for type in user_type:
-        find_users_by_user_type_sql = "select ucid from ucusers as u, retailers as r where u.rid = r.rid " \
-                                      "and r.rtype = %s" % (type,)
-        from run import mysql_session
-        origin_list = mysql_session.execute(find_users_by_user_type_sql)
-        for ucid in origin_list:
-            users_list.append(ucid[0])
+    if user_type is not None:
+        for type in user_type:
+            find_users_by_user_type_sql = "select ucid from ucusers as u, retailers as r where u.rid = r.rid " \
+                                          "and r.rtype = %s" % (type,)
+            from run import mysql_session
+            origin_list = mysql_session.execute(find_users_by_user_type_sql)
+            for ucid in origin_list:
+                users_list.append(ucid[0])
     return users_list
 
 
 def get_vip_users(vips):
     users_list = []
-    for vip in vips:
-        find_users_by_vip_sql = "select uid from ucusers_extend as u where u.vip = %s " % (vip,)
-        from run import mysql_session
-        origin_list = mysql_session.execute(find_users_by_vip_sql)
-        for ucid in origin_list:
-            users_list.append(ucid[0])
+    if vips is not None:
+        for vip in vips:
+            find_users_by_vip_sql = "select uid from ucusers_extend as u where u.vip = %s " % (vip,)
+            from run import mysql_session
+            origin_list = mysql_session.execute(find_users_by_vip_sql)
+            for ucid in origin_list:
+                users_list.append(ucid[0])
     return users_list
 
 

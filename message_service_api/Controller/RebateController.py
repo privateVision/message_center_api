@@ -10,19 +10,20 @@ from MiddleWare import service_logger
 from MongoModel.MessageModel import UsersMessage
 from MongoModel.UserMessageModel import UserMessage
 from RequestForm.PostCouponsRequestForm import PostCouponsRequestForm
+from RequestForm.PostRebatesRequestForm import PostRebatesRequestForm
 from Service.StorageService import system_coupon_persist
 
-coupon_controller = Blueprint('CouponController', __name__)
+rebate_controller = Blueprint('RebateController', __name__)
 
 
-# CMS 添加卡券
-@coupon_controller.route('/v4/coupon', methods=['POST'])
-def v4_cms_add_coupon():
+# CMS 添加优惠券
+@rebate_controller.route('/v4/rebate', methods=['POST'])
+def v4_cms_add_rebate():
     from Utils.EncryptUtils import generate_checksum
     check_result, check_exception = generate_checksum(request)
     if not check_result:
         return check_exception
-    form = PostCouponsRequestForm(request.form)  # POST 表单参数封装
+    form = PostRebatesRequestForm(request.form)  # POST 表单参数封装
     if not form.validate():
         service_logger.error(form.errors)
         return response_data(400, 400, '客户端请求错误')
@@ -30,7 +31,7 @@ def v4_cms_add_coupon():
         from run import kafka_producer
         try:
             message_info = {
-                "type": "coupon",
+                "type": "rebate",
                 "message": form.data
             }
             kafka_producer.send('message-service', json.dumps(message_info))
@@ -40,8 +41,8 @@ def v4_cms_add_coupon():
         return response_data(http_code=200)
 
 
-# CMS 更新卡券
-@coupon_controller.route('/v4/coupon', methods=['PUT'])
+# CMS 更新优惠券
+@rebate_controller.route('/v4/rebate', methods=['PUT'])
 def v4_cms_update_coupon():
     from Utils.EncryptUtils import generate_checksum
     check_result, check_exception = generate_checksum(request)
@@ -59,8 +60,8 @@ def v4_cms_update_coupon():
     return response_data(http_code=200)
 
 
-# CMS 删除卡券
-@coupon_controller.route('/v4/coupon', methods=['DELETE'])
+# CMS 删除优惠券
+@rebate_controller.route('/v4/rebate', methods=['DELETE'])
 def v4_cms_delete_coupon():
     from Utils.EncryptUtils import generate_checksum
     check_result, check_exception = generate_checksum(request)

@@ -5,8 +5,8 @@ from flask import Blueprint
 from flask import request
 from mongoengine import Q
 
-from Controller import service_logger
 from Controller.BaseController import response_data
+from MiddleWare import service_logger
 from MongoModel.MessageModel import UsersMessage
 from MongoModel.UserMessageModel import UserMessage
 from RequestForm.PostBroadcastsRequestForm import PostBroadcastsRequestForm

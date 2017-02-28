@@ -22,6 +22,16 @@ kafka_consumer_thread = threading.Thread(target=kafka_consume_func, args=(kafka_
 kafka_consumer_thread.setDaemon(True)
 kafka_consumer_thread.start()
 
+
+@app.errorhandler(404)
+def page_not_found(error):
+    return 'API Not Found', 404
+
+
+@app.errorhandler(500)
+def page_not_found(error):
+    return 'Server Exception', 500
+
 if __name__ == '__main__':
     host = app.config.get('HOST')
     port = app.config.get('PORT')

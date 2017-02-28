@@ -6,7 +6,7 @@ import urlparse
 
 from Crypto.Cipher import DES3
 
-from Controller import service_logger
+from MiddleWare import service_logger
 from Controller.BaseController import response_exception
 from run import app
 

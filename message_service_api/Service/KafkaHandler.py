@@ -3,15 +3,18 @@ import json
 
 from mongoengine import Q
 
-from Controller import service_logger
+from MiddleWare import service_logger
 from MongoModel.MessageRevocationModel import MessageRevocation
 from Service.StorageService import system_announcements_persist, system_broadcast_persist, system_message_persist, \
-    system_coupon_persist
+    system_coupon_persist, system_rebate_persist
 
 
 def kafka_consume_func(kafka_consumer):
     for msg in kafka_consumer:
-        consume_handler(msg)
+        try:
+            consume_handler(msg)
+        except Exception, err:
+            service_logger.error("处理kafka消息异常：%s" % (err.message,))
 
 
 def consume_handler(message=None):
@@ -30,8 +33,10 @@ def consume_handler(message=None):
         system_message_persist(message_info['message'])
     elif message_info['type'] == 'coupon':
         system_coupon_persist(message_info['message'])
+    elif message_info['type'] == 'rebate':
+        system_rebate_persist(message_info['message'])
     else:
-        pass
+        service_logger.warn("丢弃未处理的消息类型-%s-" % (message_info['type'],))
 
 
 def message_revocation_check(message_type=None, message_id=None):
