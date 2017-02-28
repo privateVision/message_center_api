@@ -115,3 +115,32 @@ def system_message_persist(data_json=None, update_user_message=True):
             service_logger.error(err.message)
         if update_user_message:
             add_to_every_related_users_message_list(users_message)
+
+
+def system_coupon_persist(data_json=None, update_user_message=True):
+    if data_json is not None:
+        users_message = UsersMessage()
+        users_message.id = '%s%s' % ('coupon', data_json['id'])
+        users_message.mysql_id = data_json['id']
+        users_message.type = 'coupon'
+        users_message.title = data_json['title']
+        users_message.is_time = data_json['is_time']
+        users_message.start_time = data_json['stime']
+        users_message.end_time = data_json['etime']
+        users_message.is_first = data_json['is_first']
+        users_message.info = data_json['info']
+        users_message.num = data_json['num']
+        users_message.full = data_json['full']
+        users_message.money = data_json['money']
+        users_message.method = data_json['method']
+        users_message.users = data_json['specify_user'].split(",")
+        users_message.rtype = data_json['users_type'].split(",")
+        users_message.app = json.loads(data_json['game'])
+        users_message.vip = data_json['vip_user'].split(",")
+        users_message.expire_at = users_message.end_time
+        try:
+            users_message.save()
+        except Exception, err:
+            service_logger.error(err.message)
+        if update_user_message:
+            add_to_every_related_users_message_list(users_message)

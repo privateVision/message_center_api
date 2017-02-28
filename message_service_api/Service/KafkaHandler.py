@@ -2,7 +2,8 @@
 import json
 
 from Controller import service_logger
-from Service.StorageService import system_announcements_persist, system_broadcast_persist, system_message_persist
+from Service.StorageService import system_announcements_persist, system_broadcast_persist, system_message_persist, \
+    system_coupon_persist
 
 
 def kafka_consume_func(kafka_consumer):
@@ -21,7 +22,7 @@ def consume_handler(message=None):
     elif message_info['type'] == 'message':
         system_message_persist(message_info['message'])
     elif message_info['type'] == 'coupon':
-        pass
+        system_coupon_persist(message_info['message'])
     else:
         pass
 

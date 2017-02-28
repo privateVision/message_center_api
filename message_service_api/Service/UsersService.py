@@ -8,13 +8,14 @@ from MongoModel.MessageModel import UsersMessage
 def get_game_and_area_and_user_type_and_vip_users(game=None, user_type=None, vips=None):
     game_users_list = []
     for game_info in game:
-        for zone in game_info['zone_id_list']:
-            find_users_in_game_area_sql = "select ucid from roleDatas where vid = %s and zoneName = '%s'"\
-                                          % (game_info['apk_id'], zone)
-            from run import mysql_session
-            list = mysql_session.execute(find_users_in_game_area_sql)
-            for ucid in list:
-                game_users_list.append(ucid[0])
+        if game_info.has_key('zone_id_list'):
+            for zone in game_info['zone_id_list']:
+                find_users_in_game_area_sql = "select ucid from roleDatas where vid = %s and zoneName = '%s'"\
+                                              % (game_info['apk_id'], zone)
+                from run import mysql_session
+                tmp_user_list = mysql_session.execute(find_users_in_game_area_sql)
+                for ucid in tmp_user_list:
+                    game_users_list.append(ucid[0])
     user_type_users_list = get_user_type_users(user_type)
     vip_users_list = get_vip_users(vips)
     uses_list = list(set(user_type_users_list).intersection(set(game_users_list)).intersection(set(vip_users_list)))

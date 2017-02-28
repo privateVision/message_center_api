@@ -16,8 +16,6 @@ app_controller = Blueprint('AppController', __name__)
 # 获取游戏列表
 @app_controller.route('/v4/apps', methods=['GET'])
 def v4_get_app_list():
-    from Service.UsersService import getGameAndAreaUsers
-    getGameAndAreaUsers()
     form = GetDataListRequestForm(request.args)
     start_index = (form.data['page'] - 1) * form.data['count']
     end_index = start_index + form.data['count']
