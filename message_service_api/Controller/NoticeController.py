@@ -71,8 +71,8 @@ def v4_cms_set_post_notice_closed():
     notice_id = request.form['id']
     if notice_id is None or notice_id == '':
         return response_data(400, 400, '客户端请求错误')
-    UsersMessage.objects(Q(type='notice') & Q(mysql_id=notice_id)).update_one(set__closed=1)
-    UserMessage.objects(Q(type='notice') & Q(mysql_id=notice_id)).update_one(set__closed=1)
+    UsersMessage.objects(Q(type='notice') & Q(mysql_id=notice_id)).update(set__closed=1)
+    UserMessage.objects(Q(type='notice') & Q(mysql_id=notice_id)).update(set__closed=1)
     return response_data(http_code=204)
 
 
@@ -86,8 +86,8 @@ def v4_cms_set_post_notice_open():
     notice_id = request.form['id']
     if notice_id is None or notice_id == '':
         return response_data(400, 400, '客户端请求错误')
-    UsersMessage.objects(Q(type='notice') & Q(mysql_id=notice_id)).update_one(set__closed=0)
-    UserMessage.objects(Q(type='notice') & Q(mysql_id=notice_id)).update_one(set__closed=0)
+    UsersMessage.objects(Q(type='notice') & Q(mysql_id=notice_id)).update(set__closed=0)
+    UserMessage.objects(Q(type='notice') & Q(mysql_id=notice_id)).update(set__closed=0)
     return response_data(http_code=204)
 
 
@@ -181,7 +181,7 @@ def v4_sdk_set_notice_have_read():
                 try:
                     UserMessage.objects(Q(type='notice')
                                         & Q(mysql_id=message_id)
-                                        & Q(ucid=ucid)).update_one(set__is_read=1)
+                                        & Q(ucid=ucid)).update(set__is_read=1)
                     user_read_message_log.save()
                 except Exception as err:
                     service_logger.error(err)

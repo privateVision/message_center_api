@@ -3,10 +3,15 @@ import json
 
 from flask import Blueprint
 from flask import request
+from mongoengine import Q
 
+from Controller import service_logger
 from Controller.BaseController import response_data
 from MongoModel.AppRulesModel import AppVipRules
 from MongoModel.AppsModel import Apps
+from MongoModel.MessageModel import UsersMessage
+from MongoModel.MessageRevocationModel import MessageRevocation
+from MongoModel.UserMessageModel import UserMessage
 from MongoModel.ZonelistsModel import Zonelists
 from RequestForm.GetDataListRequestForm import GetDataListRequestForm
 
@@ -41,6 +46,7 @@ def v4_get_app_zone_list(app_id=None):
     return response_data(http_code=200, data=data)
 
 
+# 设置VIP规则
 @app_controller.route('/v4/app/vip_rules', methods=['POST'])
 def v4_cms_set_vip_rules():
     from Utils.EncryptUtils import generate_checksum
@@ -53,8 +59,32 @@ def v4_cms_set_vip_rules():
     app_vip_rules = AppVipRules()
     app_vip_rules.drop_collection()
     for item in data:
-        app_vip_rules.id = item['id']
+        app_vip_rules.level = item['level']
         app_vip_rules.fee = item['fee']
         app_vip_rules.name = item['name']
         app_vip_rules.save()
     return response_data(http_code=200, message="更新VIP规则成功")
+
+
+@app_controller.route('/v4/app/message_revocation', methods=['POST'])
+def v4_cms_message_revocation():
+    from Utils.EncryptUtils import generate_checksum
+    check_result, check_exception = generate_checksum(request)
+    if not check_result:
+        return check_exception
+    message_type = request.form['type']
+    msg_id = request.form['mysql_id']
+    if type is None or type == '' or msg_id is None or msg_id == '':
+        return response_data(400, 400, '客户端请求错误')
+    message_revocation = MessageRevocation()
+    message_revocation.id = "%s%s" % (message_type, msg_id)
+    message_revocation.type = message_type
+    message_revocation.mysql_id = msg_id
+    try:
+        message_revocation.save()
+        UsersMessage.objects(Q(type=message_type) & Q(mysql_id=msg_id)).update(set__closed=1)
+        UserMessage.objects(Q(type=message_type) & Q(mysql_id=msg_id)).update(set__closed=1)
+    except Exception, err:
+        service_logger.error(err.message)
+        return response_data(http_code=500, code=500003, message="mongo写入失败")
+    return response_data(http_code=200, message="消息撤回成功")
