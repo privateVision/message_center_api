@@ -111,10 +111,10 @@ if data != None:
 	Http.request('api/account/register', access_token = ACCESS_TOKEN, username = data['username'], password = 123456)
 """
 ####################################################################################################################### 用户名或手机号码登陆
-"""
+
 print "\n-------------- api/account/login --------------\n"
 Http.request('api/account/login', access_token = ACCESS_TOKEN, username = 'a81922755', password = 123456);
-"""
+
 ####################################################################################################################### 云片偷偷发短信回调
 """
 print "\n--------------- yunpian/callback ---------------\n"
@@ -151,19 +151,19 @@ if data == None:
 ORDER_ID = data['order_id'];
 """
 ####################################################################################################################### 创建平台币订单
-"""
-print "\n-------------- api/pay/order/self_new ---------------\n"
-data = Http.request('api/pay/order/self_new', access_token = ACCESS_TOKEN, fee = 10, body = '10 Gold', subject = '10 Gold')
+
+print "\n-------------- api/pay/order/anfeng/new ---------------\n"
+data = Http.request('api/pay/order/anfeng/new', access_token = ACCESS_TOKEN, fee = 10, body = '10 Gold', subject = '10 Gold')
 if data == None:
 	sys.exit(0)
 
 ORDER_ID = data['order_id'];
-"""
+
 ####################################################################################################################### 微信支付
-"""
+
 print "\n------------ api/pay/nowpay/wechat -------------\n"
 Http.request('api/pay/nowpay/wechat', access_token = ACCESS_TOKEN, order_id = ORDER_ID);
-"""
+
 ####################################################################################################################### 支付宝支付
 """
 print "\n------------ api/pay/nowpay/alipay -------------\n"

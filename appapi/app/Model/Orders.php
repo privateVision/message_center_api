@@ -24,6 +24,10 @@ class Orders extends Model
 		return $this->hasOne(Procedures::class, 'pid', 'vid');
 	}
 
+	public function order_extend() {
+		return $this->hasOne(OrderExtend::class, 'order_id', 'id');
+	}
+
 	public function getHideAttribute() {
 		return $this->attributes['hide'] == 1;
 	}

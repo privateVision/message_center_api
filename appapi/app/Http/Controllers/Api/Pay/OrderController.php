@@ -4,7 +4,6 @@ namespace App\Http\Controllers\Api\Pay;
 use Illuminate\Http\Request;
 use App\Exceptions\ApiException;
 use App\Parameter;
-use App\Model\Orders;
 
 class OrderController extends Controller {
 
@@ -12,56 +11,26 @@ class OrderController extends Controller {
         $fee = $parameter->tough('fee');
         $body = $parameter->tough('body');
         $subject = $parameter->tough('subject');
-        $notify_url = $parameter->tough('notify_url');
         $vorderid = $parameter->tough('vorderid');
+        $notify_url = $parameter->tough('notify_url');
 
-        $order = new Orders;
-        $order->ucid = $this->ucuser->ucid;
-        $order->uid = $this->ucuser->uid;
-        $order->sn = date('ymdHis') . substr(microtime(), 2, 6) . str_pad(rand(0, 999999), 6, '0', STR_PAD_LEFT);
-        $order->vid = $this->procedure->pid;
-        $order->notify_url = $notify_url;
-        $order->vorderid = $vorderid;
-        $order->fee = $fee;
-        $order->subject = $subject;
-        $order->body = $body;
-        $order->createIP = $request->ip();
-        $order->status = Orders::Status_WaitPay;
-        $order->paymentMethod = Orders::Way_Unknow;
-        $order->hide = false;
-        $order->save();
+        $order = $this->createOrder($fee, $body, $subject, $vorderid, $notify_url, $request);
 
         return [
             'order_id' => $order->sn,
-            'fee' => $order->fee(),
             'way' => [1, 2, 3],
         ];
     }
 
-    public function SelfNewAction(Request $request, Parameter $parameter) {
+    public function AnfengNewAction(Request $request, Parameter $parameter) {
         $fee = $parameter->tough('fee');
         $body = $parameter->tough('body');
         $subject = $parameter->tough('subject');
 
-        $order = new Orders;
-        $order->ucid = $this->ucuser->ucid;
-        $order->uid = $this->ucuser->uid;
-        $order->sn = date('ymdHis') . substr(microtime(), 2, 6) . str_pad(rand(0, 999999), 6, '0', STR_PAD_LEFT);
-        $order->vid = 2;
-        $order->notify_url = '';
-        $order->vorderid = '';
-        $order->fee = $fee;
-        $order->subject = $subject;
-        $order->body = $body;
-        $order->createIP = $request->ip();
-        $order->status = Orders::Status_WaitPay;
-        $order->paymentMethod = Orders::Way_Unknow;
-        $order->hide = false;
-        $order->save();
+        $order = $this->createOrder($fee, $body, $subject, '', '', $request);
 
         return [
             'order_id' => $order->sn,
-            'fee' => $order->fee(),
             'way' => [1, 2, 3],
         ];
     }

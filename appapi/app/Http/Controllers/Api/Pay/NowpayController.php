@@ -11,14 +11,9 @@ class NowpayController extends Controller {
     public function WechatAction(Request $request, Parameter $parameter) {
         $order_id = $parameter->tough('order_id');
 
-        $order = Orders::where('sn', $order_id)->first();
-        if(!$order) {
-            throw new ApiException(ApiException::Remind, '订单不存在');
-        }
-
-        if($order->status != Orders::Status_WaitPay) {
-            throw new ApiException(ApiException::Remind, '订单状态不正确');
-        }
+        $order = $this->getOrder($order_id);
+        $order->paymentMethod = Orders::Way_Wechat;
+        $order->save();
 
         $config = config('common.nowpay.wechat');
 
@@ -46,14 +41,9 @@ class NowpayController extends Controller {
     public function AlipayAction(Request $request, Parameter $parameter) {
         $order_id = $parameter->tough('order_id');
 
-        $order = Orders::where('sn', $order_id)->first();
-        if(!$order) {
-            throw new ApiException(ApiException::Remind, '订单不存在');
-        }
-
-        if($order->status != Orders::Status_WaitPay) {
-            throw new ApiException(ApiException::Remind, '订单状态不正确');
-        }
+        $order = $this->getOrder($order_id);
+        $order->paymentMethod = Orders::Way_Alipay;
+        $order->save();
 
         $config = config('common.nowpay.alipay');
 
@@ -76,14 +66,9 @@ class NowpayController extends Controller {
     public function UnionpayAction(Request $request, Parameter $parameter) {
         $order_id = $parameter->tough('order_id');
 
-        $order = Orders::where('sn', $order_id)->first();
-        if(!$order) {
-            throw new ApiException(ApiException::Remind, '订单不存在');
-        }
-
-        if($order->status != Orders::Status_WaitPay) {
-            throw new ApiException(ApiException::Remind, '订单状态不正确');
-        }
+        $order = $this->getOrder($order_id);
+        $order->paymentMethod = Orders::Way_UnionPay;
+        $order->save();
 
         $config = config('common.nowpay.unionpay');
 
