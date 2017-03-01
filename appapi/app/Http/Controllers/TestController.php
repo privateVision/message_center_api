@@ -2,18 +2,33 @@
 
 namespace App\Http\Controllers;
 
+use App\Events\ExampleEvent;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Event;
+use Mockery\Generator\Parameter;
 
 class TestController extends \App\Controller
 {
     const APPID = 778;
     const DESKEY = '4c6e0a99384aff934c6e0a99';
-    const BASEURL = 'http://sdkapi.anfan.com/';
+    const BASEURL = '127.0.0.1/';
     const RID = 255;
 
     protected $access_token = '';
 
-    public function TestAction(Request $request) {
+    public function TestAction(Request $request ) {
+
+        // ---------------- 从这里写测试代码 ----------------
+        $dat = ["appid"=>1001,"amount"=>10,"username"=>"username"];
+        ksort($dat);
+        echo env('APP_' . @$dat['_appid']);
+        $_token = md5(http_build_query($dat) . env('APP_' . @$dat['_appid']));
+
+        $this->httpRequest("/tool/user/fpay",["appid"=>1001,"amount"=>10,"username"=>"z80189495","token"=>$_token]);
+        echo $_token;
+
+        exit();
+        return ;
         date_default_timezone_set('Asia/Shanghai');
 
         // 初始化，并获取access_token
@@ -29,10 +44,6 @@ class TestController extends \App\Controller
 
         if($data == false) return;
 
-        $this->access_token = $data['access_token'];
-
-        // ---------------- 从这里写测试代码 ----------------
-        
     }
 
     protected function httpRequest($uri, $data) {
@@ -67,4 +78,15 @@ class TestController extends \App\Controller
 
         return $res_data['data'];
     }
+
+    /*
+     * 工具测试
+     * */
+
+
+
+
+
+
+
 }

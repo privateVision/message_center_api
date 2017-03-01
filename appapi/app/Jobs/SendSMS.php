@@ -1,7 +1,6 @@
 <?php
 
 namespace App\Jobs;
-
 use App\Model\SMS;
 
 class SendSMS extends Job

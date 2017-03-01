@@ -6,23 +6,23 @@ use App\Jobs\SendSMS;
 use App\Jobs\OrderSuccess;
 
 function encrypt3des($data, $key = null) {
-	if(empty($key)) {
-		$key = env('API_3DES_KEY');
-	}
+    if(empty($key)) {
+        $key = env('API_3DES_KEY');
+    }
 
-	return \App\Crypt3DES::encrypt($data, $key);
+    return \App\Crypt3DES::encrypt($data, $key);
 }
 
 function decrypt3des($data, $key = null) {
-	if(empty($key)) {
-		$key = env('API_3DES_KEY');
-	}
+    if(empty($key)) {
+        $key = env('API_3DES_KEY');
+    }
 
-	return \App\Crypt3DES::decrypt($data, $key);
+    return \App\Crypt3DES::decrypt($data, $key);
 }
 
 function uuid() {
-	return md5(uniqid() . rand(0, 999999) . microtime());
+    return md5(uniqid() . rand(0, 999999) . microtime());
 }
 
 function order_success($order_id) {
@@ -110,17 +110,17 @@ function log_error ($keyword, $content) {
 }
 
 function http_request($url, $data, $is_post = true) {
-	$data = http_build_query($data);
-	if(!$is_post) {
-    	$url = strpos($url, '?') == -1 ? ($url .'?'. $data) : ($url .'&'. $data);
+    $data = http_build_query($data);
+    if(!$is_post) {
+        $url = strpos($url, '?') == -1 ? ($url .'?'. $data) : ($url .'&'. $data);
     }
 
     $ch = curl_init();
     curl_setopt($ch, CURLOPT_URL, $url);
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
     if($is_post) {
-	    curl_setopt($ch, CURLOPT_POST, true);
-	    curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
+        curl_setopt($ch, CURLOPT_POST, true);
+        curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
     }
 
     $res = curl_exec($ch);

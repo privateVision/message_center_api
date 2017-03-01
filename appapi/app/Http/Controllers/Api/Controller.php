@@ -17,6 +17,8 @@ class Controller extends \App\Controller
 			$appid = $request->input('appid');
 			$param = $request->input('param');
 
+			log_debug('request', ['appid' => $appid, 'param' => $param]);
+
 			$procedure = Procedures::find($appid);
 			if (!$procedure) {
 				throw new ApiException(ApiException::Error, "appid不正确:" . $appid);
