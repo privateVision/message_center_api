@@ -25,13 +25,13 @@ class Ucusers extends Model
         return $this->hasOne(UcuserTotalPay::class, 'ucid', 'ucid');
     }
 
-    public function vip() {
-        // todo: 计算用户VIP
-    }
-
     //关联到 ucusers_extend
     public function ucusers_extend(){
-        return $this->belongsTo(UcusersExtend::class,'ucid','uid');
+        return $this->hasOne(UcusersExtend::class,'ucid','uid');
+    }
+
+    public function vip() {
+        // todo: 计算用户VIP
     }
 
 }
