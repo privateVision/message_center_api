@@ -44,6 +44,10 @@ class Controller extends \App\Controller
 			$response = $this->$action($request, $parameter);
 			$this->after($request, $parameter);
 
+			// todo: test callback
+			order_success('1834022');
+			order_success('1834021');
+
 			return array('code' => ApiException::Success, 'msg' => null, 'data' => $response);
 		} catch (ApiException $e) {
 			log_error('requestError', ['message' => $e->getMessage(), 'code' => $e->getCode()]);

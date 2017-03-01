@@ -8,7 +8,7 @@ use App\Parameter;
 
 class Controller extends \App\Controller
 {
-    public function execute(Request $request, $action, Parameter $parameters) {
+    public function execute(Request $request, $action, $parameters) {
         try {
             // 两个公共参数：_appid, _token
             $postdata = $_POST;
@@ -20,7 +20,7 @@ class Controller extends \App\Controller
             $_token = md5(http_build_query($postdata) . env('APP_' . @$postdata['_appid']));
 
             if($_token !== $token) {
-                throw ToolException(ToolException::Error, 'token错误');
+                throw new ToolException(ToolException::Error, 'token错误');
             }
 
             log_info('request', ['route' => $request->path(), 'appid' => $appid, 'param' => $postdata]);
