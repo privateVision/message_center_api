@@ -34,9 +34,11 @@ def v4_cms_post_broadcast():
                 "type": "broadcast",
                 "message": form.data
             }
-            kafka_producer.send('message-service', json.dumps(message_info))
+            message_str = json.dumps(message_info)
+            service_logger.info("发送广播：%s" % (message_str,))
+            kafka_producer.send('message-service', message_str)
         except Exception, err:
-            service_logger.error(err.message)
+            service_logger.error("发送广播异常：%s" % (err.message,))
             return response_data(http_code=500, code=500001, message="kafka服务异常")
         return response_data(http_code=200)
 
@@ -55,9 +57,10 @@ def v4_cms_update_broadcast():
         return response_data(400, 400, '客户端请求错误')
     else:
         try:
+            service_logger.info("更新广播：%s" % (json.dumps(form.data),))
             system_broadcast_persist(form.data)
         except Exception, err:
-            service_logger.error(err.message)
+            service_logger.error("更新广播异常：%s" % (err.message,))
     return response_data(http_code=200)
 
 
@@ -75,7 +78,7 @@ def v4_cms_delete_post_broadcast():
         UsersMessage.objects(Q(type='broadcast') & Q(mysql_id=broadcast_id)).delete()
         UserMessage.objects(Q(type='broadcast') & Q(mysql_id=broadcast_id)).delete()
     except Exception, err:
-        service_logger.error(err.message)
+        service_logger.error("删除广播异常：%s" % (err.message,))
         return response_data(http_code=500, code=500002, message="删除广播失败")
     return response_data(http_code=204)
 
@@ -96,6 +99,7 @@ def v4_sdk_get_broadcast_list():
             count = params['count'] if params.has_key('count') and params['count'] else 10
             start_index = (page - 1) * count
             end_index = start_index + count
+            service_logger.info("用户：%s 获取广播列表，数据从%s到%s" % (ucid, start_index, end_index))
             # 查询用户相关的公告列表
             message_list_total_count = UserMessage.objects(
                 Q(type='broadcast')

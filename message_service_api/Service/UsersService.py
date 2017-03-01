@@ -8,12 +8,12 @@ from MongoModel.MessageModel import UsersMessage
 def get_game_and_area_and_user_type_and_vip_users(game=None, user_type=None, vips=None):
     game_users_list = []
     if game is not None:
+        from run import mysql_session
         for game_info in game:
             if game_info.has_key('zone_id_list'):
                 for zone in game_info['zone_id_list']:
                     find_users_in_game_area_sql = "select ucid from roleDatas where vid = %s and zoneName = '%s'"\
                                                   % (game_info['apk_id'], zone)
-                    from run import mysql_session
                     tmp_user_list = mysql_session.execute(find_users_in_game_area_sql)
                     for ucid in tmp_user_list:
                         game_users_list.append(ucid[0])
@@ -26,10 +26,10 @@ def get_game_and_area_and_user_type_and_vip_users(game=None, user_type=None, vip
 def get_user_type_users(user_type):
     users_list = []
     if user_type is not None:
+        from run import mysql_session
         for type in user_type:
             find_users_by_user_type_sql = "select ucid from ucusers as u, retailers as r where u.rid = r.rid " \
                                           "and r.rtype = %s" % (type,)
-            from run import mysql_session
             origin_list = mysql_session.execute(find_users_by_user_type_sql)
             for ucid in origin_list:
                 users_list.append(ucid[0])
@@ -39,9 +39,9 @@ def get_user_type_users(user_type):
 def get_vip_users(vips):
     users_list = []
     if vips is not None:
+        from run import mysql_session
         for vip in vips:
             find_users_by_vip_sql = "select uid from ucusers_extend as u where u.vip = %s " % (vip,)
-            from run import mysql_session
             origin_list = mysql_session.execute(find_users_by_vip_sql)
             for ucid in origin_list:
                 users_list.append(ucid[0])
@@ -54,6 +54,10 @@ def get_notice_message_detail_info(msg_id=None):
 
 def get_broadcast_message_detail_info(msg_id=None):
     return UsersMessage.objects(Q(type='broadcast') & Q(mysql_id=msg_id)).first()
+
+
+def get_message_detail_info(msg_id=None):
+    return UsersMessage.objects(Q(type='message') & Q(mysql_id=msg_id)).first()
 
 
 def get_ucid_by_access_token(access_token=None):

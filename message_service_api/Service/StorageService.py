@@ -20,7 +20,7 @@ def add_message_to_user_message_list(game, users_type, vip_user, specify_user, t
             user_message.mysql_id = msg_id
             user_message.save()
     except Exception, err:
-        service_logger.error(err.message)
+        service_logger.error("添加消息到每个用户的消息列表发生异常：%s" % (err.message,))
 
 
 def add_to_every_related_users_message_list(users_message):
@@ -62,7 +62,7 @@ def system_announcements_persist(data_json=None, update_user_message=True):
         try:
             users_message.save()
         except Exception, err:
-            service_logger.error(err.message)
+            service_logger.error("mongodb保存公告异常：%s" % (err.message,))
         if update_user_message:
             add_to_every_related_users_message_list(users_message)
 
@@ -86,7 +86,7 @@ def system_broadcast_persist(data_json=None, update_user_message=True):
         try:
             users_message.save()
         except Exception, err:
-            service_logger.error(err.message)
+            service_logger.error("mongodb保存广播异常：%s" % (err.message,))
         if update_user_message:
             add_to_every_related_users_message_list(users_message)
 
@@ -112,7 +112,7 @@ def system_message_persist(data_json=None, update_user_message=True):
         try:
             users_message.save()
         except Exception, err:
-            service_logger.error(err.message)
+            service_logger.error("mongodb保存消息异常：%s" % (err.message,))
         if update_user_message:
             add_to_every_related_users_message_list(users_message)
 
@@ -141,7 +141,7 @@ def system_coupon_persist(data_json=None, update_user_message=True):
         try:
             users_message.save()
         except Exception, err:
-            service_logger.error(err.message)
+            service_logger.error("mongodb保存卡券异常：%s" % (err.message,))
         if update_user_message:
             add_to_every_related_users_message_list(users_message)
 
@@ -165,6 +165,6 @@ def system_rebate_persist(data_json=None, update_user_message=True):
         try:
             users_message.save()
         except Exception, err:
-            service_logger.error(err.message)
+            service_logger.error("mongodb保存优惠券异常：%s" % (err.message,))
         if update_user_message:
             add_to_every_related_users_message_list(users_message)

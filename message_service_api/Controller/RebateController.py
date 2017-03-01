@@ -24,7 +24,7 @@ def v4_cms_add_rebate():
         return check_exception
     form = PostRebatesRequestForm(request.form)  # POST 表单参数封装
     if not form.validate():
-        service_logger.error(form.errors)
+        service_logger.error("优惠券请求校验异常：%s" % (form.errors,))
         return response_data(400, 400, '客户端请求错误')
     else:
         from run import kafka_producer
@@ -33,9 +33,11 @@ def v4_cms_add_rebate():
                 "type": "rebate",
                 "message": form.data
             }
-            kafka_producer.send('message-service', json.dumps(message_info))
+            message_str = json.dumps(message_info)
+            service_logger.info("发送优惠券：%s" % (message_str,))
+            kafka_producer.send('message-service', message_str)
         except Exception, err:
-            service_logger.error(err.message)
+            service_logger.error("发送优惠券异常：%s" % (err.message,))
             return response_data(http_code=500, code=500001, message="kafka服务异常")
         return response_data(http_code=200)
 
@@ -49,13 +51,13 @@ def v4_cms_update_coupon():
         return check_exception
     form = PostRebatesRequestForm(request.form)  # POST 表单参数封装
     if not form.validate():
-        print form.errors
+        service_logger.error("优惠券请求校验异常：%s" % (form.errors,))
         return response_data(400, 400, '客户端请求错误')
     else:
         try:
             system_rebate_persist(form.data, False)
         except Exception, err:
-            service_logger.error(err.message)
+            service_logger.error("更新优惠券异常：%s" % (err.message,))
     return response_data(http_code=200)
 
 
@@ -73,7 +75,7 @@ def v4_cms_delete_coupon():
         UsersMessage.objects(Q(type='rebate') & Q(mysql_id=rebate_id)).delete()
         UserMessage.objects(Q(type='rebate') & Q(mysql_id=rebate_id)).delete()
     except Exception, err:
-        service_logger.error(err.message)
+        service_logger.error("删除优惠券异常：%s" % (err.message,))
         return response_data(http_code=500, code=500002, message="删除卡券失败")
     return response_data(http_code=204)
 

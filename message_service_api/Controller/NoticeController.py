@@ -26,7 +26,7 @@ def v4_cms_post_notice():
         return check_exception
     form = PostNoticesRequestForm(request.form)  # POST 表单参数封装
     if not form.validate():
-        print form.errors
+        service_logger.error("公告请求校验异常：%s" % (form.errors,))
         return response_data(400, 400, '客户端请求错误')
     else:
         from run import kafka_producer
@@ -35,9 +35,11 @@ def v4_cms_post_notice():
                 "type": "notice",
                 "message": form.data
             }
-            kafka_producer.send('message-service', json.dumps(message_info))
+            message_str = json.dumps(message_info)
+            service_logger.info("发送公告：%s" % (message_str,))
+            kafka_producer.send('message-service', message_str)
         except Exception, err:
-            service_logger.error(err.message)
+            service_logger.error("发送公告异常：%s" % (err.message,))
             return response_data(http_code=500, code=500001, message="kafka服务异常")
         return response_data(http_code=200)
 
@@ -51,13 +53,14 @@ def v4_cms_update_post_notice():
         return check_exception
     form = PostNoticesRequestForm(request.form)  # POST 表单参数封装
     if not form.validate():
-        print form.errors
+        service_logger.error("公告请求校验异常：%s" % (form.errors,))
         return response_data(400, 400, '客户端请求错误')
     else:
         try:
+            service_logger.info("更新公告：%s" % (json.dumps(form.data),))
             system_announcements_persist(form.data, False)
         except Exception, err:
-            service_logger.error(err.message)
+            service_logger.error("更新公告异常：%s" % (err.message,))
     return response_data(http_code=200)
 
 
@@ -71,8 +74,12 @@ def v4_cms_set_post_notice_closed():
     notice_id = request.form['id']
     if notice_id is None or notice_id == '':
         return response_data(400, 400, '客户端请求错误')
-    UsersMessage.objects(Q(type='notice') & Q(mysql_id=notice_id)).update(set__closed=1)
-    UserMessage.objects(Q(type='notice') & Q(mysql_id=notice_id)).update(set__closed=1)
+    try:
+        UsersMessage.objects(Q(type='notice') & Q(mysql_id=notice_id)).update(set__closed=1)
+        UserMessage.objects(Q(type='notice') & Q(mysql_id=notice_id)).update(set__closed=1)
+    except Exception, err:
+        service_logger.error("关闭公告异常：%s" % (err.message,))
+        return response_data(500, 500, '服务端异常')
     return response_data(http_code=204)
 
 
@@ -86,8 +93,12 @@ def v4_cms_set_post_notice_open():
     notice_id = request.form['id']
     if notice_id is None or notice_id == '':
         return response_data(400, 400, '客户端请求错误')
-    UsersMessage.objects(Q(type='notice') & Q(mysql_id=notice_id)).update(set__closed=0)
-    UserMessage.objects(Q(type='notice') & Q(mysql_id=notice_id)).update(set__closed=0)
+    try:
+        UsersMessage.objects(Q(type='notice') & Q(mysql_id=notice_id)).update(set__closed=0)
+        UserMessage.objects(Q(type='notice') & Q(mysql_id=notice_id)).update(set__closed=0)
+    except Exception, err:
+        service_logger.error("打开公告异常：%s" % (err.message,))
+        return response_data(500, 500, '服务端异常')
     return response_data(http_code=204)
 
 
@@ -107,6 +118,7 @@ def v4_sdk_get_notice_list():
             count = params['count'] if params.has_key('count') and params['count'] else 10
             start_index = (page - 1) * count
             end_index = start_index + count
+            service_logger.info("用户：%s 获取公告列表，数据从%s到%s" % (ucid, start_index, end_index))
             # 查询用户相关的公告列表
             message_list_total_count = UserMessage.objects(
                 Q(type='notice')
@@ -184,6 +196,6 @@ def v4_sdk_set_notice_have_read():
                                         & Q(ucid=ucid)).update(set__is_read=1)
                     user_read_message_log.save()
                 except Exception as err:
-                    service_logger.error(err)
+                    service_logger.error("设置消息已读异常：%s" % (err.message,))
                     return response_data(http_code=500, message="服务器出错啦/(ㄒoㄒ)/~~")
     return response_data(http_code=204)
