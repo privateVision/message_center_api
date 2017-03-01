@@ -2,6 +2,7 @@
 
 from mongoengine import Q
 
+from MongoModel.AppRulesModel import AppVipRules
 from MongoModel.MessageModel import UsersMessage
 
 
@@ -36,15 +37,19 @@ def get_user_type_users(user_type):
     return users_list
 
 
+# 实时计算用户vip等级，然后筛选
 def get_vip_users(vips):
     users_list = []
     if vips is not None:
         from run import mysql_session
         for vip in vips:
-            find_users_by_vip_sql = "select uid from ucusers_extend as u where u.vip = %s " % (vip,)
-            origin_list = mysql_session.execute(find_users_by_vip_sql)
-            for ucid in origin_list:
-                users_list.append(ucid[0])
+            vip_rule_info = AppVipRules.objects(level=vip).first()
+            if vip_rule_info is not None:
+                fee = vip_rule_info['fee']
+                find_users_by_vip_sql = "select ucid from ucuser_total_pay as u where u.pay_fee >= %s " % (fee,)
+                origin_list = mysql_session.execute(find_users_by_vip_sql)
+                for ucid in origin_list:
+                    users_list.append(ucid[0])
     return users_list
 
 
