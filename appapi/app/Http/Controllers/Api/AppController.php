@@ -18,7 +18,6 @@ class AppController extends Controller
         $version = $parameter->tough('version');
         $app_version = $parameter->tough('app_version');
 
-        // todo: 默认配置先写死在代码里
         $default = array(
             'service_qq' => env('SERVICE_QQ'),
             'service_page' => '',
