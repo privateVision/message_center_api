@@ -25,4 +25,10 @@ class Ucusers extends Model
     public function vip() {
         // todo: 计算用户VIP
     }
+
+    //关联到 ucusers_extend
+    public function ucusers_extend(){
+        return $this->belongsTo(UcusersExtend::class,'ucid','uid');
+    }
+
 }

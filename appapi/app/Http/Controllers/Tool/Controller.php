@@ -11,7 +11,7 @@ class Controller extends \App\Controller
     public function execute(Request $request, $action, $parameters) {
         try {
             // 两个公共参数：_appid, _token
-            $postdata = $_POST;
+            $postdata = empty($_POST)?$_GET:$_POST;
             $token = @$postdata['_token'];
             unset($postdata['_token']);
             ksort($postdata);
@@ -37,7 +37,7 @@ class Controller extends \App\Controller
             log_error('requestError', ['message' => $e->getMessage(), 'code' => $e->getCode()]);
             return array('code' => ToolException::Error, 'msg' => $e->getMessage(), 'data' => null);
         } catch(\Exception $e) {
-
+            echo $e->getMessage();
             log_error('systemError', ['message' => $e->getMessage(), 'code' => $e->getCode(), 'file' => $e->getFile(), 'line' => $e->getLine()]);
             return array('code' => ToolException::Error, 'msg' => 'system error', 'data' => null);
         }

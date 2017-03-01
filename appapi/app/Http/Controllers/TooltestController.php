@@ -10,7 +10,7 @@ use Laravel\Lumen\Routing\Controller as BaseController;
 
 class ToolTestController extends \App\Controller
 {
-    const BASEURL = '127.0.0.1/';
+    const BASEURL = '192.168.1.116/';
 
 
     public function senurl($url,$data){
@@ -26,7 +26,6 @@ class ToolTestController extends \App\Controller
         curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($data));
         $res = curl_exec($ch);
         curl_close($ch);
-
         $res_data = json_decode($res, true);
         if(!$res_data) {
             echo "<span style=\"color:red\">返回值无法解析：$res</span><br/>";
@@ -42,10 +41,14 @@ class ToolTestController extends \App\Controller
 
     public function fpayTestAction(Request $request){
 
-        $dat = ["_appid"=>1001,"_amount"=>10,"_username"=>"z80189495","_sn"=>"12345678"];
+        //$dat = ["_appid"=>1001,"amount"=>10,"username"=>"z80189495","sn"=>"12345678","notifyurl"=>"http://192.168.1.156:73/api/WithdrawAction/notify"];
+         $dat = ["username"=>"z80189495","_appid"=>"1001","password"=>"123456"];
+        //$dd = ["_appid"=>1001,"amount"=>10,"username"=>"z80189495","sn"=>"12345678","_token"=>$_token,"notifyurl"=>"http://192.168.1.156:73/api/WithdrawAction/notify"];
         ksort($dat);
         $_token = md5(http_build_query($dat) . env('APP_' . @$dat['_appid']));
-        $this->senurl("/tool/user/fpay",["_appid"=>1001,"_amount"=>10,"_username"=>"z80189495","_sn"=>"12345678","_token"=>$_token]);
+        $dd = $dat;
+        $dd['_token'] = $_token;
+        $this->senurl("/tool/user/auth",$dd);
 
     }
 

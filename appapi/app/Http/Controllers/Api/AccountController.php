@@ -100,9 +100,9 @@ class AccountController extends BaseController {
         do {
             $username = $chars[rand(0, 21)] . rand(10000, 99999999);
             $count = Ucusers::where('uid', $username)->count();
-        } while($count > 0);
+            if($count ==0 ) return ['username' => $username];
+        } while(true);
 
-        return ['username' => $username];
     }
 
     public function LoginPhoneAction(Request $request, Parameter $parameter) {
@@ -143,4 +143,33 @@ class AccountController extends BaseController {
 
         return Event::onRegister($ucuser, $this->session);
     }
+
+    /*
+     * 更改密码
+     * */
+
+    public function changePassAction(Request $request ,Parameter $parameter){
+        $oldPass  = $parameter->tough('oldPass');
+        $newPass  = $parameter->tough('newPass');
+        $userName = $parameter->tough("userName");
+
+        if(!preg_match('/^[\w\_\-\.\@\:]+$/', $userName)) {
+            throw new ApiException(ApiException::Remind, "用户名格式不正确，请不要使用特殊字符");
+        }
+        $user = UcenterMembers::where("username",$userName)->get();
+
+        foreach($user as $v) {
+            if($v->checkPassword($oldPass)) {
+                $v->setPasswordAttribute($newPass);
+                if($v->save()){
+                    return Event::onLogout($v,$this->session); //修改密码退出
+                }else{
+                    throw new ApiException(ApiException::Remind, "修改密码失败！");
+                }
+            }
+        }
+        
+    }
+
+
 }

@@ -24,4 +24,63 @@ class UserController extends AuthController
         return ['result' => true];
     }
 
+
+    /*
+ * 获取短息验证码
+ * @param  uid
+ * $param mobile
+ * return $code 生成的短信验证码
+ * */
+    public function getAuthCodeAction(Request $request,Parameter $parameter){
+        $code = rand(111111,999999); #生成短信验证码
+        $content  = trans_choice('messages.phone_unbind_code', $code);
+        send_sms($this->session->mobile,$content,$code);
+    }
+
+    /*
+     * 手机解绑
+     * @param $mobile
+     * */
+
+    public function unbindAction(Request $request,Parameter $parameter){
+        $mobile = $this->session->mobile;
+        $code = $request->input('code');
+
+        if(!preg_match('/^\d{6}$/',$code)) throw new ApiException(ApiException::Remind, "验证码格式不正确！");
+
+        $chars = 'abcdefghjkmnpqrstuvwxy';
+
+        if($this->uucuser->mobile == $this->ucuser->uid){
+            $username = Ucusers::username();
+            $this->ucuser->ucenter_members->username = $username;
+            $this->ucuser->ucenter_members->save();
+            $content = trans_choice('messages.phone_unbind_code', $username);
+            send_sms($this->ucuser->mobile,$content);
+            $this->ucuser->uid= $username;
+            $this->ucuser->save();
+        }else{
+
+        }
+
+        UcenterMembers::where("username",$this->ucuser->uid)->get();
+    }
+
+    /*
+     * 手机绑定短信
+     * */
+    public function bind(Request $request ,Parameter $parameter){
+
+    }
+
+    /*
+     * 获取用户的钱包的信息
+     * */
+
+    public function walletAction(Request $request,Parameter $parameter){
+        return  ["wallet"=>$this->ucuser->balance];
+    }
+
+
+
+
 }
