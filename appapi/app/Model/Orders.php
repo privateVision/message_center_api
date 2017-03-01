@@ -16,6 +16,14 @@ class Orders extends Model
 
 	const CREATED_AT = 'createTime';
 
+	public function ucusers() {
+		return $this->belongsTo(Ucusers::class, 'ucid', 'ucid');
+	}
+
+	public function procedures() {
+		return $this->hasOne(Procedures::class, 'pid', 'vid');
+	}
+
 	public function getHideAttribute() {
 		return $this->attributes['hide'] == 1;
 	}
@@ -24,6 +32,7 @@ class Orders extends Model
 		$this->attributes['hide'] = $value ? 1 : 0;
 	}
 
+	// 订单实际支付价格
 	public function fee() {
 		// todo: 计算订单实际支付金额
 		return $this->fee;

@@ -1,23 +1,28 @@
 # _*_ coding: utf-8 _*_
-from wtforms import Form, validators, IntegerField, StringField
-from wtforms.validators import ValidationError, InputRequired
+from wtforms import Form, IntegerField, StringField
+from wtforms.validators import InputRequired
 
 
 class PostNoticesRequestForm(Form):
-    apk_id = IntegerField('apk_id', [InputRequired()])
-    area = StringField('area', [InputRequired()])
-    user_type = StringField('user_type', [InputRequired()])
-    vip = StringField('vip', [InputRequired()])
-    ucid = StringField('ucid', [InputRequired()])
+    game = StringField('game', [InputRequired()])
+    users_type = StringField('user_type', [InputRequired()])
+    vip_user = StringField('vip_user', [InputRequired()])
+    specify_user = StringField('specify_user', [InputRequired()])
 
     id = IntegerField('id', [InputRequired()])
     title = StringField('title', [InputRequired()])
     content = StringField('content')
     type = IntegerField('type', [InputRequired()])
     show_times = IntegerField('show_times', default=0)  # 0 表示一直显示
-    enter_status = StringField('enter_status', default=1)  # 1 允许进入游戏
-    img = StringField('img')
-    jump_url = StringField('jump_url')
+    enter_status = StringField('enter_status', default='normal')  # 'normal' 允许进入游戏
     stime = IntegerField('stime', [InputRequired()])
     etime = IntegerField('etime', [InputRequired()])
     create_time = IntegerField('create_time', [InputRequired()])
+    img = StringField('img')
+    url = StringField('url')
+    open_type = IntegerField('open_type')
+    url_type = StringField('url_type')
+    button_content = StringField('button_content')
+    button_url = StringField('button_url')
+    button_type = StringField('button_type')
+    sortby = IntegerField('sortby')

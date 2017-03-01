@@ -1,4 +1,4 @@
-#coding:utf-8
+#coding:utf8
 import os,sys
 from Crypto.Cipher import DES3
 import md5
@@ -111,14 +111,18 @@ if data != None:
 	Http.request('api/account/register', access_token = ACCESS_TOKEN, username = data['username'], password = 123456)
 """
 ####################################################################################################################### 用户名或手机号码登陆
-
+"""
 print "\n-------------- api/account/login --------------\n"
 Http.request('api/account/login', access_token = ACCESS_TOKEN, username = 'a81922755', password = 123456);
+<<<<<<< HEAD
 <<<<<<< HEAD
 """
 
 =======
 
+=======
+"""
+>>>>>>> 64584c582a36ce8763d45931925d90ee79a41b77
 ####################################################################################################################### 云片偷偷发短信回调
 """
 >>>>>>> d76510107536e31d55936d244d24839ef3ecc526
@@ -132,16 +136,17 @@ data = {
 	"text": ACCESS_TOKEN,
 }
 
-str = ''
-key = ['base_extend', 'extend', 'id', 'mobile', 'reply_time', 'text'];
+s = ''
+key = ['base_extend', 'extend', 'id', 'mobile', 'reply_time', 'text']
 for k in ['base_extend', 'extend', 'id', 'mobile', 'reply_time', 'text']:
-	str = str + data[k] + ',';
-str = str + '0dbc5a50c034a8396b50f3a80609497d'
+	s = s + data[k] + ','
+s = s + '0dbc5a50c034a8396b50f3a80609497d'
 m = md5.new()
-m.update(str)
+m.update(s)
 data['_sign'] = m.hexdigest()
 req = urllib2.Request(BASEURL + 'yunpian/callback', urllib.urlencode({"sms_reply": json.dumps(data)}))
 print urllib2.urlopen(req).read()
+<<<<<<< HEAD
 <<<<<<< HEAD
 print "\n------------ api/account/phoneLogin ------------\n"
 Http.request('api/account/phoneLogin', access_token = ACCESS_TOKEN);
@@ -150,23 +155,30 @@ Http.request('api/account/phoneLogin', access_token = ACCESS_TOKEN);
 print "\n-------------- api/account/logout --------------\n"
 Http.request('api/account/logout', access_token = ACCESS_TOKEN);
 =======
+=======
+
+>>>>>>> 64584c582a36ce8763d45931925d90ee79a41b77
 print "\n------------ api/account/login_phone ------------\n"
-Http.request('api/account/login_phone', access_token = ACCESS_TOKEN);
-"""
-####################################################################################################################### 用户退出
-"""
-print "\n-------------- api/account/logout --------------\n"
-Http.request('api/account/logout', access_token = ACCESS_TOKEN);
+Http.request('api/account/login_phone', access_token = ACCESS_TOKEN)
 """
 ####################################################################################################################### 创建订单
-
+"""
 print "\n-------------- api/pay/order/new ---------------\n"
-data = Http.request('api/pay/order/new', access_token = ACCESS_TOKEN, fee = 10, body = "10 Gold", subject = "10 Gold", notify_url = "http://www.baidu.com/", vorderid = str(random.random())[2:]);
+data = Http.request('api/pay/order/new', access_token = ACCESS_TOKEN, fee = 10, body = '10 Gold', subject = '10 Gold', notify_url = 'http://www.baidu.com/', vorderid = str(random.random())[2:])
 if data == None:
 	sys.exit(0)
 
 ORDER_ID = data['order_id'];
+"""
+####################################################################################################################### 创建平台币订单
+"""
+print "\n-------------- api/pay/order/self_new ---------------\n"
+data = Http.request('api/pay/order/self_new', access_token = ACCESS_TOKEN, fee = 10, body = '10 Gold', subject = '10 Gold')
+if data == None:
+	sys.exit(0)
 
+ORDER_ID = data['order_id'];
+"""
 ####################################################################################################################### 微信支付
 """
 print "\n------------ api/pay/nowpay/wechat -------------\n"
@@ -178,9 +190,19 @@ print "\n------------ api/pay/nowpay/alipay -------------\n"
 Http.request('api/pay/nowpay/alipay', access_token = ACCESS_TOKEN, order_id = ORDER_ID);
 """
 ####################################################################################################################### 银联支付
-
+"""
 print "\n----------- api/pay/nowpay/unionpay ------------\n"
 Http.request('api/pay/nowpay/unionpay', access_token = ACCESS_TOKEN, order_id = ORDER_ID);
+<<<<<<< HEAD
 
 #######################################################################################################################
 >>>>>>> d76510107536e31d55936d244d24839ef3ecc526
+=======
+"""
+####################################################################################################################### 用户退出
+"""
+print "\n-------------- api/account/logout --------------\n"
+Http.request('api/account/logout', access_token = ACCESS_TOKEN);
+"""
+#######################################################################################################################
+>>>>>>> 64584c582a36ce8763d45931925d90ee79a41b77

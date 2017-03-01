@@ -15,7 +15,7 @@ abstract class Controller extends \App\Controller
             $sn = $this->getOrderNo($data); 
             $order = null;
         
-            if(is_numeric($orderNo)) {
+            if($sn) {
                 $order = Orders::where('sn', $sn)->first();
             }
 
@@ -37,7 +37,8 @@ abstract class Controller extends \App\Controller
                 throw new PayCallbackException(PayCallbackException::HandleError, "订单处理失败");
             }
 
-            order_notify($order);
+            // 订单状态改变等等全部在这里做
+            order_success($order->id);
 
             $code = PayCallbackException::Success;
         } catch(PayCallbackException $e) {
