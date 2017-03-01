@@ -36,7 +36,6 @@ function send_sms($mobile, $content, $code = '') {
 function log_debug ($keyword, $content) {
     /*
     global $app;
-
 	return Redis::lpush("sdkapi_to_kafka_queue", json_encode([
         'topic' => 'log', 
         'content' => [
@@ -74,7 +73,6 @@ function log_info ($keyword, $content) {
 function log_warning ($keyword, $content) {
     /*
     global $app;
-
     return Redis::lpush("sdkapi_to_kafka_queue", json_encode([
         'topic' => 'log', 
         'content' => [
