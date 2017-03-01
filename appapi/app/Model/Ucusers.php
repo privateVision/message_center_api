@@ -2,7 +2,6 @@
 namespace App\Model;
 
 use App\Model\Gamebbs56\UcenterMembers;
-use App\Model\Retailers;
 
 class Ucusers extends Model
 {
@@ -20,6 +19,10 @@ class Ucusers extends Model
 
     public function retailers() {
         return $this->hasOne(Retailers::class, 'rid', 'rid');
+    }
+
+    public function ucuser_total_pay() {
+        return $this->hasOne(UcuserTotalPay::class, 'ucid', 'ucid');
     }
 
     public function vip() {

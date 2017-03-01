@@ -1,6 +1,9 @@
 <?php
 use Illuminate\Support\Facades\Redis;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Queue;
+use App\Jobs\SendSMS;
+use App\Jobs\OrderSuccess;
 
 function encrypt3des($data, $key = null) {
 	if(empty($key)) {
@@ -22,73 +25,88 @@ function uuid() {
 	return md5(uniqid() . rand(0, 999999) . microtime());
 }
 
-function order_notify($order) {
-    
+function order_success($order_id) {
+    Queue::push(new OrderSuccess($order_id));
 }
 
-function send_sms($mobile, $content, $code = 0) {
-	return Redis::lpush("queue", json_encode([
-        'topic' => 'sendsms', 
-        'mobile' => $mobile, 
-        'content' => $content, 
-        'code' => $code
-    ]));
+function send_sms($mobile, $content, $code = '') {
+    Queue::push(new SendSMS($mobile, $content, $code));
 }
 
 function log_debug ($keyword, $content) {
+    /*
     global $app;
 
-	return Redis::lpush("queue", json_encode([
+	return Redis::lpush("sdkapi_to_kafka_queue", json_encode([
         'topic' => 'log', 
-        'level' => 100, 
-        'content' => $content,
-        'ip' => $app->request->ip(),
-        'pid' => getmypid(),
-        'keyword' => $keyword,
-        'content' => $content
+        'content' => [
+            'level' => 'DEBUG', 
+            'content' => $content,
+            'ip' => $app->request->ip(),
+            'pid' => getmypid(),
+            'keyword' => $keyword,
+            'content' => $content,
+            'timestamp' => time(),
+        ]
     ]));
+    */
 }
 
 function log_info ($keyword, $content) {
+    /*
 	global $app;
 
-    return Redis::lpush("queue", json_encode([
+    return Redis::lpush("sdkapi_to_kafka_queue", json_encode([
         'topic' => 'log', 
-        'level' => 200, 
-        'content' => $content,
-        'ip' => $app->request->ip(),
-        'pid' => getmypid(),
-        'keyword' => $keyword,
-        'content' => $content
+        'content' => [
+            'level' => 'INFO', 
+            'content' => $content,
+            'ip' => $app->request->ip(),
+            'pid' => getmypid(),
+            'keyword' => $keyword,
+            'content' => $content,
+            'timestamp' => time(),
+        ]
     ]));
+    */
 }
 
 function log_warning ($keyword, $content) {
+    /*
     global $app;
 
-    return Redis::lpush("queue", json_encode([
+    return Redis::lpush("sdkapi_to_kafka_queue", json_encode([
         'topic' => 'log', 
-        'level' => 300, 
-        'content' => $content,
-        'ip' => $app->request->ip(),
-        'pid' => getmypid(),
-        'keyword' => $keyword,
-        'content' => $content
+        'content' => [
+            'level' => 'WARNING', 
+            'content' => $content,
+            'ip' => $app->request->ip(),
+            'pid' => getmypid(),
+            'keyword' => $keyword,
+            'content' => $content,
+            'timestamp' => time(),
+        ]
     ]));
+    */
 }
 
 function log_error ($keyword, $content) {
+    /*
 	global $app;
 
-    return Redis::lpush("queue", json_encode([
+    return Redis::lpush("sdkapi_to_kafka_queue", json_encode([
         'topic' => 'log', 
-        'level' => 400, 
-        'content' => $content,
-        'ip' => $app->request->ip(),
-        'pid' => getmypid(),
-        'keyword' => $keyword,
-        'content' => $content
+        'content' => [
+            'level' => 'ERROR', 
+            'content' => $content,
+            'ip' => $app->request->ip(),
+            'pid' => getmypid(),
+            'keyword' => $keyword,
+            'content' => $content,
+            'timestamp' => time(),
+        ]
     ]));
+    */
 }
 
 function http_request($url, $data, $is_post = true) {
