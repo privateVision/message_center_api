@@ -9,7 +9,7 @@ from Service.UsersService import get_game_and_area_and_user_type_and_vip_users
 
 
 def add_message_to_user_message_list(game, users_type, vip_user, specify_user, type, msg_id,
-                                     start_time, end_time):
+                                     start_time, end_time, is_time):
     users_list = get_game_and_area_and_user_type_and_vip_users(game, users_type, vip_user)
     users_list.extend(specify_user)
     try:
@@ -21,6 +21,7 @@ def add_message_to_user_message_list(game, users_type, vip_user, specify_user, t
             user_message.mysql_id = msg_id
             user_message.start_time = start_time
             user_message.end_time = end_time
+            user_message.is_time = is_time
             user_message.save()
     except Exception, err:
         service_logger.error("添加消息到每个用户的消息列表发生异常：%s" % (err.message,))
@@ -31,7 +32,8 @@ def add_to_every_related_users_message_list(users_message):
                                                args=(users_message.app, users_message.rtype,
                                                      users_message.vip, users_message.users,
                                                      users_message.type, users_message.mysql_id,
-                                                     users_message.start_time, users_message.end_time))
+                                                     users_message.start_time, users_message.end_time,
+                                                     users_message.is_time))
     add_user_message_thread.setDaemon(True)
     add_user_message_thread.start()
 
@@ -62,6 +64,7 @@ def system_announcements_persist(data_json=None, update_user_message=True):
         users_message.rtype = data_json['users_type'].split(",")
         users_message.app = json.loads(data_json['game'])
         users_message.vip = data_json['vip_user'].split(",")
+        users_message.is_time = 1
         users_message.expire_at = users_message.end_time
         try:
             users_message.save()
@@ -87,6 +90,7 @@ def system_broadcast_persist(data_json=None, update_user_message=True):
         users_message.rtype = data_json['users_type'].split(",")
         users_message.app = json.loads(data_json['game'])
         users_message.vip = data_json['vip_user'].split(",")
+        users_message.is_time = 1
         users_message.expire_at = users_message.end_time
         try:
             users_message.save()
@@ -114,6 +118,7 @@ def system_message_persist(data_json=None, update_user_message=True):
         users_message.rtype = data_json['users_type'].split(",")
         users_message.app = json.loads(data_json['game'])
         users_message.vip = data_json['vip_user'].split(",")
+        users_message.is_time = 1
         users_message.expire_at = users_message.end_time
         try:
             users_message.save()
