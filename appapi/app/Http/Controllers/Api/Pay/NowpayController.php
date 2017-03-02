@@ -5,16 +5,15 @@ use Illuminate\Http\Request;
 use App\Exceptions\ApiException;
 use App\Parameter;
 use App\Model\Orders;
+use App\Model\OrdersExt;
 
 class NowpayController extends Controller {
 
     public function WechatAction(Request $request, Parameter $parameter) {
+        $balance = $parameter->get('balance');
         $order_id = $parameter->tough('order_id');
 
-        $order = $this->getOrder($order_id);
-        $order->paymentMethod = Orders::Way_Wechat;
-        $order->save();
-
+        $order = $this->payOrder($order_id, Orders::Way_Wechat, $balance);
         $config = config('common.nowpay.wechat');
 
         $mht['appId'] = $config['appId'];
@@ -22,7 +21,7 @@ class NowpayController extends Controller {
         //$mht['consumerName'] = $this->ucuser->uid;
         $mht['mhtCharset'] = $config['mhtCharset'];
         $mht['mhtCurrencyType'] = $config['mhtCurrencyType'];
-        $mht['mhtOrderAmt'] = $order->fee();
+        $mht['mhtOrderAmt'] = $order->real_fee();
         $mht['mhtOrderName'] = $order->subject;
         $mht['mhtOrderDetail'] = $order->body;
         $mht['mhtOrderNo'] = $order->sn;
@@ -39,19 +38,17 @@ class NowpayController extends Controller {
     }
 
     public function AlipayAction(Request $request, Parameter $parameter) {
+        $balance = $parameter->get('balance');
         $order_id = $parameter->tough('order_id');
 
-        $order = $this->getOrder($order_id);
-        $order->paymentMethod = Orders::Way_Alipay;
-        $order->save();
-
+        $order = $this->payOrder($order_id, Orders::Way_Alipay, $balance);
         $config = config('common.nowpay.alipay');
 
         $data = sprintf('partner="%s"', $config['AppID']);
         $data.= sprintf('&out_trade_no="%s"', $order->sn);
         $data.= sprintf('&subject="%s"', $order->subject);
         $data.= sprintf('&body="%s"', $order->body);
-        $data.= sprintf('&total_fee="%.2f"', $order->fee());
+        $data.= sprintf('&total_fee="%.2f"', $order->real_fee());
         $data.= sprintf('&notify_url="%s"', urlencode(url('pay_callback/nowpay_alipay')));
         $data.= '&service="mobile.securitypay.pay"';
         $data.= '&_input_charset="UTF-8"';
@@ -64,12 +61,10 @@ class NowpayController extends Controller {
     }
 
     public function UnionpayAction(Request $request, Parameter $parameter) {
+        $balance = $parameter->get('balance');
         $order_id = $parameter->tough('order_id');
 
-        $order = $this->getOrder($order_id);
-        $order->paymentMethod = Orders::Way_UnionPay;
-        $order->save();
-
+        $order = $this->payOrder($order_id, Orders::Way_Unionpay, $balance);
         $config = config('common.nowpay.unionpay');
 
         openssl_pkcs12_read(base64_decode($config['pfx']), $cert, $config['pfx_pwd']);
@@ -88,7 +83,7 @@ class NowpayController extends Controller {
         $data['certId'] = $certid;
         $data['orderId'] = $order->sn;
         $data['txnTime'] = date('YmdHis');
-        $data['txnAmt']  = $order->fee() * 100;
+        $data['txnAmt']  = $order->real_fee() * 100;
         $data['txnType'] = '01';
         $data['bizType'] = '000201';
         $data['txnSubType'] = '01';

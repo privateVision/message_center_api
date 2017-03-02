@@ -18,6 +18,6 @@ class Log extends Job
      */
     public function handle()
     {
-        error_log($this->content. "\n", 3, );
+        
     }
 }

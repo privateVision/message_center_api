@@ -14,11 +14,14 @@ class OrderController extends Controller {
         $vorderid = $parameter->tough('vorderid');
         $notify_url = $parameter->tough('notify_url');
 
-        $order = $this->createOrder($fee, $body, $subject, $vorderid, $notify_url, $request);
+        $order = $this->createOrder($fee, $body, $subject, $request->ip(), $vorderid, $notify_url);
 
         return [
             'order_id' => $order->sn,
             'way' => [1, 2, 3],
+            'vip' => $this->ucuser->vip(),
+            'balance' => $this->ucuser->balance,
+            'coupon' => $this->ucuser->coupon(),
         ];
     }
 
@@ -27,11 +30,14 @@ class OrderController extends Controller {
         $body = $parameter->tough('body');
         $subject = $parameter->tough('subject');
 
-        $order = $this->createOrder($fee, $body, $subject, '', '', $request);
+        $order = $this->createOrder($fee, $body, $subject, $request->ip());
 
         return [
             'order_id' => $order->sn,
             'way' => [1, 2, 3],
+            'vip' => $this->ucuser->vip(),
+            'balance' => $this->ucuser->balance,
+            'coupon' => $this->ucuser->coupon(),
         ];
     }
 }
