@@ -1,6 +1,8 @@
+__pycache__/
 *.py[cod]
 *$py.class
 *.so
+.ropeproject
 *.pyc
 .idea
 .DS_Store
