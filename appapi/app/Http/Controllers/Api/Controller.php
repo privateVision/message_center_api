@@ -52,7 +52,7 @@ class Controller extends \App\Controller
 			return array('code' => $e->getCode(), 'msg' => $e->getMessage(), 'data' => null);
 		} catch(\Exception $e) {
 			log_error('systemError', ['message' => $e->getMessage(), 'code' => $e->getCode(), 'file' => $e->getFile(), 'line' => $e->getLine()]);
-			return array('code' => ApiException::Error, 'msg' => 'system error', 'data' => null);
+			return array('code' => ApiException::Error, 'msg' => ['message' => $e->getMessage(), 'code' => $e->getCode(), 'file' => $e->getFile(), 'line' => $e->getLine()], 'data' => null);
 		}
 	}
 

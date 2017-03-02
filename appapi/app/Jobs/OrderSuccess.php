@@ -4,6 +4,7 @@ namespace App\Jobs;
 use Illuminate\Support\Facades\Queue;
 use Illuminate\Support\Facades\Redis;
 use App\Model\Orders;
+use App\Model\OrdersExt;
 use App\Model\UcuserTotalPay;
 
 class OrderSuccess extends Job
@@ -35,6 +36,16 @@ class OrderSuccess extends Job
         try {
             $order->getConnection()->beginTransaction();
 
+            // 扣除代金道具
+            $orderExt = $this->ordersExt;
+            if($orderExt) {
+                foreach($ordersExt as $k => $v) {
+                    if($v->vcid == 0) {
+                        
+                    }
+                }
+            }
+
             if($order->ucusers) {
                 if($order->vid == 2) { // 买平台币
                     $order->ucusers->increment('balance', $order->fee); // 原子操作很重要
@@ -51,7 +62,7 @@ class OrderSuccess extends Job
                 } else {
                     $order->ucusers->ucuser_total_pay->increment('pay_count', 1);
                     $order->ucusers->ucuser_total_pay->increment('pay_total', $order->fee);
-                    $order->ucusers->ucuser_total_pay->increment('pay_fee', $order->fee);
+                    $order->ucusers->ucuser_total_pay->increment('pay_fee', $order->real_fee());
                     $order->ucusers->ucuser_total_pay->save();
                 }
             }
