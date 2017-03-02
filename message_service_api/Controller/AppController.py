@@ -6,7 +6,7 @@ from flask import Blueprint
 from flask import request
 from mongoengine import Q
 
-from Controller.BaseController import response_data
+from Controller.BaseController import response_data, response_ok
 from MiddleWare import service_logger
 from MongoModel.AppRulesModel import AppVipRules
 from MongoModel.AppsModel import Apps
@@ -15,6 +15,7 @@ from MongoModel.MessageRevocationModel import MessageRevocation
 from MongoModel.UserMessageModel import UserMessage
 from MongoModel.ZonelistsModel import Zonelists
 from RequestForm.GetDataListRequestForm import GetDataListRequestForm
+from Service.UsersService import get_user_data_mark_in_redis, get_ucid_by_access_token, clear_user_data_mark_in_redis
 
 app_controller = Blueprint('AppController', __name__)
 
@@ -114,8 +115,26 @@ def v4_cms_message_revocation():
 # 心跳
 @app_controller.route('/v4/app/heartbeat', methods=['POST'])
 def v4_sdk_heartbeat():
-    from Utils.EncryptUtils import generate_checksum
-    check_result, check_exception = generate_checksum(request)
-    if not check_result:
-        return check_exception
-    return response_data(data=None)
+    appid = request.form['appid']
+    param = request.form['param']
+    if appid is None or param is None:
+        return response_data(400, 400, '客户端请求错误')
+    from Utils.EncryptUtils import sdk_api_check_key
+    params = sdk_api_check_key(request)
+    ucid = get_ucid_by_access_token(params['access_token'])
+    data = get_user_data_mark_in_redis(ucid)
+    return response_data(data=data)
+
+
+# 心跳ACK
+@app_controller.route('/v4/app/heartbeat/ack', methods=['POST'])
+def v4_sdk_heartbeat_ack():
+    appid = request.form['appid']
+    param = request.form['param']
+    if appid is None or param is None:
+        return response_data(400, 400, '客户端请求错误')
+    from Utils.EncryptUtils import sdk_api_check_key
+    params = sdk_api_check_key(request)
+    ucid = get_ucid_by_access_token(params['access_token'])
+    clear_user_data_mark_in_redis(ucid)
+    return response_ok()

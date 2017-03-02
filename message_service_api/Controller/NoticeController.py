@@ -184,7 +184,7 @@ def v4_sdk_set_notice_have_read():
         return response_data(400, 400, '客户端请求错误')
     from Utils.EncryptUtils import sdk_api_check_key
     params = sdk_api_check_key(request)
-    ucid = params['ucid']
+    ucid = get_ucid_by_access_token(params['access_token'])
     message_info = params['message_info']
     if message_info['type'] is None or message_info['message_ids'] is None:
         return response_data(400, 400, '客户端请求错误')

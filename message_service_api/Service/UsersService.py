@@ -2,6 +2,7 @@
 
 from mongoengine import Q
 
+from MiddleWare import redis_store
 from MongoModel.AppRulesModel import AppVipRules
 from MongoModel.MessageModel import UsersMessage
 
@@ -84,3 +85,16 @@ def get_ucid_by_access_token(access_token=None):
         if user_info['ucid']:
             return user_info['ucid']
     return False
+
+
+def get_user_data_mark_in_redis(ucid):
+    if redis_store.exists(ucid):
+        return redis_store.hgetall(ucid)
+    return None
+
+
+def clear_user_data_mark_in_redis(ucid):
+    redis_store.hset(ucid, 'notice', 0)
+    redis_store.hset(ucid, 'broadcast', 0)
+    redis_store.hset(ucid, 'message', 0)
+    redis_store.hset(ucid, 'coupon', 0)

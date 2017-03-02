@@ -2,7 +2,7 @@
 import json
 import threading
 
-from MiddleWare import service_logger
+from MiddleWare import service_logger, redis_store
 from MongoModel.MessageModel import UsersMessage
 from MongoModel.UserMessageModel import UserMessage
 from Service.UsersService import get_game_and_area_and_user_type_and_vip_users
@@ -23,8 +23,14 @@ def add_message_to_user_message_list(game, users_type, vip_user, specify_user, t
             user_message.end_time = end_time
             user_message.is_time = is_time
             user_message.save()
+            add_mark_to_user_redis(user, type)
     except Exception, err:
         service_logger.error("添加消息到每个用户的消息列表发生异常：%s" % (err.message,))
+
+
+# 给用户在redis中设置标记位
+def add_mark_to_user_redis(ucid, message_type):
+    redis_store.hset(ucid, message_type, 1)
 
 
 def add_to_every_related_users_message_list(users_message):

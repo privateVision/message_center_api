@@ -2,6 +2,7 @@
 
 from flask import Flask
 from flask_mongoengine import MongoEngine
+from flask_redis import FlaskRedis
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
@@ -23,6 +24,8 @@ ch.setFormatter(formatter)
 service_logger.addHandler(fh)
 service_logger.addHandler(ch)
 
+redis_store = FlaskRedis()
+
 
 def create_app():
     app = Flask(__name__)
@@ -38,6 +41,8 @@ def create_app():
     db.init_app(app)
 
     init_blueprint(app)  # 注册蓝图模块
+
+    redis_store.init_app(app)
 
     @app.before_request
     def before_request():
