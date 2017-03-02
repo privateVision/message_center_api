@@ -12,5 +12,9 @@ class UserMessage(DynamicDocument):
     mysql_id = IntField(required=True)
     closed = IntField(required=True, default=0)
     is_read = IntField(required=True, default=0)
+    start_time = IntField(required=True, default=0)
+    end_time = IntField(required=True, default=0)
+    # show_times = IntField(required=True, default=0)
+    # read_times = IntField(required=True, default=0)
     create_time = DateTimeField(required=True, default=datetime.now())
 

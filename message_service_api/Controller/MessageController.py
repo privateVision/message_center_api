@@ -11,6 +11,7 @@ from MongoModel.MessageModel import UsersMessage
 from MongoModel.UserMessageModel import UserMessage
 from RequestForm.PostMessagesRequestForm import PostMessagesRequestForm
 from Service.UsersService import get_ucid_by_access_token, get_message_detail_info
+from Utils.SystemUtils import get_current_timestamp
 
 message_controller = Blueprint('MessageController', __name__)
 
@@ -78,17 +79,22 @@ def v4_sdk_get_message_list():
             end_index = start_index + count
             service_logger.info("用户：%s 获取消息列表，数据从%s到%s" % (ucid, start_index, end_index))
             # 查询用户相关的公告列表
+            current_timestamp = get_current_timestamp()
             message_list_total_count = UserMessage.objects(
                 Q(type='message')
                 & Q(closed=0)
                 & Q(is_read=0)
+                & Q(start_time__lte=current_timestamp)
+                & Q(end_time__gte=current_timestamp)
                 & Q(ucid=ucid)) \
                 .count()
             message_list = UserMessage.objects(
                 Q(type='message')
                 & Q(closed=0)
                 & Q(is_read=0)
-                & Q(ucid=ucid)).order_by('-create_time')[start_index:end_index]
+                & Q(start_time__lte=current_timestamp)
+                & Q(end_time__gte=current_timestamp)
+                & Q(ucid=ucid)).order_by('-start_time')[start_index:end_index]
             data_list = []
             for message in message_list:
                 message_info = get_message_detail_info(message['mysql_id'])
@@ -107,7 +113,7 @@ def v4_sdk_get_message_list():
                 message_resp['body']['content'] = message_info['content']
                 message_resp['body']['img'] = message_info['img']
                 message_resp['body']['url'] = message_info['url']
-                message_resp['body']['dis_time'] = message_info['dis_time']
+                message_resp['body']['start_time'] = message_info['start_time']
                 data_list.append(message_resp)
             data = {
                 "total_count": message_list_total_count,

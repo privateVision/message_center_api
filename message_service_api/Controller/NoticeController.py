@@ -13,6 +13,7 @@ from MongoModel.UserReadMessageLogModel import UserReadMessageLog
 from RequestForm.PostNoticesRequestForm import PostNoticesRequestForm
 from Service.StorageService import system_announcements_persist
 from Service.UsersService import get_notice_message_detail_info, get_ucid_by_access_token
+from Utils.SystemUtils import get_current_timestamp
 
 notice_controller = Blueprint('NoticeController', __name__)
 
@@ -120,16 +121,21 @@ def v4_sdk_get_notice_list():
             end_index = start_index + count
             service_logger.info("用户：%s 获取公告列表，数据从%s到%s" % (ucid, start_index, end_index))
             # 查询用户相关的公告列表
+            current_timestamp = get_current_timestamp()
             message_list_total_count = UserMessage.objects(
                 Q(type='notice')
                 & Q(closed=0)
                 & Q(is_read=0)
+                & Q(start_time__lte=current_timestamp)
+                & Q(end_time__gte=current_timestamp)
                 & Q(ucid=ucid)) \
                 .count()
             message_list = UserMessage.objects(
                 Q(type='notice')
                 & Q(closed=0)
                 & Q(is_read=0)
+                & Q(start_time__lte=current_timestamp)
+                & Q(end_time__gte=current_timestamp)
                 & Q(ucid=ucid)).order_by('-create_time')[start_index:end_index]
             data_list = []
             for message in message_list:
@@ -155,6 +161,8 @@ def v4_sdk_get_notice_list():
                 message_resp['body']['img'] = message_info['img']
                 message_resp['body']['open_type'] = message_info['open_type']
                 message_resp['body']['start_time'] = message_info['start_time']
+                message_resp['body']['end_time'] = message_info['end_time']
+                message_resp['body']['show_times'] = message_info['show_times']
                 message_resp['body']['url'] = message_info['url']
                 message_resp['body']['url_type'] = message_info['url_type']
                 data_list.append(message_resp)
@@ -191,7 +199,7 @@ def v4_sdk_set_notice_have_read():
                                                            message_id=message_id,
                                                            ucid=ucid)
                 try:
-                    UserMessage.objects(Q(type='notice')
+                    UserMessage.objects(Q(type=message['type'])
                                         & Q(mysql_id=message_id)
                                         & Q(ucid=ucid)).update(set__is_read=1)
                     user_read_message_log.save()

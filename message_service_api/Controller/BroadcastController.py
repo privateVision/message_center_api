@@ -12,6 +12,7 @@ from MongoModel.UserMessageModel import UserMessage
 from RequestForm.PostBroadcastsRequestForm import PostBroadcastsRequestForm
 from Service.StorageService import system_broadcast_persist
 from Service.UsersService import get_ucid_by_access_token, get_broadcast_message_detail_info
+from Utils.SystemUtils import get_current_timestamp
 
 broadcast_controller = Blueprint('BroadcastController', __name__)
 
@@ -25,7 +26,7 @@ def v4_cms_post_broadcast():
         return check_exception
     form = PostBroadcastsRequestForm(request.form)  # POST 表单参数封装
     if not form.validate():
-        print form.errors
+        service_logger.error(form.errors)
         return response_data(400, 400, '客户端请求错误')
     else:
         from run import kafka_producer
@@ -101,17 +102,22 @@ def v4_sdk_get_broadcast_list():
             end_index = start_index + count
             service_logger.info("用户：%s 获取广播列表，数据从%s到%s" % (ucid, start_index, end_index))
             # 查询用户相关的公告列表
+            current_timestamp = get_current_timestamp()
             message_list_total_count = UserMessage.objects(
                 Q(type='broadcast')
                 & Q(closed=0)
                 & Q(is_read=0)
+                & Q(start_time__lte=current_timestamp)
+                & Q(end_time__gte=current_timestamp)
                 & Q(ucid=ucid)) \
                 .count()
             message_list = UserMessage.objects(
                 Q(type='broadcast')
                 & Q(closed=0)
                 & Q(is_read=0)
-                & Q(ucid=ucid)).order_by('-create_time')[start_index:end_index]
+                & Q(start_time__lte=current_timestamp)
+                & Q(end_time__gte=current_timestamp)
+                & Q(ucid=ucid)).order_by('-start_time')[start_index:end_index]
             data_list = []
             for message in message_list:
                 message_info = get_broadcast_message_detail_info(message['mysql_id'])
@@ -128,7 +134,7 @@ def v4_sdk_get_broadcast_list():
                 message_resp['head']['mysql_id'] = message_info['mysql_id']
                 message_resp['body']['content'] = message_info['content']
                 message_resp['body']['start_time'] = message_info['start_time']
-                message_resp['body']['end_time'] = message_info['end_time']
+                # message_resp['body']['end_time'] = message_info['end_time']
                 message_resp['body']['close_time'] = message_info['close_time']
                 data_list.append(message_resp)
             data = {

@@ -8,7 +8,8 @@ from MongoModel.UserMessageModel import UserMessage
 from Service.UsersService import get_game_and_area_and_user_type_and_vip_users
 
 
-def add_message_to_user_message_list(game, users_type, vip_user, specify_user, type, msg_id):
+def add_message_to_user_message_list(game, users_type, vip_user, specify_user, type, msg_id,
+                                     start_time, end_time):
     users_list = get_game_and_area_and_user_type_and_vip_users(game, users_type, vip_user)
     users_list.extend(specify_user)
     try:
@@ -18,6 +19,8 @@ def add_message_to_user_message_list(game, users_type, vip_user, specify_user, t
             user_message.ucid = user
             user_message.type = type
             user_message.mysql_id = msg_id
+            user_message.start_time = start_time
+            user_message.end_time = end_time
             user_message.save()
     except Exception, err:
         service_logger.error("添加消息到每个用户的消息列表发生异常：%s" % (err.message,))
@@ -27,7 +30,8 @@ def add_to_every_related_users_message_list(users_message):
     add_user_message_thread = threading.Thread(target=add_message_to_user_message_list,
                                                args=(users_message.app, users_message.rtype,
                                                      users_message.vip, users_message.users,
-                                                     users_message.type, users_message.mysql_id))
+                                                     users_message.type, users_message.mysql_id,
+                                                     users_message.start_time, users_message.end_time))
     add_user_message_thread.setDaemon(True)
     add_user_message_thread.start()
 
@@ -76,7 +80,8 @@ def system_broadcast_persist(data_json=None, update_user_message=True):
         users_message.title = data_json['title']
         users_message.content = data_json['content']
         users_message.start_time = data_json['stime']
-        users_message.end_time = data_json['etime']
+        # users_message.end_time = data_json['etime']
+        users_message.end_time = int(data_json['stime']) + 5
         users_message.close_time = data_json['close_time']
         users_message.users = data_json['specify_user'].split(",")
         users_message.rtype = data_json['users_type'].split(",")
@@ -102,13 +107,14 @@ def system_message_persist(data_json=None, update_user_message=True):
         users_message.content = data_json['content']
         users_message.img = data_json['img']
         users_message.url = data_json['url']
-        users_message.dis_time = data_json['send_time']
+        users_message.start_time = data_json['send_time']
+        users_message.end_time = int(data_json['send_time']) + 5
         users_message.sys = data_json['sys']
         users_message.users = data_json['specify_user'].split(",")
         users_message.rtype = data_json['users_type'].split(",")
         users_message.app = json.loads(data_json['game'])
         users_message.vip = data_json['vip_user'].split(",")
-        users_message.expire_at = users_message.dis_time
+        users_message.expire_at = users_message.end_time
         try:
             users_message.save()
         except Exception, err:
