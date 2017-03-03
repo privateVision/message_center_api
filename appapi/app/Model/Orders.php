@@ -24,6 +24,14 @@ class Orders extends Model
 		return $this->hasOne(Procedures::class, 'pid', 'vid');
 	}
 
+	public function order_extend() {
+		return $this->hasOne(OrderExtend::class, 'order_id', 'id');
+	}
+
+	public function ordersExt() {
+		return $this->hasMany(OrdersExt::class, 'oid', 'id');
+	}
+
 	public function getHideAttribute() {
 		return $this->attributes['hide'] == 1;
 	}
@@ -32,9 +40,8 @@ class Orders extends Model
 		$this->attributes['hide'] = $value ? 1 : 0;
 	}
 
-	// 订单实际支付价格
-	public function fee() {
-		// todo: 计算订单实际支付金额
-		return $this->fee;
+	public function real_fee() {
+		$fee = OrdersExt::where('oid', $this->id)->sum('fee');
+		return bcsub($this->fee, $fee, 2);
 	}
 }

@@ -2,6 +2,8 @@
 namespace App\Model;
 
 use App\Model\Gamebbs56\UcenterMembers;
+use App\Model\MongoDB\AppVipRules;
+use App\Model\MongoDB\User;
 
 class Ucusers extends Model
 {
@@ -25,13 +27,39 @@ class Ucusers extends Model
         return $this->hasOne(UcuserTotalPay::class, 'ucid', 'ucid');
     }
 
-    public function vip() {
-        // todo: 计算用户VIP
-    }
-
     //关联到 ucusers_extend
     public function ucusers_extend(){
-        return $this->belongsTo(UcusersExtend::class,'ucid','uid');
+        return $this->hasOne(UcusersExtend::class,'ucid','uid');
     }
 
+    public function getBalanceAttribute($value) {
+        return number_format($value, 2);
+    }
+
+    public function vip() {
+        $ucuser_total_pay = $this->ucuser_total_pay;
+
+        $level = 0;
+
+        if($ucuser_total_pay) {
+            $pay_fee = $ucuser_total_pay->pay_fee;
+           
+
+            $rules = AppVipRules::orderBy('fee', 1)->get();
+
+            foreach($rules as $k => $v) {
+                if($pay_fee >= $v->fee) {
+                    $level = $k;
+                } else {
+                    break;
+                }
+            }
+        }
+
+        return $level;
+    }
+
+    public function coupon() {
+        return [];
+    }
 }

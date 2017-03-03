@@ -1,7 +1,9 @@
 <?php
 namespace App\Model;
 
-class Model extends \App\Model
+use Illuminate\Database\Eloquent\Model as Eloquent;
+
+class Model extends Eloquent
 {
 	protected $connection = 'anfanapi';
 

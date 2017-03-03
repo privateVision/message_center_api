@@ -145,7 +145,8 @@ class UserController extends Controller{
             throw new ToolException(ToolException::UNBIND_MOBILE, trans("messages.please_bind_mobile"));
         }
 
-        //验证当前的充值金额
+        // todo: 当前充值金额是从表ucuser_total_pay读取
+        // 验证当前的充值金额
        $dat =  UcuserTotalPay::were("uid",$ucusers->uid)->first();
 
         if($dat['pay_fee'] < 1 ) {

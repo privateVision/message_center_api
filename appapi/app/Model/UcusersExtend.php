@@ -7,11 +7,12 @@
  */
 
 namespace App\Model;
+
 class UcusersExtend extends Model
 {
     protected $table = 'ucusers_extend';
     protected $primaryKey = 'uid';
-
+    public $incrementing = false;
 }
 
 

@@ -23,8 +23,9 @@ $app = new Laravel\Lumen\Application(
     realpath(__DIR__.'/../')
 );
 
-$app->withFacades();
+$app->register(Jenssegers\Mongodb\MongodbServiceProvider::class);
 
+$app->withFacades();
 $app->withEloquent();
 
 /*
@@ -82,6 +83,7 @@ $app->register(App\Providers\AppServiceProvider::class);
 // $app->register(App\Providers\AuthServiceProvider::class);
 $app->register(App\Providers\EventServiceProvider::class);
 $app->register(Illuminate\Redis\RedisServiceProvider::class);
+
 
 /*
 |--------------------------------------------------------------------------

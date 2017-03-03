@@ -4,15 +4,15 @@ namespace App;
 class Crypt3DES
 {
 	public static function encrypt($input, $key) {
-		$size = mcrypt_get_block_size(MCRYPT_3DES, 'ecb');
+		$size = @mcrypt_get_block_size(MCRYPT_3DES, 'ecb');
 		$input = static::_pkcs5_pad($input, $size);
 		$key = str_pad($key, 24, '0');
-		$td = mcrypt_module_open(MCRYPT_3DES, '', 'ecb', '');
-		$iv = @mcrypt_create_iv (mcrypt_enc_get_iv_size($td), MCRYPT_RAND);
+		$td = @mcrypt_module_open(MCRYPT_3DES, '', 'ecb', '');
+		$iv = @mcrypt_create_iv (@mcrypt_enc_get_iv_size($td), MCRYPT_RAND);
 		@mcrypt_generic_init($td, $key, $iv);
-		$data = mcrypt_generic($td, $input);
-		mcrypt_generic_deinit($td);
-		mcrypt_module_close($td);
+		$data = @mcrypt_generic($td, $input);
+		@mcrypt_generic_deinit($td);
+		@mcrypt_module_close($td);
 		// $data = base64_encode(static::_PaddingPKCS7($data));
 		$data = base64_encode($data);
 		return $data;
@@ -21,13 +21,13 @@ class Crypt3DES
 	public static function decrypt($encrypted, $key) {
 		$encrypted = base64_decode($encrypted);
 		$key = str_pad($key, 24, '0');
-		$td = mcrypt_module_open(MCRYPT_3DES, '', 'ecb', '');
-		$iv = @mcrypt_create_iv(mcrypt_enc_get_iv_size($td), MCRYPT_RAND);
-		$ks = mcrypt_enc_get_key_size($td);
+		$td = @mcrypt_module_open(MCRYPT_3DES, '', 'ecb', '');
+		$iv = @mcrypt_create_iv(@mcrypt_enc_get_iv_size($td), MCRYPT_RAND);
+		$ks = @mcrypt_enc_get_key_size($td);
 		@mcrypt_generic_init($td, $key, $iv);
-		$decrypted = mdecrypt_generic($td, $encrypted);
-		mcrypt_generic_deinit($td);
-		mcrypt_module_close($td);
+		$decrypted = @mdecrypt_generic($td, $encrypted);
+		@mcrypt_generic_deinit($td);
+		@mcrypt_module_close($td);
 		$y = static::_pkcs5_unpad($decrypted);
 		return $y;
 	}
@@ -51,7 +51,7 @@ class Crypt3DES
 	}
 
 	protected static function _PaddingPKCS7($data) {
-		$block_size = mcrypt_get_block_size(MCRYPT_3DES, MCRYPT_MODE_CBC);
+		$block_size = @mcrypt_get_block_size(MCRYPT_3DES, MCRYPT_MODE_CBC);
 		$padding_char = $block_size - (strlen($data) % $block_size);
 		$data .= str_repeat(chr($padding_char), $padding_char);
 		return $data;
