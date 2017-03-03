@@ -17,8 +17,6 @@ class Controller extends \App\Controller
 			$appid = $request->input('appid');
 			$param = $request->input('param');
 
-			log_debug('request', ['appid' => $appid, 'param' => $param]);
-
 			$procedure = Procedures::find($appid);
 			if (!$procedure) {
 				throw new ApiException(ApiException::Error, "appid不正确:" . $appid);
@@ -46,13 +44,15 @@ class Controller extends \App\Controller
 			$response = $this->$action($request, $parameter);
 			$this->after($request, $parameter);
 
+			log_info('response', $response);
+
 			return array('code' => ApiException::Success, 'msg' => null, 'data' => $response);
 		} catch (ApiException $e) {
-			log_error('requestError', ['message' => $e->getMessage(), 'code' => $e->getCode()]);
+			log_error('ApiException', ['message' => $e->getMessage(), 'code' => $e->getCode()]);
 			return array('code' => $e->getCode(), 'msg' => $e->getMessage(), 'data' => null);
 		} catch(\Exception $e) {
-			log_error('systemError', ['message' => $e->getMessage(), 'code' => $e->getCode(), 'file' => $e->getFile(), 'line' => $e->getLine()]);
-			return array('code' => ApiException::Error, 'msg' => ['message' => $e->getMessage(), 'code' => $e->getCode(), 'file' => $e->getFile(), 'line' => $e->getLine()], 'data' => null);
+			log_error('Exception', ['message' => $e->getMessage(), 'code' => $e->getCode(), 'file' => $e->getFile(), 'line' => $e->getLine()]);
+			return array('code' => ApiException::Error, 'msg' => 'system error', 'data' => null);
 		}
 	}
 

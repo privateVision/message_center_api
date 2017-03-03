@@ -2,6 +2,8 @@
 
 namespace App\Jobs;
 
+use App\Model\MongoDB\AppApiLog;
+
 class Log extends Job
 {
     protected $content;
@@ -18,6 +20,6 @@ class Log extends Job
      */
     public function handle()
     {
-        
+        AppApiLog::insert($this->content);
     }
 }
