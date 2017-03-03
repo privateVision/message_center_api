@@ -58,6 +58,22 @@ def url_to_dict(url):
     return dict([(k, v[0]) for k, v in urlparse.parse_qs(query).items()])
 
 
+def sdk_api_gen_key(appid, data):
+    find_prikey_sql = 'select priKey from procedures where pid = %s' % (appid,)
+    from run import mysql_session
+    app_info = mysql_session.execute(find_prikey_sql).first()
+    if app_info:
+        pri_key = app_info['priKey']
+        m = hashlib.md5()
+        m.update(pri_key)
+        md5_key = m.hexdigest()
+        sign_str = "%s%s" % (md5_key[0:16], md5_key[0:8])
+        service_logger.info("运算生成加密key为：%s" % (sign_str,))
+        return encrypt_des(data, sign_str)
+    service_logger.error("根据appid未找到相关的应用信息pri_key")
+    return False
+
+
 def sdk_api_check_key(request):
     appid = request.form['appid']
     param = request.form['param']

@@ -57,6 +57,6 @@ def create_app():
 def init_mysql_db(app):
     app.config['SQLALCHEMY_DATABASE_URI'] = app.config.get('SQLALCHEMY_DATABASE_URI')
     mysql_engine = create_engine(app.config['SQLALCHEMY_DATABASE_URI'], encoding="utf-8", echo=True)
-    mysql_session = sessionmaker(bind=mysql_engine)
+    mysql_session = sessionmaker(autocommit=False, bind=mysql_engine)
     return mysql_session()
 

@@ -113,15 +113,15 @@ def v4_cms_message_revocation():
 
 
 # 心跳
-@app_controller.route('/v4/app/heartbeat', methods=['POST'])
-def v4_sdk_heartbeat():
-    appid = request.form['appid']
-    param = request.form['param']
-    if appid is None or param is None:
-        return response_data(400, 400, '客户端请求错误')
-    from Utils.EncryptUtils import sdk_api_check_key
-    params = sdk_api_check_key(request)
-    ucid = get_ucid_by_access_token(params['access_token'])
+@app_controller.route('/v4/app/heartbeat/<int:ucid>', methods=['GET'])
+def v4_sdk_heartbeat(ucid):
+    # appid = request.form['appid']
+    # param = request.form['param']
+    # if appid is None or param is None:
+    #     return response_data(400, 400, '客户端请求错误')
+    # from Utils.EncryptUtils import sdk_api_check_key
+    # params = sdk_api_check_key(request)
+    # ucid = get_ucid_by_access_token(params['access_token'])
     data = get_user_data_mark_in_redis(ucid)
     return response_data(data=data)
 
@@ -136,5 +136,5 @@ def v4_sdk_heartbeat_ack():
     from Utils.EncryptUtils import sdk_api_check_key
     params = sdk_api_check_key(request)
     ucid = get_ucid_by_access_token(params['access_token'])
-    clear_user_data_mark_in_redis(ucid)
+    clear_user_data_mark_in_redis(ucid, params['type'])
     return response_ok()
