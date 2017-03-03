@@ -7,8 +7,8 @@ __pycache__/
 .idea
 .DS_Store
 *.log
-appapi/.env
-appapi/test.py
-appapi/.token
+.env
+test.py
+.token
 config.py
 
