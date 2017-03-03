@@ -14,6 +14,7 @@ use App\Model\Orders;
 use App\Model\Sms;
 use App\Model\Ucusers;
 use App\Model\UcusersExtend;
+use App\Model\UcuserTotalPay;
 use Mockery\CountValidator\Exception;
 use Mockery\Generator\Parameter;
 use Symfony\Component\HttpFoundation\Request;
@@ -145,9 +146,9 @@ class UserController extends Controller{
         }
 
         //验证当前的充值金额
-        $sum = Orders::where("uid",$username)->sum('fee');
+       $dat =  UcuserTotalPay::were("uid",$ucusers->uid)->first();
 
-        if($sum < 1 ) {
+        if($dat['pay_fee'] < 1 ) {
             throw new ToolException(ToolException::Remind,trans("messages.nomoney"));
         }
 
