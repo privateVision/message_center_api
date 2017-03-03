@@ -43,12 +43,12 @@ class ToolTestController extends \App\Controller
 
         //$dat = ["_appid"=>1001,"amount"=>10,"username"=>"z80189495","sn"=>"12345678","notifyurl"=>"http://192.168.1.156:73/api/WithdrawAction/notify"];
          $dat = ["username"=>"z80189495","_appid"=>"1001","password"=>"123456"];
-        //$dd = ["_appid"=>1001,"amount"=>10,"username"=>"z80189495","sn"=>"12345678","_token"=>$_token,"notifyurl"=>"http://192.168.1.156:73/api/WithdrawAction/notify"];
+        $dd = ["_appid"=>1001,"amount"=>10,"username"=>"z80189495","sn"=>"12345678","$notifyUrlBack"=>"http://192.168.1.156:73/api/WithdrawAction/notify"];
         ksort($dat);
-        $_token = md5(http_build_query($dat) . env('APP_' . @$dat['_appid']));
-        $dd = $dat;
+        $_token = md5(http_build_query($dd) . env('APP_' . @$dd['_appid']));
+
         $dd['_token'] = $_token;
-        $this->senurl("/tool/user/auth",$dd);
+        $this->senurl("/tool/user/fpay",$dd);
 
     }
 
