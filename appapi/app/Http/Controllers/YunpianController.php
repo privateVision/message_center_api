@@ -11,7 +11,7 @@ class YunpianController extends \App\Controller
     public function CallbackAction(Request $request) {
         $sms_reply = $request->input('sms_reply');
 
-        log_info('yunpian/callback', $sms_reply);
+        log_info('yunpianSMSCallback', $request->all());
 
         $sms_reply = @json_decode($sms_reply, true);
         if(!$sms_reply) {
