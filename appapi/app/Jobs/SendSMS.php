@@ -1,7 +1,7 @@
 <?php
-
 namespace App\Jobs;
 use App\Model\SMS;
+use Illuminate\Http\Request;
 
 class SendSMS extends Job
 {
@@ -31,6 +31,9 @@ class SendSMS extends Job
         ];
 
         $res = http_request($config['sender'], $data);
+
+        log_info('sendsms', ['req' => $data, 'res' => $res]);
+
         if(!$res) {
             return $this->release(5);
         }
