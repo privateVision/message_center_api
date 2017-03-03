@@ -55,6 +55,7 @@ def v4_cms_delete_post_broadcast():
         return response_data(400, 400, '客户端请求错误')
     try:
         UsersMessage.objects(Q(type='message') & Q(mysql_id=message_id)).delete()
+        UserMessage.objects(Q(type='message') & Q(mysql_id=message_id)).delete()
     except Exception, err:
         service_logger.error("删除消息异常：%s" % (err.message,))
         return response_data(http_code=500, code=500002, message="删除消息失败")
@@ -75,8 +76,8 @@ def v4_sdk_get_message_list():
         if ucid:
             page = params['page'] if params.has_key('page') and params['page'] else 1
             count = params['count'] if params.has_key('count') and params['count'] else 10
-            start_index = (page - 1) * count
-            end_index = start_index + count
+            start_index = (int(page) - 1) * int(count)
+            end_index = start_index + int(count)
             service_logger.info("用户：%s 获取消息列表，数据从%s到%s" % (ucid, start_index, end_index))
             # 查询用户相关的公告列表
             current_timestamp = get_current_timestamp()

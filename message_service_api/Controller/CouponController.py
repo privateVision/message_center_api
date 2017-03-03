@@ -94,8 +94,8 @@ def v4_sdk_get_broadcast_list():
         if ucid:
             page = params['page'] if params.has_key('page') and params['page'] else 1
             count = params['count'] if params.has_key('count') and params['count'] else 10
-            start_index = (page - 1) * count
-            end_index = start_index + count
+            start_index = (int(page) - 1) * int(count)
+            end_index = start_index + int(count)
             service_logger.info("用户：%s 获取卡券列表，数据从%s到%s" % (ucid, start_index, end_index))
             # 查询用户相关的公告列表
             current_timestamp = get_current_timestamp()
