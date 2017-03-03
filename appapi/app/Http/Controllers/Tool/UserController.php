@@ -104,24 +104,31 @@ class UserController extends Controller{
 
         $sn = $request->input("sn"); //订单号
 
-        if(preg_match($partername,$username)) {
-            http_request($notifyUrlBack,["code"=>1,"msg"=>trans("messages.fpay1"),"data"=>["sn"=>$sn]],true);
+        if(!preg_match($partername,$username)) {
+            $conm =http_request($notifyUrlBack,["code"=>1,"msg"=>trans("messages.fpay1"),"data"=>["sn"=>$sn]],true);
             new ToolException(ToolException::Remind, trans('messages.name_type_error'));
+            return "error type user!";
         }
+
+
         $amount   =  $request->input('amount'); //用户金额
 
         $user = Ucusers::where("uid",$username)->first();
 
         if(!$user)  {
-            http_request($notifyUrlBack,["code"=>1,"msg"=>trans("messages.fpay1"),"data"=>["sn"=>$sn]],true);
+            $conm =http_request($notifyUrlBack,["code"=>1,"msg"=>trans("messages.fpay1"),"data"=>["sn"=>$sn]],true);
             new ToolException(ToolException::Remind, trans('messages.fpay1'));
+            return "no user";
         }
+
         $user->balance += $amount;
         $re = $user->save();
         $code = $re?0:1;
+
         //没有添加日志
         //$code 0 成功 1 失败
         $con = http_request($notifyUrlBack,["code"=>$code,"msg"=>trans("messages.fpay".$code),"data"=>["sn"=>$sn]],true);
+
         echo $con ;
     }
 
