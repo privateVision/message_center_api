@@ -7,7 +7,7 @@ class Crypt3DES
 		$size = mcrypt_get_block_size(MCRYPT_3DES, 'ecb');
 		$input = static::_pkcs5_pad($input, $size);
 		$key = str_pad($key, 24, '0');
-		$td = mcrypt_module_open(MCRYPT_3DES, '', 'ecb', '');
+		$td = @mcrypt_module_open(MCRYPT_3DES, '', 'ecb', '');
 		$iv = @mcrypt_create_iv (mcrypt_enc_get_iv_size($td), MCRYPT_RAND);
 		@mcrypt_generic_init($td, $key, $iv);
 		$data = mcrypt_generic($td, $input);
@@ -21,7 +21,7 @@ class Crypt3DES
 	public static function decrypt($encrypted, $key) {
 		$encrypted = base64_decode($encrypted);
 		$key = str_pad($key, 24, '0');
-		$td = mcrypt_module_open(MCRYPT_3DES, '', 'ecb', '');
+		$td = @mcrypt_module_open(MCRYPT_3DES, '', 'ecb', '');
 		$iv = @mcrypt_create_iv(mcrypt_enc_get_iv_size($td), MCRYPT_RAND);
 		$ks = mcrypt_enc_get_key_size($td);
 		@mcrypt_generic_init($td, $key, $iv);
