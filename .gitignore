@@ -6,7 +6,6 @@ __pycache__/
 *.pyc
 .idea
 .DS_Store
-*.log
 appapi/.env
 appapi/test.py
 appapi/.token
