@@ -14,9 +14,9 @@ from run import app
 def generate_checksum(request):
     sign = request.args.get("sign")
     if sign is None:
-        return False, response_exception(http_code=403, code=403001, message="加密签名不能为空")
+        return False, response_exception(http_code=200, code=0, message="加密签名不能为空")
     if not check_cms_api_data_sign(request.form, sign):
-        return False, response_exception(http_code=403, code=403002, message="数据签名校验失败")
+        return False, response_exception(http_code=200, code=0, message="数据签名校验失败")
     return True, True
 
 

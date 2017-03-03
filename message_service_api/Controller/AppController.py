@@ -63,7 +63,7 @@ def v4_get_app_list():
 @app_controller.route('/v4/app/<int:app_id>/zones', methods=['GET'])
 def v4_get_app_zone_list(app_id=None):
     if app_id is None or app_id <= 0:
-        return response_data(400, 400002, 'app_id不能为空')
+        return response_data(200, 0, 'app_id不能为空')
     # data = Zonelists.objects.get(_id=app_id)
     from run import mysql_session
     find_users_by_user_type_sql = "select distinct(zoneId), zoneName from roleDatas as r where r.vid = %s " % (app_id,)
@@ -89,7 +89,7 @@ def v4_cms_set_vip_rules():
         return check_exception
     data = json.loads(request.form['data'])
     if data is None or data == '':
-        return response_data(400, 400, '客户端请求错误')
+        return response_data(200, 0, '客户端请求错误')
     app_vip_rules = AppVipRules()
     app_vip_rules.drop_collection()
     for item in data:
@@ -109,7 +109,7 @@ def v4_cms_message_revocation():
     message_type = request.form['type']
     msg_id = request.form['mysql_id']
     if type is None or type == '' or msg_id is None or msg_id == '':
-        return response_data(400, 400, '客户端请求错误')
+        return response_data(200, 0, '客户端请求错误')
     message_revocation = MessageRevocation()
     message_revocation.id = "%s%s" % (message_type, msg_id)
     message_revocation.type = message_type
@@ -120,7 +120,7 @@ def v4_cms_message_revocation():
         UserMessage.objects(Q(type=message_type) & Q(mysql_id=msg_id)).update(set__closed=1)
     except Exception, err:
         service_logger.error(err.message)
-        return response_data(http_code=500, code=500003, message="mongo写入失败")
+        return response_data(http_code=200, code=0, message="mongo写入失败")
     return response_data(http_code=200, message="消息撤回成功")
 
 
@@ -144,7 +144,7 @@ def v4_sdk_heartbeat_ack():
     appid = request.form['appid']
     param = request.form['param']
     if appid is None or param is None:
-        return response_data(400, 400, '客户端请求错误')
+        return response_data(200, 0, '客户端请求错误')
     from Utils.EncryptUtils import sdk_api_check_key
     params = sdk_api_check_key(request)
     ucid = get_ucid_by_access_token(params['access_token'])

@@ -27,7 +27,7 @@ def v4_cms_add_coupon():
     form = PostCouponsRequestForm(request.form)  # POST 表单参数封装
     if not form.validate():
         service_logger.error(form.errors)
-        return response_data(400, 400, '客户端请求错误')
+        return response_data(200, 0, '客户端请求错误')
     else:
         from run import kafka_producer
         try:
@@ -38,7 +38,7 @@ def v4_cms_add_coupon():
             kafka_producer.send('message-service', json.dumps(message_info))
         except Exception, err:
             service_logger.error(err.message)
-            return response_data(http_code=500, code=500001, message="kafka服务异常")
+            return response_data(http_code=200, code=0, message="kafka服务异常")
         return response_data(http_code=200)
 
 
@@ -52,7 +52,7 @@ def v4_cms_update_coupon():
     form = PostCouponsRequestForm(request.form)  # POST 表单参数封装
     if not form.validate():
         service_logger.error(form.errors)
-        return response_data(400, 400, '客户端请求错误')
+        return response_data(200, 0, '客户端请求错误')
     else:
         try:
             system_coupon_update(form.data)
@@ -70,13 +70,13 @@ def v4_cms_delete_coupon():
         return check_exception
     coupon_id = request.form['id']
     if coupon_id is None or coupon_id == '':
-        return response_data(400, 400, '客户端请求错误')
+        return response_data(200, 0, '客户端请求错误')
     try:
         UsersMessage.objects(Q(type='coupon') & Q(mysql_id=coupon_id)).delete()
         UserMessage.objects(Q(type='coupon') & Q(mysql_id=coupon_id)).delete()
     except Exception, err:
         service_logger.error(err.message)
-        return response_data(http_code=500, code=500002, message="删除卡券失败")
+        return response_data(http_code=200, code=0, message="删除卡券失败")
     return response_data(http_code=204)
 
 
@@ -86,7 +86,7 @@ def v4_sdk_get_broadcast_list():
     appid = request.form['appid']
     param = request.form['param']
     if appid is None or param is None:
-        return response_data(400, 400, '客户端请求错误')
+        return response_data(200, 0, '客户端请求错误')
     from Utils.EncryptUtils import sdk_api_check_key
     params = sdk_api_check_key(request)
     if params:
@@ -141,5 +141,5 @@ def v4_sdk_get_broadcast_list():
             }
             return response_data(http_code=200, data=data)
         else:
-            return response_data(400, 400, '根据access_token获取用户id失败，请重新登录')
+            return response_data(200, 0, '根据access_token获取用户id失败，请重新登录')
 

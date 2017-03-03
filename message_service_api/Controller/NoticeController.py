@@ -28,7 +28,7 @@ def v4_cms_post_notice():
     form = PostNoticesRequestForm(request.form)  # POST 表单参数封装
     if not form.validate():
         service_logger.error("公告请求校验异常：%s" % (form.errors,))
-        return response_data(400, 400, '客户端请求错误')
+        return response_data(200, 0, '客户端请求错误')
     else:
         from run import kafka_producer
         try:
@@ -41,7 +41,7 @@ def v4_cms_post_notice():
             kafka_producer.send('message-service', message_str)
         except Exception, err:
             service_logger.error("发送公告异常：%s" % (err.message,))
-            return response_data(http_code=500, code=500001, message="kafka服务异常")
+            return response_data(http_code=200, code=0, message="kafka服务异常")
         return response_data(http_code=200)
 
 
@@ -55,7 +55,7 @@ def v4_cms_update_post_notice():
     form = PostNoticesRequestForm(request.form)  # POST 表单参数封装
     if not form.validate():
         service_logger.error("公告请求校验异常：%s" % (form.errors,))
-        return response_data(400, 400, '客户端请求错误')
+        return response_data(200, 0, '客户端请求错误')
     else:
         try:
             service_logger.info("更新公告：%s" % (json.dumps(form.data),))
@@ -74,13 +74,13 @@ def v4_cms_set_post_notice_closed():
         return check_exception
     notice_id = request.form['id']
     if notice_id is None or notice_id == '':
-        return response_data(400, 400, '客户端请求错误')
+        return response_data(200, 0, '客户端请求错误')
     try:
         UsersMessage.objects(Q(type='notice') & Q(mysql_id=notice_id)).update(set__closed=1)
         UserMessage.objects(Q(type='notice') & Q(mysql_id=notice_id)).update(set__closed=1)
     except Exception, err:
         service_logger.error("关闭公告异常：%s" % (err.message,))
-        return response_data(500, 500, '服务端异常')
+        return response_data(200, 0, '服务端异常')
     return response_data(http_code=204)
 
 
@@ -93,13 +93,13 @@ def v4_cms_set_post_notice_open():
         return check_exception
     notice_id = request.form['id']
     if notice_id is None or notice_id == '':
-        return response_data(400, 400, '客户端请求错误')
+        return response_data(200, 0, '客户端请求错误')
     try:
         UsersMessage.objects(Q(type='notice') & Q(mysql_id=notice_id)).update(set__closed=0)
         UserMessage.objects(Q(type='notice') & Q(mysql_id=notice_id)).update(set__closed=0)
     except Exception, err:
         service_logger.error("打开公告异常：%s" % (err.message,))
-        return response_data(500, 500, '服务端异常')
+        return response_data(200, 0, '服务端异常')
     return response_data(http_code=204)
 
 
@@ -109,7 +109,7 @@ def v4_sdk_get_notice_list():
     appid = request.form['appid']
     param = request.form['param']
     if appid is None or param is None:
-        return response_data(400, 400, '客户端请求错误')
+        return response_data(200, 0, '客户端请求错误')
     from Utils.EncryptUtils import sdk_api_check_key
     params = sdk_api_check_key(request)
     if params:
@@ -172,7 +172,7 @@ def v4_sdk_get_notice_list():
             }
             return response_data(http_code=200, data=data)
         else:
-            return response_data(400, 400, '根据access_token获取用户id失败，请重新登录')
+            return response_data(200, 0, '根据access_token获取用户id失败，请重新登录')
 
 
 # SDK 设置消息已读（消息通用）
@@ -181,13 +181,13 @@ def v4_sdk_set_notice_have_read():
     appid = request.form['appid']
     param = request.form['param']
     if appid is None or param is None:
-        return response_data(400, 400, '客户端请求错误')
+        return response_data(200, 0, '客户端请求错误')
     from Utils.EncryptUtils import sdk_api_check_key
     params = sdk_api_check_key(request)
     ucid = get_ucid_by_access_token(params['access_token'])
     message_info = params['message_info']
     if message_info['type'] is None or message_info['message_ids'] is None:
-        return response_data(400, 400, '客户端请求错误')
+        return response_data(200, 0, '客户端请求错误')
     message_info_json = json.loads(message_info)
     for message in message_info_json:
         for message_id in message['message_ids']:
@@ -205,5 +205,5 @@ def v4_sdk_set_notice_have_read():
                     user_read_message_log.save()
                 except Exception as err:
                     service_logger.error("设置消息已读异常：%s" % (err.message,))
-                    return response_data(http_code=500, message="服务器出错啦/(ㄒoㄒ)/~~")
+                    return response_data(http_code=200, code=0, message="服务器出错啦/(ㄒoㄒ)/~~")
     return response_data(http_code=204)

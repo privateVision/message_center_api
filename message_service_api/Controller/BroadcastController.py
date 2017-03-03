@@ -27,7 +27,7 @@ def v4_cms_post_broadcast():
     form = PostBroadcastsRequestForm(request.form)  # POST 表单参数封装
     if not form.validate():
         service_logger.error(form.errors)
-        return response_data(400, 400, '客户端请求错误')
+        return response_data(200, 0, '客户端请求错误')
     else:
         from run import kafka_producer
         try:
@@ -40,7 +40,7 @@ def v4_cms_post_broadcast():
             kafka_producer.send('message-service', message_str)
         except Exception, err:
             service_logger.error("发送广播异常：%s" % (err.message,))
-            return response_data(http_code=500, code=500001, message="kafka服务异常")
+            return response_data(http_code=200, code=0, message="kafka服务异常")
         return response_data(http_code=200)
 
 
@@ -54,7 +54,7 @@ def v4_cms_update_broadcast():
     form = PostBroadcastsRequestForm(request.form)  # POST 表单参数封装
     if not form.validate():
         print form.errors
-        return response_data(400, 400, '客户端请求错误')
+        return response_data(200, 0, '客户端请求错误')
     else:
         try:
             service_logger.info("更新广播：%s" % (json.dumps(form.data),))
@@ -73,13 +73,13 @@ def v4_cms_delete_post_broadcast():
         return check_exception
     broadcast_id = request.form['id']
     if broadcast_id is None or broadcast_id == '':
-        return response_data(400, 400, '客户端请求错误')
+        return response_data(200, 0, '客户端请求错误')
     try:
         UsersMessage.objects(Q(type='broadcast') & Q(mysql_id=broadcast_id)).delete()
         UserMessage.objects(Q(type='broadcast') & Q(mysql_id=broadcast_id)).delete()
     except Exception, err:
         service_logger.error("删除广播异常：%s" % (err.message,))
-        return response_data(http_code=500, code=500002, message="删除广播失败")
+        return response_data(http_code=200, code=0, message="删除广播失败")
     return response_data(http_code=204)
 
 
@@ -89,7 +89,7 @@ def v4_sdk_get_broadcast_list():
     appid = request.form['appid']
     param = request.form['param']
     if appid is None or param is None:
-        return response_data(400, 400, '客户端请求错误')
+        return response_data(200, 0, '客户端请求错误')
     from Utils.EncryptUtils import sdk_api_check_key
     params = sdk_api_check_key(request)
     if params:
@@ -142,4 +142,4 @@ def v4_sdk_get_broadcast_list():
             }
             return response_data(http_code=200, data=data)
         else:
-            return response_data(400, 400, '根据access_token获取用户id失败，请重新登录')
+            return response_data(200, 0, '根据access_token获取用户id失败，请重新登录')
