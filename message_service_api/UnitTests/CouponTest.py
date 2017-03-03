@@ -22,20 +22,20 @@ class CouponFunctionTest(unittest.TestCase):
     #     UserMessage.objects(Q(type='coupon')).delete()
     #     UserReadMessageLog.objects(Q(type='coupon')).delete()
     #     data = {
-    #         "game":"[{\"apk_id\": 783}]",
-    #         "users_type":"255,3",
-    #         "vip_user":"3,4",
-    #         "specify_user":"123,324",
-    #         "id":"1",
-    #         "title":"测试卡券",
-    #         "stime":"123234533",
-    #         "etime":"123432453",
-    #         "is_first":"1",
-    #         "info":"简单描述",
-    #         "full":"1231223",
-    #         "money":"41223",
-    #         "method":"使用方法",
-    #         "num":"11"
+    #         "game": "[{\"apk_id\": 783}]",
+    #         "users_type": "255,3",
+    #         "vip_user": "3,4",
+    #         "specify_user": "123,324",
+    #         "id": "1",
+    #         "title": "测试卡券",
+    #         "stime": "123234533",
+    #         "etime": "123432453",
+    #         "is_first": "1",
+    #         "info": "简单描述",
+    #         "full": "1231223",
+    #         "money": "41223",
+    #         "method": "使用方法",
+    #         "num": "11"
     #     }
     #     from Utils.EncryptUtils import get_md5_sign
     #     sign = get_md5_sign(data)
@@ -95,11 +95,12 @@ class CouponFunctionTest(unittest.TestCase):
         pass
 
 
-def suit_coupon_test():
+def suite():
     suite = unittest.TestSuite()
-    suite.addTest(CouponFunctionTest("test_update_coupon"))
+    suite.addTest(CouponFunctionTest("test_get_coupon_list"))
     return suite
 
 
-if __name__ == '__main__':
-    unittest.main(defaultTest='suit_coupon_test')
+if __name__ == "__main__":
+    unittest.main(defaultTest='suite')
+

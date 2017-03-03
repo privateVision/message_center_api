@@ -64,7 +64,13 @@ def url_to_dict(url):
 def sdk_api_gen_key(appid, data):
     find_prikey_sql = 'select priKey from procedures where pid = %s' % (appid,)
     from run import mysql_session
-    app_info = mysql_session.execute(find_prikey_sql).first()
+    try:
+        app_info = mysql_session.execute(find_prikey_sql).first()
+    except Exception, err:
+        service_logger.error(err.message)
+        mysql_session.rollback()
+    finally:
+        mysql_session.close()
     if app_info:
         pri_key = app_info['priKey']
         m = hashlib.md5()
@@ -83,7 +89,13 @@ def sdk_api_check_key(request):
     service_logger.info("sdk api request: appid - %s, params - %s " % (appid, param))
     find_prikey_sql = 'select priKey from procedures where pid = %s' % (appid,)
     from run import mysql_session
-    app_info = mysql_session.execute(find_prikey_sql).first()
+    try:
+        app_info = mysql_session.execute(find_prikey_sql).first()
+    except Exception, err:
+        service_logger.error(err.message)
+        mysql_session.rollback()
+    finally:
+        mysql_session.close()
     if app_info:
         pri_key = app_info['priKey']
         m = hashlib.md5()

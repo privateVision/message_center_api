@@ -26,7 +26,13 @@ def v4_get_app_list():
     from run import mysql_session
     find_users_by_user_type_sql = "select pid as id, pname as app_name, priKey as rsa_key, psingKey as sign_key " \
                                   "from procedures as p where p.status = 1 "
-    origin_list = mysql_session.execute(find_users_by_user_type_sql)
+    try:
+        origin_list = mysql_session.execute(find_users_by_user_type_sql)
+    except Exception, err:
+        service_logger.error(err.message)
+        mysql_session.rollback()
+    finally:
+        mysql_session.close()
     app_list = []
     for app in origin_list:
         game = {
@@ -61,7 +67,13 @@ def v4_get_app_zone_list(app_id=None):
     # data = Zonelists.objects.get(_id=app_id)
     from run import mysql_session
     find_users_by_user_type_sql = "select distinct(zoneId), zoneName from roleDatas as r where r.vid = %s " % (app_id,)
-    origin_list = mysql_session.execute(find_users_by_user_type_sql)
+    try:
+        origin_list = mysql_session.execute(find_users_by_user_type_sql)
+    except Exception, err:
+        service_logger.error(err.message)
+        mysql_session.rollback()
+    finally:
+        mysql_session.close()
     zone_list = []
     for zone in origin_list:
         zone_list.append(zone['zoneName'])
