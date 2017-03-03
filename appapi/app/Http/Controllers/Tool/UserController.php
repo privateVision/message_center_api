@@ -114,6 +114,8 @@ class UserController extends Controller{
         $code = $re?0:1;
         //没有添加日志
         //$code 0 成功 1 失败
+        if($code == 1)  new ToolException(ToolException::Remind, trans('messages.fpay1'));
+
         return  http_request($notifyUrlBack,["code"=>0,"msg"=>trans("messages.fpay".$code),"data"=>["sn"=>$sn]],true);
     }
 
