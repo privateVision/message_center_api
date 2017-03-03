@@ -72,6 +72,18 @@ return [
             'timezone'  => env('DB_56GAMEBBS_TIMEZONE', '+00:00'),
             'strict'    => env('DB_56GAMEBBS_STRICT_MODE', false),
         ],
+
+        'mongodb' => [
+            'driver'   => 'mongodb',
+            'host'     => env('MONGODB_HOST'),
+            'port'     => env('MONGODB_PORT'),
+            'database' => env('MONGODB_DATABASE'),
+            'username' => env('MONGODB_USERNAME'),
+            'password' => env('MONGODB_PASSWORD'),
+            'options'  => [
+                'database' => 'admin' // sets the authentication database required by mongo 3
+            ]
+        ],
     ],
 
     /*

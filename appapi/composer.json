@@ -11,7 +11,8 @@
         "predis/predis": "*",
         "illuminate/redis": "*",
 		"aws/aws-sdk-php": "~3.0",
-		"pda/pheanstalk": "~3.0"
+		"pda/pheanstalk": "~3.0",
+        "jenssegers/mongodb": "^3.2"
     },
     "require-dev": {
         "fzaninotto/faker": "~1.4",

@@ -1,36 +1,56 @@
 <?php
-
 namespace App\Jobs;
+use App\Model\SMS;
+use Illuminate\Http\Request;
 
 class SendSMS extends Job
 {
     protected $mobile;
-    protected $content;
+
+    protected $text;
+
     protected $code;
 
-    public function __construct($mobile, $content, $code = 0)
+    public function __construct($mobile, $text, $code = '')
     {
         $this->mobile = $mobile;
-        $this->content = $content;
+        $this->text = $text;
         $this->code = $code;
     }
 
-    /**
-     * Execute the job.
-     *
-     * @return void
-     */
     public function handle()
     {
+        if($this->attempts() >= 10) return;
+
+        $config = config('common.yunpian');
+
         $data = [
-            'apikey' => env('YUNPIAN_APPKEY'),
-            'mobile' => "15021829660",//$this->mobile,
-            'text' => $this->content,
+            'apikey' => $config['apikey'],
+            'mobile' => $this->mobile,
+            'text' => $this->text,
         ];
 
-        $res = http_request('https://sms.yunpian.com/v2/sms/single_send.json', $data);
-        log_debug('yunpian_sendsms', ['requestData' => $data, 'response' => $res]);
+        $res = http_request($config['sender'], $data);
 
-        return 0;
+        log_info('sendsms', ['req' => $data, 'res' => $res]);
+
+        if(!$res) {
+            return $this->release(5);
+        }
+
+        $res = json_decode($res, true);
+        if(!$res) {
+            return $this->release(5);
+        }
+
+        if($res['code'] == 0) {
+            $sms = new SMS;
+            $sms->mobile = $this->mobile;
+            $sms->authCode = $this->text;
+            $sms->acode = $this->code;
+            $sms->save();
+        } else {
+            return $this->release(5);
+        }
     }
 }

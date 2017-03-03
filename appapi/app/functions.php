@@ -1,6 +1,10 @@
 <?php
 use Illuminate\Support\Facades\Redis;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Queue;
+use App\Jobs\SendSMS;
+use App\Jobs\OrderSuccess;
+use App\Jobs\Log;
 
 function encrypt3des($data, $key = null) {
     if(empty($key)) {
@@ -22,72 +26,67 @@ function uuid() {
     return md5(uniqid() . rand(0, 999999) . microtime());
 }
 
-function order_notify($order) {
-
+function order_success($order_id) {
+    Queue::push(new OrderSuccess($order_id));
 }
 
-function send_sms($mobile, $content, $code = 0) {
-    return Redis::lpush("queue", json_encode([
-        'topic' => 'sendsms',
-        'mobile' => $mobile,
-        'content' => $content,
-        'code' => $code
-    ]));
+function send_sms($mobile, $content, $code = '') {
+    Queue::push(new SendSMS($mobile, $content, $code));
 }
 
 function log_debug ($keyword, $content) {
     global $app;
 
-    return Redis::lpush("queue", json_encode([
-        'topic' => 'log',
-        'level' => 100,
-        'content' => $content,
+    Queue::push(new Log([
+        'keyword' => $keyword,
+        'mode' => PHP_SAPI,
+        'level' => 'DEBUG', 
         'ip' => $app->request->ip(),
         'pid' => getmypid(),
-        'keyword' => $keyword,
-        'content' => $content
+        'datetime' => date('Y-m-d H:i:s'),
+        'content' => $content,
     ]));
 }
 
 function log_info ($keyword, $content) {
     global $app;
 
-    return Redis::lpush("queue", json_encode([
-        'topic' => 'log',
-        'level' => 200,
-        'content' => $content,
+    Queue::push(new Log([
+        'keyword' => $keyword,
+        'mode' => PHP_SAPI,
+        'level' => 'INFO', 
         'ip' => $app->request->ip(),
         'pid' => getmypid(),
-        'keyword' => $keyword,
-        'content' => $content
+        'datetime' => date('Y-m-d H:i:s'),
+        'content' => $content,
     ]));
 }
 
 function log_warning ($keyword, $content) {
     global $app;
 
-    return Redis::lpush("queue", json_encode([
-        'topic' => 'log',
-        'level' => 300,
-        'content' => $content,
+    Queue::push(new Log([
+        'keyword' => $keyword,
+        'mode' => PHP_SAPI,
+        'level' => 'WARNING', 
         'ip' => $app->request->ip(),
         'pid' => getmypid(),
-        'keyword' => $keyword,
-        'content' => $content
+        'datetime' => date('Y-m-d H:i:s'),
+        'content' => $content,
     ]));
 }
 
 function log_error ($keyword, $content) {
     global $app;
 
-    return Redis::lpush("queue", json_encode([
-        'topic' => 'log',
-        'level' => 400,
-        'content' => $content,
+    Queue::push(new Log([
+        'keyword' => $keyword,
+        'mode' => PHP_SAPI,
+        'level' => 'ERROR', 
         'ip' => $app->request->ip(),
         'pid' => getmypid(),
-        'keyword' => $keyword,
-        'content' => $content
+        'datetime' => date('Y-m-d H:i:s'),
+        'content' => $content,
     ]));
 }
 

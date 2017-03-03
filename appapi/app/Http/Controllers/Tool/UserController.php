@@ -118,7 +118,8 @@ class UserController extends Controller{
         $code = $re?0:1;
         //没有添加日志
         //$code 0 成功 1 失败
-        http_request($notifyUrlBack,["code"=>$code,"msg"=>trans("messages.fpay".$code),"data"=>["sn"=>$sn]],true);
+        $con = http_request($notifyUrlBack,["code"=>$code,"msg"=>trans("messages.fpay".$code),"data"=>["sn"=>$sn]],true);
+        echo $con ;
     }
 
 

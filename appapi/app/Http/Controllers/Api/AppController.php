@@ -18,20 +18,6 @@ class AppController extends Controller
         $version = $parameter->tough('version');
         $app_version = $parameter->tough('app_version');
 
-        // todo: 默认配置先写死在代码里
-        $default = array(
-            'service_qq' => env('SERVICE_QQ'),
-            'service_page' => '',
-            'service_phone' => env('SERVICE_PHONE'),
-            'service_share' => env('SERVICE_SHARE'),
-            'service_interval' => 300,
-            'bind_phone_need' => true,
-            'bind_phone_enforce' => false,
-            'time_interval' => 86400,
-            'real_name_need' => false,
-            'real_name_enforce' => false,
-        );
-
         // token
         $session = new Session;
         $session->access_token = uuid();
@@ -47,28 +33,41 @@ class AppController extends Controller
         $session->date = date('Ymd');
         $session->save();
 
-        $data['access_token'] = $session->access_token;
+        $access_token = $session->access_token;
 
         // config
-        $extend = $this->procedure->procedures_extend()->first();
-        if($extend) {
-            foreach($default as $k => $v) {
-                $data[$k] = ($extend->$k !== null && $extend->$k !== '') ? $extend->$k : $v;
-            }
-        }
+        $config = $this->procedure->procedures_extend()->first();
 
         // check update
-        $update = $this->procedure->update_apks()->orderBy('dt', 'desc')->first();
-        if($update && $update->version != $app_version) {
-            $data['update'] = array(
+        $update = null;
+        $update_apks = $this->procedure->update_apks()->orderBy('dt', 'desc')->first();
+        if($update_apks && $update_apks->version != $app_version) {
+            $update = array(
                 'down_url' => $update->down_uri,
                 'version' => $update->version,
                 'force_update' => $update->force_update,
             );
-        } else {
-            $data['update'] = null;
         }
-        
-        return $data;
+
+        return [
+            'access_token' => $session->access_token,
+            'update' => $update,
+            'service' => [
+                'qq' => $config->service_qq ?: env('SERVICE_QQ'),
+                'page' => $config->service_page ?: env('SERVICE_PAGE'),
+                'phone' => $config->service_phone ?: env('SERVICE_PHONE'),
+                'share' => $config->service_share ?: env('SERVICE_SHARE'),
+                'interval' => $config->service_interval ?: 300,
+            ],
+            'bind_phone' => [
+                'need' => $config->bind_phone_need ? 1 : 0,
+                'enforce' => $config->bind_phone_enforce ? 1 : 0,
+                'interval' => $config->time_interval ?: 86400,
+            ],
+            'real_name' => [
+                'need' => $config->real_name_need ? 1 : 0,
+                'enforce' => $config->real_name_enforce ? 1 : 0,
+            ]
+        ];
     }
 }
