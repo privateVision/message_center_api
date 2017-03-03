@@ -62,18 +62,20 @@ class UserController extends Controller{
             $uid = $request->input("uid");
             $user = UcenterMembers::where("username", $uid)->first();
             $userextend = UcusersExtend::where("username",$uid)->where("isfreeze",self::FREEZE)->first();
+            $status = $request->input("status");
 
             if(!$userextend){
                 new ToolException(ToolException::Remind, trans('messages.unfreeze_faild'));
             }
 
-            if($code =1){
-                $pass = $user->password;
+            if($status){
                 $user->password = $user->newpass;
-                $user->newpass  = $user->$pass;
-                $user->isfreeze = self::HAD_SHELL;
             }else{
+                $pass = $user->password;
                 $userextend->isfreeze = self::UN_FREEZE;
+                $userextend->newpass  = $user->$pass; //密码替换
+                $userextend->isfreeze = self::HAD_SHELL;
+                //$userextend->newpass  =
             }
 
             if( $userextend->save() && $user->save()){
@@ -161,8 +163,8 @@ class UserController extends Controller{
             $ms = Sms::where("mobile",$mobile)->orderBy('id', 'desc')->first();
             $time = time() - strtotime($ms['sendTime']);
             //验证码有效时间三十分钟
-            if($ms['code'] == $code && $time <= 1800 ){
-                return ["msg"=>trans("messages.sms_code_success")];
+            if($ms['acode'] == $code && $time <= 1800 ){
+                return ["msg"=>trans("messages.sms_code_success"),"uid"=>$ms->ucusers->uid];
             }else{
                 throw new ToolException(ToolException::Remind,trans("messages.sms_code_error"));
             }
@@ -172,8 +174,9 @@ class UserController extends Controller{
     public function sendmsAction(Request $request,$param){
         $mobile = $request->input("mobile");
         $code = rand(111111,999999);
-        $content = trans_choice("messages.sms_code",$code);
-        send_sms($mobile, $content);
+        $content = trans("messages.sms_code").$code;
+        send_sms($mobile, $content,$code);
+        return ['code'=>$code];
     }
 
 }
