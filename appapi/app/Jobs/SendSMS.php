@@ -1,5 +1,7 @@
 <?php
 namespace App\Jobs;
+use App\Model\SMS;
+use Illuminate\Http\Request;
 
 
 use App\Model\SMS;
@@ -22,12 +24,6 @@ class SendSMS extends Job
 
     public function handle()
     {
-        $sms = new SMS;
-        $sms->mobile = $this->mobile;
-        $sms->authCode = $this->text;
-        $sms->acode = $this->code;
-        $sms->save();
-        return ;
         if($this->attempts() >= 10) return;
 
         $config = config('common.yunpian');

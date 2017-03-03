@@ -100,24 +100,29 @@ class UserController extends Controller{
 
         $partername  = "/(^\d+(?=\w+)[a-zA-Z]+\w+$)|(^[a-zA-Z]+(?=\d+)\d+\w+$)/"; //正则匹配
 
-        if(preg_match($partername,$username))  new ToolException(ToolException::Remind, trans('messages.name_type_error'));
-        $amount   =  $request->input('amount'); //用户金额
-
         $notifyUrlBack  =  $request->input("notifyUrlBack"); //回调地址
 
         $sn = $request->input("sn"); //订单号
 
+        if(preg_match($partername,$username)) {
+            http_request($notifyUrlBack,["code"=>1,"msg"=>trans("messages.fpay1"),"data"=>["sn"=>$sn]],true);
+            new ToolException(ToolException::Remind, trans('messages.name_type_error'));
+        }
+        $amount   =  $request->input('amount'); //用户金额
+
         $user = Ucusers::where("uid",$username)->first();
 
-        if(!$user)  new ToolException(ToolException::Remind, trans('messages.fpay1'));
+        if(!$user)  {
+            http_request($notifyUrlBack,["code"=>1,"msg"=>trans("messages.fpay1"),"data"=>["sn"=>$sn]],true);
+            new ToolException(ToolException::Remind, trans('messages.fpay1'));
+        }
         $user->balance += $amount;
         $re = $user->save();
         $code = $re?0:1;
         //没有添加日志
         //$code 0 成功 1 失败
-        if($code == 1)  new ToolException(ToolException::Remind, trans('messages.fpay1'));
-
-        return  http_request($notifyUrlBack,["code"=>0,"msg"=>trans("messages.fpay".$code),"data"=>["sn"=>$sn]],true);
+        $con = http_request($notifyUrlBack,["code"=>$code,"msg"=>trans("messages.fpay".$code),"data"=>["sn"=>$sn]],true);
+        echo $con ;
     }
 
 
