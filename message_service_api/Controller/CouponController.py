@@ -10,7 +10,7 @@ from MiddleWare import service_logger
 from MongoModel.MessageModel import UsersMessage
 from MongoModel.UserMessageModel import UserMessage
 from RequestForm.PostCouponsRequestForm import PostCouponsRequestForm
-from Service.StorageService import system_coupon_persist
+from Service.StorageService import system_coupon_update
 from Service.UsersService import get_ucid_by_access_token, get_coupon_message_detail_info
 from Utils.SystemUtils import get_current_timestamp
 
@@ -55,7 +55,7 @@ def v4_cms_update_coupon():
         return response_data(400, 400, '客户端请求错误')
     else:
         try:
-            system_coupon_persist(form.data, False)
+            system_coupon_update(form.data)
         except Exception, err:
             service_logger.error(err.message)
     return response_data(http_code=200)

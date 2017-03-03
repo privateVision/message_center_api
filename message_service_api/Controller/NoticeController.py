@@ -11,7 +11,7 @@ from MongoModel.MessageModel import UsersMessage
 from MongoModel.UserMessageModel import UserMessage
 from MongoModel.UserReadMessageLogModel import UserReadMessageLog
 from RequestForm.PostNoticesRequestForm import PostNoticesRequestForm
-from Service.StorageService import system_announcements_persist
+from Service.StorageService import system_notices_update
 from Service.UsersService import get_notice_message_detail_info, get_ucid_by_access_token
 from Utils.SystemUtils import get_current_timestamp
 
@@ -59,7 +59,7 @@ def v4_cms_update_post_notice():
     else:
         try:
             service_logger.info("更新公告：%s" % (json.dumps(form.data),))
-            system_announcements_persist(form.data, False)
+            system_notices_update(form.data)
         except Exception, err:
             service_logger.error("更新公告异常：%s" % (err.message,))
     return response_data(http_code=200)

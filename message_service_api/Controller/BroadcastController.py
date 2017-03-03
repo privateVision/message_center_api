@@ -10,7 +10,7 @@ from MiddleWare import service_logger
 from MongoModel.MessageModel import UsersMessage
 from MongoModel.UserMessageModel import UserMessage
 from RequestForm.PostBroadcastsRequestForm import PostBroadcastsRequestForm
-from Service.StorageService import system_broadcast_persist
+from Service.StorageService import system_broadcast_update
 from Service.UsersService import get_ucid_by_access_token, get_broadcast_message_detail_info
 from Utils.SystemUtils import get_current_timestamp
 
@@ -47,7 +47,6 @@ def v4_cms_post_broadcast():
 # CMS 更新广播
 @broadcast_controller.route('/v4/broadcast', methods=['PUT'])
 def v4_cms_update_broadcast():
-    pass
     from Utils.EncryptUtils import generate_checksum
     check_result, check_exception = generate_checksum(request)
     if not check_result:
@@ -59,7 +58,7 @@ def v4_cms_update_broadcast():
     else:
         try:
             service_logger.info("更新广播：%s" % (json.dumps(form.data),))
-            system_broadcast_persist(form.data)
+            system_broadcast_update(form.data)
         except Exception, err:
             service_logger.error("更新广播异常：%s" % (err.message,))
     return response_data(http_code=200)
