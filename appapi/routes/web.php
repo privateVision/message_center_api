@@ -30,10 +30,11 @@ $app->group(['prefix' => 'api'], function () use ($app) {
     $app->post('account/username', 'Api\\AccountController@UsernameAction');                            // 生成随机用户名
     $app->post('account/login_phone', 'Api\\AccountController@LoginPhoneAction');                       // 手机号码一键登陆
     $app->post('pay/order/new', 'Api\\Pay\\OrderController@NewAction');                                 // 创建订单
-    $app->post('pay/order/self_new', 'Api\\Pay\\OrderController@SelfNewAction');                        // 创建充值平台币的订单
+    $app->post('pay/order/anfeng/new', 'Api\\Pay\\OrderController@AnfengNewAction');                    // 充值F币的订单
     $app->post('pay/nowpay/wechat', 'Api\\Pay\\NowpayController@WechatAction');                         // 现在支付，微信
     $app->post('pay/nowpay/alipay', 'Api\\Pay\\NowpayController@AlipayAction');                         // 现在支付，支付宝
     $app->post('pay/nowpay/unionpay', 'Api\\Pay\\NowpayController@UnionpayAction');                     // 现在支付，银联
+    $app->post('pay/anfeng/request', 'Api\\Pay\\AnfengController@RequestAction');                       // 安锋支付，（帐户余额支付）
 });
 
 $app->group(['prefix' => 'tool'], function () use ($app) {

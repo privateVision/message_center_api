@@ -147,7 +147,7 @@ class UserController extends Controller{
         //验证当前的充值金额
         $sum = Orders::where("uid",$username)->sum('fee');
 
-        if($sum < 1000 ) {
+        if($sum < 1 ) {
             throw new ToolException(ToolException::Remind,trans("messages.nomoney"));
         }
 
