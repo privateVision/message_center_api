@@ -7,7 +7,11 @@ class Event
 {
 	public static function onLogin(&$ucuser, &$session) {
         if($session->ucid) {
-        //    throw new ApiException(ApiException::Error, 'access_token已被使用，请重新启动游戏获取');
+            //throw new ApiException(ApiException::Error, 'access_token已被使用，请重新启动游戏获取');
+        }
+
+        if($ucuser->isFreeze()) {
+            throw new ApiException(ApiException::Remind, '帐号已被冻结，无法登陆');
         }
 
 		$session->ucid = $ucuser->ucid;
@@ -17,13 +21,14 @@ class Event
 		$ucuser->save();
 
 		$retailer = $ucuser->retailers;
+
         return array (
             'uid' => $ucuser->ucid,
             'username' => $ucuser->uid,
             'mobile' => $ucuser->mobile,
             'avatar' => env('AVATAR'),
-            'realname' => true, // todo: 实名制功能暂未实现
-            'is_adult' => 1, // todo: 是否成年未实现
+            'is_real' => $ucuser->is_rela(),
+            'is_adult' => $ucuser->is_adult(),
             'rtype' => $retailer ? $retailer->rtype : 0,
             'vip' => $ucuser->vip(),
             'token' => $ucuser->uuid,
