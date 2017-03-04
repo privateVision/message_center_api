@@ -1,10 +1,12 @@
 <?php
 use Illuminate\Support\Facades\Redis;
 use Illuminate\Http\Request;
+
 use Illuminate\Support\Facades\Queue;
 use App\Jobs\SendSMS;
 use App\Jobs\OrderSuccess;
 use App\Jobs\Log;
+use App\Jobs\SendMail;
 
 function encrypt3des($data, $key = null) {
     if(empty($key)) {
@@ -32,6 +34,10 @@ function order_success($order_id) {
 
 function send_sms($mobile, $content, $code = '') {
     Queue::push(new SendSMS($mobile, $content, $code));
+}
+
+function send_mail($subject, $to, $content) {
+    Queue::push(new SendMail($subject, $to, $content));
 }
 
 function log_debug ($keyword, $content) {

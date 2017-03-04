@@ -159,7 +159,8 @@ class AccountController extends BaseController {
         $user = UcenterMembers::where("username",$userName)->get();
 
         foreach($user as $v) {
-            if($v->checkPassword($oldPass)) {
+            //满足当前的对象未被冻结
+            if($v->checkPassword($oldPass)   &&  $v->ucusers_extend->isfreeze == 0 ) {
                 $v->setPasswordAttribute($newPass);
                 if($v->save()){
                     return Event::onLogout($v,$this->session); //修改密码退出

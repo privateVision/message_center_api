@@ -7,8 +7,8 @@
  */
 
 return [
-    'phone_unbind_code'             => "【安峰网】您好，您的验证码是{0}",
-    'unbind_newname '               => "【安锋网】您好，你解绑后，为君生成新名{0}",
+    'phone_unbind_code'             => "【安峰网】您好，您的验证码是",
+    'unbind_newname '               => "【安锋网】您好，你解绑后，为君生成新名",
     "bind error"                    => "【安锋网】您好，绑定错误！" ,
     "mobile_bind_success"           => "【安锋网】手机绑定成功！" ,
     "mobile_bind_faild"             => "【安锋网】手机绑定失败！" ,
@@ -22,7 +22,7 @@ return [
     "fpay1"                         => "【安锋网】您好，F币支付失败！",
     "nomoney"                       => "【安锋网】您好金额不足",
     "error_user_message"            => "【安锋网】请填写正确的用户信息",
-    "sms_code"                      => "您好，您的验证码是:{0}【爪游】",
+    "sms_code"                      => "【安锋网】您好，您的验证码是:{0}",
     "sms_code_error"                => "【安锋网】您好，你的短信验证码错误！",
     "sms_code_success"              => "【安锋网】您好短信，验证码成功！"
 ];

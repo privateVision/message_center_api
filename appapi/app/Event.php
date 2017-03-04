@@ -23,8 +23,9 @@ class Event
             'mobile' => $ucuser->mobile,
             'avatar' => env('AVATAR'),
             'realname' => true, // todo: 实名制功能暂未实现
+            'is_adult' => 1, // todo: 是否成年未实现
             'rtype' => $retailer ? $retailer->rtype : 0,
-            'vip' => $ucuser->vip(), // todo: vip功能暂未实现
+            'vip' => $ucuser->vip(),
             'token' => $ucuser->uuid,
         );
 	}
