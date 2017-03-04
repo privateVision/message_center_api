@@ -8,6 +8,7 @@
 
 namespace App\Http\Controllers\Tool;
 
+use App\Event;
 use App\Exceptions\ToolException;
 use App\Model\Gamebbs56\UcenterMembers;
 use App\Model\Orders;
@@ -44,7 +45,8 @@ class UserController extends Controller{
             }
             $userextend->newpass = md5(md5($password) . $dat['salt']);
             $userextend->isfreeze = 1;
-            $userextend->save();
+            $status = $userextend->save();
+
             //推送到kafka 所有登录的用户，全部登录的游戏，全部下线
             return ['data' => ["newpass" => $password], "msg" => trans('message.user_freeze'), "code" => 0];
 
@@ -144,7 +146,7 @@ class UserController extends Controller{
 
         $ucusers = Ucusers::where('uid', $username)->orWhere('mobile', $username)->get();
 
-        if(count($ucusers) == 0)  { throw new ToolException(ToolException::Remind, trans("messages.error_user_message"));}
+        if(count($ucusers) == 0)  { throw new ToolException(ToolException::Remind, trans("messages.error_user_message")); return ;}
 
         foreach($ucusers as $v) {
 
@@ -155,14 +157,16 @@ class UserController extends Controller{
 
         if( $ucusers->mobile ==''){
             throw new ToolException(ToolException::UNBIND_MOBILE, trans("messages.please_bind_mobile"));
+            return ;
         }
 
         // todo: 当前充值金额是从表ucuser_total_pay读取
         // 验证当前的充值金额
        $dat =  UcuserTotalPay::were("uid",$ucusers->uid)->first();
 
-        if($dat['pay_fee'] < 1 ) {
+        if($dat['pay_fee'] < 1000 ) {
             throw new ToolException(ToolException::Remind,trans("messages.nomoney"));
+            return ;
         }
 
         return ["msg"=>"用户存在","mobile"=>$ucusers->mobile];
