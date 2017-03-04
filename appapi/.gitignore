@@ -1,0 +1,5 @@
+*.log
+.env
+test.py
+.token
+nohup.out
