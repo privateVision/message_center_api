@@ -11,7 +11,7 @@ from MongoModel.MessageModel import UsersMessage
 from MongoModel.UserMessageModel import UserMessage
 from RequestForm.PostMessagesRequestForm import PostMessagesRequestForm
 from Service.UsersService import get_ucid_by_access_token, get_message_detail_info
-from Utils.SystemUtils import get_current_timestamp
+from Utils.SystemUtils import get_current_timestamp, log_exception
 
 message_controller = Blueprint('MessageController', __name__)
 
@@ -25,7 +25,7 @@ def v4_cms_post_broadcast():
         return check_exception
     form = PostMessagesRequestForm(request.form)  # POST 表单参数封装
     if not form.validate():
-        print form.errors
+        log_exception(request, '客户端请求错误: %s' % (json.dumps(form.errors)))
         return response_data(200, 0, '客户端请求错误')
     else:
         from run import kafka_producer
@@ -38,7 +38,7 @@ def v4_cms_post_broadcast():
             service_logger.info("发送消息：%s" % (message_str,))
             kafka_producer.send('message-service', message_str)
         except Exception, err:
-            service_logger.error("发送消息异常：%s" % (err.message,))
+            log_exception(request, err.message)
             return response_data(http_code=200, code=0, message="kafka服务异常")
         return response_data(http_code=200)
 
@@ -52,14 +52,15 @@ def v4_cms_delete_post_broadcast():
         return check_exception
     message_id = request.form['id']
     if message_id is None or message_id == '':
+        log_exception(request, '客户端请求错误-message_id为空')
         return response_data(200, 0, '客户端请求错误')
     try:
         UsersMessage.objects(Q(type='message') & Q(mysql_id=message_id)).delete()
         UserMessage.objects(Q(type='message') & Q(mysql_id=message_id)).delete()
     except Exception, err:
-        service_logger.error("删除消息异常：%s" % (err.message,))
+        log_exception(request, "删除消息异常：%s" % (err.message,))
         return response_data(http_code=200, code=0, message="删除消息失败")
-    return response_data(http_code=204)
+    return response_data(http_code=200)
 
 
 # SDK 获取消息列表
@@ -68,6 +69,7 @@ def v4_sdk_get_message_list():
     appid = request.form['appid']
     param = request.form['param']
     if appid is None or param is None:
+        log_exception(request, "客户端请求错误-appid或param为空")
         return response_data(200, 0, '客户端请求错误')
     from Utils.EncryptUtils import sdk_api_check_key
     params = sdk_api_check_key(request)
@@ -122,4 +124,5 @@ def v4_sdk_get_message_list():
             }
             return response_data(http_code=200, data=data)
         else:
+            log_exception(request, '根据access_token获取用户id失败，请重新登录')
             return response_data(200, 0, '根据access_token获取用户id失败，请重新登录')

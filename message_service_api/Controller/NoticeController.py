@@ -13,7 +13,7 @@ from MongoModel.UserReadMessageLogModel import UserReadMessageLog
 from RequestForm.PostNoticesRequestForm import PostNoticesRequestForm
 from Service.StorageService import system_notices_update
 from Service.UsersService import get_notice_message_detail_info, get_ucid_by_access_token
-from Utils.SystemUtils import get_current_timestamp
+from Utils.SystemUtils import get_current_timestamp, log_exception
 
 notice_controller = Blueprint('NoticeController', __name__)
 
@@ -27,7 +27,7 @@ def v4_cms_post_notice():
         return check_exception
     form = PostNoticesRequestForm(request.form)  # POST 表单参数封装
     if not form.validate():
-        service_logger.error("公告请求校验异常：%s" % (form.errors,))
+        log_exception(request, "发送公告请求校验异常：%s" % (form.errors,))
         return response_data(200, 0, '客户端请求错误')
     else:
         from run import kafka_producer
@@ -40,7 +40,7 @@ def v4_cms_post_notice():
             service_logger.info("发送公告：%s" % (message_str,))
             kafka_producer.send('message-service', message_str)
         except Exception, err:
-            service_logger.error("发送公告异常：%s" % (err.message,))
+            log_exception(request, "发送公告异常：%s" % (err.message,))
             return response_data(http_code=200, code=0, message="kafka服务异常")
         return response_data(http_code=200)
 
@@ -54,14 +54,14 @@ def v4_cms_update_post_notice():
         return check_exception
     form = PostNoticesRequestForm(request.form)  # POST 表单参数封装
     if not form.validate():
-        service_logger.error("公告请求校验异常：%s" % (form.errors,))
+        log_exception(request, "更新公告请求校验异常：%s" % (form.errors,))
         return response_data(200, 0, '客户端请求错误')
     else:
         try:
             service_logger.info("更新公告：%s" % (json.dumps(form.data),))
             system_notices_update(form.data)
         except Exception, err:
-            service_logger.error("更新公告异常：%s" % (err.message,))
+            log_exception(request, "更新公告异常：%s" % (err.message,))
     return response_data(http_code=200)
 
 
@@ -74,6 +74,7 @@ def v4_cms_set_post_notice_closed():
         return check_exception
     notice_id = request.form['id']
     if notice_id is None or notice_id == '':
+        log_exception(request, "客户端请求错误-notice_id为空")
         return response_data(200, 0, '客户端请求错误')
     try:
         UsersMessage.objects(Q(type='notice') & Q(mysql_id=notice_id)).update(set__closed=1)
@@ -81,7 +82,7 @@ def v4_cms_set_post_notice_closed():
     except Exception, err:
         service_logger.error("关闭公告异常：%s" % (err.message,))
         return response_data(200, 0, '服务端异常')
-    return response_data(http_code=204)
+    return response_data(http_code=200)
 
 
 # CMS 打开公告
@@ -93,6 +94,7 @@ def v4_cms_set_post_notice_open():
         return check_exception
     notice_id = request.form['id']
     if notice_id is None or notice_id == '':
+        log_exception(request, "客户端请求错误-notice_id为空")
         return response_data(200, 0, '客户端请求错误')
     try:
         UsersMessage.objects(Q(type='notice') & Q(mysql_id=notice_id)).update(set__closed=0)
@@ -100,7 +102,7 @@ def v4_cms_set_post_notice_open():
     except Exception, err:
         service_logger.error("打开公告异常：%s" % (err.message,))
         return response_data(200, 0, '服务端异常')
-    return response_data(http_code=204)
+    return response_data(http_code=200)
 
 
 # SDK 获取公告列表
@@ -109,6 +111,7 @@ def v4_sdk_get_notice_list():
     appid = request.form['appid']
     param = request.form['param']
     if appid is None or param is None:
+        log_exception(request, "客户端请求错误-appid或param为空")
         return response_data(200, 0, '客户端请求错误')
     from Utils.EncryptUtils import sdk_api_check_key
     params = sdk_api_check_key(request)
@@ -172,6 +175,7 @@ def v4_sdk_get_notice_list():
             }
             return response_data(http_code=200, data=data)
         else:
+            log_exception(request, '根据access_token获取用户id失败，请重新登录')
             return response_data(200, 0, '根据access_token获取用户id失败，请重新登录')
 
 
@@ -181,12 +185,14 @@ def v4_sdk_set_notice_have_read():
     appid = request.form['appid']
     param = request.form['param']
     if appid is None or param is None:
+        log_exception(request, '客户端参数错误-appid或param为空')
         return response_data(200, 0, '客户端请求错误')
     from Utils.EncryptUtils import sdk_api_check_key
     params = sdk_api_check_key(request)
     ucid = get_ucid_by_access_token(params['access_token'])
     message_info = params['message_info']
     if message_info['type'] is None or message_info['message_ids'] is None:
+        log_exception(request, '客户端请求错误-type或message_ids为空')
         return response_data(200, 0, '客户端请求错误')
     message_info_json = json.loads(message_info)
     for message in message_info_json:
@@ -204,6 +210,6 @@ def v4_sdk_set_notice_have_read():
                                         & Q(ucid=ucid)).update(set__is_read=1)
                     user_read_message_log.save()
                 except Exception as err:
-                    service_logger.error("设置消息已读异常：%s" % (err.message,))
+                    log_exception(request, "设置消息已读异常：%s" % (err.message,))
                     return response_data(http_code=200, code=0, message="服务器出错啦/(ㄒoㄒ)/~~")
-    return response_data(http_code=204)
+    return response_data(http_code=200)

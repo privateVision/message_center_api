@@ -6,7 +6,8 @@ from flask import jsonify
 def response_ok(http_code=200, code=1, message="success"):
     response = {
         "code": code,
-        "msg": message
+        "msg": message,
+        "data": None
     }
     return jsonify(response), http_code
 

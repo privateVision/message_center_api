@@ -11,6 +11,7 @@ from MongoModel.MessageModel import UsersMessage
 from MongoModel.UserMessageModel import UserMessage
 from RequestForm.PostRebatesRequestForm import PostRebatesRequestForm
 from Service.StorageService import system_rebate_persist
+from Utils.SystemUtils import log_exception
 
 rebate_controller = Blueprint('RebateController', __name__)
 
@@ -24,7 +25,7 @@ def v4_cms_add_rebate():
         return check_exception
     form = PostRebatesRequestForm(request.form)  # POST 表单参数封装
     if not form.validate():
-        service_logger.error("优惠券请求校验异常：%s" % (form.errors,))
+        log_exception(request, "优惠券请求校验异常：%s" % (form.errors,))
         return response_data(200, 0, '客户端请求错误')
     else:
         from run import kafka_producer
@@ -37,7 +38,7 @@ def v4_cms_add_rebate():
             service_logger.info("发送优惠券：%s" % (message_str,))
             kafka_producer.send('message-service', message_str)
         except Exception, err:
-            service_logger.error("发送优惠券异常：%s" % (err.message,))
+            log_exception(request, "发送优惠券异常：%s" % (err.message,))
             return response_data(http_code=200, code=0, message="kafka服务异常")
         return response_data(http_code=200)
 
@@ -51,13 +52,13 @@ def v4_cms_update_coupon():
         return check_exception
     form = PostRebatesRequestForm(request.form)  # POST 表单参数封装
     if not form.validate():
-        service_logger.error("优惠券请求校验异常：%s" % (form.errors,))
+        log_exception(request, "优惠券请求校验异常：%s" % (form.errors,))
         return response_data(200, 0, '客户端请求错误')
     else:
         try:
             system_rebate_persist(form.data, False)
         except Exception, err:
-            service_logger.error("更新优惠券异常：%s" % (err.message,))
+            log_exception(request, "更新优惠券异常：%s" % (err.message,))
     return response_data(http_code=200)
 
 
@@ -70,12 +71,13 @@ def v4_cms_delete_coupon():
         return check_exception
     rebate_id = request.form['id']
     if rebate_id is None or rebate_id == '':
+        log_exception(request, "客户端请求错误-rebate_id为空")
         return response_data(200, 0, '客户端请求错误')
     try:
         UsersMessage.objects(Q(type='rebate') & Q(mysql_id=rebate_id)).delete()
         UserMessage.objects(Q(type='rebate') & Q(mysql_id=rebate_id)).delete()
     except Exception, err:
-        service_logger.error("删除优惠券异常：%s" % (err.message,))
+        log_exception(request, "删除优惠券异常：%s" % (err.message,))
         return response_data(http_code=200, code=0, message="删除卡券失败")
-    return response_data(http_code=204)
+    return response_data(http_code=200)
 

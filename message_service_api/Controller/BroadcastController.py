@@ -12,7 +12,7 @@ from MongoModel.UserMessageModel import UserMessage
 from RequestForm.PostBroadcastsRequestForm import PostBroadcastsRequestForm
 from Service.StorageService import system_broadcast_update
 from Service.UsersService import get_ucid_by_access_token, get_broadcast_message_detail_info
-from Utils.SystemUtils import get_current_timestamp
+from Utils.SystemUtils import get_current_timestamp, log_exception
 
 broadcast_controller = Blueprint('BroadcastController', __name__)
 
@@ -26,7 +26,7 @@ def v4_cms_post_broadcast():
         return check_exception
     form = PostBroadcastsRequestForm(request.form)  # POST 表单参数封装
     if not form.validate():
-        service_logger.error(form.errors)
+        log_exception(request, '客户端请求错误: %s' % (json.dumps(form.errors)))
         return response_data(200, 0, '客户端请求错误')
     else:
         from run import kafka_producer
@@ -39,7 +39,7 @@ def v4_cms_post_broadcast():
             service_logger.info("发送广播：%s" % (message_str,))
             kafka_producer.send('message-service', message_str)
         except Exception, err:
-            service_logger.error("发送广播异常：%s" % (err.message,))
+            log_exception(request, "发送广播异常：%s" % (err.message,))
             return response_data(http_code=200, code=0, message="kafka服务异常")
         return response_data(http_code=200)
 
@@ -53,14 +53,15 @@ def v4_cms_update_broadcast():
         return check_exception
     form = PostBroadcastsRequestForm(request.form)  # POST 表单参数封装
     if not form.validate():
-        print form.errors
+        log_exception(request, '客户端请求错误: %s' % (json.dumps(form.errors)))
         return response_data(200, 0, '客户端请求错误')
     else:
         try:
             service_logger.info("更新广播：%s" % (json.dumps(form.data),))
             system_broadcast_update(form.data)
         except Exception, err:
-            service_logger.error("更新广播异常：%s" % (err.message,))
+            log_exception(request, "更新广播异常：%s" % (err.message,))
+            return response_data(http_code=200, code=0, message="mongo更新数据异常")
     return response_data(http_code=200)
 
 
@@ -73,14 +74,15 @@ def v4_cms_delete_post_broadcast():
         return check_exception
     broadcast_id = request.form['id']
     if broadcast_id is None or broadcast_id == '':
+        log_exception(request, '客户端请求错误-广播id为空')
         return response_data(200, 0, '客户端请求错误')
     try:
         UsersMessage.objects(Q(type='broadcast') & Q(mysql_id=broadcast_id)).delete()
         UserMessage.objects(Q(type='broadcast') & Q(mysql_id=broadcast_id)).delete()
     except Exception, err:
-        service_logger.error("删除广播异常：%s" % (err.message,))
+        log_exception(request, "删除广播异常：%s" % (err.message,))
         return response_data(http_code=200, code=0, message="删除广播失败")
-    return response_data(http_code=204)
+    return response_data(http_code=200)
 
 
 # SDK 获取广播列表
@@ -89,6 +91,7 @@ def v4_sdk_get_broadcast_list():
     appid = request.form['appid']
     param = request.form['param']
     if appid is None or param is None:
+        log_exception(request, "客户端请求错误-appid或param为空")
         return response_data(200, 0, '客户端请求错误')
     from Utils.EncryptUtils import sdk_api_check_key
     params = sdk_api_check_key(request)
@@ -97,8 +100,8 @@ def v4_sdk_get_broadcast_list():
         if ucid:
             page = params['page'] if params.has_key('page') and params['page'] else 1
             count = params['count'] if params.has_key('count') and params['count'] else 10
-            start_index = (page - 1) * count
-            end_index = start_index + count
+            start_index = (int(page) - 1) * int(count)
+            end_index = start_index + int(count)
             service_logger.info("用户：%s 获取广播列表，数据从%s到%s" % (ucid, start_index, end_index))
             # 查询用户相关的公告列表
             current_timestamp = get_current_timestamp()
@@ -142,4 +145,5 @@ def v4_sdk_get_broadcast_list():
             }
             return response_data(http_code=200, data=data)
         else:
+            log_exception(request, "根据access_token获取用户id失败，请重新登录")
             return response_data(200, 0, '根据access_token获取用户id失败，请重新登录')

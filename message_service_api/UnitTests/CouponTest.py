@@ -73,7 +73,7 @@ class CouponFunctionTest(unittest.TestCase):
     #     from Utils.EncryptUtils import get_md5_sign
     #     sign = get_md5_sign(data)
     #     r = requests.delete("http://localhost:5000/v4/coupon?sign=%s" % (sign,), data=data)
-    #     self.assertEqual(r.status_code, 204)
+    #     self.assertEqual(r.status_code, 200)
     #     print r.text
 
     def test_get_coupon_list(self):
