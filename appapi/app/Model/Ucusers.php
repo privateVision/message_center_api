@@ -27,7 +27,6 @@ class Ucusers extends Model
         return $this->hasOne(UcuserTotalPay::class, 'ucid', 'ucid');
     }
 
-    //关联到 ucusers_extend
     public function ucusers_extend(){
         return $this->hasOne(UcusersExtend::class,'ucid','uid');
     }
@@ -71,6 +70,10 @@ class Ucusers extends Model
         return false;
     }
 
+    /**
+     * 用户VIP等级
+     * @return int
+     */
     public function vip() {
         $ucuser_total_pay = $this->ucuser_total_pay;
 
@@ -94,6 +97,10 @@ class Ucusers extends Model
         return $level;
     }
 
+    /**
+     * 用户卡券列表
+     * @return array
+     */
     public function coupon() {
         return [];
     }
