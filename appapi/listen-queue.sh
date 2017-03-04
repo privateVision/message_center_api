@@ -1,5 +1,5 @@
 #!/bin/bash
-current_dir="$( cd "$(dirname "$0")" && pwd)"
+current_dir="$(cd "$(dirname "$0")" && pwd)"
 
 /usr/bin/php $current_dir/artisan queue:restart
 
@@ -8,9 +8,6 @@ current_dir="$( cd "$(dirname "$0")" && pwd)"
 # --tries= 任务失败最大重试次数
 # --daemon 守护进程（后台运行）
 /usr/bin/php $current_dir/artisan queue:work --daemon --sleep=1 --timeout=45 --tries=86400
-
-# 重启进程
-#/usr/bin/php artisan queue:restart
 
 # 查看所有失败的任务
 #/usr/bin/php artisan queue:failed
