@@ -40,7 +40,7 @@ class Ucusers extends Model
      * @return boolean
      */
     public function isFreeze() {
-        return $this->ucusers_extend->isfreeze;
+        return $this->ucusers_extend ? $this->ucusers_extend->isfreeze : false;
     }
 
     /**
@@ -48,7 +48,7 @@ class Ucusers extends Model
      * @return boolean
      */
     public function isReal() {
-        return $this->ucusers_extend->is_real;
+        return $this->ucusers_extend ? $this->ucusers_extend->is_real : false;
     }
 
     /**
@@ -56,7 +56,7 @@ class Ucusers extends Model
      * @return boolean
      */
     public function isAdult() {
-        if($this->ucusers_extend->card_id) {
+        if($this->ucusers_extend && $this->ucusers_extend->card_id) {
             $card = $this->ucusers_extend->card_id;
             $y = substr($card, 6, 4);
             $m = substr($card, 10, 2);
