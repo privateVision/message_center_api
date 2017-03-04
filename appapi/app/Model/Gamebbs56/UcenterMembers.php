@@ -2,6 +2,7 @@
 namespace App\Model\Gamebbs56;
 
 use App\Model\Ucusers;
+use App\Model\UcusersExtend;
 
 class UcenterMembers extends Model
 {
@@ -20,4 +21,9 @@ class UcenterMembers extends Model
     public function checkPassword($password) {
         return $this->password === md5(md5($password) . $this->salt);
     }
+
+    public function ucusers_extend(){
+        return $this->hasOne(UcusersExtend::class,'uid','uid');
+    }
+
 }

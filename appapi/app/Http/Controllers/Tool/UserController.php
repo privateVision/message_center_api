@@ -14,6 +14,7 @@ use App\Model\Orders;
 use App\Model\Sms;
 use App\Model\Ucusers;
 use App\Model\UcusersExtend;
+use App\Model\UcuserTotalPay;
 use Mockery\CountValidator\Exception;
 use Mockery\Generator\Parameter;
 use Symfony\Component\HttpFoundation\Request;
@@ -62,18 +63,20 @@ class UserController extends Controller{
             $uid = $request->input("uid");
             $user = UcenterMembers::where("username", $uid)->first();
             $userextend = UcusersExtend::where("username",$uid)->where("isfreeze",self::FREEZE)->first();
+            $status = $request->input("status");
 
             if(!$userextend){
                 new ToolException(ToolException::Remind, trans('messages.unfreeze_faild'));
             }
 
-            if($code =1){
-                $pass = $user->password;
+            if($status){
                 $user->password = $user->newpass;
-                $user->newpass  = $user->$pass;
-                $user->isfreeze = self::HAD_SHELL;
             }else{
+                $pass = $user->password;
                 $userextend->isfreeze = self::UN_FREEZE;
+                $userextend->newpass  = $user->$pass; //密码替换
+                $userextend->isfreeze = self::HAD_SHELL;
+                //$userextend->newpass  =
             }
 
             if( $userextend->save() && $user->save()){
@@ -97,22 +100,29 @@ class UserController extends Controller{
 
         $partername  = "/(^\d+(?=\w+)[a-zA-Z]+\w+$)|(^[a-zA-Z]+(?=\d+)\d+\w+$)/"; //正则匹配
 
-        if(preg_match($partername,$username))  new ToolException(ToolException::Remind, trans('messages.name_type_error'));
-        $amount   =  $request->input('amount'); //用户金额
-
         $notifyUrlBack  =  $request->input("notifyUrlBack"); //回调地址
 
         $sn = $request->input("sn"); //订单号
 
+        if(preg_match($partername,$username)) {
+            http_request($notifyUrlBack,["code"=>1,"msg"=>trans("messages.fpay1"),"data"=>["sn"=>$sn]],true);
+            new ToolException(ToolException::Remind, trans('messages.name_type_error'));
+        }
+        $amount   =  $request->input('amount'); //用户金额
+
         $user = Ucusers::where("uid",$username)->first();
 
-        if(!$user)  new ToolException(ToolException::Remind, trans('messages.fpay1'));
+        if(!$user)  {
+            http_request($notifyUrlBack,["code"=>1,"msg"=>trans("messages.fpay1"),"data"=>["sn"=>$sn]],true);
+            new ToolException(ToolException::Remind, trans('messages.fpay1'));
+        }
         $user->balance += $amount;
         $re = $user->save();
         $code = $re?0:1;
         //没有添加日志
         //$code 0 成功 1 失败
-        return  http_request($notifyUrlBack,["code"=>0,"msg"=>trans("messages.fpay".$code),"data"=>["sn"=>$sn]],true);
+        $con = http_request($notifyUrlBack,["code"=>$code,"msg"=>trans("messages.fpay".$code),"data"=>["sn"=>$sn]],true);
+        echo $con ;
     }
 
 
@@ -142,9 +152,9 @@ class UserController extends Controller{
 
         // todo: 当前充值金额是从表ucuser_total_pay读取
         // 验证当前的充值金额
-        $sum = Orders::where("uid",$username)->sum('fee');
+       $dat =  UcuserTotalPay::were("uid",$ucusers->uid)->first();
 
-        if($sum < 1000 ) {
+        if($dat['pay_fee'] < 1 ) {
             throw new ToolException(ToolException::Remind,trans("messages.nomoney"));
         }
 
@@ -162,8 +172,8 @@ class UserController extends Controller{
             $ms = Sms::where("mobile",$mobile)->orderBy('id', 'desc')->first();
             $time = time() - strtotime($ms['sendTime']);
             //验证码有效时间三十分钟
-            if($ms['code'] == $code && $time <= 1800 ){
-                return ["msg"=>trans("messages.sms_code_success")];
+            if($ms['acode'] == $code && $time <= 1800 ){
+                return ["msg"=>trans("messages.sms_code_success"),"uid"=>$ms->ucusers->uid];
             }else{
                 throw new ToolException(ToolException::Remind,trans("messages.sms_code_error"));
             }
@@ -173,8 +183,9 @@ class UserController extends Controller{
     public function sendmsAction(Request $request,$param){
         $mobile = $request->input("mobile");
         $code = rand(111111,999999);
-        $content = trans_choice("messages.sms_code",$code);
-        send_sms($mobile, $content);
+        $content = trans("messages.sms_code").$code;
+        send_sms($mobile, $content,$code);
+        return ['code'=>$code];
     }
 
 }
