@@ -118,10 +118,4 @@ def get_user_data_mark_in_redis(ucid):
 
 
 def clear_user_data_mark_in_redis(ucid, message_type):
-    print ucid
-    print message_type
     redis_store.hdel(ucid, message_type)
-    # redis_store.hset(ucid, 'notice', 0)
-    # redis_store.hset(ucid, 'broadcast', 0)
-    # redis_store.hset(ucid, 'message', 0)
-    # redis_store.hset(ucid, 'coupon', 0)
