@@ -57,12 +57,12 @@ class AppController extends Controller
                 'page' => $config->service_page ?: env('SERVICE_PAGE'),
                 'phone' => $config->service_phone ?: env('SERVICE_PHONE'),
                 'share' => $config->service_share ?: env('SERVICE_SHARE'),
-                'interval' => $config->service_interval ?: 300,
+                'interval' => $config->service_interval ? $config->service_interval * 1000 : 300000,
             ],
             'bind_phone' => [
                 'need' => $config->bind_phone_need ? 1 : 0,
                 'enforce' => $config->bind_phone_enforce ? 1 : 0,
-                'interval' => $config->time_interval ?: 86400,
+                'interval' => $config->time_interval ? $config->time_interval * 1000 : 86400000,
             ],
             'real_name' => [
                 'need' => $config->real_name_need ? 1 : 0,
