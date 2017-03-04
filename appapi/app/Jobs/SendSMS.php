@@ -3,10 +3,6 @@ namespace App\Jobs;
 use App\Model\SMS;
 use Illuminate\Http\Request;
 
-
-use App\Model\SMS;
-use Illuminate\Http\Request;
-
 class SendSMS extends Job
 {
     protected $mobile;
