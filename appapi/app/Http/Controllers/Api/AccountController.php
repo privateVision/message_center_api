@@ -15,8 +15,8 @@ class AccountController extends BaseController {
     protected $session = null;
 
     public function LoginTokenAction(Request $request, Parameter $parameter) {
-        $access_token = $parameter->tough('token');
-
+        $token = $parameter->tough('token');
+/*
         $session = Session::where('access_token', $access_token)->first();
         if(!$session || !$session->ucid) {
             throw new ApiException(ApiException::Remind, '登陆失败，请重新登陆');
@@ -27,6 +27,9 @@ class AccountController extends BaseController {
         }
 
         $ucuser = Ucusers::find($session->ucid);
+*/
+
+        $ucuser = Ucusers::where('uuid', $token)->first();
         if(!$ucuser) {
             throw new ApiException(ApiException::Remind, '用户不存在，请重新登陆');
         }

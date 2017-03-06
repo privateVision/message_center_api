@@ -163,7 +163,7 @@ ORDER_ID = data['order_id'];
 ####################################################################################################################### 微信支付
 
 print "\n------------ api/pay/nowpay/wechat -------------\n"
-Http.request('api/pay/nowpay/wechat', access_token = ACCESS_TOKEN, order_id = ORDER_ID, balance = 1);
+Http.request('api/pay/nowpay/wechat', access_token = ACCESS_TOKEN, order_id = ORDER_ID, balance = 0);
 
 ####################################################################################################################### 支付宝支付
 """
