@@ -11,6 +11,7 @@ namespace App\Http\Controllers\Tool;
 use App\Event;
 use App\Exceptions\ToolException;
 use App\Model\Gamebbs56\UcenterMembers;
+use App\Model\MongoDB\Fpay;
 use App\Model\Sms;
 use App\Model\Ucusers;
 use App\Model\UcusersExtend;
@@ -59,7 +60,7 @@ class UserController extends Controller{
             return ['data' => ["newpass" => $password], "msg" => trans('message.user_freeze'), "code" => 0];
 
         }catch(Exception $e){
-            new ToolException(ToolException::Remind,"错误");
+           throw new ToolException(ToolException::Remind,"错误");
         }
         // $uid = Ucusers::where("uid",$uid)->get();
     }
@@ -77,11 +78,11 @@ class UserController extends Controller{
             $userextend = UcusersExtend::where("username",$uid)->where("isfreeze",self::FREEZE)->first();
 
             $status = $request->input("status");
-            if(!$userextend){
-                new ToolException(ToolException::Remind, trans('messages.unfreeze_faild'));
+            if(empty($userextend)){
+               throw new ToolException(ToolException::Remind, trans('messages.unfreeze_faild'));
             }
 
-            if($status){
+            if(isset($status) && $status){
                 $user->password = $user->newpass;
             }else{
                 $pass = $user->password;
@@ -94,7 +95,7 @@ class UserController extends Controller{
             if( $userextend->save() && $user->save()){
                 return [ "msg" =>  trans('messages.unfreeze_success')];
             }else{
-                new ToolException(ToolException::Remind, trans('messages.unfreeze_faild'));
+                throw new ToolException(ToolException::Remind, trans('messages.unfreeze_faild'));
             }
             //推送到kafka 所有登录的用户，全部登录的游戏，全部下线
         }catch(Exception $e){
@@ -143,6 +144,17 @@ class UserController extends Controller{
         //$code 0 成功 1 失败
         $con = http_request($notifyUrlBack,["code"=>$code,"msg"=>trans("messages.fpay".$code),"data"=>["sn"=>$sn]],true);
 
+        try{
+            $fpay = new Fpay();
+            $fpay -> username = $username; //用户姓名
+            $fpay -> sn = $sn; //订单编号
+            $fpay ->amount = $amount; //充值金额
+            $fpay-> add_timej = time();
+            $fpay->save(); //保存用户信息
+
+        }catch(Exception $e){
+            return ["sn"=>$sn,"msg"=>"fpay log error"];
+        }
         echo $con ;
     }
 
