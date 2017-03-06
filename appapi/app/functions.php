@@ -115,3 +115,20 @@ function http_request($url, $data, $is_post = true) {
 
     return $res;
 }
+//监测当前的格式
+function check_name($username,$len = 32){
+    if(preg_match("/^[\w\_\-\.\@\:]+$/",$username) || strlen($username) > $len ) return false;
+    return true;
+}
+
+//监测的手机格式的判定
+function check_mobile($mobile){
+    if(!preg_match("/^1[34578]\d{9}$/",$mobile)) return false;
+    return true;
+}
+
+//监测短信验证码
+function check_code($code,$len=6){
+    if(!preg_match("/^\d{$len}$/",$code)) return false;
+    return true;
+}

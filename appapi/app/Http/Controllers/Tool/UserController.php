@@ -33,6 +33,7 @@ class UserController extends Controller{
         try {
 
             $uid = $request->input("uid");
+
             $password = rand(111111, 999999);
             $user = UcenterMembers::where("username", $uid)->first();
             $dat = $user->toArray();
