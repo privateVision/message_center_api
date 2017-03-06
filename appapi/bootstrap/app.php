@@ -24,6 +24,9 @@ $app = new Laravel\Lumen\Application(
 );
 
 $app->register(Jenssegers\Mongodb\MongodbServiceProvider::class);
+$app->singleton('mailer', function () use ($app) {
+    return $app->loadComponent('mail', Illuminate\Mail\MailServiceProvider::class, 'mailer');
+});
 
 $app->withFacades();
 $app->withEloquent();
@@ -83,7 +86,6 @@ $app->register(App\Providers\AppServiceProvider::class);
 // $app->register(App\Providers\AuthServiceProvider::class);
 $app->register(App\Providers\EventServiceProvider::class);
 $app->register(Illuminate\Redis\RedisServiceProvider::class);
-
 
 /*
 |--------------------------------------------------------------------------
