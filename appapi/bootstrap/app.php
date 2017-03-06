@@ -102,7 +102,4 @@ $app->group(['namespace' => 'App\Http\Controllers'], function ($app) {
     require __DIR__.'/../routes/web.php';
 });
 
-// 加载配置
-$app->configure('common');
-
 return $app;
