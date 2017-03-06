@@ -21,7 +21,7 @@ class NowpayController extends Controller {
         //$mht['consumerName'] = $this->ucuser->uid;
         $mht['mhtCharset'] = $config['mhtCharset'];
         $mht['mhtCurrencyType'] = $config['mhtCurrencyType'];
-        $mht['mhtOrderAmt'] = $order->real_fee();
+        $mht['mhtOrderAmt'] = (env('APP_DEBUG', true) ? 0.01 : $order->real_fee()) * 100;
         $mht['mhtOrderName'] = $order->subject;
         $mht['mhtOrderDetail'] = $order->body;
         $mht['mhtOrderNo'] = $order->sn;
@@ -48,7 +48,7 @@ class NowpayController extends Controller {
         $data.= sprintf('&out_trade_no="%s"', $order->sn);
         $data.= sprintf('&subject="%s"', $order->subject);
         $data.= sprintf('&body="%s"', $order->body);
-        $data.= sprintf('&total_fee="%.2f"', $order->real_fee());
+        $data.= sprintf('&total_fee="%.2f"', env('APP_DEBUG', true) ? 0.01 : $order->real_fee());
         $data.= sprintf('&notify_url="%s"', urlencode(url('pay_callback/nowpay_alipay')));
         $data.= '&service="mobile.securitypay.pay"';
         $data.= '&_input_charset="UTF-8"';
@@ -83,7 +83,7 @@ class NowpayController extends Controller {
         $data['certId'] = $certid;
         $data['orderId'] = $order->sn;
         $data['txnTime'] = date('YmdHis');
-        $data['txnAmt']  = $order->real_fee() * 100;
+        $data['txnAmt']  = (env('APP_DEBUG', true) ? 0.01 : $order->real_fee()) * 100;
         $data['txnType'] = '01';
         $data['bizType'] = '000201';
         $data['txnSubType'] = '01';

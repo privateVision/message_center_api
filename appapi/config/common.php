@@ -21,7 +21,7 @@ return [
 
         'alipay' => [
             'AppID' => "2088411293741002",
-            'PriKey' => __DIR__ . '/nowpay_alipay_prikey.pem',
+            'PriKey' => __DIR__ . '/nowpay_alipay_prikey.pem', 
             'PubKey' => __DIR__ . '/nowpay_alipay_pubkey.pem',
         ],
 
@@ -31,11 +31,9 @@ return [
             'pfx_pwd' => '906536',
             'verify' =>  __DIR__ . '/nowpay_union.cert',
             // 手机APP交易请求地址
-            'trade_url' => 'https://gateway.95516.com/gateway/api/appTransReq.do',
-            //'trade_url' => 'https://gateway.test.95516.com/gateway/api/appTransReq.do',
+            'trade_url' => env('APP_DEBUG', true) ? 'https://gateway.95516.com/gateway/api/appTransReq.do' : 'https://gateway.test.95516.com/gateway/api/appTransReq.do',
             //单笔查询请求地址
-            'query_url' => 'https://gateway.95516.com/gateway/api/queryTrans.do',
-            //'query_url' => 'https://gateway.test.95516.com/gateway/api/queryTrans.do',
+            'query_url' => env('APP_DEBUG', true) ? 'https://gateway.95516.com/gateway/api/queryTrans.do' : 'https://gateway.test.95516.com/gateway/api/queryTrans.do',
             /*
             卡号      6216261000000000018
             卡性质    借记卡

@@ -24,5 +24,8 @@ return [
     "error_user_message"            => "【安锋网】请填写正确的用户信息",
     "sms_code"                      => "【安锋网】您好，您的验证码是:{0}",
     "sms_code_error"                => "【安锋网】您好，你的短信验证码错误！",
-    "sms_code_success"              => "【安锋网】您好短信，验证码成功！"
+    "sms_code_success"              => "【安锋网】您好短信，验证码成功！",
+    "money_format_error"            => "您好金额的格式不正确！"          ,
+    "password_type_error"           => "您好，密码格式不正确！",
+    "mobile_type_error"             => "请填写正确的，手机号格式"
 ];
