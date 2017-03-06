@@ -20,6 +20,15 @@ class SendSMS extends Job
 
     public function handle()
     {
+        if(env('APP_DEBUG', true)) {
+            $sms = new SMS;
+            $sms->mobile = $this->mobile;
+            $sms->authCode = $this->text;
+            $sms->acode = $this->code;
+            $sms->save();
+            return ;
+        }
+
         if($this->attempts() >= 10) return;
 
         $config = config('common.yunpian');
