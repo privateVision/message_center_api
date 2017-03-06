@@ -36,11 +36,15 @@ class UserController extends Controller{
         try {
 
             $uid = $request->input("uid");
+            if(!check_name($uid)){
+                return "error type of username!";
+            }
 
             $password = rand(111111, 999999);
             $user = UcenterMembers::where("username", $uid)->first();
             $dat = $user->toArray();
             $userextend = UcusersExtend::where("username",$uid)->first();
+
             if(!$userextend){
                 $userextend = new UcusersExtend();
                 $userextend->uid = $dat['uid'];
@@ -67,10 +71,12 @@ class UserController extends Controller{
     public function unfreezeAction(Request $request , $parameter){
         try {
             $uid = $request->input("uid");
+            if(!check_name($uid)) return " there had some error at username!";
+
             $user = UcenterMembers::where("username", $uid)->first();
             $userextend = UcusersExtend::where("username",$uid)->where("isfreeze",self::FREEZE)->first();
-            $status = $request->input("status");
 
+            $status = $request->input("status");
             if(!$userextend){
                 new ToolException(ToolException::Remind, trans('messages.unfreeze_faild'));
             }
@@ -109,24 +115,24 @@ class UserController extends Controller{
 
         if(!check_name($username,24)) {
             $conm =http_request($notifyUrlBack,["code"=>1,"msg"=>trans("messages.fpay1"),"data"=>["sn"=>$sn]],true);
-            throw new ToolException(ToolException::Remind, trans('messages.name_type_error'));
-            return "error type user!";
+           // throw new ToolException(ToolException::Remind, trans('messages.name_type_error'));
+            return $sn;
         }
-
 
         $amount   =  $request->input('amount'); //用户金额
 
         if($amount < 0 || !check_money($amount)){
-
-            throw new ToolException(ToolException::Remind,trans("messages.money_format_error"));
+            return $sn;
+          //  throw new ToolException(ToolException::Remind,trans("messages.money_format_error"));
         }
 
         $user = Ucusers::where("uid",$username)->first();
 
         if(!$user)  {
             $conm =http_request($notifyUrlBack,["code"=>1,"msg"=>trans("messages.fpay1"),"data"=>["sn"=>$sn]],true);
-            throw new ToolException(ToolException::Remind, trans('messages.fpay1'));
-            return "no user";
+            return $sn;
+           // throw new ToolException(ToolException::Remind, trans('messages.fpay1'));
+
         }
 
         $user->balance += $amount;
@@ -229,7 +235,6 @@ class UserController extends Controller{
         }
 
         send_sms($mobile, $content,$code);
-
         return ['code'=>$code];
     }
 

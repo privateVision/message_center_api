@@ -149,7 +149,7 @@ class AccountController extends BaseController {
         $newPass  = $parameter->tough('newPass');
         $userName = $parameter->tough("userName");
 
-        if(!preg_match('/^[\w\_\-\.\@\:]+$/', $userName)) {
+        if(!check_name($userName)) {
             throw new ApiException(ApiException::Remind, "用户名格式不正确，请不要使用特殊字符");
         }
         $user = UcenterMembers::where("username",$userName)->get();
