@@ -50,7 +50,7 @@ class Controller extends BaseController {
                 throw new ApiException(ApiException::Remind, '爪币余额不足');
             }
 
-            //Redis::hset("order_balance_lock_".$this->ucuser->ucid, $order->id, sprintf("%d|%.2f", time(), $balance));
+            // todo: 扣除F币
 
             $this->ucuser->decrement('balance', $balance);
             

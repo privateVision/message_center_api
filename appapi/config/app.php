@@ -16,6 +16,7 @@ return [
     'key' => '13d9c077e9cd1b9d8fec1d2a32dda274',
 
     'cipher' => 'AES-256-CBC',
+
     'log' => 'daily',
 
     /*
