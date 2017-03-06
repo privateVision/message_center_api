@@ -133,9 +133,9 @@ function check_code($code,$len=6){
     return true;
 }
 
-//检查当前的金额 12.34 or 12  参数一金额 参数二监测小数点后的数据
+//检查当前的金额 12.34 or 12  参数一金额 参数二监测小数点后的数据 bug 没法控制全部是0
 function check_money($money,$del=4){
-    if(!preg_match("/^(\d+).?(?=\d+)(.\d{0,$del})?$/",$money)) return false;
+    if(!preg_match("/^(\d{0,8}).?(?=\d+)(.\d{0,$del})?$/",$money)) return false;
     return true;
 }
 
