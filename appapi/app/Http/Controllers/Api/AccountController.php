@@ -8,7 +8,7 @@ use App\Model\Session;
 use App\Event;
 use App\Model\Ucusers;
 use App\Model\Gamebbs56\UcenterMembers;
-use App\Model\YunpianSms;
+use App\Model\YunpianCallback;
 
 class AccountController extends BaseController {
 
@@ -17,7 +17,7 @@ class AccountController extends BaseController {
     public function LoginTokenAction(Request $request, Parameter $parameter) {
         $token = $parameter->tough('token');
 
-        /* todo: 注释掉这里兼容旧的代码
+        /* todo: 注释掉，这里兼容旧的代码
         $session = Session::where('access_token', $access_token)->first();
         if(!$session || !$session->ucid) {
             throw new ApiException(ApiException::Remind, '登陆失败，请重新登陆');
@@ -110,12 +110,12 @@ class AccountController extends BaseController {
     }
 
     public function LoginPhoneAction(Request $request, Parameter $parameter) {
-        $yunpiansms = YunpianSms::where('text', $this->session->access_token)->first();
-        if(!$yunpiansms) {
+        $yunpian_callback = YunpianCallback::where('text', $this->session->access_token)->first();
+        if(!$yunpian_callback) {
             return null;
         }
 
-        $mobile = $yunpiansms->mobile;
+        $mobile = $yunpian_callback->mobile;
 
         // 登陆
         $ucuser = Ucusers::where('uid', $mobile)->orWhere('mobile', $mobile)->first();
@@ -143,7 +143,7 @@ class AccountController extends BaseController {
         ]);
 
         // 将密码发给用户，通过队列异步发送
-        send_sms($mobile, "恭喜您注册成功，你的用户名:{$mobile}，密码是:{$password}【爪游】");
+        send_sms($mobile, trans('messages.phone_register', ['username' => $mobile, 'password' => $password]));
 
         return Event::onRegister($ucuser, $this->session);
     }

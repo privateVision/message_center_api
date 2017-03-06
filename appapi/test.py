@@ -11,8 +11,8 @@ import string
 APPID = 778
 RID = 255
 DESKEY = '4c6e0a99384aff934c6e0a99'
-BASEURL = 'http://sdkapi.anfan.com/'
-#BASEURL = 'http://uapitest.qcwan.com/'
+#BASEURL = 'http://sdkapi.anfan.com/'
+BASEURL = 'http://uapitest.qcwan.com/'
 
 class Crypt3DES:
 	@staticmethod
