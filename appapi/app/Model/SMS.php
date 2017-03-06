@@ -3,11 +3,12 @@ namespace App\Model;
 
 class SMS extends Model
 {
+    const CREATED_AT = 'sendTime';
+
 	protected $table = 'sms';
-	const CREATED_AT = 'sendTime';
 	protected $primaryKey = "id";
 
 	public function ucusers(){
-		return $this->hasOne(Ucusers::class,'mobile',"mobile");
+		return $this->hasOne(Ucusers::class, 'mobile', "mobile");
 	}
 }

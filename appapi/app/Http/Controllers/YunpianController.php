@@ -3,7 +3,7 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use App\Model\YunpianSms;
+use App\Model\YunpianCallback;
 use Illuminate\Support\Facades\Config;
 
 class YunpianController extends \App\Controller
@@ -11,7 +11,7 @@ class YunpianController extends \App\Controller
     public function CallbackAction(Request $request) {
         $sms_reply = $request->input('sms_reply');
 
-        log_info('yunpianSMSCallback', $request->all());
+        log_info('YunpianCallback', $request->all());
 
         $sms_reply = @json_decode($sms_reply, true);
         if(!$sms_reply) {
@@ -27,7 +27,7 @@ class YunpianController extends \App\Controller
             return 'FAILURE';
         }
 
-        $yunpiansms = new YunpianSms;
+        $yunpiansms = new YunpianCallback;
         $yunpiansms->yid = $sms_reply['id'];
         $yunpiansms->mobile = $sms_reply['mobile'];
         $yunpiansms->reply_time = $sms_reply['reply_time'];

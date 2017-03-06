@@ -1,10 +1,10 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: Administrator
- * Date: 2017/2/23
- * Time: 14:39
- */
+// 尽量不要使用{0},{1}这样的变量替换符，这个文件是要给小白配置的，不懂的小白把{0},{1}顺序调换，程序就出错了
+// 例：
+// trans('我叫{0}，今年{1}岁'， 'lixx', 28)           ---> 我叫lixx，今年28岁了
+// trans('他今年{0}岁，他的名字叫{1}'， 'lixx', 28)   ---> 他今年lixx岁，他的名字叫28   --> 这个时候必须要改代码才能得到正确的
+// 
+// 推荐这种格式（以不变应万变）：trans('我叫:name，今年:age', ['name' => 'lixx', 'age' => 28])
 
 return [
     'phone_unbind_code'             => "【安峰网】您好，您的验证码是",
@@ -28,5 +28,6 @@ return [
     "money_format_error"            => "您好金额的格式不正确！"          ,
     "password_type_error"           => "您好，密码格式不正确！",
     "mobile_type_error"             => "请填写正确的，手机号格式",
+    'phone_register'                => "【安锋网】恭喜您注册成功，用户名：:username  密码：:password", // 手机一键登陆成功后给发送用户帐户信息
     "sms_limit_code"                => "您好，每天最多发送三次!"
 ];
