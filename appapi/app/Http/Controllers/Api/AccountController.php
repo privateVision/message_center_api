@@ -61,16 +61,8 @@ class AccountController extends BaseController {
         $username   = $parameter->tough('username') ;
         $password   = $parameter->tough('password') ;
 
-        if(!preg_match('/^[\w\_\-\.\@\:]+$/', $username)) {
-            throw new ApiException(ApiException::Remind, "用户名格式不正确，请不要使用特殊字符");
-        }
-
-        if(preg_match('/^[\d]+$/', $username)) {
-            throw new ApiException(ApiException::Remind, "用户名至少包含有一个字母");
-        }
-
-        if(strlen($username) > 24) {
-            throw new ApiException(ApiException::Remind, "用户名最多可以有24个字符");
+        if(!check_name($username,24)){
+            throw new ApiException(ApiException::Remind, "用户名格式不正确，请填写正确的格式");
         }
 
         $isRegister  = Ucusers::where("mobile", $username)->orWhere('uid', $username)->count();

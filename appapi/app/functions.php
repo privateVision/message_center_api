@@ -117,7 +117,7 @@ function http_request($url, $data, $is_post = true) {
 }
 //监测当前的格式
 function check_name($username,$len = 32){
-    if(preg_match("/^[\w\_\-\.\@\:]+$/",$username) || strlen($username) > $len ) return false;
+    if(!preg_match("/^[\w\_\-\.\@\:]+$/",$username) || strlen($username) > $len ) return false;
     return true;
 }
 
@@ -132,3 +132,10 @@ function check_code($code,$len=6){
     if(!preg_match("/^\d{$len}$/",$code)) return false;
     return true;
 }
+
+//检查当前的金额 12.34 or 12  参数一金额 参数二监测小数点后的数据
+function check_money($money,$del=4){
+    if(!preg_match("/^(\d+).?(?=\d+)(.\d{0,$del})?$/",$money)) return false;
+    return true;
+}
+

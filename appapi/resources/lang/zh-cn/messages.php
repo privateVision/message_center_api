@@ -27,5 +27,6 @@ return [
     "sms_code_success"              => "【安锋网】您好短信，验证码成功！",
     "money_format_error"            => "您好金额的格式不正确！"          ,
     "password_type_error"           => "您好，密码格式不正确！",
-    "mobile_type_error"             => "请填写正确的，手机号格式"
+    "mobile_type_error"             => "请填写正确的，手机号格式",
+    "sms_limit_code"                => "您好，每天最多发送三次!"
 ];
