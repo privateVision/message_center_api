@@ -6,6 +6,7 @@ from flask import request
 from mongoengine import Q
 
 from Controller.BaseController import response_data, response_ok
+from MiddleWare import redis_store
 from MongoModel.AppRulesModel import AppVipRules
 from MongoModel.MessageModel import UsersMessage
 from MongoModel.MessageRevocationModel import MessageRevocation
@@ -98,6 +99,38 @@ def v4_cms_set_vip_rules():
     return response_data(http_code=200, message="更新VIP规则成功")
 
 
+# 账号冻结
+@app_controller.route('/v4/app/user/close_account', methods=['POST'])
+def v4_cms_close_user_account():
+    from Utils.EncryptUtils import generate_checksum
+    check_result, check_exception = generate_checksum(request)
+    if not check_result:
+        return check_exception
+    ucid = request.form['ucid']
+    redis_store.hincrby(ucid, 'coupon', 1)
+    if ucid is None or ucid == '':
+        log_exception(request, '客户端请求错误')
+        return response_data(200, 0, '客户端请求错误')
+    redis_store.hset(ucid, 'is_account_close', 1)
+    return response_data(http_code=200, message="账号冻结成功")
+
+
+# 账号解冻
+@app_controller.route('/v4/app/user/open_closed_account', methods=['POST'])
+def v4_cms_open_closed_user_account():
+    from Utils.EncryptUtils import generate_checksum
+    check_result, check_exception = generate_checksum(request)
+    if not check_result:
+        return check_exception
+    ucid = request.form['ucid']
+    if ucid is None or ucid == '':
+        log_exception(request, '客户端请求错误')
+        return response_data(200, 0, '客户端请求错误')
+    redis_store.hset(ucid, 'is_account_close', 0)
+    return response_data(http_code=200, message="解冻账号成功")
+
+
+# 消息撤回
 @app_controller.route('/v4/app/message_revocation', methods=['POST'])
 def v4_cms_message_revocation():
     from Utils.EncryptUtils import generate_checksum

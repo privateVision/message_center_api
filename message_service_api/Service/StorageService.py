@@ -32,7 +32,8 @@ def add_message_to_user_message_list(game, users_type, vip_user, specify_user, t
 
 # 给用户在redis中设置标记位
 def add_mark_to_user_redis(ucid, message_type):
-    redis_store.hset(ucid, message_type, 1)
+    # redis_store.hset(ucid, message_type, 1)
+    redis_store.hincrby(ucid, message_type, 1)  # 自增数量，表示分类消息的未读数量
 
 
 def add_to_every_related_users_message_list(users_message):

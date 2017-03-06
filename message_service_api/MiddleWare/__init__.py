@@ -1,8 +1,11 @@
 # _*_ coding: utf-8 _*_
+import threading
 
 from flask import Flask
 from flask_mongoengine import MongoEngine
 from flask_redis import FlaskRedis
+from kafka import KafkaConsumer
+from kafka import KafkaProducer
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
@@ -44,19 +47,16 @@ def create_app():
 
     redis_store.init_app(app)
 
-    @app.before_request
-    def before_request():
-        pass
+    kafka_producer = KafkaProducer(bootstrap_servers=app.config.get('KAFKA_URL'))
+    kafka_consumer = KafkaConsumer(bootstrap_servers=app.config.get('KAFKA_URL'))
+    kafka_consumer.subscribe([app.config.get('KAFKA_TOPIC')])
+    from Service.KafkaHandler import kafka_consume_func
+    kafka_consumer_thread = threading.Thread(target=kafka_consume_func, args=(kafka_consumer,))
+    kafka_consumer_thread.setDaemon(True)
+    kafka_consumer_thread.start()
 
-    @app.teardown_request
-    def teardown_request(exception):
-        pass
-    return app
-
-
-def init_mysql_db(app):
     app.config['SQLALCHEMY_DATABASE_URI'] = app.config.get('SQLALCHEMY_DATABASE_URI')
     mysql_engine = create_engine(app.config['SQLALCHEMY_DATABASE_URI'], encoding="utf-8", echo=True)
     mysql_session = sessionmaker(autocommit=False, bind=mysql_engine)
-    return mysql_session()
 
+    return app, kafka_producer, kafka_consumer, mysql_session()
