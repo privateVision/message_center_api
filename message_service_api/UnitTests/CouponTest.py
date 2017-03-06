@@ -86,7 +86,7 @@ class CouponFunctionTest(unittest.TestCase):
                 'appid': 778,
                 'param': param
             }
-            r = requests.post('http://localhost:5000/v4/coupons', data=body_data)
+            r = requests.post('http://127.0.0.1/v4/coupons', data=body_data)
             print r.text
         else:
             print '加密失败'
