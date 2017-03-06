@@ -116,7 +116,7 @@ class UserController extends Controller{
 
         $amount   =  $request->input('amount'); //用户金额
 
-        if($amount < 0 || !preg_match("/^(\d+).?(?=\d+)(.\d{0,4})?$/",$amount)){
+        if($amount < 0 || !check_money($amount)){
 
             throw new ToolException(ToolException::Remind,trans("messages.money_format_error"));
         }
@@ -175,7 +175,7 @@ class UserController extends Controller{
 
         // todo: 当前充值金额是从表ucuser_total_pay读取
         // 验证当前的充值金额
-       $dat =  UcuserTotalPay::where("ucid",$ucusers->ucid)->first();
+        $dat =  UcuserTotalPay::where("ucid",$ucusers->ucid)->first();
 
         if($dat['pay_fee'] < 1000 ) {
             throw new ToolException(ToolException::Remind,trans("messages.nomoney"));
@@ -191,8 +191,8 @@ class UserController extends Controller{
     public function authsmsAction(Request $request,$param){
         $code = $request->input("code");
         $mobile = $request->input('mobile');
-        $pater = "/^\d{6}$/";
-        if(preg_match($pater,$code) && preg_match("/^1[34578]\d{9}$/",$mobile)){
+
+        if(check_code($code) && check_mobile($mobile)){
             $ms = Sms::where("mobile",$mobile)->orderBy('id', 'desc')->first();
             $time = time() - strtotime($ms['sendTime']);
             //验证码有效时间三十分钟
@@ -208,8 +208,8 @@ class UserController extends Controller{
 
         $mobile = $request->input("mobile");
 
-        if(!preg_match("/^1[34578]\d{9}$/",$mobile)){
-            throw new ToolException(ToolException::Remind,"messages.mobile_type_error");
+        if(!check_mobile($mobile)){
+            throw new ToolException(ToolException::Remind,trans("messages.mobile_type_error"));
         }
 
         $code = rand(111111,999999);
@@ -223,7 +223,7 @@ class UserController extends Controller{
             Cache::store("redis")->put($rkey, 1, 60 * 24); //保存一天 一天内发送短信的次数的限制
         }
         if($numj == 3){
-            throw  new ToolException(ToolException::Remind,"messages.sms_limit_code");
+            throw  new ToolException(ToolException::Remind,trans("messages.sms_limit_code"));
         }else{
             Cache::increment($rkey); //发送短信次数增加
         }
