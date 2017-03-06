@@ -43,7 +43,7 @@ $app->group(['prefix' => 'tool'], function () use ($app) {
     $app->post('user/fpay', 'Tool\\UserController@fpayAction');                                          //F币支付
     $app->get('user/freeze', 'Tool\\UserController@freezeAction');                                      //账户冻结
     $app->get('user/unfreeze', 'Tool\\UserController@unfreezeAction');                                   //解冻
-    $app->get('user/auth', 'Tool\\UserController@authorizeAction');                                     //用户验证
+    $app->post('user/auth', 'Tool\\UserController@authorizeAction');                                     //用户验证
     $app->get("user/sendsms",'Tool\\UserController@sendmsAction');                                      //发送短信验证码
     $app->get("user/authsms",'Tool\\UserController@authsmsAction');                                     //验证码验证
 });

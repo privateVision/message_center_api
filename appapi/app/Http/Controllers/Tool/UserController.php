@@ -11,13 +11,14 @@ namespace App\Http\Controllers\Tool;
 use App\Event;
 use App\Exceptions\ToolException;
 use App\Model\Gamebbs56\UcenterMembers;
-use App\Model\Orders;
 use App\Model\Sms;
 use App\Model\Ucusers;
 use App\Model\UcusersExtend;
 use App\Model\UcuserTotalPay;
+
+use Illuminate\Support\Facades\Cache;
 use Mockery\CountValidator\Exception;
-use Mockery\Generator\Parameter;
+
 use Symfony\Component\HttpFoundation\Request;
 use App\Http\Controllers\Tool\Controller;
 
@@ -25,6 +26,8 @@ class UserController extends Controller{
     const UN_FREEZE = 0;
     const FREEZE = 1;
     const HAD_SHELL = 2;
+    private $code = 12; //当前的短信验证码的操作
+
     /*
      * 账户冻结
      * */
@@ -100,14 +103,11 @@ class UserController extends Controller{
     public function fpayAction(Request $request, $parameter){
 
         $username =  $request->input('username');//账户名
-
-        $partername  = "/(^\d+(?=\w+)[a-zA-Z]+\w+$)|(^[a-zA-Z]+(?=\d+)\d+\w+$)/"; //正则匹配
-
         $notifyUrlBack  =  $request->input("notifyUrlBack"); //回调地址
 
         $sn = $request->input("sn"); //订单号
 
-        if(!preg_match($partername,$username)) {
+        if(!check_name($username,24)) {
             $conm =http_request($notifyUrlBack,["code"=>1,"msg"=>trans("messages.fpay1"),"data"=>["sn"=>$sn]],true);
             throw new ToolException(ToolException::Remind, trans('messages.name_type_error'));
             return "error type user!";
@@ -148,8 +148,7 @@ class UserController extends Controller{
     public function authorizeAction(Request $request, $arguments = [])
     {
         $username = $request->input("username");
-
-        if(strlen($username) >32 || !preg_match('/^[\w\_\-\.\@\:]+$/', $username)){
+        if(!check_name($username)){
             throw new ToolException(ToolException::Remind,trans("messages.error_user_message"));
         }
 
@@ -161,7 +160,7 @@ class UserController extends Controller{
 
         $ucusers = Ucusers::where('uid', $username)->orWhere('mobile', $username)->get();
 
-        if(count($ucusers) == 0)  { throw new ToolException(ToolException::Remind, trans("messages.error_user_message")); return ;}
+        if(count($ucusers) == 0)  { throw new ToolException(ToolException::Remind, trans("messages.error_user_message")); }
 
         foreach($ucusers as $v) {
 
@@ -172,12 +171,11 @@ class UserController extends Controller{
 
         if( $ucusers->mobile ==''){
             throw new ToolException(ToolException::UNBIND_MOBILE, trans("messages.please_bind_mobile"));
-            return ;
         }
 
         // todo: 当前充值金额是从表ucuser_total_pay读取
         // 验证当前的充值金额
-       $dat =  UcuserTotalPay::were("uid",$ucusers->uid)->first();
+       $dat =  UcuserTotalPay::where("ucid",$ucusers->ucid)->first();
 
         if($dat['pay_fee'] < 1000 ) {
             throw new ToolException(ToolException::Remind,trans("messages.nomoney"));
@@ -207,13 +205,31 @@ class UserController extends Controller{
     }
 
     public function sendmsAction(Request $request,$param){
+
         $mobile = $request->input("mobile");
+
         if(!preg_match("/^1[34578]\d{9}$/",$mobile)){
             throw new ToolException(ToolException::Remind,"messages.mobile_type_error");
         }
+
         $code = rand(111111,999999);
         $content = trans("messages.sms_code").$code;
+
+        //发送短信验证码限制 防止短信炸弹
+        $rkey = $mobile.":".$this->code;
+        $numj = Cache::get($rkey);
+
+        if(!$numj ) {
+            Cache::store("redis")->put($rkey, 1, 60 * 24); //保存一天 一天内发送短信的次数的限制
+        }
+        if($numj == 3){
+            throw  new ToolException(ToolException::Remind,"messages.sms_limit_code");
+        }else{
+            Cache::increment($rkey); //发送短信次数增加
+        }
+
         send_sms($mobile, $content,$code);
+
         return ['code'=>$code];
     }
 

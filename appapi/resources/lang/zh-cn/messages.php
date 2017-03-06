@@ -29,4 +29,5 @@ return [
     "password_type_error"           => "您好，密码格式不正确！",
     "mobile_type_error"             => "请填写正确的，手机号格式",
     'phone_register'                => "【安锋网】恭喜您注册成功，用户名：:username  密码：:password", // 手机一键登陆成功后给发送用户帐户信息
+    "sms_limit_code"                => "您好，每天最多发送三次!"
 ];
