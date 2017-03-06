@@ -39,7 +39,7 @@ $app->group(['prefix' => 'api'], function () use ($app) {
     $app->post('pay/anfeng/request', 'Api\\Pay\\AnfengController@RequestAction');                       // 安锋支付，（帐户余额支付）
 });
 
-$app->group(['prefix' => 'tool'], function () use ($app) {
+$app->group(['prefix' => 'tool',"middleware"=>"Cr"], function () use ($app) {
     $app->post('user/fpay', 'Tool\\UserController@fpayAction');                                          //F币支付
     $app->get('user/freeze', 'Tool\\UserController@freezeAction');                                      //账户冻结
     $app->get('user/unfreeze', 'Tool\\UserController@unfreezeAction');                                   //解冻

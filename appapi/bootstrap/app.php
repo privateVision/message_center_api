@@ -67,9 +67,9 @@ $app->singleton(
 //    App\Http\Middleware\ExampleMiddleware::class
 // ]);
 
-//$app->routeMiddleware([
-//	'api' => App\Http\Middleware\ApiMiddleware::class,
-//]);
+$app->routeMiddleware([
+	'Cr' => App\Http\Middleware\CrMiddleWare::class,
+]);
 
 /*
 |--------------------------------------------------------------------------
