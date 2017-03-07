@@ -12,8 +12,8 @@ class Controller extends \App\Controller
     public function execute(Request $request, $action, $parameters) {
         try {
             // 两个公共参数：_appid, _token
-            $data = $_POST ?: $_GET;
-            if(empty($data)){
+            $data = count($_POST) ? $_POST : $_GET;
+            if(count($data) == 0){
                 throw new ToolException(ToolException::Error, '参数为空');
             }
 
