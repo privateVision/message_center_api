@@ -68,7 +68,7 @@ $app->singleton(
 // ]);
 
 $app->routeMiddleware([
-	'Cr' => App\Http\Middleware\CrMiddleWare::class,
+    'cors' => App\Http\Middleware\CorsMiddleware::class,
 ]);
 
 /*
@@ -83,9 +83,9 @@ $app->routeMiddleware([
 */
 
 $app->register(App\Providers\AppServiceProvider::class);
-// $app->register(App\Providers\AuthServiceProvider::class);
 $app->register(App\Providers\EventServiceProvider::class);
 $app->register(Illuminate\Redis\RedisServiceProvider::class);
+$app->register(App\Providers\CatchAllOptionsRequestsProvider::class);
 
 /*
 |--------------------------------------------------------------------------
@@ -101,7 +101,7 @@ $app->register(Illuminate\Redis\RedisServiceProvider::class);
 $app->group(['namespace' => 'App\Http\Controllers'], function ($app) {
     require __DIR__.'/../routes/web.php';
 });
-
+$app->configure('cors');
 // 加载配置
 $app->configure('common');
 

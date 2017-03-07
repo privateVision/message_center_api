@@ -13,6 +13,8 @@ class Controller extends \App\Controller
         try {
             // 两个公共参数：_appid, _token
             $postdata = empty($_POST)?$_GET:$_POST;
+            print_r($_POST);
+            print_r($_GET);
             $token = @$postdata['_token'];
             unset($postdata['_token']);
             ksort($postdata);
