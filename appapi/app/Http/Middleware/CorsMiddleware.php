@@ -26,6 +26,13 @@ class CorsMiddleware
         $response->header('Access-Control-Allow-Headers', $request->header('Access-Control-Request-Headers'));
         $response->header('Access-Control-Allow-Origin', '*');
 
+        // 判断请求头中是否包含ORIGIN字段
+        if(isset($request->server()['HTTP_ORIGIN'])){
+            $origin = $request->server()['HTTP_ORIGIN'];
+            header('Access-Control-Allow-Origin: '.$origin);
+            header('Access-Control-Allow-Headers: Origin, Content-Type, Authorization');
+        }
+
         return $response;
     }
 }
