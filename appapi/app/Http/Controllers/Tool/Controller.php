@@ -13,19 +13,16 @@ class Controller extends \App\Controller
         try {
             // 两个公共参数：_appid, _token
             $postdata = empty($_POST)?$_GET:$_POST;
-            print_r($postdata);
-
             if(empty($postdata)){
                 throw new ToolException(ToolException::Error, '数据为空');
             }
             $token = @$postdata['_token'];
             unset($postdata['_token']);
             ksort($postdata);
+            if(!isset($postdata['_appid'])) throw new ToolException(ToolException::Error, '缺少appid');
+            $key = config('common.apps')[$postdata['_appid']]['appkey'];
 
-            $key = config('common.apps.app_keys');
-            $skey ='APP_' .($postdata['_appid']?$postdata['_appid']:1001);
-
-            $_token = md5(http_build_query($postdata) . $key[$skey]);
+            $_token = md5(http_build_query($postdata) . $key);
 
             if($_token !== $token) {
                 throw new ToolException(ToolException::Error, 'token错误');
