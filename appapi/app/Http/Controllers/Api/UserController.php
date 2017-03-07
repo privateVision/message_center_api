@@ -15,9 +15,11 @@ use App\Model\Ucusers;
 use Illuminate\Http\Request;
 use App\Parameter;
 use App\Event;
+use Illuminate\Support\Facades\Cache;
 
 class UserController extends AuthController
 {
+    const SMS_LIMIT = 3;
 
     public function LogoutAction(Request $request, Parameter $parameter) {
         Event::onLogout($this->ucuser, $this->session);
@@ -33,7 +35,7 @@ class UserController extends AuthController
  * */
     public function getAuthCodeAction(Request $request,Parameter $parameter){
         $code = rand(111111,999999); #生成短信验证码
-        $content  = trans_choice('messages.phone_unbind_code', $code);
+        $content  = trans('messages.phone_unbind_code').$code;
         send_sms($this->session->mobile,$content,$code);
     }
 
@@ -69,7 +71,30 @@ class UserController extends AuthController
      * 手机绑定短信
      * */
     public function bind(Request $request ,Parameter $parameter){
+        $mobile = $request->input("mobile");
 
+        if(!check_mobile($mobile)){
+            throw new ApiException(ApiException::Remind,trans("messages.mobile_type_error"));
+        }
+
+        $code = rand(111111,999999);
+        $content = trans("messages.sms_code").$code;
+
+        //发送短信验证码限制 防止短信炸弹
+        $rkey = $mobile.":".$this->code;
+        $numj = Cache::get($rkey);
+
+        if(!$numj ) {
+            Cache::store("redis")->put($rkey, 1, 60 * 24); //保存一天 一天内发送短信的次数的限制
+        }
+        if($numj == self::SMS_LIMIT){
+            throw  new ApiException(ApiException::Remind,trans("messages.sms_limit_code"));
+        }else{
+            Cache::increment($rkey); //发送短信次数增加
+        }
+
+        send_sms($mobile, $content,$code);
+        return ['code'=>$code];
     }
 
     /*

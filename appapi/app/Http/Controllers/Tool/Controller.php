@@ -32,7 +32,7 @@ class Controller extends \App\Controller
                 throw new ToolException(ToolException::Error, '_token 错误');
             }
 
-           log_info('request', ['route' => $request->path(), 'appid' => $data["_appid"], 'param' => $data]);
+            log_info('request', ['route' => $request->path(), 'appid' => $data["_appid"], 'param' => $data]);
 
             $this->before($request);
             $response = $this->$action($request, $data);

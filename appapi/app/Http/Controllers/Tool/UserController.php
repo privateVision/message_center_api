@@ -11,6 +11,7 @@ namespace App\Http\Controllers\Tool;
 use App\Event;
 use App\Exceptions\ToolException;
 use App\Model\Gamebbs56\UcenterMembers;
+use App\Model\MongoDB\AccountLog;
 use App\Model\MongoDB\Fpay;
 use App\Model\Sms;
 use App\Model\Ucusers;
@@ -26,7 +27,6 @@ use App\Http\Controllers\Tool\Controller;
 class UserController extends Controller{
     const UN_FREEZE = 0;
     const FREEZE = 1;
-    const HAD_SHELL = 2;
     private $code = 12; //当前的短信验证码的操作
 
     /*
@@ -59,6 +59,19 @@ class UserController extends Controller{
             $dat['password'] = md5(md5($password) . $dat['salt']);
             $userextend->isfreeze = 1;
 
+            try {
+                //修改的信息记录到日志
+                $account_log = new  AccountLog();
+                $account_log->uid           = $dat['uid'];
+                $account_log->username      = $dat['username'];
+                $account_log->salt          = $dat['salt'];
+                $account_log->addtime       = dat('Y-m-d H:i:s',time());
+                $account_log->newpass       = $password;
+                $account_log->save();
+            }catch(Exception $e){
+
+            }
+
             if($userextend->save() && $dat->save()){
                 //推送到kafka 所有登录的用户，全部登录的游戏，全部下线
                 return ["newpass" => $password, "msg" => trans('messages.user_freeze')];
@@ -86,7 +99,6 @@ class UserController extends Controller{
 
             $user = UcenterMembers::where("username", $uid)->first();
             $userextend = UcusersExtend::where("username",$uid)->where("isfreeze",self::FREEZE)->first();
-
             if(empty($user) || empty($userextend))   throw new ToolException(ToolException::Remind, trans('messages.user_message_notfound'));
 
             $status = $request->input("status");
@@ -95,15 +107,38 @@ class UserController extends Controller{
                throw new ToolException(ToolException::Remind, trans('messages.unfreeze_faild'));
             }
 
+            try {
+                //修改的信息记录到日志
+                $account_log = new  AccountLog();
+                $account_log->status        = $status;
+                $account_log->uid           = $uid;
+                $account_log->addtime       = dat('Y-m-d H:i:s',time());
+                $account_log->newpass       =  $user['password'];
+                $account_log->oldpass       =  $userextend['newpass'];
+                $account_log->save();
+            }catch(Exception $e){
+
+            }
+
+            $isshell = false;
             if(!isset($status) && $status){
                 $pass = $user['password']; //新密
-                $oldpa = $userextend->newpass; //旧密码
-                $userextend->newpass  = $pass; //密码替换
+                $oldpa = $userextend['newpass']; //旧密码
+                $userextend['newpass']  = $pass; //密码替换
                 $user['password'] = $oldpa;
+            }else{
+                //账号卖出，清空绑定的手机号信息
+                $isshell = true;
             }
+
              $userextend->isfreeze = self::UN_FREEZE;
 
             if( $userextend->save() && $user->save()){
+                if($isshell){
+                    $user_mobile = new Ucusers();
+                    $user_mobile->mobile = '';
+                    $user_mobile->save();
+                }
                 return [ "msg" =>  trans('messages.unfreeze_success')];
             }else{
                 throw new ToolException(ToolException::Remind, trans('messages.unfreeze_faild'));
@@ -145,7 +180,6 @@ class UserController extends Controller{
             $conm =http_request($notifyUrlBack,["code"=>1,"msg"=>trans("messages.fpay1"),"data"=>["sn"=>$sn]],true);
             return $sn;
            // throw new ToolException(ToolException::Remind, trans('messages.fpay1'));
-
         }
 
         $user->balance += $amount;
