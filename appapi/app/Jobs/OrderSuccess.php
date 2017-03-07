@@ -18,52 +18,62 @@ class OrderSuccess extends Job
 
     public function handle()
     {
+        $order = Orders::find($this->order_id);
+        if(!$order || $order->status != Orders::Status_WaitPay) {
+            return;
+        }
+
         // 互斥锁， 防止多次操作
         $lock_key = 'laravel_order_lock_' . $this->order_id;
-        $lock = Redis::setnx($lock_key, '1');
-        if(!$lock) $this->release(5);
-        // 程序运行完毕解锁，防止死锁
-        register_shutdown_function(function() use($lock_key) {
-            Redis::del($lock_key);
-        });
-
-        $order = Orders::find($this->order_id);
-        if(!$order) return;
-
-        // 订单处理过了，不再处理
-        if($order->status == Orders::Status_Success) return;
+        if(!Redis::setnx($lock_key, '1')) return $this->release(5);
+        Redis::expire($lock_key, 60);
 
         try {
             $order->getConnection()->beginTransaction();
 
-            // 扣除代金道具
-            $orderExt = $this->ordersExt;
-            if($orderExt) {
-                foreach($ordersExt as $k => $v) {
-                    if($v->vcid == 0) {
-                        
+            if($order->ucusers) {
+                $ucuser = $order->ucusers;
+                $orderExt = $order->ordersExt;
+
+                // 扣除代金道具
+                if($orderExt) {
+                    $fail = function() use($order, $ucuser, $lock_key) {
+                        $order->getConnection()->rollback();
+                        $order->status = Orders::Status_Success;
+                        $order->save();
+                        Redis::del($lock_key);
+                    };
+
+                    foreach($orderExt as $k => $v) {
+                        if($v->vcid == 0 && $v->fee > 0) { // 处理代币
+                            if($ucuser->balance < $v->fee) {
+                                log_error("balanceInsufficient", ['vcid' => $v->vcid, 'order_id' => $this->order_id, 'fee' => $v->fee, 'ucid' => $ucuser->ucid, 'balance' => $ucuser->balance]);
+                                return $fail();
+                            } else {
+                                $ucuser->decrement('balance', $v->fee);
+                            }
+                        }
                     }
                 }
-            }
 
-            if($order->ucusers) {
                 if($order->vid == 2) { // 买平台币
-                    $order->ucusers->increment('balance', $order->fee); // 原子操作很重要
-                    $order->ucusers->save();
+                    $ucuser->increment('balance', $order->fee); // 原子操作很重要
+                    $ucuser->save();
                 }
                 
-                if(!$order->ucusers->ucuser_total_pay) {
-                    $order->ucusers->ucuser_total_pay = new UcuserTotalPay();
-                    $order->ucusers->ucuser_total_pay->ucid = $order->ucusers->ucid;
-                    $order->ucusers->ucuser_total_pay->pay_count = 1;
-                    $order->ucusers->ucuser_total_pay->pay_total = $order->fee;
-                    $order->ucusers->ucuser_total_pay->pay_fee = $order->fee;
-                    $order->ucusers->ucuser_total_pay->save();
+                $ucuser_total_pay = $ucuser->ucuser_total_pay;
+                if(!$ucuser_total_pay) {
+                    $ucuser_total_pay = new UcuserTotalPay();
+                    $ucuser_total_pay->ucid = $ucuser->ucid;
+                    $ucuser_total_pay->pay_count = 1;
+                    $ucuser_total_pay->pay_total = $order->fee;
+                    $ucuser_total_pay->pay_fee = $order->real_fee();
+                    $ucuser_total_pay->save();
                 } else {
-                    $order->ucusers->ucuser_total_pay->increment('pay_count', 1);
-                    $order->ucusers->ucuser_total_pay->increment('pay_total', $order->fee);
-                    $order->ucusers->ucuser_total_pay->increment('pay_fee', $order->real_fee());
-                    $order->ucusers->ucuser_total_pay->save();
+                    $ucuser_total_pay->increment('pay_count', 1);
+                    $ucuser_total_pay->increment('pay_total', $order->fee);
+                    $ucuser_total_pay->increment('pay_fee', $order->real_fee());
+                    $ucuser_total_pay->save();
                 }
             }
 
@@ -71,12 +81,18 @@ class OrderSuccess extends Job
             $order->save();
 
             // 非平台币，加入通知发货队列
-            if($order->vid != 2) Queue::push(new OrderNotiry($this->order_id));
+            if($order->vid != 2) {
+                Queue::push(new OrderNotiry($this->order_id));
+            }
 
             $order->getConnection()->commit();
         } catch(\Exception $e) {
+            log_error('OrderSuccess', $e->getMessage());
+
             $order->getConnection()->rollback();
-            return $this->release(1);
+            $this->release(5);
         }
+
+        Redis::del($lock_key);
     }
 }
