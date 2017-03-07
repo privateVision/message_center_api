@@ -55,8 +55,7 @@ class UserController extends Controller{
                 $userextend->salt  = $dat['salt'];
             }
 
-            $userextend->newpass = $dat['password'];
-            $dat['password'] = md5(md5($password) . $dat['salt']);
+            $userextend->newpass = md5(md5($password) . $dat['salt']);
             $userextend->isfreeze = 1;
 
             try {
@@ -122,10 +121,7 @@ class UserController extends Controller{
 
             $isshell = false;
             if(!isset($status) && $status){
-                $pass = $user['password']; //新密
-                $oldpa = $userextend['newpass']; //旧密码
-                $userextend['newpass']  = $pass; //密码替换
-                $user['password'] = $oldpa;
+                $user['password'] = $userextend['newpass'];
             }else{
                 //账号卖出，清空绑定的手机号信息
                 $isshell = true;
