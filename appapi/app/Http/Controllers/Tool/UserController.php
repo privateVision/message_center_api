@@ -42,22 +42,31 @@ class UserController extends Controller{
             }
 
             $password = rand(111111, 999999);
-            $user = UcenterMembers::where("username", $uid)->first();
-            $dat = $user->toArray();
+            $dat = UcenterMembers::where("username", $uid)->first();
+
+            if(empty($dat))  throw new ToolException(ToolException::Remind,trans("messages.user_message_notfound"));
+
             $userextend = UcusersExtend::where("username",$uid)->first();
 
-            if(!$userextend){
+            if(empty($userextend)){
                 $userextend = new UcusersExtend();
                 $userextend->uid = $dat['uid'];
                 $userextend->username = $dat['username'];
                 $userextend->salt  = $dat['salt'];
             }
-            $userextend->newpass = md5(md5($password) . $dat['salt']);
-            $userextend->isfreeze = 1;
-            $status = $userextend->save();
 
-            //推送到kafka 所有登录的用户，全部登录的游戏，全部下线
-            return ['data' => ["newpass" => $password], "msg" => trans('message.user_freeze'), "code" => 0];
+            $userextend->newpass = $dat['password'];
+            $dat['password'] = md5(md5($password) . $dat['salt']);
+            $userextend->isfreeze = 1;
+
+            if($userextend->save() && $dat->save()){
+                //推送到kafka 所有登录的用户，全部登录的游戏，全部下线
+                return ["newpass" => $password, "msg" => trans('messages.user_freeze')];
+            }else{
+                throw new ToolException(ToolException::Remind,trans("messages.user_freeze_faild"));
+            }
+
+
 
         }catch(Exception $e){
            throw new ToolException(ToolException::Remind,"错误");
@@ -72,25 +81,27 @@ class UserController extends Controller{
     public function unfreezeAction(Request $request , $parameter){
         try {
             $uid = $request->input("uid");
+
             if(!check_name($uid)) return " there had some error at username!";
 
             $user = UcenterMembers::where("username", $uid)->first();
             $userextend = UcusersExtend::where("username",$uid)->where("isfreeze",self::FREEZE)->first();
 
+            if(empty($user) || empty($userextend))   throw new ToolException(ToolException::Remind, trans('messages.user_message_notfound'));
+
             $status = $request->input("status");
+
             if(empty($userextend)){
                throw new ToolException(ToolException::Remind, trans('messages.unfreeze_faild'));
             }
 
-            if(isset($status) && $status){
-                $user->password = $user->newpass;
-            }else{
-                $pass = $user->password;
-                $userextend->isfreeze = self::UN_FREEZE;
-                $userextend->newpass  = $user->$pass; //密码替换
-                $userextend->isfreeze = self::HAD_SHELL;
-                //$userextend->newpass  =
+            if(!isset($status) && $status){
+                $pass = $user['password']; //新密
+                $oldpa = $userextend->newpass; //旧密码
+                $userextend->newpass  = $pass; //密码替换
+                $user['password'] = $oldpa;
             }
+             $userextend->isfreeze = self::UN_FREEZE;
 
             if( $userextend->save() && $user->save()){
                 return [ "msg" =>  trans('messages.unfreeze_success')];
@@ -99,7 +110,7 @@ class UserController extends Controller{
             }
             //推送到kafka 所有登录的用户，全部登录的游戏，全部下线
         }catch(Exception $e){
-            new ToolException(ToolException::Remind, trans('messages.bind_error'));
+            throw new ToolException(ToolException::Remind, trans('messages.bind_error'));
         }
     }
 
@@ -113,6 +124,7 @@ class UserController extends Controller{
         $notifyUrlBack  =  $request->input("notifyUrlBack"); //回调地址
 
         $sn = $request->input("sn"); //订单号
+        if($sn =='') throw new ToolException(ToolException::Remind, trans('messages.name_type_error'));
 
         if(!check_name($username,24)) {
             $conm =http_request($notifyUrlBack,["code"=>1,"msg"=>trans("messages.fpay1"),"data"=>["sn"=>$sn]],true);
@@ -209,7 +221,6 @@ class UserController extends Controller{
     public function authsmsAction(Request $request,$param){
         $code = $request->input("code");
         $mobile = $request->input('mobile');
-
         if(check_code($code) && check_mobile($mobile)){
             $ms = Sms::where("mobile",$mobile)->orderBy('id', 'desc')->first();
             $time = time() - strtotime($ms['sendTime']);

@@ -15,6 +15,8 @@ return [
     "please_bind_mobile"            => "【安锋网】请绑定手机号！",
     "auth_code_error"               => "【安锋网】验证码错误！" ,
     "user_freeze"                   => "【安锋网】您好，账号已冻结！",
+    "user_freeze_faild"             => " 您好，账号冻结失败！",
+    "user_message_notfound"         =>  "您好账户信息未找到！",
     "unfreeze_success"              => "【安锋网】账号成功冻结！",
     "unfreeze_faild"                => "【安锋网】你好账号解冻失败！",
     "name_type_error"               => "【安锋网】您好，名字的格式不正确！",
