@@ -22,7 +22,7 @@ class Log extends Job
     public function handle()
     {
         if($this->content['level'] === 'ERROR') {
-            send_mail('SDK接口调用错误', env('ALARM_MAILS'), json_encode($this->content, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT));
+            send_mail('SDK接口调用错误', explode('|', env('ALARM_MAILS')), json_encode($this->content, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT));
         }
 
         AppApiLog::insert($this->content);

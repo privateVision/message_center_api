@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Tool;
 use Illuminate\Http\Request;
 use App\Exceptions\ToolException;
 use App\Parameter;
+use Illuminate\Support\Facades\Config;
 
 class Controller extends \App\Controller
 {
@@ -12,11 +13,16 @@ class Controller extends \App\Controller
         try {
             // 两个公共参数：_appid, _token
             $postdata = empty($_POST)?$_GET:$_POST;
+            print_r($_POST);
+            print_r($_GET);
             $token = @$postdata['_token'];
             unset($postdata['_token']);
             ksort($postdata);
+            $key = config('common.app_keys');
+            $skey ='APP_' .($postdata['_appid']?$postdata['_appid']:1001);
 
-            $_token = md5(http_build_query($postdata) . env('APP_' . @$postdata['_appid']));
+            echo $key["$skey"];
+            $_token = md5(http_build_query($postdata) . $key["$skey"]);
 
             if($_token !== $token) {
                 throw new ToolException(ToolException::Error, 'token错误');

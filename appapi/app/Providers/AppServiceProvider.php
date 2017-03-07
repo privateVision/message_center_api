@@ -14,12 +14,20 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register()
     {
-        //
+        $this->app->singleton('kafka_producer', function () {
+            $kafka_producer = new \RdKafka\Producer();
+            $kafka_producer->setLogLevel(LOG_DEBUG);
+            $kafka_producer->addBrokers(env('KAFKA'));
+            return $kafka_producer;
+        });
+
+        // 加载配置
+        $this->app->configure('common');
     }
 
     public function boot() {
         Queue::failing(function ($connection, $job, $data) {
-            // todo: 为什么不起作用...
+
         });
     }
 }

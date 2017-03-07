@@ -124,6 +124,10 @@ class ComposerStaticInit7920f5af7a2779f08ce7e6693369c5f0
             'Cron\\' => 5,
             'Carbon\\' => 7,
         ),
+        'B' => 
+        array (
+            'Barryvdh\\Cors\\' => 14,
+        ),
         'A' => 
         array (
             'Aws\\' => 4,
@@ -373,6 +377,10 @@ class ComposerStaticInit7920f5af7a2779f08ce7e6693369c5f0
         'Carbon\\' => 
         array (
             0 => __DIR__ . '/..' . '/nesbot/carbon/src/Carbon',
+        ),
+        'Barryvdh\\Cors\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/barryvdh/laravel-cors/src',
         ),
         'Aws\\' => 
         array (
