@@ -2,7 +2,7 @@
 
 from mongoengine import Q
 
-from MiddleWare import redis_store, service_logger
+from MiddleWare import service_logger
 from MongoModel.AppRulesModel import AppVipRules
 from MongoModel.MessageModel import UsersMessage
 
@@ -111,11 +111,17 @@ def get_ucid_by_access_token(access_token=None):
     return False
 
 
-def get_user_data_mark_in_redis(ucid):
-    if redis_store.exists(ucid):
-        return redis_store.hgetall(ucid)
-    return None
-
-
-def clear_user_data_mark_in_redis(ucid, message_type):
-    redis_store.hdel(ucid, message_type)
+# def get_use_account_is_freeze_from_db(ucid=None):
+#     find_ucid_sql = "select isfreeze from ucusers_extend where ucid = %s" % (ucid,)
+#     from run import mysql_session
+#     try:
+#         user_info = mysql_session.execute(find_ucid_sql).first()
+#     except Exception, err:
+#         service_logger.error(err.message)
+#         mysql_session.rollback()
+#     finally:
+#         mysql_session.close()
+#     if user_info:
+#         if user_info.has_key('isfreeze'):
+#             return user_info['isfreeze']
+#     return False

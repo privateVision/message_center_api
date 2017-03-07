@@ -6,12 +6,12 @@ from flask import request
 from mongoengine import Q
 
 from Controller.BaseController import response_data, response_ok
-from MiddleWare import redis_store
 from MongoModel.AppRulesModel import AppVipRules
 from MongoModel.MessageModel import UsersMessage
 from MongoModel.MessageRevocationModel import MessageRevocation
 from MongoModel.UserMessageModel import UserMessage
-from Service.UsersService import get_user_data_mark_in_redis, get_ucid_by_access_token, clear_user_data_mark_in_redis
+from Service.UsersService import get_ucid_by_access_token
+from Utils.RedisUtil import RedisHandle
 from Utils.SystemUtils import log_exception
 
 app_controller = Blueprint('AppController', __name__)
@@ -107,11 +107,10 @@ def v4_cms_close_user_account():
     if not check_result:
         return check_exception
     ucid = request.form['ucid']
-    redis_store.hincrby(ucid, 'coupon', 1)
     if ucid is None or ucid == '':
         log_exception(request, '客户端请求错误')
         return response_data(200, 0, '客户端请求错误')
-    redis_store.hset(ucid, 'is_account_close', 1)
+    RedisHandle.hset(ucid, 'is_account_close', 1)
     return response_data(http_code=200, message="账号冻结成功")
 
 
@@ -126,7 +125,7 @@ def v4_cms_open_closed_user_account():
     if ucid is None or ucid == '':
         log_exception(request, '客户端请求错误')
         return response_data(200, 0, '客户端请求错误')
-    redis_store.hset(ucid, 'is_account_close', 0)
+    RedisHandle.hset(ucid, 'is_account_close', 0)
     return response_data(http_code=200, message="解冻账号成功")
 
 
@@ -166,7 +165,7 @@ def v4_sdk_heartbeat(ucid):
     # from Utils.EncryptUtils import sdk_api_check_key
     # params = sdk_api_check_key(request)
     # ucid = get_ucid_by_access_token(params['access_token'])
-    data = get_user_data_mark_in_redis(ucid)
+    data = RedisHandle.get_user_data_mark_in_redis(ucid)
     return response_data(data=data)
 
 
@@ -181,5 +180,5 @@ def v4_sdk_heartbeat_ack():
     from Utils.EncryptUtils import sdk_api_check_key
     params = sdk_api_check_key(request)
     ucid = get_ucid_by_access_token(params['access_token'])
-    clear_user_data_mark_in_redis(ucid, params['type'])
+    RedisHandle.clear_user_data_mark_in_redis(ucid, params['type'])
     return response_ok()

@@ -1,5 +1,6 @@
 # _*_ coding: utf-8 _*_
 import threading
+from logging.handlers import TimedRotatingFileHandler
 
 from flask import Flask
 from flask_mongoengine import MongoEngine
@@ -14,14 +15,17 @@ from config.config import config
 
 import logging
 
-
 service_logger = logging.getLogger('message_service')
 service_logger.setLevel(logging.DEBUG)
-fh = logging.FileHandler('./logs/message_service_api.log')
+fh = TimedRotatingFileHandler('./logs/message_service_api.log',
+                              when="d",
+                              interval=1,
+                              backupCount=10)
+fh.suffix = "%Y%m%d.log"
 fh.setLevel(logging.DEBUG)
 ch = logging.StreamHandler()
 ch.setLevel(logging.DEBUG)
-formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s - [%(filename)s:%(lineno)s]')
 fh.setFormatter(formatter)
 ch.setFormatter(formatter)
 service_logger.addHandler(fh)
