@@ -12,16 +12,16 @@ class Controller extends \App\Controller
     public function execute(Request $request, $action, $parameters) {
         try {
             // 两个公共参数：_appid, _token
-            $postdata = empty($_POST)?$_GET:$_POST;
-            print_r($_POST);
-            print_r($_GET);
+            $postdata = $_POST;
+            if(empty($postdata)){
+                throw new ToolException(ToolException::Error, '数据为空');
+            }
             $token = @$postdata['_token'];
             unset($postdata['_token']);
             ksort($postdata);
             $key = config('common.app_keys');
             $skey ='APP_' .($postdata['_appid']?$postdata['_appid']:1001);
 
-            echo $key["$skey"];
             $_token = md5(http_build_query($postdata) . $key["$skey"]);
 
             if($_token !== $token) {
