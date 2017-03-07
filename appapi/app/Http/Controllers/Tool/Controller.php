@@ -12,7 +12,7 @@ class Controller extends \App\Controller
     public function execute(Request $request, $action, $parameters) {
         try {
             // 两个公共参数：_appid, _token
-            $postdata = $_POST;
+            $postdata = empty($_POST)?$_GET:$_POST;
             if(empty($postdata)){
                 throw new ToolException(ToolException::Error, '数据为空');
             }
