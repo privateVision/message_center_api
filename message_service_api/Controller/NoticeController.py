@@ -13,6 +13,7 @@ from MongoModel.UserReadMessageLogModel import UserReadMessageLog
 from RequestForm.PostNoticesRequestForm import PostNoticesRequestForm
 from Service.StorageService import system_notices_update
 from Service.UsersService import get_notice_message_detail_info, get_ucid_by_access_token
+from Utils.RedisUtil import RedisHandle
 from Utils.SystemUtils import get_current_timestamp, log_exception
 
 notice_controller = Blueprint('NoticeController', __name__)
@@ -125,21 +126,21 @@ def v4_sdk_get_notice_list():
             service_logger.info("用户：%s 获取公告列表，数据从%s到%s" % (ucid, start_index, end_index))
             # 查询用户相关的公告列表
             current_timestamp = get_current_timestamp()
-            message_list_total_count = UserMessage.objects(
-                Q(type='notice')
-                & Q(closed=0)
-                & Q(is_read=0)
-                & Q(start_time__lte=current_timestamp)
-                & Q(end_time__gte=current_timestamp)
-                & Q(ucid=ucid)) \
-                .count()
+            # message_list_total_count = UserMessage.objects(
+            #     Q(type='notice')
+            #     & Q(closed=0)
+            #     & Q(is_read=0)
+            #     & Q(start_time__lte=current_timestamp)
+            #     & Q(end_time__gte=current_timestamp)
+            #     & Q(ucid=ucid)) \
+            #     .count()
             message_list = UserMessage.objects(
                 Q(type='notice')
                 & Q(closed=0)
-                & Q(is_read=0)
+                # & Q(is_read=0)
                 & Q(start_time__lte=current_timestamp)
                 & Q(end_time__gte=current_timestamp)
-                & Q(ucid=ucid)).order_by('-create_time')[start_index:end_index]
+                & Q(ucid=ucid)).order_by('sortby')[start_index:end_index]
             data_list = []
             for message in message_list:
                 message_info = get_notice_message_detail_info(message['mysql_id'])
@@ -169,6 +170,10 @@ def v4_sdk_get_notice_list():
                 message_resp['body']['url'] = message_info['url']
                 message_resp['body']['url_type'] = message_info['url_type']
                 data_list.append(message_resp)
+            message_list_total_count = len(data_list)
+            # 用户没有公告，重设redis标记，避免再次获取
+            if message_list_total_count == 0:
+                RedisHandle.clear_user_data_mark_in_redis(ucid, 'notice')
             data = {
                 "total_count": message_list_total_count,
                 "data": data_list

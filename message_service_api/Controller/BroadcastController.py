@@ -12,6 +12,7 @@ from MongoModel.UserMessageModel import UserMessage
 from RequestForm.PostBroadcastsRequestForm import PostBroadcastsRequestForm
 from Service.StorageService import system_broadcast_update
 from Service.UsersService import get_ucid_by_access_token, get_broadcast_message_detail_info
+from Utils.RedisUtil import RedisHandle
 from Utils.SystemUtils import get_current_timestamp, log_exception
 
 broadcast_controller = Blueprint('BroadcastController', __name__)
@@ -138,7 +139,11 @@ def v4_sdk_get_broadcast_list():
                 message_resp['body']['start_time'] = message_info['start_time']
                 # message_resp['body']['end_time'] = message_info['end_time']
                 message_resp['body']['close_time'] = message_info['close_time']
+                message['is_read'] = 1
+                message.save()
                 data_list.append(message_resp)
+            # 重置用户广播标记
+            RedisHandle.clear_user_data_mark_in_redis(ucid, 'broadcast')
             data = {
                 "total_count": message_list_total_count,
                 "data": data_list
