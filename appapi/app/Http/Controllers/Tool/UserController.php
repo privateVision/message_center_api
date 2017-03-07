@@ -27,7 +27,6 @@ use App\Http\Controllers\Tool\Controller;
 class UserController extends Controller{
     const UN_FREEZE = 0;
     const FREEZE = 1;
-    const HAD_SHELL = 2;
     private $code = 12; //当前的短信验证码的操作
 
     /*
@@ -133,7 +132,7 @@ class UserController extends Controller{
             }
 
              $userextend->isfreeze = self::UN_FREEZE;
-            
+
             if( $userextend->save() && $user->save()){
                 if($isshell){
                     $user_mobile = new Ucusers();
@@ -181,7 +180,6 @@ class UserController extends Controller{
             $conm =http_request($notifyUrlBack,["code"=>1,"msg"=>trans("messages.fpay1"),"data"=>["sn"=>$sn]],true);
             return $sn;
            // throw new ToolException(ToolException::Remind, trans('messages.fpay1'));
-
         }
 
         $user->balance += $amount;
