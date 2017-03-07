@@ -101,5 +101,5 @@ $app->register(App\Providers\CatchAllOptionsRequestsProvider::class);
 $app->group(['namespace' => 'App\Http\Controllers'], function ($app) {
     require __DIR__.'/../routes/web.php';
 });
-$app->configure('cors');
+$app->configure('common');
 return $app;
