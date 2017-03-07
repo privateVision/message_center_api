@@ -14,7 +14,6 @@ class ToolTestController extends \App\Controller
 
 
     public function senurl($url,$data){
-
         echo "------------------- {$url} -------------------<br/>";
         $ch = curl_init();         // 初始化
         echo "<strong>request data:</strong>";
@@ -45,7 +44,7 @@ class ToolTestController extends \App\Controller
          $dd = ["username"=>"z80189495","_appid"=>"1001","password"=>"123456"];
         //$dd = ["mobile"=>18801273298,"_appid"=>1001];
 
-        $dd = ["_appid"=>1001,"amount"=>10,"username"=>"z80189495","sn"=>"t201703031808596173","notifyUrlBack"=>"http://192.168.1.156:73/api/WithdrawAction/notifyUrlBack"];
+        $dd = ["_appid"=>1001,"amount"=>10,"username"=>"z80189495","sn"=>"t201703031808596173","notifyUrlBack"=>"http://dev.haochong.com/api/WithdrawAction/notifyUrlBack"];
         ksort($dd);
         $_token = md5(http_build_query($dd) . env('APP_' . @$dd['_appid']));
 
