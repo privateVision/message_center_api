@@ -58,6 +58,6 @@ return [
         ],
     ],
     "app_keys"=>[
-        "APP_1001"=>"7dbdac062e6bb98d809f988f68b42e57",
+        "APP_1001"=>["7dbdac062e6bb98d809f988f68b42e57"],
     ]
 ];

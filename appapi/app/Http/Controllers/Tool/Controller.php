@@ -13,16 +13,19 @@ class Controller extends \App\Controller
         try {
             // 两个公共参数：_appid, _token
             $postdata = empty($_POST)?$_GET:$_POST;
+            print_r($postdata);
+
             if(empty($postdata)){
                 throw new ToolException(ToolException::Error, '数据为空');
             }
             $token = @$postdata['_token'];
             unset($postdata['_token']);
             ksort($postdata);
-            $key = config('common.app_keys');
+
+            $key = config('common.apps.app_keys');
             $skey ='APP_' .($postdata['_appid']?$postdata['_appid']:1001);
 
-            $_token = md5(http_build_query($postdata) . $key["$skey"]);
+            $_token = md5(http_build_query($postdata) . $key[$skey]);
 
             if($_token !== $token) {
                 throw new ToolException(ToolException::Error, 'token错误');
@@ -43,7 +46,6 @@ class Controller extends \App\Controller
             log_error('requestError', ['message' => $e->getMessage(), 'code' => $e->getCode()]);
             return array('code' => ToolException::Error, 'msg' => $e->getMessage(), 'data' => null);
         } catch(\Exception $e) {
-            echo $e->getMessage();
             log_error('systemError', ['message' => $e->getMessage(), 'code' => $e->getCode(), 'file' => $e->getFile(), 'line' => $e->getLine()]);
             return array('code' => ToolException::Error, 'msg' => 'system error', 'data' => null);
         }

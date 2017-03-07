@@ -45,5 +45,5 @@ $app->group(['prefix' => 'tool'], function () use ($app) {
     $app->get('user/unfreeze', 'Tool\\UserController@unfreezeAction');                                   //解冻
     $app->post('user/auth', 'Tool\\UserController@authorizeAction');                                     //用户验证
     $app->post("user/sendsms",'Tool\\UserController@sendmsAction');                                      //发送短信验证码
-    $app->get("user/authsms",'Tool\\UserController@authsmsAction');                                     //验证码验证
+    $app->post("user/authsms",'Tool\\UserController@authsmsAction');                                     //验证码验证
 });

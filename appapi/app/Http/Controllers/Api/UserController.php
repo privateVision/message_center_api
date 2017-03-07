@@ -105,7 +105,7 @@ class UserController extends AuthController
         return  ["wallet"=>$this->ucuser->balance];
     }
 
-    
+
 
 
 }
