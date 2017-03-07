@@ -31,7 +31,7 @@ class OrderNotiry extends Job
         $data['vid'] = $order->vid;
         $data['sn'] = $order->sn;
         $data['vorderid'] = $order->vorderid;
-        $data['createTime'] = $order->createTime;
+        $data['createTime'] = strval($order->createTime);
         ksort($data);
 
         $str = '';
@@ -44,6 +44,9 @@ class OrderNotiry extends Job
         $data['sign'] = md5($str);
 
         $res = http_request($order->notify_url, $data);
+
+        log_info('OrderNotiry', ['url' => $order->notify_url, 'reqdata' => $data, 'resdata' => $res]);
+
         if(!$res) return $this->retry();
 
         $res = strtoupper($res);
