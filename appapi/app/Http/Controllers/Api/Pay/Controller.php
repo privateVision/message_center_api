@@ -49,10 +49,6 @@ class Controller extends BaseController {
             if($this->ucuser->balance < $balance) {
                 throw new ApiException(ApiException::Remind, '爪币余额不足');
             }
-
-            // todo: 扣除F币
-
-            $this->ucuser->decrement('balance', $balance);
             
             $ordersExt = new OrdersExt;
             $ordersExt->oid = $order->id;
