@@ -5,21 +5,31 @@ namespace App\Http\Controllers\Tool;
 use Illuminate\Http\Request;
 use App\Exceptions\ToolException;
 use App\Parameter;
+use Illuminate\Support\Facades\Config;
 
 class Controller extends \App\Controller
 {
     public function execute(Request $request, $action, $parameters) {
         try {
-            $data = empty($_POST) ? $_GET : $_POST;
+            // 两个公共参数：_appid, _token
+            $data = $_POST ?: $_GET;
+            if(empty($data)){
+                throw new ToolException(ToolException::Error, '参数为空');
+            }
 
             $token = @$data['_token'];
             unset($data['_token']);
             ksort($data);
 
-            $_token = md5(http_build_query($data) . env('APP_' . @$data['_appid']));
+            $app = config('common.apps.' . $data['_appid']);
+            if(!$app) {
+                throw new ToolException(ToolException::Error, '缺少参数"_appid"');
+            }
+
+            $_token = md5(http_build_query($data) . $app['appkey']);
 
             if($_token !== $token) {
-                throw new ToolException(ToolException::Error, 'token错误');
+                throw new ToolException(ToolException::Error, '_token 错误');
             }
 
            log_info('request', ['route' => $request->path(), 'appid' => $data["_appid"], 'param' => $data]);

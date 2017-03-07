@@ -1,3 +1,3 @@
 .env
-.listen-queue.sh
+listen-queue.sh
 test.py
