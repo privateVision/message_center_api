@@ -10,23 +10,22 @@ class Controller extends \App\Controller
 {
     public function execute(Request $request, $action, $parameters) {
         try {
-            // 两个公共参数：_appid, _token
-            $postdata = empty($_POST)?$_GET:$_POST;
-            $token = @$postdata['_token'];
-            unset($postdata['_token']);
-            ksort($postdata);
+            $data = empty($_POST) ? $_GET : $_POST;
 
-            $_token = md5(http_build_query($postdata) . env('APP_' . @$postdata['_appid']));
+            $token = @$data['_token'];
+            unset($data['_token']);
+            ksort($data);
+
+            $_token = md5(http_build_query($data) . env('APP_' . @$data['_appid']));
 
             if($_token !== $token) {
                 throw new ToolException(ToolException::Error, 'token错误');
             }
 
-           log_info('request', ['route' => $request->path(), 'appid' => $postdata["_appid"], 'param' => $postdata]);
-            //$parameter = new Parameter($postdata);
+           log_info('request', ['route' => $request->path(), 'appid' => $data["_appid"], 'param' => $data]);
 
             $this->before($request);
-            $response = $this->$action($request, $postdata);
+            $response = $this->$action($request, $data);
             $this->after($request);
 
             return array('code' => ToolException::Success, 'msg' => null, 'data' => $response);

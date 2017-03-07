@@ -19,7 +19,7 @@ class OrderSuccess extends Job
     public function handle()
     {
         // 互斥锁， 防止多次操作
-        $lock_key = 'order_success_lock_' . $this->order_id;
+        $lock_key = 'laravel_order_lock_' . $this->order_id;
         $lock = Redis::setnx($lock_key, '1');
         if(!$lock) $this->release(5);
         // 程序运行完毕解锁，防止死锁
