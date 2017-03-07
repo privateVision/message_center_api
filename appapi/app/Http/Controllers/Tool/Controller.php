@@ -12,27 +12,30 @@ class Controller extends \App\Controller
     public function execute(Request $request, $action, $parameters) {
         try {
             // 两个公共参数：_appid, _token
-            $postdata = $_POST;
-            if(empty($postdata)){
-                throw new ToolException(ToolException::Error, '数据为空');
+            $data = $_POST ?: $_GET;
+            if(empty($data)){
+                throw new ToolException(ToolException::Error, '参数为空');
             }
-            $token = @$postdata['_token'];
-            unset($postdata['_token']);
-            ksort($postdata);
-            $key = config('common.app_keys');
-            $skey ='APP_' .($postdata['_appid']?$postdata['_appid']:1001);
 
-            $_token = md5(http_build_query($postdata) . $key["$skey"]);
+            $token = @$data['_token'];
+            unset($data['_token']);
+            ksort($data);
+
+            $app = config('common.apps.' . $data['_appid']);
+            if(!$app) {
+                throw new ToolException(ToolException::Error, '缺少参数"_appid"');
+            }
+
+            $_token = md5(http_build_query($data) . $app['appkey']);
 
             if($_token !== $token) {
-                throw new ToolException(ToolException::Error, 'token错误');
+                throw new ToolException(ToolException::Error, '_token 错误');
             }
 
-           log_info('request', ['route' => $request->path(), 'appid' => $postdata["_appid"], 'param' => $postdata]);
-            //$parameter = new Parameter($postdata);
+           log_info('request', ['route' => $request->path(), 'appid' => $data["_appid"], 'param' => $data]);
 
             $this->before($request);
-            $response = $this->$action($request, $postdata);
+            $response = $this->$action($request, $data);
             $this->after($request);
 
             return array('code' => ToolException::Success, 'msg' => null, 'data' => $response);
