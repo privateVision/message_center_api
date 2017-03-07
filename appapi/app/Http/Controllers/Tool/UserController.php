@@ -86,7 +86,6 @@ class UserController extends Controller{
 
             $user = UcenterMembers::where("username", $uid)->first();
             $userextend = UcusersExtend::where("username",$uid)->where("isfreeze",self::FREEZE)->first();
-
             if(empty($user) || empty($userextend))   throw new ToolException(ToolException::Remind, trans('messages.user_message_notfound'));
 
             $status = $request->input("status");
@@ -95,15 +94,26 @@ class UserController extends Controller{
                throw new ToolException(ToolException::Remind, trans('messages.unfreeze_faild'));
             }
 
+            $isshell = false;
+
             if(!isset($status) && $status){
                 $pass = $user['password']; //新密
                 $oldpa = $userextend->newpass; //旧密码
                 $userextend->newpass  = $pass; //密码替换
                 $user['password'] = $oldpa;
+            }else{
+                //账号卖出，清空绑定的手机号信息
+                $isshell = true;
             }
+
              $userextend->isfreeze = self::UN_FREEZE;
 
             if( $userextend->save() && $user->save()){
+                if($isshell){
+                    $user_mobile = new Ucusers();
+                    $user_mobile->mobile = '';
+                    $user_mobile->save();
+                }
                 return [ "msg" =>  trans('messages.unfreeze_success')];
             }else{
                 throw new ToolException(ToolException::Remind, trans('messages.unfreeze_faild'));
