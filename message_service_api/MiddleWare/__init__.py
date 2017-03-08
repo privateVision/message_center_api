@@ -44,9 +44,6 @@ def create_app():
         'port': app.config.get('MONGODB_DATABASE_PORT'),
     }
 
-    db = MongoEngine()  # 建立MongoDB Engine
-    db.init_app(app)
-
     init_blueprint(app)  # 注册蓝图模块
 
     redis_store.init_app(app)

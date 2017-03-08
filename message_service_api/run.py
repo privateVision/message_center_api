@@ -1,4 +1,6 @@
 # _*_ coding: utf-8 _*_
+from flask_mongoengine import MongoEngine
+
 from MiddleWare import create_app
 import sys
 
@@ -6,6 +8,9 @@ reload(sys)
 sys.setdefaultencoding('utf-8')
 
 app, kafka_producer, kafka_consumer, mysql_session = create_app()
+
+db = MongoEngine()  # 建立MongoDB Engine
+db.init_app(app)
 
 
 @app.errorhandler(404)
@@ -22,3 +27,6 @@ def page_not_found(error):
 #     port = app.config.get('PORT')
 #     debug = app.config.get('DEBUG')
 #     app.run(host=host, port=port, debug=debug)
+
+
+#  uwsgi 启动脚本： uwsgi --socket 127.0.0.1:5000 --wsgi-file run.py --callable app --enable-threads
