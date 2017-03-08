@@ -91,6 +91,7 @@ ENV/
 .idea
 .DS_Store
 *.log
+*.out
 
 appapi/.env
 appapi/test.py
