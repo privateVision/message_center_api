@@ -32,7 +32,7 @@ class Ucusers extends Model
     }
 
     public function ucusers_extend(){
-        return $this->hasOne(UcusersExtend::class,'ucid','uid');
+        return $this->hasOne(UcusersExtend::class,'ucid','ucid');
     }
 
     public function getBalanceAttribute($value) {
