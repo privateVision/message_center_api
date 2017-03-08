@@ -35,6 +35,11 @@ class Ucusers extends Model
         return number_format($value, 2);
     }
 
+    public function checkServicePassword($password) {
+        if(!$this->ucusers_extend || trim($this->ucusers_extend->newpass) == '') return false;
+        return $this->ucusers_extend->newpass === md5($password);
+    }
+
     /**
      * 用户是否被冻结
      * @return boolean
