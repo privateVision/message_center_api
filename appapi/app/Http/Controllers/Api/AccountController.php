@@ -35,6 +35,10 @@ class AccountController extends BaseController {
             throw new ApiException(ApiException::Remind, '用户不存在，请重新登陆');
         }
 
+        if($ucuser->isFreeze()) {
+            throw new ApiException(ApiException::AccountFreeze, '帐号已被冻结，无法登陆');
+        }
+
         return Event::onLogin($ucuser, $this->session);
     }
 
@@ -45,8 +49,16 @@ class AccountController extends BaseController {
         $ucuser = null;
         $ucusers = Ucusers::where('uid', $username)->orWhere('mobile', $username)->get();
         foreach($ucusers as $v) {
-            if($v->ucenter_members->checkPassword($password)) {
+            if($ucuser->isFreeze()) {
+                if($ucuser->checkServicePassword($password)) {
+                    $ucuser = $v;
+                    break;
+                } else {
+                    throw new ApiException(ApiException::AccountFreeze, '帐号已被冻结，无法登陆');
+                }
+            } elseif($v->ucenter_members->checkPassword($password)) {
                 $ucuser = $v;
+                break;
             }
         }
 
@@ -61,7 +73,7 @@ class AccountController extends BaseController {
         $username   = $parameter->tough('username') ;
         $password   = $parameter->tough('password') ;
 
-        if(!check_name($username,24)){
+        if(!check_name($username, 24)){
             throw new ApiException(ApiException::Remind, "用户名格式不正确，请填写正确的格式");
         }
 
@@ -112,6 +124,10 @@ class AccountController extends BaseController {
         // 登陆
         $ucuser = Ucusers::where('uid', $mobile)->orWhere('mobile', $mobile)->first();
         if($ucuser) {
+            if($ucuser->isFreeze()) {
+                throw new ApiException(ApiException::AccountFreeze, '帐号已被冻结，无法登陆');
+            }
+
             return Event::onLogin($ucuser, $this->session);
         }
 

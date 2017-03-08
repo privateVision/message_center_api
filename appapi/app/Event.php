@@ -10,10 +10,6 @@ class Event
             //throw new ApiException(ApiException::Error, 'access_token已被使用，请重新启动游戏获取');
         }
 
-        if($ucuser->isFreeze()) {
-            throw new ApiException(ApiException::Remind, '帐号已被冻结，无法登陆');
-        }
-
 		$session->ucid = $ucuser->ucid;
 		$session->save();
 
@@ -29,6 +25,7 @@ class Event
             'avatar' => env('AVATAR'),
             'is_real' => $ucuser->isReal() ? 1 : 0,
             'is_adult' => $ucuser->isAdult() ? 1 : 0,
+            'is_freeze' => $ucuser->isFreeze() ? 1 : 0, // todo: 这个参数理论上应该保存在服务端
             'rtype' => $retailer ? $retailer->rtype : 0,
             'vip' => $ucuser->vip(),
             'token' => $ucuser->uuid,
