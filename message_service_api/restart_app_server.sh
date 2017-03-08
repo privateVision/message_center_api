@@ -24,7 +24,7 @@ if [ 1 == $count ];then
         echo "start process failed"
     fi
 else
-    echo "当前启动地址：" + $1
+    echo "当前启动地址： $1"
     nohup uwsgi --socket $1 --wsgi-file run.py --callable app --enable-threads &
     if [ 0 == $? ];then
         echo "start process success!"
