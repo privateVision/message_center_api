@@ -5,7 +5,7 @@ from mongoengine import Q
 
 from MiddleWare import service_logger
 from MongoModel.MessageRevocationModel import MessageRevocation
-from Service.StorageService import system_announcements_persist, system_broadcast_persist, system_message_persist, \
+from Service.StorageService import system_notices_persist, system_broadcast_persist, system_message_persist, \
     system_coupon_persist, system_rebate_persist
 
 
@@ -26,7 +26,7 @@ def consume_handler(message=None):
         service_logger.info("该消息已被撤回，停止发送！")
         return
     if message_info['type'] == 'notice':
-        system_announcements_persist(message_info['message'])
+        system_notices_persist(message_info['message'])
     elif message_info['type'] == 'broadcast':
         system_broadcast_persist(message_info['message'])
     elif message_info['type'] == 'message':

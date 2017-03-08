@@ -11,12 +11,12 @@ class PostCouponsRequestForm(Form):
 
     id = IntegerField('id', [InputRequired()])
     title = StringField('title', [InputRequired()])
-    is_time = StringField('is_time', [InputRequired()])
-    stime = IntegerField('stime', [InputRequired()])
-    etime = IntegerField('etime', [InputRequired()])
-    is_first = IntegerField('is_first')
-    info = StringField('info', [InputRequired()])
-    num = IntegerField('num', [InputRequired()])
+    is_time = IntegerField('is_time', default=1)  # 是否限制时间
+    stime = IntegerField('stime', default=0)    # 开始时间
+    etime = IntegerField('etime', default=0)    # 结束时间
+    is_first = IntegerField('is_first', default=0)  # 0为优惠券,1为首充券,2为充值优惠券
+    info = StringField('info')  # 描述
+    num = IntegerField('num', default=0)    # 已经使用的个数
     full = IntegerField('full')
     money = IntegerField('money')
     method = StringField('method')

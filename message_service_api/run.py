@@ -1,26 +1,16 @@
 # _*_ coding: utf-8 _*_
-import threading
+from flask_mongoengine import MongoEngine
 
-from kafka import KafkaConsumer
-from kafka import KafkaProducer
-
-from MiddleWare import create_app, init_mysql_db
+from MiddleWare import create_app
 import sys
-
-from Service.KafkaHandler import kafka_consume_func
 
 reload(sys)
 sys.setdefaultencoding('utf-8')
 
-app = create_app()
-mysql_session = init_mysql_db(app)
+app, kafka_producer, kafka_consumer, mysql_session = create_app()
 
-kafka_producer = KafkaProducer(bootstrap_servers=app.config.get('KAFKA_URL'))
-kafka_consumer = KafkaConsumer(bootstrap_servers=app.config.get('KAFKA_URL'))
-kafka_consumer.subscribe([app.config.get('KAFKA_TOPIC')])
-kafka_consumer_thread = threading.Thread(target=kafka_consume_func, args=(kafka_consumer,))
-kafka_consumer_thread.setDaemon(True)
-kafka_consumer_thread.start()
+db = MongoEngine()  # 建立MongoDB Engine
+db.init_app(app)
 
 
 @app.errorhandler(404)
@@ -32,8 +22,11 @@ def page_not_found(error):
 def page_not_found(error):
     return 'Server Exception', 500
 
-if __name__ == '__main__':
-    host = app.config.get('HOST')
-    port = app.config.get('PORT')
-    debug = app.config.get('DEBUG')
-    app.run(host=host, port=port, debug=debug)
+# if __name__ == '__main__':
+#     host = app.config.get('HOST')
+#     port = app.config.get('PORT')
+#     debug = app.config.get('DEBUG')
+#     app.run(host=host, port=port, debug=debug)
+
+
+#  uwsgi 启动脚本： uwsgi --socket 127.0.0.1:5000 --wsgi-file run.py --callable app --enable-threads

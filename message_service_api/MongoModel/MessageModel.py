@@ -9,4 +9,7 @@ class UsersMessage(DynamicDocument):
     type = StringField(required=True)
     closed = IntField(required=True, default=0)
     title = StringField(required=True)
+    start_time = IntField(required=True, default=0)
+    end_time = IntField(required=True, default=0)
+    show_times = IntField(required=True, default=0)
 
