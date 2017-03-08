@@ -15,7 +15,8 @@ $app->get('/', function () use ($app) {
     http_response_code(404); exit;
 });
 
-$app->get('test', 'TooltestController@fpayTestAction');                                                 // test
+$app->get('test', 'TooltestController@fpayTestAction');// test
+$app->get('createuser','TestController@createUserAction');
 $app->post('yunpian/callback', 'YunpianController@CallbackAction');                                     // 云片手机短信回调
 $app->post('pay_callback/nowpay_wechat', 'PayCallback\\NowpayWechatController@CallbackAction');         // 现代支付，微信支付回调
 $app->post('pay_callback/nowpay_alipay', 'PayCallback\\NowpayAlipayController@CallbackAction');         // 现代支付，支付宝支付回调
@@ -48,5 +49,5 @@ $app->group(['prefix' => 'tool'], function () use ($app) {
     $app->get('user/unfreeze', 'Tool\\UserController@unfreezeAction');                                   //解冻
     $app->post('user/auth', 'Tool\\UserController@authorizeAction');                                     //用户验证
     $app->post("user/sendsms",'Tool\\UserController@sendmsAction');                                      //发送短信验证码
-    $app->get("user/authsms",'Tool\\UserController@authsmsAction');                                     //验证码验证
+    $app->post("user/authsms",'Tool\\UserController@authsmsAction');                                     //验证码验证
 });
