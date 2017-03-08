@@ -24,7 +24,7 @@ class UserController extends AuthController
     const SMS_LIMIT = 3;
 
     public function MessageAction(Request $request, Parameter $parameter) {
-        return [];
+        return ;
     }
 
     public function LogoutAction(Request $request, Parameter $parameter) {

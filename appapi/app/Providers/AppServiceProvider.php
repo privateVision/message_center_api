@@ -17,7 +17,7 @@ class AppServiceProvider extends ServiceProvider
         $this->app->singleton('kafka_producer', function () {
             $kafka_producer = new \RdKafka\Producer();
             $kafka_producer->setLogLevel(LOG_DEBUG);
-            $kafka_producer->addBrokers(env('KAFKA'));
+            $kafka_producer->addBrokers(env('KAFKA_SERVER'));
             return $kafka_producer;
         });
 
