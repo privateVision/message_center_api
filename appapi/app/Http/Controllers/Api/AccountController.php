@@ -77,11 +77,12 @@ class AccountController extends BaseController {
         $UcenterMember->regip = $request->ip();
         $UcenterMember->username = $username;
         $UcenterMember->regdate = time();
-        $UcenterMember->save();
+        $ucid = $UcenterMember->save();
 
         $ucuser = $UcenterMember->ucusers()->create([
+            'ucid'    => $ucid,
             'uid' => $username,
-            'uuid' => $this->session->access_token,
+            'uuid'=> $this->session->access_token,
             'rid' => $this->session->rid,
             'pid' => $this->session->pid,
         ]);
