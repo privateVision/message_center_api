@@ -15,6 +15,10 @@ class Ucusers extends Model
 
     const CREATED_AT = 'createTime';
 
+    public function orders() {
+        return $this->belongsTo(Orders::class, 'ucid', 'ucid');
+    }
+
     public function ucenter_members() {
         return $this->belongsTo(UcenterMembers::class, 'ucid', 'uid');
     }

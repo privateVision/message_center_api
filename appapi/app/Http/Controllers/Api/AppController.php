@@ -49,25 +49,48 @@ class AppController extends Controller
             );
         }
 
-        return [
-            'access_token' => $session->access_token,
-            'update' => $update,
-            'service' => [
-                'qq' => $config && $config->service_qq ?: env('SERVICE_QQ'),
-                'page' => $config && $config->service_page ?: env('SERVICE_PAGE'),
-                'phone' => $config && $config->service_phone ?: env('SERVICE_PHONE'),
-                'share' => $config && $config->service_share ?: env('SERVICE_SHARE'),
-                'interval' => $config && $config->service_interval ? $config->service_interval * 1000 : 300000,
-            ],
-            'bind_phone' => [
-                'need' => $config && $config->bind_phone_need ? 1 : 0,
-                'enforce' => $config && $config->bind_phone_enforce ? 1 : 0,
-                'interval' => $config && $config->time_interval ? $config->time_interval * 1000 : 86400000,
-            ],
-            'real_name' => [
-                'need' => $config && $config->real_name_need ? 1 : 0,
-                'enforce' => $config && $config->real_name_enforce ? 1 : 0,
-            ]
-        ];
+        if($config) {
+            return [
+                'access_token' => $session->access_token,
+                'update' => $update,
+                'service' => [
+                    'qq' => $config->service_qq,
+                    'page' => $config->service_page,
+                    'phone' => $config->service_phone,
+                    'share' => $config->service_share,
+                    'interval' => $config->service_interval * 1000,
+                ],
+                'bind_phone' => [
+                    'need' => $config->bind_phone_need,
+                    'enforce' => $config->bind_phone_enforce,
+                    'interval' => $config->time_interval * 1000,
+                ],
+                'real_name' => [
+                    'need' => $config->real_name_need,
+                    'enforce' => $config->real_name_enforce,
+                ]
+            ];
+        } else {
+            return [
+                'access_token' => $session->access_token,
+                'update' => $update,
+                'service' => [
+                    'qq' => env('SERVICE_QQ'),
+                    'page' => env('SERVICE_PAGE'),
+                    'phone' => env('SERVICE_PHONE'),
+                    'share' => env('SERVICE_SHARE'),
+                    'interval' => 300000,
+                ],
+                'bind_phone' => [
+                    'need' => 1,
+                    'enforce' => 0,
+                    'interval' => 86400000,
+                ],
+                'real_name' => [
+                    'need' => 0,
+                    'enforce' => 0,
+                ]
+            ];
+        }
     }
 }
