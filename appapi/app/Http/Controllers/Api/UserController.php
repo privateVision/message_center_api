@@ -33,7 +33,25 @@ class UserController extends AuthController
     }
 
     public function RechargeAction(Request $request, Parameter $parameter) {
-        $order = Orders::where('vid', env('APP_SELF_ID'))->where('status', Orders::Status_Success)->get();
+        $order = $this->ucuser->orders()->where('vid', env('APP_SELF_ID'))->where('status', Orders::Status_Success)->get();
+
+        $data = [];
+        foreach($order as $v) {
+            $data[] = [
+                'order_id' => $v->sn,
+                'fee' => $v->fee,
+                'subject' => $v->subject,
+                'otype' => 0, // todo: 这是什么鬼？
+                'createTime' => strtotime($v->createTime),
+                'status' => $v->status,
+            ];
+        }
+
+        return $data;
+    }
+
+    public function ConsumeAction(Request $request, Parameter $parameter) {
+        $order = $this->ucuser->orders()->where('vid', '!=', env('APP_SELF_ID'))->where('status', Orders::Status_Success)->get();
 
         $data = [];
         foreach($order as $v) {
