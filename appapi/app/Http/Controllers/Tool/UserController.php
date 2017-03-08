@@ -213,6 +213,7 @@ class UserController extends Controller{
         }
 
         $password = $request->input("password");
+        $amount = $request->input('amount');
 
         if($password =='' || strlen($password)>32){
             throw new ToolException(ToolException::Remind,trans("messages.password_type_error"));
@@ -239,7 +240,7 @@ class UserController extends Controller{
         // 验证当前的充值金额
         $dat =  UcuserTotalPay::where("ucid",$ucusers->ucid)->first();
 
-        if($dat['pay_fee'] < 1000 ) {
+        if($dat['pay_fee'] < $amount ) {
             throw new ToolException(ToolException::Remind,trans("messages.nomoney"));
             return ;
         }
