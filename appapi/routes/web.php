@@ -34,6 +34,7 @@ $app->group(['prefix' => 'api'], function () use ($app) {
     $app->post('user/logout', 'Api\\UserController@LogoutAction');                                      // 退出登录
     $app->post('user/message', 'Api\\UserController@MessageAction');                                    // 消息轮循
     $app->post('user/recharge', 'Api\\UserController@RechargeAction');                                  // 充值记录（充F币）
+    $app->post('user/consume', 'Api\\UserController@ConsumeAction');                                    // 充值记录（充F币）
 
     $app->post('pay/order/new', 'Api\\Pay\\OrderController@NewAction');                                 // 创建订单
     $app->post('pay/order/anfeng/new', 'Api\\Pay\\OrderController@AnfengNewAction');                    // 充值F币的订单

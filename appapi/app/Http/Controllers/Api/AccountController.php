@@ -93,7 +93,7 @@ class AccountController extends BaseController {
         $ucid = $UcenterMember->save();
 
         $ucuser = $UcenterMember->ucusers()->create([
-            'ucid'    => $ucid,
+            'ucid'=> $ucid,
             'uid' => $username,
             'uuid'=> $this->session->access_token,
             'rid' => $this->session->rid,
