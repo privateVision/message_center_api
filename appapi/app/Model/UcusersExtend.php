@@ -4,7 +4,7 @@ namespace App\Model;
 class UcusersExtend extends Model
 {
     protected $table = 'ucusers_extend';
-    protected $primaryKey = 'uid';
+    protected $primaryKey = 'ucid';
     public $incrementing = false;
 
     public function getIsfreezeAttribute() {

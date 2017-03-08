@@ -10,7 +10,7 @@ namespace App\Model\MongoDB;
 use App\Model\MongoDB\Model;
 
 class Fpay extends Model{
-    protected $connection = "fpay_log";
+    protected $collection = 'fpay_log';
     const CREATED_AT = null;
     const UPDATED_AT = null;
 

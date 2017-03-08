@@ -45,40 +45,45 @@ class UserController extends Controller{
             $dat = UcenterMembers::where("username", $uid)->first();
 
             if(empty($dat))  throw new ToolException(ToolException::Remind,trans("messages.user_message_notfound"));
-
             $userextend = UcusersExtend::where("username",$uid)->first();
 
+            $isextends = 0;
             if(empty($userextend)){
                 $userextend = new UcusersExtend();
-                $userextend->uid = $dat['uid'];
+                $userextend->isfreeze = self::FREEZE;
+                $userextend->ucid = $dat['uid'];
                 $userextend->username = $dat['username'];
                 $userextend->salt  = $dat['salt'];
+                $userextend->newpass = md5(md5($password) . $dat['salt']);
+                if($userextend->save()){
+                    $isextends = 1;
+                }
+            }else{
+                $userextend->isfreeze = self::FREEZE;
+               if($userextend->save()){
+                   $isextends = 1;
+               }
             }
-
-            $userextend->newpass = md5(md5($password) . $dat['salt']);
-            $userextend->isfreeze = self::FREEZE;
 
             try {
                 //修改的信息记录到日志
                 $account_log = new  AccountLog();
-                $account_log->uid           = $dat['uid'];
+                $account_log->ucid           = $dat['uid'];
                 $account_log->username      = $dat['username'];
                 $account_log->salt          = $dat['salt'];
-                $account_log->addtime       = dat('Y-m-d H:i:s',time());
+                $account_log->addtime       = date('Y-m-d H:i:s',time());
                 $account_log->newpass       = $password;
                 $account_log->save();
             }catch(Exception $e){
 
             }
 
-            if($userextend->save() && $dat->save()){
+            if( $isextends && $dat->save()){
                 //推送到kafka 所有登录的用户，全部登录的游戏，全部下线
                 return ["newpass" => $password, "msg" => trans('messages.user_freeze')];
             }else{
                 throw new ToolException(ToolException::Remind,trans("messages.user_freeze_faild"));
             }
-
-
 
         }catch(Exception $e){
            throw new ToolException(ToolException::Remind,"错误");
@@ -97,6 +102,7 @@ class UserController extends Controller{
             if(!check_name($uid)) return " there had some error at username!";
 
             $user = UcenterMembers::where("username", $uid)->first();
+
             $userextend = UcusersExtend::where("username",$uid)->where("isfreeze",self::FREEZE)->first();
             if(empty($user) || empty($userextend))   throw new ToolException(ToolException::Remind, trans('messages.user_message_notfound'));
 
