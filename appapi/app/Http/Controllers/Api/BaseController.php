@@ -12,10 +12,12 @@ class BaseController extends Controller {
 
 	public function before(Request $request, Parameter $parameter) {
 		parent::before($request, $parameter);
+
 		$access_token = $parameter->tough('access_token');
 		$session = Session::where('access_token', $access_token)->first();
+
 		if(!$session) {
-			throw new ApiException(ApiException::Error, 'session不正确');
+			throw new ApiException(ApiException::Expire, '未找到会话，或已过期');
 		}
 
 		$this->session = $session;

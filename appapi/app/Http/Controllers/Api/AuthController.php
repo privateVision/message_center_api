@@ -25,5 +25,9 @@ class AuthController extends BaseController {
 		}
 
 		$this->ucuser = $ucuser;
+
+		if(!$this->session->is_service_login && $this->ucuser->isFreeze()) {
+			throw new ApiException(ApiException::AccountFreeze, '帐号已被冻结');
+		}
 	}
 }

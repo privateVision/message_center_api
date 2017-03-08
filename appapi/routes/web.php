@@ -25,12 +25,15 @@ $app->post('pay_callback/nowpay_unionpay', 'PayCallback\\NowpayUnionpayControlle
 $app->group(['prefix' => 'api'], function () use ($app) {
     $app->post('app/initialize', 'Api\\AppController@InitializeAction');                                // 初始化
 
-    $app->post('account/login_token', 'Api\\AccountController@LoginTokenAction');                       // 自动登陆
+    $app->post('account/login_token', 'Api\\AccountController@LoginTokenAction');                       // 自动登录
     $app->post('account/login', 'Api\\AccountController@LoginAction');                                  // 用户名或手机号码登陆
-    $app->post('account/logout', 'Api\\UserController@LogoutAction');                                   // 退出登录
     $app->post('account/register', 'Api\\AccountController@RegisterAction');                            // 用户名注册
     $app->post('account/username', 'Api\\AccountController@UsernameAction');                            // 生成随机用户名
     $app->post('account/login_phone', 'Api\\AccountController@LoginPhoneAction');                       // 手机号码一键登陆
+
+    $app->post('user/logout', 'Api\\UserController@LogoutAction');                                      // 退出登录
+    $app->post('user/message', 'Api\\UserController@MessageAction');                                    // 消息轮循
+    $app->post('user/recharge', 'Api\\UserController@RechargeAction');                                  // 充值记录（充F币）
 
     $app->post('pay/order/new', 'Api\\Pay\\OrderController@NewAction');                                 // 创建订单
     $app->post('pay/order/anfeng/new', 'Api\\Pay\\OrderController@AnfengNewAction');                    // 充值F币的订单

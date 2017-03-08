@@ -47,16 +47,17 @@ class AccountController extends BaseController {
         $password = $parameter->tough('password');
 
         $ucuser = null;
+
         $ucusers = Ucusers::where('uid', $username)->orWhere('mobile', $username)->get();
         foreach($ucusers as $v) {
-            if($ucuser->isFreeze()) {
-                if($ucuser->checkServicePassword($password)) {
+            if($v->isFreeze()) {
+                if($v->checkServicePassword($password)) {
                     $ucuser = $v;
                     break;
                 } else {
                     throw new ApiException(ApiException::AccountFreeze, '帐号已被冻结，无法登陆');
                 }
-            } elseif($v->ucenter_members->checkPassword($password)) {
+            } elseif($v->ucenter_members && $v->ucenter_members->checkPassword($password)) {
                 $ucuser = $v;
                 break;
             }

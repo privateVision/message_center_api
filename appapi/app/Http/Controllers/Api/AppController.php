@@ -43,9 +43,9 @@ class AppController extends Controller
         $update_apks = $this->procedure->update_apks()->orderBy('dt', 'desc')->first();
         if($update_apks && $update_apks->version != $app_version) {
             $update = array(
-                'down_url' => $update->down_uri,
-                'version' => $update->version,
-                'force_update' => $update->force_update,
+                'down_url' => $update_apks->down_uri,
+                'version' => $update_apks->version,
+                'force_update' => $update_apks->force_update,
             );
         }
 
@@ -53,20 +53,20 @@ class AppController extends Controller
             'access_token' => $session->access_token,
             'update' => $update,
             'service' => [
-                'qq' => $config->service_qq ?: env('SERVICE_QQ'),
-                'page' => $config->service_page ?: env('SERVICE_PAGE'),
-                'phone' => $config->service_phone ?: env('SERVICE_PHONE'),
-                'share' => $config->service_share ?: env('SERVICE_SHARE'),
-                'interval' => $config->service_interval ? $config->service_interval * 1000 : 300000,
+                'qq' => $config && $config->service_qq ?: env('SERVICE_QQ'),
+                'page' => $config && $config->service_page ?: env('SERVICE_PAGE'),
+                'phone' => $config && $config->service_phone ?: env('SERVICE_PHONE'),
+                'share' => $config && $config->service_share ?: env('SERVICE_SHARE'),
+                'interval' => $config && $config->service_interval ? $config->service_interval * 1000 : 300000,
             ],
             'bind_phone' => [
-                'need' => $config->bind_phone_need ? 1 : 0,
-                'enforce' => $config->bind_phone_enforce ? 1 : 0,
-                'interval' => $config->time_interval ? $config->time_interval * 1000 : 86400000,
+                'need' => $config && $config->bind_phone_need ? 1 : 0,
+                'enforce' => $config && $config->bind_phone_enforce ? 1 : 0,
+                'interval' => $config && $config->time_interval ? $config->time_interval * 1000 : 86400000,
             ],
             'real_name' => [
-                'need' => $config->real_name_need ? 1 : 0,
-                'enforce' => $config->real_name_enforce ? 1 : 0,
+                'need' => $config && $config->real_name_need ? 1 : 0,
+                'enforce' => $config && $config->real_name_enforce ? 1 : 0,
             ]
         ];
     }

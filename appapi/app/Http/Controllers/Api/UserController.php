@@ -8,12 +8,14 @@
 
 namespace App\Http\Controllers\Api;
 
-use App\Exceptions\ApiException;
-use App\Model;
-use App\Model\Gamebbs56\UcenterMembers;
-use App\Model\Ucusers;
 use Illuminate\Http\Request;
 use App\Parameter;
+use App\Exceptions\ApiException;
+
+use App\Model\Gamebbs56\UcenterMembers;
+use App\Model\Ucusers;
+use App\Model\Orders;
+
 use App\Event;
 use Illuminate\Support\Facades\Cache;
 
@@ -21,9 +23,31 @@ class UserController extends AuthController
 {
     const SMS_LIMIT = 3;
 
+    public function MessageAction(Request $request, Parameter $parameter) {
+        return [];
+    }
+
     public function LogoutAction(Request $request, Parameter $parameter) {
         Event::onLogout($this->ucuser, $this->session);
         return ['result' => true];
+    }
+
+    public function RechargeAction(Request $request, Parameter $parameter) {
+        $order = Orders::where('vid', env('APP_SELF_ID'))->where('status', Orders::Status_Success)->get();
+
+        $data = [];
+        foreach($order as $v) {
+            $data[] = [
+                'order_id' => $v->sn,
+                'fee' => $v->fee,
+                'subject' => $v->subject,
+                'otype' => 0, // todo: 这是什么鬼？
+                'createTime' => strtotime($v->createTime),
+                'status' => $v->status,
+            ];
+        }
+
+        return $data;
     }
 
 
