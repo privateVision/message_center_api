@@ -16,17 +16,19 @@ if [ 1 == $count ];then
         exit
     fi
     echo 'start process ...'
-    nohup uwsgi --socket 127.0.0.1:5000 --wsgi-file run.py --callable app --enable-threads &
+    echo "当前启动地址： $1"
+    nohup uwsgi --socket $1 --wsgi-file run.py --callable app --enable-threads &
     if [ 0 == $? ];then
         echo "start process success!"
     else
         echo "start process failed"
     fi
 else
-    nohup uwsgi --socket 127.0.0.1:5000 --wsgi-file run.py --callable app --enable-threads &
-   if [ 0 == $? ];then
+    echo "当前启动地址：" + $1
+    nohup uwsgi --socket $1 --wsgi-file run.py --callable app --enable-threads &
+    if [ 0 == $? ];then
         echo "start process success!"
-   else
+    else
         echo "start process failed"
-   fi
+    fi
 fi
