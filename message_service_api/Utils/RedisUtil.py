@@ -11,6 +11,14 @@ class RedisHandle(object):
         return redis_store.hincrby(key, field_name, incr_number)
 
     @staticmethod
+    def hdecrby(key_name, field_name, incr_number=-1):
+        key = "%s%s" % (RedisHandle.common_key_prefix, key_name)
+        unread_count = int(redis_store.hget(key, field_name))
+        if unread_count > 0:
+            return redis_store.hincrby(key, field_name, incr_number)
+        return redis_store.hset(key, field_name, 0)
+
+    @staticmethod
     def hset(key_name, field_name, field_value):
         key = "%s%s" % (RedisHandle.common_key_prefix, key_name)
         return redis_store.hset(key, field_name, field_value)
