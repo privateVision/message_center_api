@@ -11,8 +11,10 @@ from MongoModel.MessageModel import UsersMessage
 from MongoModel.UserMessageModel import UserMessage
 from MongoModel.UserReadMessageLogModel import UserReadMessageLog
 from RequestForm.PostNoticesRequestForm import PostNoticesRequestForm
-from Service.StorageService import system_announcements_persist
+from Service.StorageService import system_notices_update
 from Service.UsersService import get_notice_message_detail_info, get_ucid_by_access_token
+from Utils.RedisUtil import RedisHandle
+from Utils.SystemUtils import get_current_timestamp, log_exception
 
 notice_controller = Blueprint('NoticeController', __name__)
 
@@ -26,8 +28,8 @@ def v4_cms_post_notice():
         return check_exception
     form = PostNoticesRequestForm(request.form)  # POST 表单参数封装
     if not form.validate():
-        print form.errors
-        return response_data(400, 400, '客户端请求错误')
+        log_exception(request, "发送公告请求校验异常：%s" % (form.errors,))
+        return response_data(200, 0, '客户端请求错误')
     else:
         from run import kafka_producer
         try:
@@ -35,10 +37,12 @@ def v4_cms_post_notice():
                 "type": "notice",
                 "message": form.data
             }
-            kafka_producer.send('message-service', json.dumps(message_info))
+            message_str = json.dumps(message_info)
+            service_logger.info("发送公告：%s" % (message_str,))
+            kafka_producer.send('message-service', message_str)
         except Exception, err:
-            service_logger.error(err.message)
-            return response_data(http_code=500, code=500001, message="kafka服务异常")
+            log_exception(request, "发送公告异常：%s" % (err.message,))
+            return response_data(http_code=200, code=0, message="kafka服务异常")
         return response_data(http_code=200)
 
 
@@ -51,13 +55,14 @@ def v4_cms_update_post_notice():
         return check_exception
     form = PostNoticesRequestForm(request.form)  # POST 表单参数封装
     if not form.validate():
-        print form.errors
-        return response_data(400, 400, '客户端请求错误')
+        log_exception(request, "更新公告请求校验异常：%s" % (form.errors,))
+        return response_data(200, 0, '客户端请求错误')
     else:
         try:
-            system_announcements_persist(form.data, False)
+            service_logger.info("更新公告：%s" % (json.dumps(form.data),))
+            system_notices_update(form.data)
         except Exception, err:
-            service_logger.error(err.message)
+            log_exception(request, "更新公告异常：%s" % (err.message,))
     return response_data(http_code=200)
 
 
@@ -70,10 +75,15 @@ def v4_cms_set_post_notice_closed():
         return check_exception
     notice_id = request.form['id']
     if notice_id is None or notice_id == '':
-        return response_data(400, 400, '客户端请求错误')
-    UsersMessage.objects(Q(type='notice') & Q(mysql_id=notice_id)).update(set__closed=1)
-    UserMessage.objects(Q(type='notice') & Q(mysql_id=notice_id)).update(set__closed=1)
-    return response_data(http_code=204)
+        log_exception(request, "客户端请求错误-notice_id为空")
+        return response_data(200, 0, '客户端请求错误')
+    try:
+        UsersMessage.objects(Q(type='notice') & Q(mysql_id=notice_id)).update(set__closed=1)
+        UserMessage.objects(Q(type='notice') & Q(mysql_id=notice_id)).update(set__closed=1)
+    except Exception, err:
+        service_logger.error("关闭公告异常：%s" % (err.message,))
+        return response_data(200, 0, '服务端异常')
+    return response_data(http_code=200)
 
 
 # CMS 打开公告
@@ -85,10 +95,15 @@ def v4_cms_set_post_notice_open():
         return check_exception
     notice_id = request.form['id']
     if notice_id is None or notice_id == '':
-        return response_data(400, 400, '客户端请求错误')
-    UsersMessage.objects(Q(type='notice') & Q(mysql_id=notice_id)).update(set__closed=0)
-    UserMessage.objects(Q(type='notice') & Q(mysql_id=notice_id)).update(set__closed=0)
-    return response_data(http_code=204)
+        log_exception(request, "客户端请求错误-notice_id为空")
+        return response_data(200, 0, '客户端请求错误')
+    try:
+        UsersMessage.objects(Q(type='notice') & Q(mysql_id=notice_id)).update(set__closed=0)
+        UserMessage.objects(Q(type='notice') & Q(mysql_id=notice_id)).update(set__closed=0)
+    except Exception, err:
+        service_logger.error("打开公告异常：%s" % (err.message,))
+        return response_data(200, 0, '服务端异常')
+    return response_data(http_code=200)
 
 
 # SDK 获取公告列表
@@ -97,7 +112,8 @@ def v4_sdk_get_notice_list():
     appid = request.form['appid']
     param = request.form['param']
     if appid is None or param is None:
-        return response_data(400, 400, '客户端请求错误')
+        log_exception(request, "客户端请求错误-appid或param为空")
+        return response_data(200, 0, '客户端请求错误')
     from Utils.EncryptUtils import sdk_api_check_key
     params = sdk_api_check_key(request)
     if params:
@@ -105,20 +121,26 @@ def v4_sdk_get_notice_list():
         if ucid:
             page = params['page'] if params.has_key('page') and params['page'] else 1
             count = params['count'] if params.has_key('count') and params['count'] else 10
-            start_index = (page - 1) * count
-            end_index = start_index + count
+            start_index = (int(page) - 1) * int(count)
+            end_index = start_index + int(count)
+            service_logger.info("用户：%s 获取公告列表，数据从%s到%s" % (ucid, start_index, end_index))
             # 查询用户相关的公告列表
-            message_list_total_count = UserMessage.objects(
-                Q(type='notice')
-                & Q(closed=0)
-                & Q(is_read=0)
-                & Q(ucid=ucid)) \
-                .count()
+            current_timestamp = get_current_timestamp()
+            # message_list_total_count = UserMessage.objects(
+            #     Q(type='notice')
+            #     & Q(closed=0)
+            #     & Q(is_read=0)
+            #     & Q(start_time__lte=current_timestamp)
+            #     & Q(end_time__gte=current_timestamp)
+            #     & Q(ucid=ucid)) \
+            #     .count()
             message_list = UserMessage.objects(
                 Q(type='notice')
                 & Q(closed=0)
-                & Q(is_read=0)
-                & Q(ucid=ucid)).order_by('-create_time')[start_index:end_index]
+                # & Q(is_read=0)
+                & Q(start_time__lte=current_timestamp)
+                & Q(end_time__gte=current_timestamp)
+                & Q(ucid=ucid)).order_by('sortby')[start_index:end_index]
             data_list = []
             for message in message_list:
                 message_info = get_notice_message_detail_info(message['mysql_id'])
@@ -143,16 +165,23 @@ def v4_sdk_get_notice_list():
                 message_resp['body']['img'] = message_info['img']
                 message_resp['body']['open_type'] = message_info['open_type']
                 message_resp['body']['start_time'] = message_info['start_time']
+                message_resp['body']['end_time'] = message_info['end_time']
+                message_resp['body']['show_times'] = message_info['show_times']
                 message_resp['body']['url'] = message_info['url']
                 message_resp['body']['url_type'] = message_info['url_type']
                 data_list.append(message_resp)
+            message_list_total_count = len(data_list)
+            # 用户没有公告，重设redis标记，避免再次获取
+            if message_list_total_count == 0:
+                RedisHandle.clear_user_data_mark_in_redis(ucid, 'notice')
             data = {
                 "total_count": message_list_total_count,
                 "data": data_list
             }
             return response_data(http_code=200, data=data)
         else:
-            return response_data(400, 400, '根据access_token获取用户id失败，请重新登录')
+            log_exception(request, '根据access_token获取用户id失败，请重新登录')
+            return response_data(200, 0, '根据access_token获取用户id失败，请重新登录')
 
 
 # SDK 设置消息已读（消息通用）
@@ -161,13 +190,15 @@ def v4_sdk_set_notice_have_read():
     appid = request.form['appid']
     param = request.form['param']
     if appid is None or param is None:
-        return response_data(400, 400, '客户端请求错误')
+        log_exception(request, '客户端参数错误-appid或param为空')
+        return response_data(200, 0, '客户端请求错误')
     from Utils.EncryptUtils import sdk_api_check_key
     params = sdk_api_check_key(request)
-    ucid = params['ucid']
+    ucid = get_ucid_by_access_token(params['access_token'])
     message_info = params['message_info']
     if message_info['type'] is None or message_info['message_ids'] is None:
-        return response_data(400, 400, '客户端请求错误')
+        log_exception(request, '客户端请求错误-type或message_ids为空')
+        return response_data(200, 0, '客户端请求错误')
     message_info_json = json.loads(message_info)
     for message in message_info_json:
         for message_id in message['message_ids']:
@@ -179,11 +210,13 @@ def v4_sdk_set_notice_have_read():
                                                            message_id=message_id,
                                                            ucid=ucid)
                 try:
-                    UserMessage.objects(Q(type='notice')
+                    UserMessage.objects(Q(type=message['type'])
                                         & Q(mysql_id=message_id)
                                         & Q(ucid=ucid)).update(set__is_read=1)
+                    # 减少缓存未读消息数
+                    RedisHandle.hdecrby(ucid, message['type'])
                     user_read_message_log.save()
                 except Exception as err:
-                    service_logger.error(err)
-                    return response_data(http_code=500, message="服务器出错啦/(ㄒoㄒ)/~~")
-    return response_data(http_code=204)
+                    log_exception(request, "设置消息已读异常：%s" % (err.message,))
+                    return response_data(http_code=200, code=0, message="服务器出错啦/(ㄒoㄒ)/~~")
+    return response_data(http_code=200)
