@@ -56,7 +56,7 @@ class UserController extends Controller{
             }
 
             $userextend->newpass = md5(md5($password) . $dat['salt']);
-            $userextend->isfreeze = 1;
+            $userextend->isfreeze = self::FREEZE;
 
             try {
                 //修改的信息记录到日志
@@ -221,11 +221,13 @@ class UserController extends Controller{
         $ucusers = Ucusers::where('uid', $username)->orWhere('mobile', $username)->get();
 
         if(count($ucusers) == 0)  { throw new ToolException(ToolException::Remind, trans("messages.error_user_message")); }
-
         foreach($ucusers as $v) {
 
             if($v->ucenter_members->checkPassword($password)) {
                 $ucusers = $v;
+            }else{
+                throw new ToolException(ToolException::Remind,trans("messages.error_user_message"));
+                return ;
             }
         }
 
@@ -242,7 +244,7 @@ class UserController extends Controller{
             return ;
         }
 
-        return ["msg"=>"用户存在","mobile"=>$ucusers->mobile];
+        return ["msg"=>"用户存在","mobile"=>$ucusers->mobile,"uid"=>$ucusers->ucid];
     }
 
     /*
