@@ -56,7 +56,7 @@ class OrderSuccess extends Job
                     }
                 }
 
-                if($order->vid == 2) { // 买平台币
+                if($order->vid == env('APP_SELF_ID')) { // 买平台币
                     $ucuser->increment('balance', $order->fee); // 原子操作很重要
                     $ucuser->save();
                 }
@@ -81,7 +81,7 @@ class OrderSuccess extends Job
             $order->save();
 
             // 非平台币，加入通知发货队列
-            if($order->vid != 2) {
+            if($order->vid != env('APP_SELF_ID')) {
                 Queue::push(new OrderNotiry($this->order_id));
             }
 

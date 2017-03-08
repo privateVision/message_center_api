@@ -47,16 +47,17 @@ class AccountController extends BaseController {
         $password = $parameter->tough('password');
 
         $ucuser = null;
+
         $ucusers = Ucusers::where('uid', $username)->orWhere('mobile', $username)->get();
         foreach($ucusers as $v) {
-            if($ucuser->isFreeze()) {
-                if($ucuser->checkServicePassword($password)) {
+            if($v->isFreeze()) {
+                if($v->checkServicePassword($password)) {
                     $ucuser = $v;
                     break;
                 } else {
                     throw new ApiException(ApiException::AccountFreeze, '帐号已被冻结，无法登陆');
                 }
-            } elseif($v->ucenter_members->checkPassword($password)) {
+            } elseif($v->ucenter_members && $v->ucenter_members->checkPassword($password)) {
                 $ucuser = $v;
                 break;
             }
@@ -89,11 +90,12 @@ class AccountController extends BaseController {
         $UcenterMember->regip = $request->ip();
         $UcenterMember->username = $username;
         $UcenterMember->regdate = time();
-        $UcenterMember->save();
+        $ucid = $UcenterMember->save();
 
         $ucuser = $UcenterMember->ucusers()->create([
+            'ucid'    => $ucid,
             'uid' => $username,
-            'uuid' => $this->session->access_token,
+            'uuid'=> $this->session->access_token,
             'rid' => $this->session->rid,
             'pid' => $this->session->pid,
         ]);
@@ -169,7 +171,20 @@ class AccountController extends BaseController {
             throw new ApiException(ApiException::Remind, "用户名格式不正确，请不要使用特殊字符");
         }
         $user = UcenterMembers::where("username",$userName)->get();
+        //修改密码日志
+        try {
+            //修改的信息记录到日志
+            $account_log = new  AccountLog();
+            $account_log->username      = $userName;
+            $account_log->type          = 'changepassword';
+            $account_log->addtime       = dat('Y-m-d H:i:s',time());
+            $account_log->newpass       = $newPass;
+            $account_log->oldpass       = $oldPass;
+            $account_log->save();
+        }catch(Exception $e){
 
+        }
+        if(count($user) == 0)  throw new ApiException(ApiException::Remind,trans("messages.user_message_notfound"));
         foreach($user as $v) {
             //满足当前的对象未被冻结
             if($v->checkPassword($oldPass)   &&  $v->ucusers_extend->isfreeze == 0 ) {

@@ -12,27 +12,30 @@ class Controller extends \App\Controller
     public function execute(Request $request, $action, $parameters) {
         try {
             // 两个公共参数：_appid, _token
-            $postdata = empty($_POST)?$_GET:$_POST;
-            if(empty($postdata)){
-                throw new ToolException(ToolException::Error, '数据为空');
+            $data = count($_POST) ? $_POST : $_GET;
+            if(count($data) == 0){
+                throw new ToolException(ToolException::Error, '参数为空');
             }
-            $token = @$postdata['_token'];
-            unset($postdata['_token']);
-            ksort($postdata);
-            if(!isset($postdata['_appid'])) throw new ToolException(ToolException::Error, '缺少appid');
-            $key = config('common.apps')[$postdata['_appid']]['appkey'];
 
-            $_token = md5(http_build_query($postdata) . $key);
+            $token = @$data['_token'];
+            unset($data['_token']);
+            ksort($data);
+
+            $app = config('common.apps.' . $data['_appid']);
+            if(!$app) {
+                throw new ToolException(ToolException::Error, '缺少参数"_appid"');
+            }
+
+            $_token = md5(http_build_query($data) . $app['appkey']);
 
             if($_token !== $token) {
-                throw new ToolException(ToolException::Error, 'token错误');
+                throw new ToolException(ToolException::Error, '_token 错误');
             }
 
-           log_info('request', ['route' => $request->path(), 'appid' => $postdata["_appid"], 'param' => $postdata]);
-            //$parameter = new Parameter($postdata);
+            log_info('request', ['route' => $request->path(), 'appid' => $data["_appid"], 'param' => $data]);
 
             $this->before($request);
-            $response = $this->$action($request, $postdata);
+            $response = $this->$action($request, $data);
             $this->after($request);
 
             return array('code' => ToolException::Success, 'msg' => null, 'data' => $response);
@@ -43,6 +46,7 @@ class Controller extends \App\Controller
             log_error('requestError', ['message' => $e->getMessage(), 'code' => $e->getCode()]);
             return array('code' => ToolException::Error, 'msg' => $e->getMessage(), 'data' => null);
         } catch(\Exception $e) {
+            echo $e->getMessage();
             log_error('systemError', ['message' => $e->getMessage(), 'code' => $e->getCode(), 'file' => $e->getFile(), 'line' => $e->getLine()]);
             return array('code' => ToolException::Error, 'msg' => 'system error', 'data' => null);
         }

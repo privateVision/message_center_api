@@ -38,13 +38,13 @@ class Controller extends \App\Controller
 			parse_str($poststr, $postdata);
 			$parameter = new Parameter($postdata);
 
-			log_info('request', ['route' => $request->path(), 'appid' => $appid, 'param' => $postdata]);
+			log_debug('request', ['route' => $request->path(), 'appid' => $appid, 'param' => $postdata]);
 
 			$this->before($request, $parameter);
 			$response = $this->$action($request, $parameter);
 			$this->after($request, $parameter);
 
-			log_info('response', $response);
+			log_debug('response', $response);
 
 			return array('code' => ApiException::Success, 'msg' => null, 'data' => $response);
 		} catch (ApiException $e) {
