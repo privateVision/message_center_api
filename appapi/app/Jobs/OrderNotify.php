@@ -4,7 +4,7 @@ namespace App\Jobs;
 use Illuminate\Support\Facades\Redis;
 use App\Model\Orders;
 
-class OrderNotiry extends Job
+class OrderNotify extends Job
 {
     protected $order_id;
 
@@ -45,7 +45,7 @@ class OrderNotiry extends Job
 
         $res = http_request($order->notify_url, $data);
 
-        log_info('OrderNotiry', ['url' => $order->notify_url, 'reqdata' => $data, 'resdata' => $res]);
+        log_info('OrderNotify', ['url' => $order->notify_url, 'reqdata' => $data, 'resdata' => $res]);
 
         if(!$res) return $this->retry();
 

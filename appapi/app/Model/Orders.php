@@ -13,6 +13,7 @@ class Orders extends Model
 
 	protected $table = 'orders';
 	protected $primaryKey = 'id';
+	//protected $fillable = ['hide'];
 
 	const CREATED_AT = 'createTime';
 

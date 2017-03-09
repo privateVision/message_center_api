@@ -5,6 +5,7 @@ from mongoengine import IntField, DateTimeField, StringField
 
 
 class UserReadMessageLog(Document):
+    meta = {'collection': 'sdk_api_user_read_message_log'}
     type = StringField(required=True)
     message_id = IntField(required=True)
     ucid = IntField(required=True)
