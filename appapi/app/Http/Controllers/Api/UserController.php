@@ -33,7 +33,7 @@ class UserController extends AuthController
     }
 
     public function RechargeAction(Request $request, Parameter $parameter) {
-        $order = $this->ucuser->orders()->where('vid', env('APP_SELF_ID'))->where('status', Orders::Status_Success)->get();
+        $order = $this->ucuser->orders()->where('vid', env('APP_SELF_ID'))->where('status', Orders::Status_Success)->where('hide', 0)->get();
 
         $data = [];
         foreach($order as $v) {
@@ -51,7 +51,7 @@ class UserController extends AuthController
     }
 
     public function ConsumeAction(Request $request, Parameter $parameter) {
-        $order = $this->ucuser->orders()->where('vid', '!=', env('APP_SELF_ID'))->where('status', Orders::Status_Success)->get();
+        $order = $this->ucuser->orders()->where('vid', '!=', env('APP_SELF_ID'))->where('status', Orders::Status_Success)->where('hide', 0)->get();
 
         $data = [];
         foreach($order as $v) {
@@ -66,6 +66,12 @@ class UserController extends AuthController
         }
 
         return $data;
+    }
+
+    public function HideOrderAction(Request $request, Parameter $parameter) {
+        $sn = $parameter->tough('order_id');
+        Orders::where('sn', $sn)->update(['hide' => true]);
+        return ['result' => true];
     }
 
 
