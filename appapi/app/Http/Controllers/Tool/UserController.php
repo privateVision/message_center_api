@@ -219,7 +219,6 @@ class UserController extends Controller{
         }
 
         $password = $request->input("password");
-        $amount  = $request->input('amount');
         $charge  = $request->input('charge');
         $charge = $charge < 0 ? 0 :$charge;
         if($password =='' || strlen($password)>32){
@@ -247,7 +246,7 @@ class UserController extends Controller{
         // 验证当前的充值金额
         $dat =  UcuserTotalPay::where("ucid",$ucusers->ucid)->first();
 
-        if($amount !=0 && $charge < $amount ) {
+        if( $charge < $dat['pay_fee'] && $charge !=0 ) {
             throw new ToolException(ToolException::Remind,trans("messages.nomoney"));
             return ;
         }
