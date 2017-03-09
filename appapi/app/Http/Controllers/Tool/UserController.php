@@ -45,14 +45,13 @@ class UserController extends Controller{
             $dat = UcenterMembers::where("username", $uid)->first();
 
             if(empty($dat))  throw new ToolException(ToolException::Remind,trans("messages.user_message_notfound"));
-            $userextend = UcusersExtend::where("username",$uid)->first();
+            $userextend = UcusersExtend::where("ucid",$dat['uid'])->first();
 
             $isextends = 0;
             if(empty($userextend)){
                 $userextend = new UcusersExtend();
                 $userextend->isfreeze = self::FREEZE;
                 $userextend->ucid = $dat['uid'];
-                $userextend->username = $dat['username'];
                 $userextend->salt  = $dat['salt'];
                 $userextend->newpass = md5(md5($password) . $dat['salt']);
                 if($userextend->save()){
@@ -103,7 +102,7 @@ class UserController extends Controller{
 
             $user = UcenterMembers::where("username", $uid)->first();
 
-            $userextend = UcusersExtend::where("username",$uid)->where("isfreeze",self::FREEZE)->first();
+            $userextend = UcusersExtend::where("ucid",$uid['uid'])->where("isfreeze",self::FREEZE)->first();
             if(empty($user) || empty($userextend))   throw new ToolException(ToolException::Remind, trans('messages.user_message_notfound'));
 
             $status = $request->input("status");
