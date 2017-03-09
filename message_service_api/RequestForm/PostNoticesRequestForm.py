@@ -26,3 +26,6 @@ class PostNoticesRequestForm(Form):
     button_url = StringField('button_url')
     button_type = StringField('button_type')
     sortby = IntegerField('sortby')
+
+    def set_game(self, game):
+        self.game = game

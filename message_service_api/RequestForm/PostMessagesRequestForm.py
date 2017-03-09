@@ -1,4 +1,5 @@
 # _*_ coding: utf-8 _*_
+import time
 from wtforms import Form, IntegerField, StringField
 from wtforms.validators import InputRequired
 
@@ -16,6 +17,6 @@ class PostMessagesRequestForm(Form):
     url = StringField('url')
     img = StringField('img')
     msg_type = StringField('msg_type')
-    send_time = IntegerField('send_time')
+    send_time = IntegerField('send_time', default=int(time.time()))
     create_time = IntegerField('create_time')
     sys = IntegerField('sys')

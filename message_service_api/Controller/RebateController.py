@@ -9,9 +9,9 @@ from Controller.BaseController import response_data
 from MiddleWare import service_logger
 from MongoModel.MessageModel import UsersMessage
 from MongoModel.UserMessageModel import UserMessage
-from RequestForm.PostCouponsRequestForm import PostCouponsRequestForm
 from RequestForm.PostRebatesRequestForm import PostRebatesRequestForm
-from Service.StorageService import system_coupon_persist
+from Service.StorageService import system_rebate_persist
+from Utils.SystemUtils import log_exception
 
 rebate_controller = Blueprint('RebateController', __name__)
 
@@ -25,8 +25,8 @@ def v4_cms_add_rebate():
         return check_exception
     form = PostRebatesRequestForm(request.form)  # POST 表单参数封装
     if not form.validate():
-        service_logger.error(form.errors)
-        return response_data(400, 400, '客户端请求错误')
+        log_exception(request, "优惠券请求校验异常：%s" % (form.errors,))
+        return response_data(200, 0, '客户端请求错误')
     else:
         from run import kafka_producer
         try:
@@ -34,10 +34,12 @@ def v4_cms_add_rebate():
                 "type": "rebate",
                 "message": form.data
             }
-            kafka_producer.send('message-service', json.dumps(message_info))
+            message_str = json.dumps(message_info)
+            service_logger.info("发送优惠券：%s" % (message_str,))
+            kafka_producer.send('message-service', message_str)
         except Exception, err:
-            service_logger.error(err.message)
-            return response_data(http_code=500, code=500001, message="kafka服务异常")
+            log_exception(request, "发送优惠券异常：%s" % (err.message,))
+            return response_data(http_code=200, code=0, message="kafka服务异常")
         return response_data(http_code=200)
 
 
@@ -48,15 +50,15 @@ def v4_cms_update_coupon():
     check_result, check_exception = generate_checksum(request)
     if not check_result:
         return check_exception
-    form = PostCouponsRequestForm(request.form)  # POST 表单参数封装
+    form = PostRebatesRequestForm(request.form)  # POST 表单参数封装
     if not form.validate():
-        print form.errors
-        return response_data(400, 400, '客户端请求错误')
+        log_exception(request, "优惠券请求校验异常：%s" % (form.errors,))
+        return response_data(200, 0, '客户端请求错误')
     else:
         try:
-            system_coupon_persist(form.data, False)
+            system_rebate_persist(form.data, False)
         except Exception, err:
-            service_logger.error(err.message)
+            log_exception(request, "更新优惠券异常：%s" % (err.message,))
     return response_data(http_code=200)
 
 
@@ -67,14 +69,15 @@ def v4_cms_delete_coupon():
     check_result, check_exception = generate_checksum(request)
     if not check_result:
         return check_exception
-    coupon_id = request.form['id']
-    if coupon_id is None or coupon_id == '':
-        return response_data(400, 400, '客户端请求错误')
+    rebate_id = request.form['id']
+    if rebate_id is None or rebate_id == '':
+        log_exception(request, "客户端请求错误-rebate_id为空")
+        return response_data(200, 0, '客户端请求错误')
     try:
-        UsersMessage.objects(Q(type='coupon') & Q(mysql_id=coupon_id)).delete()
-        UserMessage.objects(Q(type='coupon') & Q(mysql_id=coupon_id)).delete()
+        UsersMessage.objects(Q(type='rebate') & Q(mysql_id=rebate_id)).delete()
+        UserMessage.objects(Q(type='rebate') & Q(mysql_id=rebate_id)).delete()
     except Exception, err:
-        service_logger.error(err.message)
-        return response_data(http_code=500, code=500002, message="删除卡券失败")
-    return response_data(http_code=204)
+        log_exception(request, "删除优惠券异常：%s" % (err.message,))
+        return response_data(http_code=200, code=0, message="删除卡券失败")
+    return response_data(http_code=200)
 
