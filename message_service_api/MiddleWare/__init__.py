@@ -57,7 +57,8 @@ def create_app():
     kafka_consumer_thread.start()
 
     app.config['SQLALCHEMY_DATABASE_URI'] = app.config.get('SQLALCHEMY_DATABASE_URI')
-    mysql_engine = create_engine(app.config['SQLALCHEMY_DATABASE_URI'], encoding="utf-8", echo=True)
+    mysql_engine = create_engine(app.config['SQLALCHEMY_DATABASE_URI'], encoding="utf-8", echo=True,
+                                 pool_recycle=1800, pool_size=10)
     mysql_session = sessionmaker(autocommit=False, bind=mysql_engine)
 
     return app, kafka_producer, kafka_consumer, mysql_session()
