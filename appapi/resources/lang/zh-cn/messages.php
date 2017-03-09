@@ -12,7 +12,7 @@ return [
     "bind error"                    => "【安锋网】您好，绑定错误！" ,
     "mobile_bind_success"           => "【安锋网】手机绑定成功！" ,
     "mobile_bind_faild"             => "【安锋网】手机绑定失败！" ,
-    "please_bind_mobile"            => "【安锋网】请绑定手机号！",
+    "please_bind_mobile"            => "该安锋平台账号尚未绑定手机，为了账号安全所出售账号必须绑定手机号，请您在安锋助手或安锋官网（www.anfeng.cn）绑定手机号。",
     "auth_code_error"               => "【安锋网】验证码错误！" ,
     "user_freeze"                   => "【安锋网】您好，账号已冻结！",
     "user_freeze_faild"             => " 您好，账号冻结失败！",
