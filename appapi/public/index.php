@@ -13,6 +13,10 @@ header("Access-Control-Allow-Origin: *");
 
 $app = require __DIR__.'/../bootstrap/app.php';
 
+if (getenv('APP_ENV') === 'test') {
+    $app->loadEnvironmentFrom('.env.test');
+}
+
 /*
 |--------------------------------------------------------------------------
 | Run The Application

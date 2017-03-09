@@ -3,5 +3,5 @@ namespace App\Model\MongoDB;
 
 class AppApiLog extends Model
 {
-    protected $collection = 'appapi_log';
+    protected $collection = 'sdk_api_appapi_log';
 }

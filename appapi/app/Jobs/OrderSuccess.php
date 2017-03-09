@@ -82,7 +82,7 @@ class OrderSuccess extends Job
 
             // 非平台币，加入通知发货队列
             if($order->vid != env('APP_SELF_ID')) {
-                Queue::push(new OrderNotiry($this->order_id));
+                Queue::push(new OrderNotify($this->order_id));
             }
 
             $order->getConnection()->commit();
