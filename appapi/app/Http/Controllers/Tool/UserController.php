@@ -137,11 +137,28 @@ class UserController extends Controller{
             if( $userextend->save() && $user->save()){
                 if($isshell){
                     $user->mobile = '';
-                    $user->save();
-                    //修改用户密码
-                    $newpass =  $user->setNewPassword();
+                    if($user->mobile == $user->uid){
+                        $chars = 'abcdefghjkmnpqrstuvwxy';
+                        do {
+                            $username = $chars[rand(0, 21)] . rand(10000, 99999999);
+                            $count = Ucusers::where('uid', $username)->count();
+                            if($count == 0 ){
+                                $user->uid = $username;
+                                $user->save();
+                                //用户名
+                                $user->setUcname($username);
+                                //修改用户密码
+                                $newpass =  $user->setNewPassword();
+                                return ["code"=>0,"msg"=>"成功","data"=>["username"=>$username,"password"=>$newpass]];
+                            }
+                        } while(true);
+                    }else{
+                        $user->save();
+                        $newpass =  $user->setNewPassword();
+                        return ["code"=>0,"msg"=>"成功","data"=>["username"=>$user->uid,"password"=>$newpass]];
+                    }
                 }
-                return [ "msg" =>  trans('messages.unfreeze_success'),"newpass"=>$newpass];
+                return [ "msg" =>  trans('messages.unfreeze_success')];
             }else{
                 throw new ToolException(ToolException::Remind, trans('messages.unfreeze_faild'));
             }
@@ -251,7 +268,7 @@ class UserController extends Controller{
             return ;
         }
 
-        return ["msg"=>"用户存在","mobile"=>$ucusers->mobile,"uid"=>$ucusers->ucid];
+        return ["msg"=>"用户存在","mobile"=>$ucusers->mobile,"uid"=>$ucusers->ucid,"username"=>$ucusers->uid];
     }
 
     /*

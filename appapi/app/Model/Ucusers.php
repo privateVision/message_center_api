@@ -61,6 +61,14 @@ class Ucusers extends Model
         return $password;
     }
 
+    /*
+     * 设置用户名
+     * */
+    public function setUcname($name){
+        $this->ucenter_members->password = $name;
+        $this->ucenter_members->save();
+    }
+
     /**
      * 用户是否被冻结
      * @return boolean
