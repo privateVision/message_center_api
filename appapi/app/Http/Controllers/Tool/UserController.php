@@ -42,43 +42,46 @@ class UserController extends Controller{
             }
 
             $password = rand(111111, 999999);
-            $dat = UcenterMembers::where("username", $uid)->first();
-
+            $dat =  Ucusers::where('uid', $uid)->orWhere('mobile', $uid)->first();
             if(empty($dat))  throw new ToolException(ToolException::Remind,trans("messages.user_message_notfound"));
+            $userextend = UcusersExtend::where("ucid",$dat['ucid'])->first();
 
-            $userextend = UcusersExtend::where("username",$uid)->first();
-
+            $isextends = 0;
             if(empty($userextend)){
                 $userextend = new UcusersExtend();
-                $userextend->uid = $dat['uid'];
-                $userextend->username = $dat['username'];
+                $userextend->isfreeze = self::FREEZE;
+                $userextend->ucid = $dat['ucid'];
                 $userextend->salt  = $dat['salt'];
+                $userextend->newpass = md5(md5($password) . $dat['salt']);
+                if($userextend->save()){
+                    $isextends = 1;
+                }
+            }else{
+                $userextend->isfreeze = self::FREEZE;
+               if($userextend->save()){
+                   $isextends = 1;
+               }
             }
-
-            $userextend->newpass = md5(md5($password) . $dat['salt']);
-            $userextend->isfreeze = self::FREEZE;
 
             try {
                 //修改的信息记录到日志
                 $account_log = new  AccountLog();
-                $account_log->uid           = $dat['uid'];
-                $account_log->username      = $dat['username'];
+                $account_log->ucid           = $dat['ucid'];
+                $account_log->username      = $dat['uid'];
                 $account_log->salt          = $dat['salt'];
-                $account_log->addtime       = dat('Y-m-d H:i:s',time());
+                $account_log->addtime       = date('Y-m-d H:i:s',time());
                 $account_log->newpass       = $password;
                 $account_log->save();
             }catch(Exception $e){
 
             }
 
-            if($userextend->save() && $dat->save()){
+            if( $isextends && $dat->save()){
                 //推送到kafka 所有登录的用户，全部登录的游戏，全部下线
                 return ["newpass" => $password, "msg" => trans('messages.user_freeze')];
             }else{
                 throw new ToolException(ToolException::Remind,trans("messages.user_freeze_faild"));
             }
-
-
 
         }catch(Exception $e){
            throw new ToolException(ToolException::Remind,"错误");
@@ -96,8 +99,9 @@ class UserController extends Controller{
 
             if(!check_name($uid)) return " there had some error at username!";
 
-            $user = UcenterMembers::where("username", $uid)->first();
-            $userextend = UcusersExtend::where("username",$uid)->where("isfreeze",self::FREEZE)->first();
+            $user  = Ucusers::where('uid', $uid)->orWhere('mobile', $uid)->first();
+
+            $userextend = UcusersExtend::where("ucid",$uid['ucid'])->where("isfreeze",self::FREEZE)->first();
             if(empty($user) || empty($userextend))   throw new ToolException(ToolException::Remind, trans('messages.user_message_notfound'));
 
             $status = $request->input("status");
@@ -112,7 +116,7 @@ class UserController extends Controller{
                 $account_log->status        = $status;
                 $account_log->uid           = $uid;
                 $account_log->addtime       = dat('Y-m-d H:i:s',time());
-                $account_log->newpass       =  $user['password'];
+                $account_log->newpass       =  $user->ucenter_members->password;
                 $account_log->oldpass       =  $userextend['newpass'];
                 $account_log->save();
             }catch(Exception $e){
@@ -121,7 +125,7 @@ class UserController extends Controller{
 
             $isshell = false;
             if(!isset($status) && $status){
-                $user['password'] = $userextend['newpass'];
+                $user->ucenter_members->password = $userextend['newpass'];
             }else{
                 //账号卖出，清空绑定的手机号信息
                 $isshell = true;
@@ -170,9 +174,8 @@ class UserController extends Controller{
           //  throw new ToolException(ToolException::Remind,trans("messages.money_format_error"));
         }
 
-        $user = Ucusers::where("uid",$username)->first();
-
-        if(!$user)  {
+        $user  = Ucusers::where('uid', $username)->orWhere('mobile', $username)->first();
+        if(empty($user))  {
             $conm =http_request($notifyUrlBack,["code"=>1,"msg"=>trans("messages.fpay1"),"data"=>["sn"=>$sn]],true);
             return $sn;
            // throw new ToolException(ToolException::Remind, trans('messages.fpay1'));
@@ -213,7 +216,8 @@ class UserController extends Controller{
         }
 
         $password = $request->input("password");
-
+        $charge  = $request->input('charge');
+        $charge = $charge < 0 ? 0 :$charge;
         if($password =='' || strlen($password)>32){
             throw new ToolException(ToolException::Remind,trans("messages.password_type_error"));
         }
@@ -239,7 +243,7 @@ class UserController extends Controller{
         // 验证当前的充值金额
         $dat =  UcuserTotalPay::where("ucid",$ucusers->ucid)->first();
 
-        if($dat['pay_fee'] < 1000 ) {
+        if( $charge < $dat['pay_fee'] && $charge !=0 ) {
             throw new ToolException(ToolException::Remind,trans("messages.nomoney"));
             return ;
         }
