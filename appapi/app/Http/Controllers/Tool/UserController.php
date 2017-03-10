@@ -52,7 +52,7 @@ class UserController extends Controller{
                 $userextend->isfreeze = self::FREEZE;
                 $userextend->ucid = $dat['ucid'];
                 $userextend->salt  = $dat['salt'];
-                $userextend->newpass = md5(md5($password) . $dat['salt']);
+                $userextend->newpass = md5($password);
                 if($userextend->save()){
                     $isextends = 1;
                 }
