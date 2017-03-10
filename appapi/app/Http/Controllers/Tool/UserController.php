@@ -101,12 +101,13 @@ class UserController extends Controller{
 
             $user  = Ucusers::where('uid', $uid)->orWhere('mobile', $uid)->first();
 
-            $userextend = UcusersExtend::where("ucid",$uid['ucid'])->where("isfreeze",self::FREEZE)->first();
+            $userextend = UcusersExtend::where("ucid",$user['ucid'])->where("isfreeze",self::FREEZE)->first();
             if(empty($user) || empty($userextend))   throw new ToolException(ToolException::Remind, trans('messages.user_message_notfound'));
 
             $status = $request->input("status");
-
+            $had  =0;
             if(empty($userextend)){
+                $had  =1;
                throw new ToolException(ToolException::Remind, trans('messages.unfreeze_faild'));
             }
 
@@ -115,7 +116,7 @@ class UserController extends Controller{
                 $account_log = new  AccountLog();
                 $account_log->status        = $status;
                 $account_log->uid           = $uid;
-                $account_log->addtime       = dat('Y-m-d H:i:s',time());
+                $account_log->addtime       = date('Y-m-d H:i:s',time());
                 $account_log->newpass       =  $user->ucenter_members->password;
                 $account_log->oldpass       =  $userextend['newpass'];
                 $account_log->save();
@@ -124,11 +125,11 @@ class UserController extends Controller{
             }
 
             $isshell = false;
-            if(!isset($status) && $status){
+            if(isset($status) && $status){
+                $isshell = true;
                 $user->ucenter_members->password = $userextend['newpass'];
             }else{
                 //账号卖出，清空绑定的手机号信息
-                $isshell = true;
             }
 
              $userextend->isfreeze = self::UN_FREEZE;
