@@ -195,6 +195,7 @@ class UserController extends Controller{
             $fpay -> username = $username; //用户姓名
             $fpay -> sn = $sn; //订单编号
             $fpay ->amount = $amount; //充值金额
+            $fpay->status = $code;
             $fpay-> add_timej = time();
             $fpay->save(); //保存用户信息
 
