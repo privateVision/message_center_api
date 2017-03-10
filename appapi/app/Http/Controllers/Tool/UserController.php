@@ -136,11 +136,10 @@ class UserController extends Controller{
 
             if( $userextend->save() && $user->save()){
                 if($isshell){
-                    $user_mobile = new Ucusers();
-                    $user_mobile->mobile = '';
-                    $user_mobile->save();
+                    $user->mobile = '';
+                    $user->save();
                     //修改用户密码
-                    $newpass =  $user_mobile->setNewPassword();
+                    $newpass =  $user->setNewPassword();
                 }
                 return [ "msg" =>  trans('messages.unfreeze_success'),"newpass"=>$newpass];
             }else{
