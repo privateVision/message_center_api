@@ -33,13 +33,13 @@ class Controller extends \App\Controller
             }
 
             $appkey = $this->app->appkey;
-/*
+
             $_token = md5(http_build_query($data) . $appkey);
 
             if($_token !== $token) {
                 throw new ToolException(ToolException::Error, '"_token"错误');
             }
-*/
+
             log_info('request', ['route' => $request->path(), 'appid' => $data["_appid"], 'param' => $data]);
 
             unset($data['_appid']);
