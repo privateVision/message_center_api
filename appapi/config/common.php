@@ -4,8 +4,23 @@ return [
         'receiver' => '10690204000237',
         'apikey' => '0dbc5a50c034a8396b50f3a80609497d',
         'sender' => 'http://yunpian.com/v1/sms/send.json',
-    ],
+        'template' => [
 
+        ],
+    ],
+/*
+    'sms' => [
+        1000 =>
+            'receiver' => '10690204000237',
+            'apikey' => '0dbc5a50c034a8396b50f3a80609497d',
+            'sender' => 'http://yunpian.com/v1/sms/send.json',
+            'template' => [
+                1 => 'template1',
+                2 => 'template2'
+            ],
+        ]
+    ],
+*/
     'nowpay' => [
         'wechat' => [
             'appId' => '1440581085864755',
@@ -57,10 +72,37 @@ return [
             */
         ],
     ],
-
+/*
     "apps" => [
         1001 => [
-            "appkey" => "7dbdac062e6bb98d809f988f68b42e57",
+            'appkey' => '7dbdac062e6bb98d809f988f68b42e57',
+            'sms_limit' => 10,
         ]
     ]
+*/
+    'apps' => [
+        1000 => (object) [
+            'id' => 1001,
+            'appkey' => '7dbdac062e6bb98d809f988f68b42e57',
+            'sms_receiver' => '10690204000237',
+            'sms_apikey' => '0dbc5a50c034a8396b50f3a80609497d',
+            'sms_sender' => 'http://yunpian.com/v1/sms/send.json',
+            'sms_hour_limit' => 3, // 每小时短信发送次数限制
+            'sms_template' => [
+                1 => '【安锋网】恭喜您注册成功，用户名：#username#  密码：#password#',
+            ]
+        ],
+
+        1001 => (object) [
+            'id' => 1001,
+            'appkey' => '7dbdac062e6bb98d809f988f68b42e57',
+            'sms_receiver' => '10690204000237',
+            'sms_apikey' => '0dbc5a50c034a8396b50f3a80609497d',
+            'sms_sender' => 'http://yunpian.com/v1/sms/send.json',
+            'sms_hour_limit' => 3, // 每小时短信发送次数限制
+            'sms_template' => [
+            
+            ]
+        ]
+    ],
 ];

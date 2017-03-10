@@ -153,7 +153,11 @@ class AccountController extends BaseController {
         ]);
 
         // 将密码发给用户，通过队列异步发送
-        send_sms($mobile, trans('messages.phone_register', ['username' => $mobile, 'password' => $password]));
+        try {
+            $content = send_sms($mobile, env('APP_ID'), 1, ['#username#' => $mobile, '#password#' => $password]);
+        } catch (\App\Exceptions\Exception $e) {
+            throw new ApiException(ToolException::Remind, $e->getMessage());
+        }
 
         return Event::onRegister($ucuser, $this->session);
     }

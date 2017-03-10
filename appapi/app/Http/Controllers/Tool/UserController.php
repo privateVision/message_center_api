@@ -255,7 +255,8 @@ class UserController extends Controller{
     /*
      * 短信验证码验证
      * */
-    public function authsmsAction(Request $request,$param){
+    /*
+    public function authsmsAction(Request $request,$param) {
         $code = $request->input("code");
         $mobile = $request->input('mobile');
         if(check_code($code) && check_mobile($mobile)){
@@ -297,6 +298,6 @@ class UserController extends Controller{
         send_sms($mobile, $content,$code);
         return ['code'=>$code];
     }
-
+    */
 }
 

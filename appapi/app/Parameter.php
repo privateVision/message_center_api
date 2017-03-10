@@ -1,7 +1,7 @@
 <?php
 namespace App;
 
-use App\Exceptions\ApiException;
+use App\Exceptions\Exception;
 
 class Parameter
 {
@@ -23,7 +23,7 @@ class Parameter
 	public function tough($key) {
 		$data = @$this->_data[$key];
 		if($data === null) {
-			throw new ApiException (ApiException::Error, 'param is missing:'.$key);
+			throw new Exception ('param is missing:"'.$key.'"', 0);
 		}
 
 		return $data;

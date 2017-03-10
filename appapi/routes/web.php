@@ -17,6 +17,7 @@ $app->get('/', function () use ($app) {
 
 $app->get('test', 'TooltestController@fpayTestAction');// test
 $app->get('createuser','TestController@createUserAction');
+
 $app->post('yunpian/callback', 'YunpianController@CallbackAction');                                     // 云片手机短信回调
 $app->post('pay_callback/nowpay_wechat', 'PayCallback\\NowpayWechatController@CallbackAction');         // 现代支付，微信支付回调
 $app->post('pay_callback/nowpay_alipay', 'PayCallback\\NowpayAlipayController@CallbackAction');         // 现代支付，支付宝支付回调
@@ -46,6 +47,9 @@ $app->group(['prefix' => 'api'], function () use ($app) {
 });
 
 $app->group(['prefix' => 'tool'], function () use ($app) {
+    $app->post('sms/send', 'Tool\\SMSController@SendAction');                                           // 发送短信
+    $app->get('sms/verify', 'Tool\\SMSController@VerifyAction');                                        // 验证短信码是否正确
+
     $app->post('user/fpay', 'Tool\\UserController@fpayAction');                                          //F币支付
     $app->post('user/freeze', 'Tool\\UserController@freezeAction');                                      //账户冻结
     $app->post('user/unfreeze', 'Tool\\UserController@unfreezeAction');                                   //解冻
