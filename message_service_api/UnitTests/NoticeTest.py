@@ -44,7 +44,7 @@ class NoticeFunctionTest(unittest.TestCase):
         }
         from Utils.EncryptUtils import get_md5_sign
         sign = get_md5_sign(data)
-        r = requests.post("http://localhost/v4/notice?sign=%s" % (sign,), data=data)
+        r = requests.post("http://yangchujie.sdkapi.com/v4/notice?sign=%s" % (sign,), data=data)
         self.assertEqual(r.status_code, 200)
         print r.text
 
