@@ -49,6 +49,18 @@ class Ucusers extends Model
         return $this->ucusers_extend->newpass === md5($password);
     }
 
+    /*
+     * @doc设置新的用户密码
+     * @return 新生成的用户的明文信息
+     * */
+
+    public function setNewPassword(){
+        $password = rand(111111, 999999);
+        $this->ucenter_members->password = $password;
+        $this->ucenter_members->save();
+        return $password;
+    }
+
     /**
      * 用户是否被冻结
      * @return boolean

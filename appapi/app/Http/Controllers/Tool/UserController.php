@@ -139,8 +139,10 @@ class UserController extends Controller{
                     $user_mobile = new Ucusers();
                     $user_mobile->mobile = '';
                     $user_mobile->save();
+                    //修改用户密码
+                    $newpass =  $user_mobile->setNewPassword();
                 }
-                return [ "msg" =>  trans('messages.unfreeze_success')];
+                return [ "msg" =>  trans('messages.unfreeze_success'),"newpass"=>$newpass];
             }else{
                 throw new ToolException(ToolException::Remind, trans('messages.unfreeze_faild'));
             }
