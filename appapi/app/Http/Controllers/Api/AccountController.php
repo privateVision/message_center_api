@@ -156,7 +156,7 @@ class AccountController extends BaseController {
         try {
             $content = send_sms($mobile, env('APP_ID'), 1, ['#username#' => $mobile, '#password#' => $password]);
         } catch (\App\Exceptions\Exception $e) {
-            throw new ApiException(ToolException::Remind, $e->getMessage());
+            throw new ApiException(ApiException::Remind, $e->getMessage());
         }
 
         return Event::onRegister($ucuser, $this->session);
