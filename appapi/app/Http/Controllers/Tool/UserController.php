@@ -174,9 +174,8 @@ class UserController extends Controller{
           //  throw new ToolException(ToolException::Remind,trans("messages.money_format_error"));
         }
 
-        $user = Ucusers::where("uid",$username)->first();
-
-        if(!empty($user))  {
+        $user  = Ucusers::where('uid', $username)->orWhere('mobile', $username)->first();
+        if(empty($user))  {
             $conm =http_request($notifyUrlBack,["code"=>1,"msg"=>trans("messages.fpay1"),"data"=>["sn"=>$sn]],true);
             return $sn;
            // throw new ToolException(ToolException::Remind, trans('messages.fpay1'));
