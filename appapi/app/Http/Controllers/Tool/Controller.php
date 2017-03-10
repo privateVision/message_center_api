@@ -18,14 +18,6 @@ class Controller extends \App\Controller
             if(empty($data)){
                 throw new ToolException(ToolException::Error, '数据为空');
             }
-
-            $token = @$postdata['_token'];
-            unset($postdata['_token']);
-            ksort($postdata);
-
-            if(!isset($postdata['_appid'])) throw new ToolException(ToolException::Error, '缺少appid');
-            $key = config('common.apps')[$postdata['_appid']]['appkey'];
-
             $token = @$data['_token'];
             unset($data['_token']);
             ksort($data);
@@ -64,7 +56,6 @@ class Controller extends \App\Controller
             log_warning('Exception', ['message' => $e->getMessage(), 'code' => $e->getCode()]);
             return array('code' => ToolException::Error, 'msg' => $e->getMessage(), 'data' => null);
         } catch(\Exception $e) {
-            return $e->getMessage();
             log_error('systemError', ['message' => $e->getMessage(), 'code' => $e->getCode(), 'file' => $e->getFile(), 'line' => $e->getLine()]);
             return array('code' => ToolException::Error, 'msg' => 'system error', 'data' => null);
         }
