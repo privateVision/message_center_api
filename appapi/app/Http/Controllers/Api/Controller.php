@@ -50,8 +50,11 @@ class Controller extends \App\Controller
 		} catch (ApiException $e) {
 			log_warning('ApiException', ['message' => $e->getMessage(), 'code' => $e->getCode()]);
 			return array('code' => $e->getCode(), 'msg' => $e->getMessage(), 'data' => null);
+		} catch (\App\Exceptions\Exception $e) {
+			log_warning('Exception', ['message' => $e->getMessage(), 'code' => $e->getCode()]);
+			return array('code' => ApiException::Error, 'msg' => $e->getMessage(), 'data' => null);
 		} catch(\Exception $e) {
-			log_error('Exception', ['message' => $e->getMessage(), 'code' => $e->getCode(), 'file' => $e->getFile(), 'line' => $e->getLine()]);
+			log_error('systemError', ['message' => $e->getMessage(), 'code' => $e->getCode(), 'file' => $e->getFile(), 'line' => $e->getLine()]);
 			return array('code' => ApiException::Error, 'msg' => 'system error', 'data' => null);
 		}
 	}

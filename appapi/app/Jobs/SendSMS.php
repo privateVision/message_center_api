@@ -1,45 +1,44 @@
 <?php
 namespace App\Jobs;
-use App\Model\SMS;
-use Illuminate\Http\Request;
+use App\Model\SMSRecord;
 
 class SendSMS extends Job
 {
+    protected $app;
     protected $mobile;
-
-    protected $text;
-
+    protected $content;
     protected $code;
 
-    public function __construct($mobile, $text, $code = '')
+    public function __construct($app, $mobile, $content, $code = 0)
     {
+        $this->app = $app;
         $this->mobile = $mobile;
-        $this->text = $text;
+        $this->content = $content;
         $this->code = $code;
     }
 
     public function handle()
     {
         if(env('APP_DEBUG', true)) {
-            $sms = new SMS;
-            $sms->mobile = $this->mobile;
-            $sms->authCode = $this->text;
-            $sms->acode = $this->code;
-            $sms->save();
+            $SMSRecord = new SMSRecord;
+            $SMSRecord->mobile = $this->mobile;
+            $SMSRecord->content = $this->content;
+            $SMSRecord->code = $this->code;
+            $SMSRecord->date = date('Ymd');
+            $SMSRecord->hour = date('G');
+            $SMSRecord->save();
             return ;
         }
 
         if($this->attempts() >= 10) return;
 
-        $config = config('common.yunpian');
-
         $data = [
-            'apikey' => $config['apikey'],
+            'apikey' => $this->app->sms_apikey,
             'mobile' => $this->mobile,
-            'text' => $this->text,
+            'text' => $this->content,
         ];
 
-        $res = http_request($config['sender'], $data);
+        $res = http_request($this->app->sms_sender, $data);
 
         log_info('sendsms', ['req' => $data, 'res' => $res]);
 
@@ -53,14 +52,15 @@ class SendSMS extends Job
         }
 
         if($res['code'] == 0) {
-            $sms = new SMS;
-            $sms->mobile = $this->mobile;
-            $sms->authCode = $this->text;
-            $sms->acode = $this->code;
-            $sms->save();
+            $SMSRecord = new SMSRecord;
+            $SMSRecord->mobile = $this->mobile;
+            $SMSRecord->content = $this->content;
+            $SMSRecord->code = $this->code;
+            $SMSRecord->date = date('Ymd');
+            $SMSRecord->hour = date('G');
+            $SMSRecord->save();
         } else {
             return $this->release(5);
         }
     }
 }
-
