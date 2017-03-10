@@ -58,10 +58,10 @@ nginx的root目录需要指向`appapi/public/`目录下
 
 # 队列处理进程
 ## 启动
-脚本在`appapi/listen-queue.sh`，该脚本会启动一个阻塞进程，要想让其后台运行要么使用`nohup`要么加`&`符号。随着业务越来越大，会需要更多的进程来处理队列数据，为了不影响主业务应该将队列处理进程单独部署在一台或多台服务器上。进程在运行过程中会有死掉的风险，必需要有软件进行守护，例如：`supervisor`，supervisor配置示例如下：
+队列处理进程是为了异步处理队列数据。为了不影响主业务应该将队列处理进程单独部署在一台或多台服务器上。进程在运行过程中会有死掉的风险，必需要有软件进行守护，例如：`supervisor`，supervisor配置示例如下：
 
 	[program:listen-queue-1]                                                                            
-	command=/data/wwwroot/sdkapi/appapi/listen-queue.sh ; 启动命令
+	command=php artisan queue:work --daemon --sleep=1 --timeout=45 --tries=86400 ; 启动命令
 	directory=/data/wwwroot/sdkapi/appapi/              ; 在启动前先进入该目录
 	autostart=true                                      ; 随supervisord一起启动
 	autorestart=true                                    ; 进程异常退出重启

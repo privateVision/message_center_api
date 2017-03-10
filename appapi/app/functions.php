@@ -1,12 +1,6 @@
 <?php
 use Illuminate\Support\Facades\Redis;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Queue;
-use App\Jobs\SendSMS;
-use App\Jobs\OrderSuccess;
-use App\Jobs\Log;
-use App\Jobs\SendMail;
-use App\Jobs\KafkaProducer;
 
 function encrypt3des($data, $key = null) {
     if(empty($key)) {
@@ -29,25 +23,66 @@ function uuid() {
 }
 
 function order_success($order_id) {
-    Queue::push(new OrderSuccess($order_id));
+    Queue::push(new \App\Jobs\OrderSuccess($order_id));
 }
 
-function send_sms($mobile, $content, $code = '') {
-    Queue::push(new SendSMS($mobile, $content, $code));
+/**
+ * 发送短信
+ * @param  [string] $mobile             [手机号码]
+ * @param  [int or object] $app         [要发送短信的app对象或appid]
+ * @param  [string] $template_id        [短信模板]
+ * @param  [array] $repalce             [替换短信模板中的内容]
+ * @param  [int] $code                  [短信验证码]
+ * @return [null]                       []
+ */
+function send_sms($mobile, $app, $template_id, $repalce, $code = '') {
+    if(!is_object($app)) {
+        $app = config('common.apps.'.$app);
+        if(!$app) {
+            throw new \App\Exceptions\Exception('应用未授权');
+        }
+    }
+
+    $SMSRecord = \App\Model\SMSRecord::where('mobile', $mobile)->where('date', date('Ymd'))->where('hour', date('G'))->orderBy('created_at', 'desc')->get();
+
+    if(count($SMSRecord) >= $app->sms_hour_limit) {
+        throw new \App\Exceptions\Exception(sprintf('短信发送次数超过限制，请%d分钟后再试', 60 - intval(date('i'))));
+    }
+
+    if(count($SMSRecord)) {
+        $last_sms = $SMSRecord[0];
+        if(time() - strtotime($last_sms->created_at) < 60) {
+            throw new \App\Exceptions\Exception('短信发送过于频繁');
+        }
+    }
+
+    if(!isset($app->sms_template[$template_id])) {
+        throw new \App\Exceptions\Exception('短信模板不存在');
+    }
+
+    if(is_array($repalce) && count($repalce)) {
+        $content = str_replace(array_keys($repalce), array_values($repalce), $app->sms_template[$template_id]);
+    } else {
+        $content = $app->sms_template[$template_id];
+    }
+
+    Queue::push(new \App\Jobs\SendSMS($app, $mobile, $content, $code));
+
+    return $content;
 }
 
 function kafka_producer($topic, $content) {
-    Queue::push(new KafkaProducer($topic, $content));
+    Queue::push(new \App\Jobs\KafkaProducer($topic, $content));
 }
 
 function send_mail($subject, $to, $content) {
-    Queue::push(new SendMail($subject, $to, $content));
+    Queue::push(new \App\Jobs\SendMail($subject, $to, $content));
 }
 
 function log_debug ($keyword, $content) {
     global $app;
 
-    Queue::push(new Log([
+    Queue::push(new \App\Jobs\Log([
         'keyword' => $keyword,
         'mode' => PHP_SAPI,
         'level' => 'DEBUG', 
@@ -61,7 +96,7 @@ function log_debug ($keyword, $content) {
 function log_info ($keyword, $content) {
     global $app;
 
-    Queue::push(new Log([
+    Queue::push(new \App\Jobs\Log([
         'keyword' => $keyword,
         'mode' => PHP_SAPI,
         'level' => 'INFO', 
@@ -75,7 +110,7 @@ function log_info ($keyword, $content) {
 function log_warning ($keyword, $content) {
     global $app;
 
-    Queue::push(new Log([
+    Queue::push(new \App\Jobs\Log([
         'keyword' => $keyword,
         'mode' => PHP_SAPI,
         'level' => 'WARNING', 
@@ -89,7 +124,7 @@ function log_warning ($keyword, $content) {
 function log_error ($keyword, $content) {
     global $app;
 
-    Queue::push(new Log([
+    Queue::push(new \App\Jobs\Log([
         'keyword' => $keyword,
         'mode' => PHP_SAPI,
         'level' => 'ERROR', 

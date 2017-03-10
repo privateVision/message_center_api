@@ -86,7 +86,7 @@ class CouponFunctionTest(unittest.TestCase):
                 'appid': 778,
                 'param': param
             }
-            r = requests.post('http://127.0.0.1/v4/coupons', data=body_data)
+            r = requests.post('http://localhost/v4/coupons', data=body_data)
             self.assertEqual(r.status_code, 200)
             print r.text
         else:
