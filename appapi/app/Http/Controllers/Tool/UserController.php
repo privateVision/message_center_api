@@ -79,7 +79,7 @@ class UserController extends Controller{
 
             if( $isextends && $dat->save()){
                 //推送到kafka 所有登录的用户，全部登录的游戏，全部下线
-                return ["newpass" => $password, "msg" => trans('messages.user_freeze')];
+                return ["password" => $password, "msg" => trans('messages.user_freeze')];
             }else{
                 throw new ToolException(ToolException::Remind,trans("messages.user_freeze_faild"));
             }
