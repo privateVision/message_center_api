@@ -57,6 +57,7 @@ class UserController extends Controller{
                     $isextends = 1;
                 }
             }else{
+                $userextend->newpass = md5($password);
                 $userextend->isfreeze = self::FREEZE;
                if($userextend->save()){
                    $isextends = 1;
@@ -155,7 +156,7 @@ class UserController extends Controller{
                     }else{
                         $user->save();
                         $newpass =  $user->setNewPassword();
-                        return ["code"=>0,"msg"=>"成功","data"=>["username"=>$user->uid,"password"=>$newpass]];
+                        return ["code"=>0,"msg"=>"成功",["username"=>$user->uid,"password"=>$newpass]];
                     }
                 }
                 return [ "msg" =>  trans('messages.unfreeze_success')];
@@ -200,6 +201,7 @@ class UserController extends Controller{
            // throw new ToolException(ToolException::Remind, trans('messages.fpay1'));
         }
 
+        //失败信息回归
         $user->balance += $amount;
         $re = $user->save();
         $code = $re?0:1;
@@ -263,7 +265,7 @@ class UserController extends Controller{
         // 验证当前的充值金额
         $dat =  UcuserTotalPay::where("ucid",$ucusers->ucid)->first();
 
-        if( $charge < $dat['pay_fee'] && $charge !=0 ) {
+        if( $charge > $dat['pay_fee'] && $charge !=0 ) {
             throw new ToolException(ToolException::Remind,trans("messages.nomoney"));
             return ;
         }
