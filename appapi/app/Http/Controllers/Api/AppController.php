@@ -10,11 +10,6 @@ use App\Exceptions\ApiException;
 class AppController extends Controller
 {
     public function InitializeAction(Request $request, Parameter $parameter) {
-        $rid = $parameter->tough('rid');
-        $device_uuid = $parameter->tough('device_uuid');
-        $device_name = $parameter->tough('device_name');
-        $device_platform = $parameter->tough('device_platform');
-        $version = $parameter->tough('version');
         $app_version = $parameter->tough('app_version');
 
         // config

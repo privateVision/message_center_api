@@ -21,12 +21,16 @@ use Illuminate\Support\Facades\Cache;
 
 class UserController extends AuthController
 {
+    protected function onLogout(&$ucuser) {
+
+    }
+
     public function MessageAction(Request $request, Parameter $parameter) {
         return ;
     }
 
     public function LogoutAction(Request $request, Parameter $parameter) {
-        Event::onLogout($this->ucuser);
+        $this->onLogout($this->ucuser);
         return ['result' => true];
     }
 

@@ -5,12 +5,43 @@ use App\Exceptions\ApiException;
 use Illuminate\Http\Request;
 use App\Parameter;
 use App\Model\Session;
-use App\Event;
 use App\Model\Ucusers;
 use App\Model\Gamebbs56\UcenterMembers;
 use App\Model\YunpianCallback;
 
 class AccountController extends Controller {
+
+    protected function onLogin(&$ucuser) {
+        $session = new \App\Model\Session;
+        $session->ucid = $ucuser->ucid;
+        $session->is_service_login = $ucuser->isFreeze();
+        $session->token = uuid();
+        $session->expired_ts = time() + 2592000; // 1个月有效期
+        $session->date = date('Ymd');
+        $session->save();
+
+        // todo: 兼容旧的自动登陆
+        $ucuser->uuid = $session->token;
+        $ucuser->save();
+
+        $retailer = $ucuser->retailers;
+        return array (
+            'uid' => $ucuser->ucid,
+            'username' => $ucuser->uid,
+            'mobile' => $ucuser->mobile,
+            'avatar' => env('AVATAR'),
+            'is_real' => $ucuser->isReal() ? 1 : 0,
+            'is_adult' => $ucuser->isAdult() ? 1 : 0,
+            'rtype' => $retailer ? $retailer->rtype : 0,
+            'vip' => $ucuser->vip(),
+            'token' => $session->token,
+            'balance' => $ucuser->balance,
+        );
+    }
+
+    protected function onRegister(&$ucuser) {
+        return $this->onLogin($ucuser);
+    }
 
     public function LoginTokenAction(Request $request, Parameter $parameter) {
         $token = $parameter->tough('token');
@@ -24,7 +55,7 @@ class AccountController extends Controller {
             throw new ApiException(ApiException::AccountFreeze, '账号已被冻结，无法登录');
         }
 
-        return Event::onLogin($ucuser);
+        return $this->onLogin($ucuser);
     }
 
     public function LoginAction(Request $request, Parameter $parameter) {
@@ -52,7 +83,7 @@ class AccountController extends Controller {
             throw new ApiException(ApiException::Remind, "登录失败，用户名或者密码不正确");
         }
 
-        return Event::onLogin($ucuser);
+        return $this->onLogin($ucuser);
     }
 
     public function RegisterAction(Request $request, Parameter $parameter){
@@ -86,7 +117,7 @@ class AccountController extends Controller {
             'pid' => $this->procedure->pid,
         ]);
 
-        return Event::onRegister($ucuser);
+        return $this->onRegister($ucuser);
     }
 
     public function UsernameAction(Request $request, Parameter $parameter) {
@@ -123,7 +154,7 @@ class AccountController extends Controller {
                 throw new ApiException(ApiException::AccountFreeze, '账号已被冻结，无法登录');
             }
 
-            return Event::onLogin($ucuser);
+            return $this->onLogin($ucuser);
         }
 
         // 注册
@@ -152,7 +183,7 @@ class AccountController extends Controller {
             throw new ApiException(ApiException::Remind, $e->getMessage());
         }
 
-        return Event::onRegister($ucuser);
+        return $this->onRegister($ucuser);
     }
 
     public function SMSTokenAction(Request $request, Parameter $parameter) {
@@ -196,7 +227,7 @@ class AccountController extends Controller {
             if($v->checkPassword($oldPass)   &&  $v->ucusers_extend->isfreeze == 0 ) {
                 $v->setPasswordAttribute($newPass);
                 if($v->save()){
-                    return Event::onLogout($v,$this->session); //修改密码退出
+                    return $this->onLogout($v,$this->session); //修改密码退出
                 }else{
                     throw new ApiException(ApiException::Remind, "修改密码失败！");
                 }
@@ -205,5 +236,4 @@ class AccountController extends Controller {
         
     }
 */
-
 }
