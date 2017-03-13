@@ -53,7 +53,7 @@ class MessageFunctionTest(unittest.TestCase):
         print r.text
 
     # def test_get_message_list(self):
-    #     origin_param = 'access_token=fd9c69f1fd62f3070aafa5bc210f32ee&page=1&count=5'
+    #     origin_param = 'token=fd9c69f1fd62f3070aafa5bc210f32ee&page=1&count=5'
     #     from Utils.EncryptUtils import sdk_api_gen_key
     #     param = sdk_api_gen_key(778, origin_param)
     #     print "加密后的参数为：%s" % (param,)

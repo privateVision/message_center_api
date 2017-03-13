@@ -164,7 +164,7 @@ def v4_sdk_heartbeat(ucid):
     #     return response_data(400, 400, '客户端请求错误')
     # from Utils.EncryptUtils import sdk_api_check_key
     # params = sdk_api_check_key(request)
-    # ucid = get_ucid_by_access_token(params['access_token'])
+    # ucid = get_ucid_by_access_token(params['token'])
     data = RedisHandle.get_user_data_mark_in_redis(ucid)
     return response_data(data=data)
 
@@ -179,6 +179,6 @@ def v4_sdk_heartbeat_ack():
         return response_data(200, 0, '客户端请求错误')
     from Utils.EncryptUtils import sdk_api_check_key
     params = sdk_api_check_key(request)
-    ucid = get_ucid_by_access_token(params['access_token'])
+    ucid = get_ucid_by_access_token(params['token'])
     RedisHandle.clear_user_data_mark_in_redis(ucid, params['type'])
     return response_ok()

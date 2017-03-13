@@ -97,7 +97,7 @@ def v4_sdk_get_broadcast_list():
     from Utils.EncryptUtils import sdk_api_check_key
     params = sdk_api_check_key(request)
     if params:
-        ucid = get_ucid_by_access_token(params['access_token'])
+        ucid = get_ucid_by_access_token(params['token'])
         if ucid:
             page = params['page'] if params.has_key('page') and params['page'] else 1
             count = params['count'] if params.has_key('count') and params['count'] else 10
@@ -150,5 +150,5 @@ def v4_sdk_get_broadcast_list():
             }
             return response_data(http_code=200, data=data)
         else:
-            log_exception(request, "根据access_token获取用户id失败，请重新登录")
-            return response_data(200, 0, '根据access_token获取用户id失败，请重新登录')
+            log_exception(request, "根据token获取用户id失败，请重新登录")
+            return response_data(200, 0, '根据token获取用户id失败，请重新登录')
