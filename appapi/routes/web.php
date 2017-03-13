@@ -31,6 +31,7 @@ $app->group(['prefix' => 'api'], function () use ($app) {
     $app->post('account/register', 'Api\\AccountController@RegisterAction');                            // 用户名注册
     $app->post('account/username', 'Api\\AccountController@UsernameAction');                            // 生成随机用户名
     $app->post('account/login_phone', 'Api\\AccountController@LoginPhoneAction');                       // 手机号码一键登陆
+    $app->post('account/sms_token', 'Api\\AccountController@SMSTokenAction');                           // 手机号码一键登陆(获取发送短信的token)
 
     $app->post('user/logout', 'Api\\UserController@LogoutAction');                                      // 退出登录
     $app->post('user/message', 'Api\\UserController@MessageAction');                                    // 消息轮循

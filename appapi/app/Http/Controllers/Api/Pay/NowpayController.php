@@ -64,7 +64,7 @@ class NowpayController extends Controller {
         $balance = $parameter->get('balance');
         $order_id = $parameter->tough('order_id');
 
-        $order = $this->payOrder($order_id, Orders::Way_Unionpay, $balance);
+        $order = $this->payOrder($order_id, Orders::Way_UnionPay, $balance);
         $config = config('common.nowpay.unionpay');
 
         openssl_pkcs12_read(base64_decode($config['pfx']), $cert, $config['pfx_pwd']);
