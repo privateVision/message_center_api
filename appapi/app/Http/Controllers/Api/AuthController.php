@@ -14,7 +14,7 @@ class AuthController extends Controller {
 	public function before(Request $request, Parameter $parameter) {
 		parent::before($request, $parameter);
 
-		$token = $parameter->tough('token');
+		$token = $parameter->tough('_token');
 		$session = Session::where('token', $token)->first();
 		if(!$session) {
 			throw new ApiException(ApiException::Remind, '会话未找到，或已过期');
