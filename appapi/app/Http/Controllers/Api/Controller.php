@@ -23,20 +23,28 @@ class Controller extends \App\Controller
 			}
 
 			$this->procedure = $procedure;
+			$appkey = $procedure->appkey();
 
-			if (empty($param)) {
-				throw new ApiException(ApiException::Error, "无法获取加密参数");
+			$data = $request->all();
+			$sign = @$data['sign'];
+			unset($data['sign']);
+			ksort($data);
+			$_sign = md5(http_build_query($data) . '&key=' . $appkey);
+			if($sign !== $_sign) {
+				throw new ApiException(ApiException::Error, "签名验证失败");
 			}
 
-			// todo: deskey是动态生成的，对性能有一点影响
-			$poststr = decrypt3des($param, $procedure->deskey());
-			if ($poststr === false) {
-				throw new ApiException(ApiException::Error, "参数无法解密");
-			}
+			if(trim($param) !== '') {
+				$poststr = decrypt3des($param, $appkey);
+				if ($poststr === false) {
+					throw new ApiException(ApiException::Error, "参数无法解密");
+				}
 
-			// todo: 多一步parse_str，差评。想想更好的、parse效率更高的数据格式
-			parse_str($poststr, $postdata);
-			$parameter = new Parameter($postdata);
+				parse_str($poststr, $postdata);
+				$parameter = new Parameter($postdata);
+			} else {
+				$parameter = new Parameter([]);
+			}
 
 			log_debug('request', ['route' => $request->path(), 'appid' => $appid, 'param' => $postdata]);
 
@@ -46,16 +54,27 @@ class Controller extends \App\Controller
 
 			log_debug('response', $response);
 
-			return array('code' => ApiException::Success, 'msg' => null, 'data' => $response);
+			$resdata = array('code' => ApiException::Success, 'msg' => null, 'data' => $response);
 		} catch (ApiException $e) {
 			log_warning('ApiException', ['message' => $e->getMessage(), 'code' => $e->getCode()]);
-			return array('code' => $e->getCode(), 'msg' => $e->getMessage(), 'data' => null);
+			$resdata = array('code' => $e->getCode(), 'msg' => $e->getMessage(), 'data' => null);
 		} catch (\App\Exceptions\Exception $e) {
 			log_warning('Exception', ['message' => $e->getMessage(), 'code' => $e->getCode()]);
-			return array('code' => ApiException::Error, 'msg' => $e->getMessage(), 'data' => null);
+			$resdata = array('code' => ApiException::Error, 'msg' => $e->getMessage(), 'data' => null);
 		} catch(\Exception $e) {
 			log_error('systemError', ['message' => $e->getMessage(), 'code' => $e->getCode(), 'file' => $e->getFile(), 'line' => $e->getLine()]);
-			return array('code' => ApiException::Error, 'msg' => 'system error', 'data' => null);
+			$resdata = array('code' => ApiException::Error, 'msg' => 'system error', 'data' => null);
+		}
+
+		$type = $request->input('type');
+
+		if($type === 'jsonp') {
+			$callback = $request->input('callback');
+			if($callback) {
+				return sprintf('%s(%s);', $callback, json_encode($resdata));
+			}
+		} else {
+			return $resdata;
 		}
 	}
 

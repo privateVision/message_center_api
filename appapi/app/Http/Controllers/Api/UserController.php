@@ -21,14 +21,16 @@ use Illuminate\Support\Facades\Cache;
 
 class UserController extends AuthController
 {
-    const SMS_LIMIT = 3;
+    protected function onLogout(&$ucuser) {
+
+    }
 
     public function MessageAction(Request $request, Parameter $parameter) {
         return ;
     }
 
     public function LogoutAction(Request $request, Parameter $parameter) {
-        Event::onLogout($this->ucuser, $this->session);
+        $this->onLogout($this->ucuser);
         return ['result' => true];
     }
 
@@ -67,6 +69,10 @@ class UserController extends AuthController
 
         return $data;
     }
+
+    // --------------------------------------------------------------------------------------------------------------------------------
+    
+    const SMS_LIMIT = 3;
 
     public function HideOrderAction(Request $request, Parameter $parameter) {
         $sn = $parameter->tough('order_id');
