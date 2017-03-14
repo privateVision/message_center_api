@@ -150,13 +150,13 @@ class UserController extends Controller{
                                 $user->setUcname($username);
                                 //修改用户密码
                                 $newpass =  $user->setNewPassword();
-                                return ["code"=>0,"msg"=>"成功","data"=>["username"=>$username,"password"=>$newpass]];
+                                ["username"=>$username,"password"=>$newpass];
                             }
                         } while(true);
                     }else{
                         $user->save();
                         $newpass =  $user->setNewPassword();
-                        return ["code"=>0,"msg"=>"成功",["username"=>$user->uid,"password"=>$newpass]];
+                        return ["username"=>$user->uid,"password"=>$newpass];
                     }
                 }
                 return [ "msg" =>  trans('messages.unfreeze_success')];

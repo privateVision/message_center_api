@@ -96,7 +96,7 @@ def get_coupon_message_detail_info(msg_id=None):
 
 
 def get_ucid_by_access_token(access_token=None):
-    find_ucid_sql = "select ucid from session where access_token = '%s'" % (access_token,)
+    find_ucid_sql = "select ucid from session where token = '%s'" % (access_token,)
     from run import mysql_session
     try:
         user_info = mysql_session.execute(find_ucid_sql).first()

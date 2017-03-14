@@ -75,7 +75,7 @@ class Ucusers extends Model
      * 设置用户名
      * */
     public function setUcname($name){
-        $this->ucenter_members->password = $name;
+        $this->ucenter_members->username = $name;
         $this->ucenter_members->save();
     }
 
