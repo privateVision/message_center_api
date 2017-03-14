@@ -1,5 +1,4 @@
 <?php
-
 /*
 |--------------------------------------------------------------------------
 | Application Routes
@@ -18,11 +17,20 @@ $app->get('/', function () use ($app) {
 $app->get('test', 'TooltestController@fpayTestAction');// test
 $app->get('createuser','TestController@createUserAction');
 
-$app->post('yunpian/callback', 'YunpianController@CallbackAction');                                     // 云片手机短信回调
-$app->post('pay_callback/nowpay_wechat', 'PayCallback\\NowpayWechatController@CallbackAction');         // 现代支付，微信支付回调
-$app->post('pay_callback/nowpay_alipay', 'PayCallback\\NowpayAlipayController@CallbackAction');         // 现代支付，支付宝支付回调
-$app->post('pay_callback/nowpay_unionpay', 'PayCallback\\NowpayUnionpayController@CallbackAction');     // 现代支付，银联支付回调
 
+// 支付回调相关
+$app->group(['prefix' => 'pay_callback'], function () use ($app) {
+    $app->post('nowpay_wechat', 'PayCallback\\NowpayWechatController@CallbackAction');                  // 现代支付，微信支付回调
+    $app->post('nowpay_alipay', 'PayCallback\\NowpayAlipayController@CallbackAction');                  // 现代支付，支付宝支付回调
+    $app->post('nowpay_unionpay', 'PayCallback\\NowpayUnionpayController@CallbackAction');              // 现代支付，银联支付回调
+});
+
+// 对外公开（无限制的）功能（杂项）
+$app->group(['prefix' => 'pub'], function () use ($app) {
+    $app->post('yunpian/callback', 'Pub\\YunpianController@CallbackAction');                            // 云片手机短信回调
+});
+
+// API接口
 $app->group(['prefix' => 'api'], function () use ($app) {
     $app->post('app/initialize', 'Api\\AppController@InitializeAction');                                // 初始化
 
@@ -47,6 +55,7 @@ $app->group(['prefix' => 'api'], function () use ($app) {
     $app->post('pay/anfeng/request', 'Api\\Pay\\AnfengController@RequestAction');                       // 安锋支付，（帐户余额支付）
 });
 
+// 对内部调用的API接口
 $app->group(['prefix' => 'tool'], function () use ($app) {
     $app->post('sms/send', 'Tool\\SMSController@SendAction');                                           // 发送短信
     $app->get('sms/verify', 'Tool\\SMSController@VerifyAction');                                        // 验证短信码是否正确

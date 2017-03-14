@@ -49,6 +49,16 @@ class Ucusers extends Model
         return $this->ucusers_extend->newpass === md5($password);
     }
 
+    /**
+     * 验证登陆密码
+     * @param  [type] $password [description]
+     * @return [type]           [description]
+     */
+    public function checkPassword($password) {
+        if(!$this->ucenter_members) return false;
+        return $this->ucenter_members->password === md5(md5($password) . $this->ucenter_members->salt);
+    }
+
     /*
      * @doc设置新的用户密码
      * @return 新生成的用户的明文信息

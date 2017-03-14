@@ -72,14 +72,7 @@ return [
             */
         ],
     ],
-/*
-    "apps" => [
-        1001 => [
-            'appkey' => '7dbdac062e6bb98d809f988f68b42e57',
-            'sms_limit' => 10,
-        ]
-    ]
-*/
+
     'apps' => [
         1000 => (object) [
             'id' => 1001,

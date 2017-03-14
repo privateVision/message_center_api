@@ -13,10 +13,10 @@ class Controller extends \App\Controller
 	
     public function execute(Request $request, $action, $parameters) {
 		try {
-			// 3DES
-			$appid = $request->input('appid');
-			$param = $request->input('param');
+			$data = $request->all();
+			$parameter = new Parameter($data);
 
+			$appid = $parameter->tough('_appid');
 			$procedure = Procedures::find($appid);
 			if (!$procedure) {
 				throw new ApiException(ApiException::Error, "appid不正确:" . $appid);
@@ -24,29 +24,17 @@ class Controller extends \App\Controller
 
 			$this->procedure = $procedure;
 			$appkey = $procedure->appkey();
-
-			$data = $request->all();
-			$sign = @$data['sign'];
-			unset($data['sign']);
+			
+			$sign = $parameter->tough('_sign');
+			unset($data['_sign']);
 			ksort($data);
 			$_sign = md5(http_build_query($data) . '&key=' . $appkey);
+
 			if($sign !== $_sign) {
 				throw new ApiException(ApiException::Error, "签名验证失败");
 			}
 
-			if(trim($param) !== '') {
-				$poststr = decrypt3des($param, $appkey);
-				if ($poststr === false) {
-					throw new ApiException(ApiException::Error, "参数无法解密");
-				}
-
-				parse_str($poststr, $postdata);
-				$parameter = new Parameter($postdata);
-			} else {
-				$parameter = new Parameter([]);
-			}
-
-			log_debug('request', ['route' => $request->path(), 'appid' => $appid, 'param' => $postdata]);
+			log_debug('request', ['route' => $request->path(), 'data' => $data]);
 
 			$this->before($request, $parameter);
 			$response = $this->$action($request, $parameter);
@@ -62,7 +50,7 @@ class Controller extends \App\Controller
 			log_warning('Exception', ['message' => $e->getMessage(), 'code' => $e->getCode()]);
 			$resdata = array('code' => ApiException::Error, 'msg' => $e->getMessage(), 'data' => null);
 		} catch(\Exception $e) {
-			log_error('systemError', ['message' => $e->getMessage(), 'code' => $e->getCode(), 'file' => $e->getFile(), 'line' => $e->getLine()]);
+			log_error('error', ['message' => $e->getMessage(), 'code' => $e->getCode(), 'file' => $e->getFile(), 'line' => $e->getLine()]);
 			$resdata = array('code' => ApiException::Error, 'msg' => 'system error', 'data' => null);
 		}
 

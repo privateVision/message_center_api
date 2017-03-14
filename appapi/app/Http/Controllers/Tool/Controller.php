@@ -39,7 +39,7 @@ class Controller extends \App\Controller
                 throw new ToolException(ToolException::Error, '"_token"错误');
             }
 
-            log_info('request', ['route' => $request->path(), 'appid' => $data["_appid"], 'param' => $data]);
+            log_debug('request', ['route' => $request->path(), 'data' => $data]);
 
             unset($data['_appid']);
             $parameter = new Parameter($data);
@@ -56,7 +56,7 @@ class Controller extends \App\Controller
             log_warning('Exception', ['message' => $e->getMessage(), 'code' => $e->getCode()]);
             return array('code' => ToolException::Error, 'msg' => $e->getMessage(), 'data' => null);
         } catch(\Exception $e) {
-            log_error('systemError', ['message' => $e->getMessage(), 'code' => $e->getCode(), 'file' => $e->getFile(), 'line' => $e->getLine()]);
+            log_error('error', ['message' => $e->getMessage(), 'code' => $e->getCode(), 'file' => $e->getFile(), 'line' => $e->getLine()]);
             return array('code' => ToolException::Error, 'msg' => 'system error', 'data' => null);
         }
     }

@@ -1,6 +1,5 @@
 <?php
-
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Pub;
 
 use Illuminate\Http\Request;
 use App\Model\YunpianCallback;
@@ -22,6 +21,7 @@ class YunpianController extends \App\Controller
         unset($sms_reply['_sign']);
         ksort($sms_reply);
 
+        // todo: 这里要改...
         $str = implode(',', $sms_reply) .','. config('common.yunpian.apikey');
         if($sign !== md5($str)) {
             return 'FAILURE';

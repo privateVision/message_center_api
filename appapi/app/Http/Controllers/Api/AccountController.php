@@ -4,58 +4,37 @@ namespace App\Http\Controllers\Api;
 use App\Exceptions\ApiException;
 use Illuminate\Http\Request;
 use App\Parameter;
+use App\Event;
 use App\Model\Session;
 use App\Model\Ucusers;
 use App\Model\Gamebbs56\UcenterMembers;
 use App\Model\YunpianCallback;
 
+
 class AccountController extends Controller {
-
-    protected function onLogin(&$ucuser) {
-        $session = new \App\Model\Session;
-        $session->ucid = $ucuser->ucid;
-        $session->is_service_login = $ucuser->isFreeze();
-        $session->token = uuid();
-        $session->expired_ts = time() + 2592000; // 1个月有效期
-        $session->date = date('Ymd');
-        $session->save();
-
-        // todo: 兼容旧的自动登陆
-        $ucuser->uuid = $session->token;
-        $ucuser->save();
-
-        $retailer = $ucuser->retailers;
-        return array (
-            'uid' => $ucuser->ucid,
-            'username' => $ucuser->uid,
-            'mobile' => $ucuser->mobile,
-            'avatar' => env('AVATAR'),
-            'is_real' => $ucuser->isReal() ? 1 : 0,
-            'is_adult' => $ucuser->isAdult() ? 1 : 0,
-            'rtype' => $retailer ? $retailer->rtype : 0,
-            'vip' => $ucuser->vip(),
-            'token' => $session->token,
-            'balance' => $ucuser->balance,
-        );
-    }
-
-    protected function onRegister(&$ucuser) {
-        return $this->onLogin($ucuser);
-    }
 
     public function LoginTokenAction(Request $request, Parameter $parameter) {
         $token = $parameter->tough('token');
 
-        $ucuser = Ucusers::where('uuid', $token)->first();
-        if(!$ucuser) {
+        $session = Session::where('token', $token)->first();
+        if(!$session) {
             throw new ApiException(ApiException::Remind, '会话已结束，请重新登录');
+        }
+
+        if(!$session->ucid) {
+            throw new ApiException(ApiException::Remind, '会话失效，请重新登录');
+        }
+
+        $ucuser = Ucusers::find($session->ucid);
+        if(!$ucuser) {
+            throw new ApiException(ApiException::Remind, '会话失效，请重新登录');
         }
 
         if($ucuser->isFreeze()) {
             throw new ApiException(ApiException::AccountFreeze, '账号已被冻结，无法登录');
         }
 
-        return $this->onLogin($ucuser);
+        return Event::onLoginAfter($ucuser);
     }
 
     public function LoginAction(Request $request, Parameter $parameter) {
@@ -73,7 +52,7 @@ class AccountController extends Controller {
                 } else {
                     throw new ApiException(ApiException::AccountFreeze, '账号已被冻结，无法登录');
                 }
-            } elseif($v->ucenter_members && $v->ucenter_members->checkPassword($password)) {
+            } elseif($v->checkPassword($password)) {
                 $ucuser = $v;
                 break;
             }
@@ -83,13 +62,12 @@ class AccountController extends Controller {
             throw new ApiException(ApiException::Remind, "登录失败，用户名或者密码不正确");
         }
 
-        return $this->onLogin($ucuser);
+        return Event::onLoginAfter($ucuser);
     }
 
     public function RegisterAction(Request $request, Parameter $parameter){
         $username = $parameter->tough('username');
         $password = $parameter->tough('password');
-        $rid = $parameter->tough('rid');
 
         if(!check_name($username, 24)){
             throw new ApiException(ApiException::Remind, "用户名格式不正确，请填写正确的格式");
@@ -107,17 +85,17 @@ class AccountController extends Controller {
         $UcenterMember->regip = $request->ip();
         $UcenterMember->username = $username;
         $UcenterMember->regdate = time();
-        $ucid = $UcenterMember->save();
+        $UcenterMember->save();
 
-        $ucuser = $UcenterMember->ucusers()->create([
-            'ucid'=> $ucid,
-            'uid' => $username,
-            'rid' => $rid,
-            'uuid' => '',
-            'pid' => $this->procedure->pid,
-        ]);
+        $ucuser = new Ucusers;
+        $ucuser->ucid = $UcenterMember->uid;
+        $ucuser->uid = $username;
+        $ucuser->rid = $parameter->tough('_rid');
+        $ucuser->uuid = '';
+        $ucuser->pid = $this->procedure->pid;
+        $ucuser->save();
 
-        return $this->onRegister($ucuser);
+        return Event::onRegisterAfter($ucuser);
     }
 
     public function UsernameAction(Request $request, Parameter $parameter) {
@@ -136,7 +114,6 @@ class AccountController extends Controller {
     }
 
     public function LoginPhoneAction(Request $request, Parameter $parameter) {
-        $rid = $parameter->tough('rid');
         $sms_token = $parameter->tough('sms_token');
 
         $yunpian_callback = YunpianCallback::where('text', $sms_token)->first();
@@ -154,7 +131,7 @@ class AccountController extends Controller {
                 throw new ApiException(ApiException::AccountFreeze, '账号已被冻结，无法登录');
             }
 
-            return $this->onLogin($ucuser);
+            return Event::onLoginAfter($ucuser);
         }
 
         // 注册
@@ -168,13 +145,14 @@ class AccountController extends Controller {
         $UcenterMember->regdate = time();
         $UcenterMember->save();
 
-        $ucuser = $UcenterMember->ucusers()->create([
-            'uid' => $mobile,
-            'mobile' => $mobile,
-            'rid' => $rid,
-            'uuid' => '',
-            'pid' => $this->procedure->pid,
-        ]);
+        $ucuser = new Ucusers;
+        $ucuser->ucid = $UcenterMember->uid;
+        $ucuser->uid = $mobile;
+        $ucuser->mobile = $mobile;
+        $ucuser->rid = $parameter->tough('_rid');
+        $ucuser->uuid = '';
+        $ucuser->pid = $this->procedure->pid;
+        $ucuser->save();
 
         // 将密码发给用户，通过队列异步发送
         try {
@@ -183,7 +161,7 @@ class AccountController extends Controller {
             throw new ApiException(ApiException::Remind, $e->getMessage());
         }
 
-        return $this->onRegister($ucuser);
+        return Event::onRegisterAfter($ucuser);
     }
 
     public function SMSTokenAction(Request $request, Parameter $parameter) {

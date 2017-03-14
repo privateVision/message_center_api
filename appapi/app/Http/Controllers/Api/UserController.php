@@ -1,36 +1,24 @@
 <?php
-/*
-* @Author: anchen
-* @Date:   2017-02-17 18:28:02
-* @Last Modified by:   anchen
-* @Last Modified time: 2017-02-18 10:55:11
-*/
 
 namespace App\Http\Controllers\Api;
 
 use Illuminate\Http\Request;
 use App\Parameter;
 use App\Exceptions\ApiException;
-
+use App\Event;
 use App\Model\Gamebbs56\UcenterMembers;
 use App\Model\Ucusers;
 use App\Model\Orders;
-
-use App\Event;
 use Illuminate\Support\Facades\Cache;
 
 class UserController extends AuthController
 {
-    protected function onLogout(&$ucuser) {
-
-    }
-
     public function MessageAction(Request $request, Parameter $parameter) {
         return ;
     }
 
     public function LogoutAction(Request $request, Parameter $parameter) {
-        $this->onLogout($this->ucuser);
+        Event::onLogoutAfter($this->ucuser);
         return ['result' => true];
     }
 
