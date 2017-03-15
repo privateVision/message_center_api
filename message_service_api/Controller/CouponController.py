@@ -18,7 +18,7 @@ coupon_controller = Blueprint('CouponController', __name__)
 
 
 # CMS 添加卡券
-@coupon_controller.route('/v4/coupon', methods=['POST'])
+@coupon_controller.route('/msa/v4/coupon', methods=['POST'])
 def v4_cms_add_coupon():
     from Utils.EncryptUtils import generate_checksum
     check_result, check_exception = generate_checksum(request)
@@ -43,7 +43,7 @@ def v4_cms_add_coupon():
 
 
 # CMS 更新卡券
-@coupon_controller.route('/v4/coupon', methods=['PUT'])
+@coupon_controller.route('/msa/v4/coupon', methods=['PUT'])
 def v4_cms_update_coupon():
     from Utils.EncryptUtils import generate_checksum
     check_result, check_exception = generate_checksum(request)
@@ -62,7 +62,7 @@ def v4_cms_update_coupon():
 
 
 # CMS 删除卡券
-@coupon_controller.route('/v4/coupon', methods=['DELETE'])
+@coupon_controller.route('/msa/v4/coupon', methods=['DELETE'])
 def v4_cms_delete_coupon():
     from Utils.EncryptUtils import generate_checksum
     check_result, check_exception = generate_checksum(request)
@@ -82,7 +82,7 @@ def v4_cms_delete_coupon():
 
 
 # SDK 获取卡券列表
-@coupon_controller.route('/v4/coupons', methods=['POST'])
+@coupon_controller.route('/msa/v4/coupons', methods=['POST'])
 def v4_sdk_get_broadcast_list():
     from Utils.EncryptUtils import sdk_api_params_check, sdk_api_check_sign
     is_params_checked = sdk_api_params_check(request)

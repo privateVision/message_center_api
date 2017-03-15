@@ -89,7 +89,6 @@ def sdk_api_gen_key(appid, data):
 
 def sdk_api_params_check(request):
     if not request.form.has_key('_appid') or not request.form.has_key('_sign') or not request.form.has_key('_token'):
-        print "请求参数不全"
         return False
     return True
 

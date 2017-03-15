@@ -18,7 +18,7 @@ app_controller = Blueprint('AppController', __name__)
 
 
 # 获取游戏列表
-@app_controller.route('/v4/apps', methods=['GET'])
+@app_controller.route('/msa/v4/apps', methods=['GET'])
 def v4_get_app_list():
     from run import mysql_session
     find_users_by_user_type_sql = "select pid as id, pname as app_name, priKey as rsa_key, psingKey as sign_key " \
@@ -57,7 +57,7 @@ def v4_get_app_list():
 
 
 # 获取游戏区服列表
-@app_controller.route('/v4/app/<int:app_id>/zones', methods=['GET'])
+@app_controller.route('/msa/v4/app/<int:app_id>/zones', methods=['GET'])
 def v4_get_app_zone_list(app_id=None):
     if app_id is None or app_id <= 0:
         log_exception(request, 'app_id不能为空')
@@ -79,7 +79,7 @@ def v4_get_app_zone_list(app_id=None):
 
 
 # 设置VIP规则
-@app_controller.route('/v4/app/vip_rules', methods=['POST'])
+@app_controller.route('/msa/v4/app/vip_rules', methods=['POST'])
 def v4_cms_set_vip_rules():
     from Utils.EncryptUtils import generate_checksum
     check_result, check_exception = generate_checksum(request)
@@ -100,7 +100,7 @@ def v4_cms_set_vip_rules():
 
 
 # 账号冻结
-@app_controller.route('/v4/app/user/close_account', methods=['POST'])
+@app_controller.route('/msa/v4/app/user/close_account', methods=['POST'])
 def v4_cms_close_user_account():
     from Utils.EncryptUtils import generate_checksum
     check_result, check_exception = generate_checksum(request)
@@ -115,7 +115,7 @@ def v4_cms_close_user_account():
 
 
 # 账号解冻
-@app_controller.route('/v4/app/user/open_closed_account', methods=['POST'])
+@app_controller.route('/msa/v4/app/user/open_closed_account', methods=['POST'])
 def v4_cms_open_closed_user_account():
     from Utils.EncryptUtils import generate_checksum
     check_result, check_exception = generate_checksum(request)
@@ -130,7 +130,7 @@ def v4_cms_open_closed_user_account():
 
 
 # 消息撤回
-@app_controller.route('/v4/app/message_revocation', methods=['POST'])
+@app_controller.route('/msa/v4/app/message_revocation', methods=['POST'])
 def v4_cms_message_revocation():
     from Utils.EncryptUtils import generate_checksum
     check_result, check_exception = generate_checksum(request)
@@ -156,7 +156,7 @@ def v4_cms_message_revocation():
 
 
 # 心跳
-@app_controller.route('/v4/app/heartbeat/<int:ucid>', methods=['GET'])
+@app_controller.route('/msa/v4/app/heartbeat/<int:ucid>', methods=['GET'])
 def v4_sdk_heartbeat(ucid):
     # appid = request.form['appid']
     # param = request.form['param']
@@ -170,7 +170,7 @@ def v4_sdk_heartbeat(ucid):
 
 
 # 心跳ACK
-@app_controller.route('/v4/app/heartbeat/ack', methods=['POST'])
+@app_controller.route('/msa/v4/app/heartbeat/ack', methods=['POST'])
 def v4_sdk_heartbeat_ack():
     from Utils.EncryptUtils import sdk_api_params_check, sdk_api_check_sign
     is_params_checked = sdk_api_params_check(request)
