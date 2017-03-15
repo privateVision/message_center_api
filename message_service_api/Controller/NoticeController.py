@@ -109,18 +109,17 @@ def v4_cms_set_post_notice_open():
 # SDK 获取公告列表
 @notice_controller.route('/v4/notices', methods=['POST'])
 def v4_sdk_get_notice_list():
-    appid = request.form['appid']
-    param = request.form['param']
-    if appid is None or param is None:
-        log_exception(request, "客户端请求错误-appid或param为空")
-        return response_data(200, 0, '客户端请求错误')
-    from Utils.EncryptUtils import sdk_api_check_key
-    params = sdk_api_check_key(request)
-    if params:
-        ucid = get_ucid_by_access_token(params['token'])
+    from Utils.EncryptUtils import sdk_api_params_check, sdk_api_check_sign
+    is_params_checked = sdk_api_params_check(request)
+    if is_params_checked is False:
+        log_exception(request, '客户端请求错误-appid或sign或token为空')
+        return response_data(200, 0, '客户端参数错误')
+    is_sign_true = sdk_api_check_sign(request)
+    if is_sign_true:
+        ucid = get_ucid_by_access_token(request.form['_token'])
         if ucid:
-            page = params['page'] if params.has_key('page') and params['page'] else 1
-            count = params['count'] if params.has_key('count') and params['count'] else 10
+            page = request.form['page'] if request.form.has_key('page') and request.form['page'] else 1
+            count = request.form['count'] if request.form.has_key('count') and request.form['count'] else 10
             start_index = (int(page) - 1) * int(count)
             end_index = start_index + int(count)
             service_logger.info("用户：%s 获取公告列表，数据从%s到%s" % (ucid, start_index, end_index))
@@ -180,43 +179,53 @@ def v4_sdk_get_notice_list():
             }
             return response_data(http_code=200, data=data)
         else:
-            log_exception(request, '根据token获取用户id失败，请重新登录')
-            return response_data(200, 0, '根据token获取用户id失败，请重新登录')
+            log_exception(request, "根据token: %s 获取ucid失败" % (request.form['_token'],))
+            return response_data(200, 0, '根据token获取ucid失败')
+    else:
+        log_exception(request, "客户端参数签名校验失败")
+        return response_data(200, 0, '客户端参数签名校验失败')
 
 
 # SDK 设置消息已读（消息通用）
 @notice_controller.route('/v4/message/read', methods=['POST'])
 def v4_sdk_set_notice_have_read():
-    appid = request.form['appid']
-    param = request.form['param']
-    if appid is None or param is None:
-        log_exception(request, '客户端参数错误-appid或param为空')
-        return response_data(200, 0, '客户端请求错误')
-    from Utils.EncryptUtils import sdk_api_check_key
-    params = sdk_api_check_key(request)
-    ucid = get_ucid_by_access_token(params['token'])
-    message_info = params['message_info']
-    if message_info['type'] is None or message_info['message_ids'] is None:
-        log_exception(request, '客户端请求错误-type或message_ids为空')
-        return response_data(200, 0, '客户端请求错误')
-    message_info_json = json.loads(message_info)
-    for message in message_info_json:
-        for message_id in message['message_ids']:
-            is_exist = UserReadMessageLog.objects(Q(type=message['type'])
-                                                  & Q(message_id=message_id)
-                                                  & Q(ucid=ucid)).count()
-            if is_exist == 0:
-                user_read_message_log = UserReadMessageLog(type=message['type'],
-                                                           message_id=message_id,
-                                                           ucid=ucid)
-                try:
-                    UserMessage.objects(Q(type=message['type'])
-                                        & Q(mysql_id=message_id)
-                                        & Q(ucid=ucid)).update(set__is_read=1)
-                    # 减少缓存未读消息数
-                    RedisHandle.hdecrby(ucid, message['type'])
-                    user_read_message_log.save()
-                except Exception as err:
-                    log_exception(request, "设置消息已读异常：%s" % (err.message,))
-                    return response_data(http_code=200, code=0, message="服务器出错啦/(ㄒoㄒ)/~~")
-    return response_data(http_code=200)
+    from Utils.EncryptUtils import sdk_api_params_check, sdk_api_check_sign
+    is_params_checked = sdk_api_params_check(request)
+    if is_params_checked is False:
+        log_exception(request, '客户端请求错误-appid或sign或token为空')
+        return response_data(200, 0, '客户端参数错误')
+    is_sign_true = sdk_api_check_sign(request)
+    if is_sign_true:
+        ucid = get_ucid_by_access_token(request.form['_token'])
+        if ucid:
+            message_info = request.form['message_info']
+            if message_info['type'] is None or message_info['message_ids'] is None:
+                log_exception(request, '客户端请求错误-type或message_ids为空')
+                return response_data(200, 0, '客户端请求错误')
+            message_info_json = json.loads(message_info)
+            for message in message_info_json:
+                for message_id in message['message_ids']:
+                    is_exist = UserReadMessageLog.objects(Q(type=message['type'])
+                                                          & Q(message_id=message_id)
+                                                          & Q(ucid=ucid)).count()
+                    if is_exist == 0:
+                        user_read_message_log = UserReadMessageLog(type=message['type'],
+                                                                   message_id=message_id,
+                                                                   ucid=ucid)
+                        try:
+                            UserMessage.objects(Q(type=message['type'])
+                                                & Q(mysql_id=message_id)
+                                                & Q(ucid=ucid)).update(set__is_read=1)
+                            # 减少缓存未读消息数
+                            RedisHandle.hdecrby(ucid, message['type'])
+                            user_read_message_log.save()
+                        except Exception as err:
+                            log_exception(request, "设置消息已读异常：%s" % (err.message,))
+                            return response_data(http_code=200, code=0, message="服务器出错啦/(ㄒoㄒ)/~~")
+            return response_data(http_code=200)
+        else:
+            log_exception(request, "根据token: %s 获取ucid失败" % (request.form['_token'],))
+            return response_data(200, 0, '根据token获取ucid失败')
+    else:
+        log_exception(request, "客户端参数签名校验失败")
+        return response_data(200, 0, '客户端参数签名校验失败')

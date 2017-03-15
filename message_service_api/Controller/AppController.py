@@ -172,13 +172,16 @@ def v4_sdk_heartbeat(ucid):
 # 心跳ACK
 @app_controller.route('/v4/app/heartbeat/ack', methods=['POST'])
 def v4_sdk_heartbeat_ack():
-    appid = request.form['appid']
-    param = request.form['param']
-    if appid is None or param is None:
-        log_exception(request, '客户端请求错误-appid或param为空')
-        return response_data(200, 0, '客户端请求错误')
-    from Utils.EncryptUtils import sdk_api_check_key
-    params = sdk_api_check_key(request)
-    ucid = get_ucid_by_access_token(params['token'])
-    RedisHandle.clear_user_data_mark_in_redis(ucid, params['type'])
-    return response_ok()
+    from Utils.EncryptUtils import sdk_api_params_check, sdk_api_check_sign
+    is_params_checked = sdk_api_params_check(request)
+    if not is_params_checked:
+        log_exception(request, '客户端请求错误-appid或sign或token为空')
+        return response_data(200, 0, '客户端参数错误')
+    is_sign_checked = sdk_api_check_sign(request)
+    if is_sign_checked:
+        ucid = get_ucid_by_access_token(request.form['_token'])
+        RedisHandle.clear_user_data_mark_in_redis(ucid, request.form['type'])
+        return response_ok()
+    else:
+        log_exception(request, "客户端参数签名校验失败")
+        return response_data(200, 0, '客户端参数签名校验失败')

@@ -71,19 +71,19 @@ class BroadcastFunctionTest(unittest.TestCase):
 
 
     def test_get_broadcast_list(self):
-        origin_param = 'token=fd9c69f1fd62f3070aafa5bc210f32ee&page=1&count=5'
-        from Utils.EncryptUtils import sdk_api_gen_key
-        param = sdk_api_gen_key(778, origin_param)
-        print "加密后的参数为：%s" % (param,)
-        if param:
-            body_data = {
-                'appid': 778,
-                'param': param
-            }
-            r = requests.post('http://localhost:5000/v4/broadcasts', data=body_data)
-            print r.text
-        else:
-            print '加密失败'
+        body_data = {
+            'username': 'n88530190',
+            '_sign': '9bf6db5d54faa4293e4d9eb35d8e41cc',
+            '_type': 'json',
+            '_timestamp': 1489566717,
+            '_rid': 255,
+            '_sign_type': 'md5',
+            '_appid': 2,
+            'rid': 255,
+            'password': 123456
+        }
+        r = requests.post('http://localhost:5000/v4/broadcasts', data=body_data)
+        print r.text
 
     def tearDown(self):
         pass
