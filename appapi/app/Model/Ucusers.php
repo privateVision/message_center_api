@@ -36,16 +36,6 @@ class Ucusers extends Model
     }
 
     /**
-     * 验证客服密码
-     * @param  [type] $password [description]
-     * @return [type]           [description]
-     */
-    public function checkServicePassword($password) {
-        if(!$this->ucusers_extend || trim($this->ucusers_extend->newpass) == '') return false;
-        return $this->ucusers_extend->newpass === md5($password);
-    }
-
-    /**
      * 验证登陆密码
      * @param  [type] $password [description]
      * @return [type]           [description]
@@ -60,10 +50,14 @@ class Ucusers extends Model
      * @return 新生成的用户的明文信息
      * */
 
-    public function setNewPassword(){
-        $password = rand(111111, 999999);
+    public function setNewPassword($password = null) {
+        if($password == null) {
+            $password = rand(111111, 999999);
+        }
+
         $this->ucenter_members->password = $password;
         $this->ucenter_members->save();
+
         return $password;
     }
 

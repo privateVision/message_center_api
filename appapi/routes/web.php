@@ -18,7 +18,6 @@ $app->get('/', function () use ($app) {
 $app->get('test', 'TooltestController@fpayTestAction');// test
 $app->get('createuser','TestController@createUserAction');
 
-
 // 支付回调相关
 $app->group(['prefix' => 'pay_callback'], function () use ($app) {
     $app->post('nowpay_wechat', 'PayCallback\\NowpayWechatController@CallbackAction');                  // 现代支付，微信支付回调
@@ -34,6 +33,7 @@ $app->group(['prefix' => 'pub'], function () use ($app) {
 // API接口
 $app->group(['prefix' => 'api'], function () use ($app) {
     $app->post('app/initialize', 'Api\\AppController@InitializeAction');                                // 初始化
+    $app->post('app/verify_sms', 'Api\\AppController@VerifySMSAction');                                 // 验证手机验证码是否正确
 
     $app->post('account/login_token', 'Api\\AccountController@LoginTokenAction');                       // 自动登录
     $app->post('account/login', 'Api\\AccountController@LoginAction');                                  // 用户名或手机号码登陆
@@ -42,6 +42,7 @@ $app->group(['prefix' => 'api'], function () use ($app) {
     $app->post('account/login_phone', 'Api\\AccountController@LoginPhoneAction');                       // 手机号码一键登陆
     $app->post('account/sms_token', 'Api\\AccountController@SMSTokenAction');                           // 手机号码一键登陆(获取发送短信的token)
     $app->post('account/sms_reset_password', 'Api\\AccountController@SMSResetPasswordAction');          // 发送重设密码的验证码
+    $app->post('account/reset_password', 'Api\\AccountController@ResetPasswordAction');                 // 重设密码
 
     $app->post('user/logout', 'Api\\UserController@LogoutAction');                                      // 退出登录
     $app->post('user/message', 'Api\\UserController@MessageAction');                                    // 消息轮循
