@@ -12,7 +12,7 @@ class UcuserProcedure extends PartModel
         if($ucid) {
             return $this->table .'_'. 0;//$ucid % 30;
         } else if($id) {
-            return $this->table .'_'. ceil($id / 71582788);
+            return $this->table .'_'. int(($id - 1) / 71582788);
         }
 
         return $this->table;

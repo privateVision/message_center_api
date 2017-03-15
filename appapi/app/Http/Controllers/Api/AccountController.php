@@ -194,6 +194,10 @@ class AccountController extends Controller {
         return ['sms_token' => uuid(), 'send_to' => $config->sms_receiver];
     }
 
+    public function SMSResetPasswordAction(Request $request, Parameter $parameter) {
+        
+    }
+
     /*
      * 更改密码
      * */
