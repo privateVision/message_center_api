@@ -5,8 +5,16 @@ class UcuserProcedure extends ModelSection
 {
     protected $table = 'ucuser_procedure';
 
-    public function part($n) {
-        return 0;//$n % 30;
+    public function part($section) {
+        if(is_numeric($section)) {
+            return 0;//$section % 30;
+        }
+
+        if(isset($section['ucid'])) {
+            return 0;//$section['ucid'] % 30;
+        } else if(isset($section['id'])) {
+            return intval(($section['id'] - 1) / 71582788);
+        }
     }
 
     public static function boot() {
