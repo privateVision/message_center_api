@@ -19,7 +19,7 @@ broadcast_controller = Blueprint('BroadcastController', __name__)
 
 
 # CMS 发送广播
-@broadcast_controller.route('/v4/broadcast', methods=['POST'])
+@broadcast_controller.route('/msa/v4/broadcast', methods=['POST'])
 def v4_cms_post_broadcast():
     from Utils.EncryptUtils import generate_checksum
     check_result, check_exception = generate_checksum(request)
@@ -46,7 +46,7 @@ def v4_cms_post_broadcast():
 
 
 # CMS 更新广播
-@broadcast_controller.route('/v4/broadcast', methods=['PUT'])
+@broadcast_controller.route('/msa/v4/broadcast', methods=['PUT'])
 def v4_cms_update_broadcast():
     from Utils.EncryptUtils import generate_checksum
     check_result, check_exception = generate_checksum(request)
@@ -67,7 +67,7 @@ def v4_cms_update_broadcast():
 
 
 # CMS 删除广播
-@broadcast_controller.route('/v4/broadcast', methods=['DELETE'])
+@broadcast_controller.route('/msa/v4/broadcast', methods=['DELETE'])
 def v4_cms_delete_post_broadcast():
     from Utils.EncryptUtils import generate_checksum
     check_result, check_exception = generate_checksum(request)
@@ -87,7 +87,7 @@ def v4_cms_delete_post_broadcast():
 
 
 # SDK 获取广播列表
-@broadcast_controller.route('/v4/broadcasts', methods=['POST'])
+@broadcast_controller.route('/msa/v4/broadcasts', methods=['POST'])
 def v4_sdk_get_broadcast_list():
     from Utils.EncryptUtils import sdk_api_params_check, sdk_api_check_sign
     is_params_checked = sdk_api_params_check(request)

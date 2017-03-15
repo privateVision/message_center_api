@@ -17,7 +17,7 @@ message_controller = Blueprint('MessageController', __name__)
 
 
 # CMS 发送消息
-@message_controller.route('/v4/message', methods=['POST'])
+@message_controller.route('/msa/v4/message', methods=['POST'])
 def v4_cms_post_broadcast():
     from Utils.EncryptUtils import generate_checksum
     check_result, check_exception = generate_checksum(request)
@@ -44,7 +44,7 @@ def v4_cms_post_broadcast():
 
 
 # CMS 删除消息
-@message_controller.route('/v4/message', methods=['DELETE'])
+@message_controller.route('/msa/v4/message', methods=['DELETE'])
 def v4_cms_delete_post_broadcast():
     from Utils.EncryptUtils import generate_checksum
     check_result, check_exception = generate_checksum(request)
@@ -64,7 +64,7 @@ def v4_cms_delete_post_broadcast():
 
 
 # SDK 获取消息列表
-@message_controller.route('/v4/messages', methods=['POST'])
+@message_controller.route('/msa/v4/messages', methods=['POST'])
 def v4_sdk_get_message_list():
     from Utils.EncryptUtils import sdk_api_params_check, sdk_api_check_sign
     is_params_checked = sdk_api_params_check(request)

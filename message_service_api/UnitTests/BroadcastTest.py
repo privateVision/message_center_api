@@ -82,7 +82,7 @@ class BroadcastFunctionTest(unittest.TestCase):
             'rid': 255,
             'password': 123456
         }
-        r = requests.post('http://localhost:5000/v4/broadcasts', data=body_data)
+        r = requests.post('http://dev.sdkapi.com/msa/v4/broadcasts', data=body_data)
         print r.text
 
     def tearDown(self):
