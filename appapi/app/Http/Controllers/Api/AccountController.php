@@ -34,7 +34,7 @@ class AccountController extends Controller {
             throw new ApiException(ApiException::AccountFreeze, '账号已被冻结，无法登录');
         }
 
-        return Event::onLoginAfter($ucuser);
+        return Event::onLoginAfter($ucuser, $parameter->tough('_appid'), $parameter->tough('_rid'));
     }
 
     public function LoginAction(Request $request, Parameter $parameter) {
@@ -62,7 +62,7 @@ class AccountController extends Controller {
             throw new ApiException(ApiException::Remind, "登录失败，用户名或者密码不正确");
         }
 
-        return Event::onLoginAfter($ucuser);
+        return Event::onLoginAfter($ucuser, $parameter->tough('_appid'), $parameter->tough('_rid'));
     }
 
     public function RegisterAction(Request $request, Parameter $parameter){
@@ -92,10 +92,10 @@ class AccountController extends Controller {
         $ucuser->uid = $username;
         $ucuser->rid = $parameter->tough('_rid');
         $ucuser->uuid = '';
-        $ucuser->pid = $parameter->tough('_pid');
+        $ucuser->pid = $parameter->tough('_appid');
         $ucuser->save();
 
-        return Event::onRegisterAfter($ucuser);
+        return Event::onRegisterAfter($ucuser, $parameter->tough('_appid'), $parameter->tough('_rid'));
     }
 
     public function UsernameAction(Request $request, Parameter $parameter) {
@@ -131,7 +131,7 @@ class AccountController extends Controller {
                 throw new ApiException(ApiException::AccountFreeze, '账号已被冻结，无法登录');
             }
 
-            return Event::onLoginAfter($ucuser);
+            return Event::onLoginAfter($ucuser, $parameter->tough('_appid'), $parameter->tough('_rid'));
         }
 
         // 注册
@@ -151,7 +151,7 @@ class AccountController extends Controller {
         $ucuser->mobile = $mobile;
         $ucuser->rid = $parameter->tough('_rid');
         $ucuser->uuid = '';
-        $ucuser->pid = $parameter->tough('_pid');
+        $ucuser->pid = $parameter->tough('_appid');
         $ucuser->save();
 
         // 将密码发给用户，通过队列异步发送
@@ -161,7 +161,7 @@ class AccountController extends Controller {
             throw new ApiException(ApiException::Remind, $e->getMessage());
         }
 
-        return Event::onRegisterAfter($ucuser);
+        return Event::onRegisterAfter($ucuser, $parameter->tough('_appid'), $parameter->tough('_rid'));
     }
 
     public function SMSTokenAction(Request $request, Parameter $parameter) {
