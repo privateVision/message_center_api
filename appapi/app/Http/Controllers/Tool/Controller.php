@@ -14,7 +14,6 @@ class Controller extends \App\Controller
         try {
             // 两个公共参数：_appid, _token
             $data = $request->all();
-
             if(empty($data)){
                 throw new ToolException(ToolException::Error, '数据为空');
             }

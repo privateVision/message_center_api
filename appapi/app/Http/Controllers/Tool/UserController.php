@@ -13,12 +13,10 @@ use App\Exceptions\ToolException;
 use App\Model\Gamebbs56\UcenterMembers;
 use App\Model\MongoDB\AccountLog;
 use App\Model\MongoDB\Fpay;
+use App\Model\Orders;
 use App\Model\Sms;
 use App\Model\Ucusers;
 use App\Model\UcusersExtend;
-use App\Model\UcuserTotalPay;
-
-use Illuminate\Support\Facades\Cache;
 use Mockery\CountValidator\Exception;
 
 use Symfony\Component\HttpFoundation\Request;
@@ -199,7 +197,9 @@ class UserController extends Controller{
             $conm =http_request($notifyUrlBack,["code"=>1,"msg"=>trans("messages.fpay1"),"data"=>["sn"=>$sn]],true);
             return $sn;
            // throw new ToolException(ToolException::Remind, trans('messages.fpay1'));
-        }
+	}
+
+	$oldmoney = $user->balance;
 
         //失败信息回归
         $user->balance += $amount;
@@ -216,7 +216,8 @@ class UserController extends Controller{
             $fpay -> sn = $sn; //订单编号
             $fpay ->amount = $amount; //充值金额
             $fpay->status = $code;
-            $fpay-> add_timej = time();
+	    $fpay-> add_timej = time();
+	    $fpay->oldmoney = $oldmoney;
             $fpay->save(); //保存用户信息
 
         }catch(Exception $e){
@@ -263,9 +264,9 @@ class UserController extends Controller{
 
         // todo: 当前充值金额是从表ucuser_total_pay读取
         // 验证当前的充值金额
-        $dat =  UcuserTotalPay::where("ucid",$ucusers->ucid)->first();
 
-        if( $charge > $dat['pay_fee'] && $charge !=0 ) {
+        $sum = Orders::where("ucid",$ucusers->ucid)->where("status",1)->sum('fee');
+        if( $charge > $sum && $charge !=0 ) {
             throw new ToolException(ToolException::Remind,trans("messages.nomoney"));
             return ;
         }
