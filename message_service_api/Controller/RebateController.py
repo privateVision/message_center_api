@@ -17,7 +17,7 @@ rebate_controller = Blueprint('RebateController', __name__)
 
 
 # CMS 添加优惠券
-@rebate_controller.route('/v4/rebate', methods=['POST'])
+@rebate_controller.route('/msa/v4/rebate', methods=['POST'])
 def v4_cms_add_rebate():
     from Utils.EncryptUtils import generate_checksum
     check_result, check_exception = generate_checksum(request)
@@ -44,7 +44,7 @@ def v4_cms_add_rebate():
 
 
 # CMS 更新优惠券
-@rebate_controller.route('/v4/rebate', methods=['PUT'])
+@rebate_controller.route('/msa/v4/rebate', methods=['PUT'])
 def v4_cms_update_coupon():
     from Utils.EncryptUtils import generate_checksum
     check_result, check_exception = generate_checksum(request)
@@ -63,7 +63,7 @@ def v4_cms_update_coupon():
 
 
 # CMS 删除优惠券
-@rebate_controller.route('/v4/rebate', methods=['DELETE'])
+@rebate_controller.route('/msa/v4/rebate', methods=['DELETE'])
 def v4_cms_delete_coupon():
     from Utils.EncryptUtils import generate_checksum
     check_result, check_exception = generate_checksum(request)

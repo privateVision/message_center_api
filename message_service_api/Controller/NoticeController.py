@@ -20,7 +20,7 @@ notice_controller = Blueprint('NoticeController', __name__)
 
 
 # CMS 发送公告
-@notice_controller.route('/v4/notice', methods=['POST'])
+@notice_controller.route('/msa/v4/notice', methods=['POST'])
 def v4_cms_post_notice():
     from Utils.EncryptUtils import generate_checksum
     check_result, check_exception = generate_checksum(request)
@@ -47,7 +47,7 @@ def v4_cms_post_notice():
 
 
 # CMS 更新公告
-@notice_controller.route('/v4/notice', methods=['PUT'])
+@notice_controller.route('/msa/v4/notice', methods=['PUT'])
 def v4_cms_update_post_notice():
     from Utils.EncryptUtils import generate_checksum
     check_result, check_exception = generate_checksum(request)
@@ -67,7 +67,7 @@ def v4_cms_update_post_notice():
 
 
 # CMS 关闭公告
-@notice_controller.route('/v4/notice/close', methods=['POST'])
+@notice_controller.route('/msa/v4/notice/close', methods=['POST'])
 def v4_cms_set_post_notice_closed():
     from Utils.EncryptUtils import generate_checksum
     check_result, check_exception = generate_checksum(request)
@@ -87,7 +87,7 @@ def v4_cms_set_post_notice_closed():
 
 
 # CMS 打开公告
-@notice_controller.route('/v4/notice/open', methods=['POST'])
+@notice_controller.route('/msa/v4/notice/open', methods=['POST'])
 def v4_cms_set_post_notice_open():
     from Utils.EncryptUtils import generate_checksum
     check_result, check_exception = generate_checksum(request)
@@ -107,7 +107,7 @@ def v4_cms_set_post_notice_open():
 
 
 # SDK 获取公告列表
-@notice_controller.route('/v4/notices', methods=['POST'])
+@notice_controller.route('/msa/v4/notices', methods=['POST'])
 def v4_sdk_get_notice_list():
     from Utils.EncryptUtils import sdk_api_params_check, sdk_api_check_sign
     is_params_checked = sdk_api_params_check(request)
@@ -187,7 +187,7 @@ def v4_sdk_get_notice_list():
 
 
 # SDK 设置消息已读（消息通用）
-@notice_controller.route('/v4/message/read', methods=['POST'])
+@notice_controller.route('/msa/v4/message/read', methods=['POST'])
 def v4_sdk_set_notice_have_read():
     from Utils.EncryptUtils import sdk_api_params_check, sdk_api_check_sign
     is_params_checked = sdk_api_params_check(request)
