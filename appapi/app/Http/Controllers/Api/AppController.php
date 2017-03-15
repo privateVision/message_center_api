@@ -57,13 +57,13 @@ class AppController extends Controller
                     'interval' => 300000,
                 ],
                 'bind_phone' => [
-                    'need' => 1,
-                    'enforce' => 0,
+                    'need' => true,
+                    'enforce' => false,
                     'interval' => 86400000,
                 ],
                 'real_name' => [
-                    'need' => 0,
-                    'enforce' => 0,
+                    'need' => false,
+                    'enforce' => false,
                 ]
             ];
         }

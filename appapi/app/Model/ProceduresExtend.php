@@ -9,7 +9,7 @@ class ProceduresExtend extends Model
 	public function procedures() {
 		return  $this->belongsTo(Procedures::class, 'pid', 'pid');
 	}
-/*
+
 	public function getBindPhoneNeedAttribute() {
 		return $this->attributes['bind_phone_need'] == 1;
 	}
@@ -25,5 +25,4 @@ class ProceduresExtend extends Model
 	public function getRealNameEnforceAttribute() {
 		return $this->attributes['real_name_enforce'] == 1;
 	}
-*/
 }
