@@ -46,25 +46,14 @@ class AccountController extends Controller {
         $username = $parameter->tough('username');
         $password = $parameter->tough('password');
 
-        $ucuser = null;
-
-        $ucusers = Ucusers::where('uid', $username)->orWhere('mobile', $username)->get();
-        foreach($ucusers as $v) {
-            if($v->isFreeze()) {
-                if($v->checkServicePassword($password)) {
-                    $ucuser = $v;
-                    break;
-                } else {
-                    throw new ApiException(ApiException::AccountFreeze, '账号已被冻结，无法登录');
-                }
-            } elseif($v->checkPassword($password)) {
-                $ucuser = $v;
-                break;
-            }
-        }
+        $ucuser = Ucusers::where('uid', $username)->orWhere('mobile', $username)->first();
 
         if(!$ucuser) {
             throw new ApiException(ApiException::Remind, "登录失败，用户名或者密码不正确");
+        }
+
+        if($ucuser->isFreeze()) {
+            throw new ApiException(ApiException::AccountFreeze, '账号已被冻结，无法登录');
         }
 
         $ucuser->getConnection()->beginTransaction();
@@ -78,9 +67,9 @@ class AccountController extends Controller {
         $username = $parameter->tough('username');
         $password = $parameter->tough('password');
 
-        if(!check_name($username, 24)){
-            throw new ApiException(ApiException::Remind, "用户名格式不正确，请填写正确的格式");
-        }
+        //if(!check_name($username, 24)){
+        //    throw new ApiException(ApiException::Remind, "用户名格式不正确，请填写正确的格式");
+        //}
 
         $isRegister  = Ucusers::where("mobile", $username)->orWhere('uid', $username)->count();
 
