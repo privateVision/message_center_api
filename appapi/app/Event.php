@@ -10,18 +10,19 @@ class Event
 {
 	public static function onLoginAfter(Ucusers $user, $pid, $rid) {
 
-        $ucuser_procedure = UcuserProcedure::section($user->ucid)->where('ucid', $user->ucid)->where('pid', $pid)->orderBy('last_login_at', 'desc')->get();
+        $ucuser_procedure = UcuserProcedure::section($user->ucid)->where('ucid', $user->ucid)->where('pid', $pid)->orderBy('priority', 'desc')->first();
 
-        if(!count($ucuser_procedure)) {
+        if(!$ucuser_procedure) {
             $ucuser_procedure = UcuserProcedure::section($user->ucid);
             $ucuser_procedure->ucid = $user->ucid;
             $ucuser_procedure->pid = $pid;
             $ucuser_procedure->rid = $rid;
             $ucuser_procedure->cp_uid = $user->ucid;
+            $ucuser_procedure->priority = time();
             $ucuser_procedure->last_login_at = date('Y-m-d H:i:s');
             $ucuser_procedure->save();
         } else {
-            $ucuser_procedure = $ucuser_procedure[0];
+            $ucuser_procedure->priority = time();
             $ucuser_procedure->last_login_at = date('Y-m-d H:i:s');
             $ucuser_procedure->save();
         }

@@ -34,7 +34,11 @@ class AccountController extends Controller {
             throw new ApiException(ApiException::AccountFreeze, '账号已被冻结，无法登录');
         }
 
-        return Event::onLoginAfter($ucuser, $parameter->tough('_appid'), $parameter->tough('_rid'));
+        $ucuser->getConnection()->beginTransaction();
+        $response = Event::onLoginAfter($ucuser, $parameter->tough('_appid'), $parameter->tough('_rid'));
+        $ucuser->getConnection()->commit();
+
+        return $response;
     }
 
     public function LoginAction(Request $request, Parameter $parameter) {
@@ -62,7 +66,11 @@ class AccountController extends Controller {
             throw new ApiException(ApiException::Remind, "登录失败，用户名或者密码不正确");
         }
 
-        return Event::onLoginAfter($ucuser, $parameter->tough('_appid'), $parameter->tough('_rid'));
+        $ucuser->getConnection()->beginTransaction();
+        $response = Event::onLoginAfter($ucuser, $parameter->tough('_appid'), $parameter->tough('_rid'));
+        $ucuser->getConnection()->commit();
+
+        return $response;
     }
 
     public function RegisterAction(Request $request, Parameter $parameter){
@@ -88,6 +96,8 @@ class AccountController extends Controller {
         $UcenterMember->save();
 
         $ucuser = new Ucusers;
+        $ucuser->getConnection()->beginTransaction();
+
         $ucuser->ucid = $UcenterMember->uid;
         $ucuser->uid = $username;
         $ucuser->rid = $parameter->tough('_rid');
@@ -95,7 +105,11 @@ class AccountController extends Controller {
         $ucuser->pid = $parameter->tough('_appid');
         $ucuser->save();
 
-        return Event::onRegisterAfter($ucuser, $parameter->tough('_appid'), $parameter->tough('_rid'));
+        $response = Event::onRegisterAfter($ucuser, $parameter->tough('_appid'), $parameter->tough('_rid'));
+
+        $ucuser->getConnection()->commit();
+
+        return $response;
     }
 
     public function UsernameAction(Request $request, Parameter $parameter) {
@@ -146,6 +160,8 @@ class AccountController extends Controller {
         $UcenterMember->save();
 
         $ucuser = new Ucusers;
+        $ucuser->getConnection()->beginTransaction();
+
         $ucuser->ucid = $UcenterMember->uid;
         $ucuser->uid = $mobile;
         $ucuser->mobile = $mobile;
@@ -154,14 +170,19 @@ class AccountController extends Controller {
         $ucuser->pid = $parameter->tough('_appid');
         $ucuser->save();
 
+        $response = Event::onRegisterAfter($ucuser, $parameter->tough('_appid'), $parameter->tough('_rid'));
+
+        $ucuser->getConnection()->commit();
+
         // 将密码发给用户，通过队列异步发送
         try {
             $content = send_sms($mobile, env('APP_ID'), 1, ['#username#' => $mobile, '#password#' => $password]);
         } catch (\App\Exceptions\Exception $e) {
-            throw new ApiException(ApiException::Remind, $e->getMessage());
+            // 注册成功就OK了，短信发送失败没关系，可找回密码
+            // throw new ApiException(ApiException::Remind, $e->getMessage());
         }
 
-        return Event::onRegisterAfter($ucuser, $parameter->tough('_appid'), $parameter->tough('_rid'));
+        return $response;
     }
 
     public function SMSTokenAction(Request $request, Parameter $parameter) {
