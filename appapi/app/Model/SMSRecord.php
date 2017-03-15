@@ -14,7 +14,7 @@ class SMSRecord extends Model
             return null;
         }
 
-        $t = strtotime($sms->sendTime);
+        $t = strtotime($sms->created_at);
 
         if((time() - $t) > 1800) {
             return null;

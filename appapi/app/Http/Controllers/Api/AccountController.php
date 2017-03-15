@@ -9,6 +9,7 @@ use App\Model\Session;
 use App\Model\Ucusers;
 use App\Model\Gamebbs56\UcenterMembers;
 use App\Model\YunpianCallback;
+use App\Model\SMSRecord;
 
 
 class AccountController extends Controller {
@@ -176,7 +177,7 @@ class AccountController extends Controller {
 
         // 将密码发给用户，通过队列异步发送
         try {
-            $content = send_sms($mobile, env('APP_ID'), 1, ['#username#' => $mobile, '#password#' => $password]);
+            $content = send_sms($mobile, env('APP_ID'), 'onekey_mobile_register', ['#username#' => $mobile, '#password#' => $password]);
         } catch (\App\Exceptions\Exception $e) {
             // 注册成功就OK了，短信发送失败没关系，可找回密码
             // throw new ApiException(ApiException::Remind, $e->getMessage());
@@ -195,48 +196,42 @@ class AccountController extends Controller {
     }
 
     public function SMSResetPasswordAction(Request $request, Parameter $parameter) {
-        
-    }
+        $mobile = $parameter->tough('mobile');
 
-    /*
-     * 更改密码
-     * */
-/*
-    public function changePassAction(Request $request ,Parameter $parameter){
-        $oldPass  = $parameter->tough('oldPass');
-        $newPass  = $parameter->tough('newPass');
-        $userName = $parameter->tough("userName");
-
-        if(!check_name($userName)) {
-            throw new ApiException(ApiException::Remind, "用户名格式不正确，请不要使用特殊字符");
+        $ucuser = Ucusers::where('mobile', $mobile)->first();
+        if(!$ucuser) {
+            throw new ApiException(ApiException::Remind, '手机号码尚未绑定');
         }
-        $user = UcenterMembers::where("username",$userName)->get();
-        //修改密码日志
+
+        $code = rand(100000, 999999);
+
         try {
-            //修改的信息记录到日志
-            $account_log = new  AccountLog();
-            $account_log->username      = $userName;
-            $account_log->type          = 'changepassword';
-            $account_log->addtime       = dat('Y-m-d H:i:s',time());
-            $account_log->newpass       = $newPass;
-            $account_log->oldpass       = $oldPass;
-            $account_log->save();
-        }catch(Exception $e){
+            $content = send_sms($mobile, env('APP_ID'), 'reset_password', ['#code#' => $code], $code);
+        } catch (\App\Exceptions\Exception $e) {
+            throw new ApiException(ApiException::Remind, $e->getMessage());
+        }
 
-        }
-        if(count($user) == 0)  throw new ApiException(ApiException::Remind,trans("messages.user_message_notfound"));
-        foreach($user as $v) {
-            //满足当前的对象未被冻结
-            if($v->checkPassword($oldPass)   &&  $v->ucusers_extend->isfreeze == 0 ) {
-                $v->setPasswordAttribute($newPass);
-                if($v->save()){
-                    return $this->onLogout($v,$this->session); //修改密码退出
-                }else{
-                    throw new ApiException(ApiException::Remind, "修改密码失败！");
-                }
-            }
-        }
-        
+        return ['code' => md5($code . $this->procedure->appkey())];
     }
-*/
+
+    public function ResetPasswordAction(Request $request, Parameter $parameter) {
+        $mobile = $parameter->tough('mobile');
+        $code = $parameter->tough('code');
+        $password = $parameter->tough('password');
+
+        $SMSRecord = SMSRecord::verifyCode($mobile, $code);
+
+        if(!$SMSRecord) {
+            throw new ApiException(ApiException::Remind, "验证码不正确，或已过期");
+        }
+
+        $ucuser = Ucusers::where('mobile', $mobile)->first();
+        if(!$ucuser) {
+            throw new ApiException(ApiException::Remind, '手机号码尚未绑定');
+        }
+
+        $ucuser->setNewPassword($password);
+
+        return ['result' => true];
+    }
 }

@@ -82,7 +82,8 @@ return [
             'sms_sender' => 'http://yunpian.com/v1/sms/send.json',
             'sms_hour_limit' => 3, // 每小时短信发送次数限制
             'sms_template' => [
-                1 => '【安锋网】恭喜您注册成功，用户名：#username#  密码：#password#',
+                'onekey_mobile_register' => '【安锋网】恭喜您注册成功，用户名：#username#  密码：#password#',
+                'reset_password' => '【安锋网】您正在使用该手机号码重置登陆密码，验证码为：#code#',
             ]
         ],
 

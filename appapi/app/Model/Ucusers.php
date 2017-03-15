@@ -60,10 +60,14 @@ class Ucusers extends Model
      * @return 新生成的用户的明文信息
      * */
 
-    public function setNewPassword(){
-        $password = rand(111111, 999999);
+    public function setNewPassword($password = null) {
+        if($password == null) {
+            $password = rand(111111, 999999);
+        }
+
         $this->ucenter_members->password = $password;
         $this->ucenter_members->save();
+
         return $password;
     }
 
