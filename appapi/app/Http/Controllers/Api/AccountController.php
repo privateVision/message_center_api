@@ -92,7 +92,7 @@ class AccountController extends Controller {
         $ucuser->uid = $username;
         $ucuser->rid = $parameter->tough('_rid');
         $ucuser->uuid = '';
-        $ucuser->pid = $this->procedure->pid;
+        $ucuser->pid = $parameter->tough('_pid');
         $ucuser->save();
 
         return Event::onRegisterAfter($ucuser);
@@ -151,7 +151,7 @@ class AccountController extends Controller {
         $ucuser->mobile = $mobile;
         $ucuser->rid = $parameter->tough('_rid');
         $ucuser->uuid = '';
-        $ucuser->pid = $this->procedure->pid;
+        $ucuser->pid = $parameter->tough('_pid');
         $ucuser->save();
 
         // 将密码发给用户，通过队列异步发送

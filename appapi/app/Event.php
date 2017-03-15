@@ -1,7 +1,9 @@
 <?php
 namespace App;
 
+use App\Parameter;
 use App\Model\Session;
+use App\Model\UcuserGame;
 
 class Event
 {
@@ -39,6 +41,14 @@ class Event
 	}
 
 	public static function onRegisterAfter($user) {
+        $ucuser_game = UcuserGame::section($user->ucid);
+        $ucuser_game->ucid = $user->ucid;
+        $ucuser_game->pid = $user->pid;
+        $ucuser_game->rid = $user->rid;
+        $ucuser_game->last_login_at = date('Y-m-d H:i:s');
+        $ucuser_game->alias_name();
+        $ucuser_game->save();
+
 		return static::onLoginAfter($user);
 	}
 }

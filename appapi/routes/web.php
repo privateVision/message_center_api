@@ -11,7 +11,8 @@
 */
 
 $app->get('/', function () use ($app) {
-    http_response_code(404); exit;
+    //http_response_code(404); exit;
+    //return \App\Model\UcuserProcedure::section(15)->find(111);
 });
 
 $app->get('test', 'TooltestController@fpayTestAction');// test
