@@ -48,7 +48,7 @@ class RedisHandle(object):
         key = "%s%s" % (RedisHandle.common_key_prefix, key_name)
         user_mark = {
             # "notice": 0,
-            "broadcast": {},
+            "broadcast": [],
             "message": 0,
             # "coupon": 0,
             # "rebate": 0,
