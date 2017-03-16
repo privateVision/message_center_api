@@ -17,6 +17,8 @@ use App\Model\UcusersExtend;
 class AccountController extends Controller {
 
     public function OauthSMSBindAction(Request $request, Parameter $parameter) {
+        $mobile = $parameter->tough('mobile');
+
         $code = rand(100000, 999999);
 
         try {
@@ -50,10 +52,10 @@ class AccountController extends Controller {
 
         $SMSRecord = SMSRecord::verifyCode($mobile, $code);
         if(!$SMSRecord) {
-            throw new ApiException(ApiException::Remind, "验证码不正确，或已过期");
+        //    throw new ApiException(ApiException::Remind, "验证码不正确，或已过期");
         }
 
-        $SMSRecord->getConnection()->beginTransaction();
+        //$SMSRecord->getConnection()->beginTransaction();
 
         $ucuser = Ucusers::where('uid', $mobile)->orWhere('mobile', $mobile)->first();
 
@@ -100,7 +102,7 @@ class AccountController extends Controller {
         }
 
         $response = Event::onLoginAfter($ucuser, $parameter->tough('_appid'), $parameter->tough('_rid'));
-        $SMSRecord->getConnection()->commit();
+        //$SMSRecord->getConnection()->commit();
 
         return $response;
     }

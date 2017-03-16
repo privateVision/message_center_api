@@ -49,7 +49,7 @@ class Event
 
         return [
             'openid' => $ucuser_procedure_extra ? $ucuser_procedure_extra->cp_uid : $ucuser_procedure->cp_uid,
-            'ucid' => $user->ucid,
+            'uid' => $user->ucid,
             'username' => $user->uid,
             'mobile' => strval($user->mobile),
             'avatar' => env('AVATAR'),

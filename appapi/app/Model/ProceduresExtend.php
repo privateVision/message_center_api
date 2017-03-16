@@ -15,11 +15,11 @@ class ProceduresExtend extends Model
 	}
 
 	public function getBindPhoneEnforceAttribute() {
-		return $this->attributes['bind_phone_enforce'] == 1 ? 1 : 0;
+		return $this->attributes['bind_phone_enforce'] == 1;
 	}
 
 	public function getRealNameNeedAttribute() {
-		return $this->attributes['real_name_need'] == 1 ? 1 : 0;
+		return $this->attributes['real_name_need'] == 1;
 	}
 
 	public function getRealNameEnforceAttribute() {
