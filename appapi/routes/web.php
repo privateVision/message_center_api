@@ -53,6 +53,7 @@ $app->group(['prefix' => 'api'], function () use ($app) {
     $app->post('user/recharge', 'Api\\UserController@RechargeAction');                                  // 充值记录（充F币）
     $app->post('user/consume', 'Api\\UserController@ConsumeAction');                                    // 消费记录
     $app->post('user/hide_order', 'Api\\UserController@HideOrderAction');                               // 隐藏订单
+    $app->post('user/balance', 'Api\\UserController@BalanceAction');                                    // 用户余额
 
     $app->post('pay/order/new', 'Api\\Pay\\OrderController@NewAction');                                 // 创建订单
     $app->post('pay/order/anfeng/new', 'Api\\Pay\\OrderController@AnfengNewAction');                    // 充值F币的订单

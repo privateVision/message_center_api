@@ -33,6 +33,7 @@ class AccountController extends Controller {
     }
 
     public function OauthRegisterAction(Request $request, Parameter $parameter) {
+        /*
         $mobile = $parameter->tough('mobile');
         $code = $parameter->tough('code');
         $openid = $parameter->tough('openid');
@@ -40,23 +41,32 @@ class AccountController extends Controller {
         $nickname = $parameter->tough('nickname');
         $avatar = $parameter->tough('avatar');
 
-        $types = [
-            'weixin' => '微信',
-            'qq' => 'QQ',
-            'weibo' => '微博',
-        ];
+        $types = ['weixin' => '微信', 'qq' => 'QQ', 'weibo' => '微博'];
 
         if(!isset($types[$type])) {
             throw new ApiException(ApiException::Error, "未知的登陆类型, type={$type}");
         }
 
-        $SMSRecord = SMSRecord::verifyCode($mobile, $code);
-        if(!$SMSRecord) {
-        //    throw new ApiException(ApiException::Remind, "验证码不正确，或已过期");
+        // 直接登陆
+        $ucuser = Ucusers::find($user_oauth->ucid);
+
+        if($ucuser->isFreeze()) {
+            throw new ApiException(ApiException::AccountFreeze, '账号已被冻结，无法登录');
         }
 
-        //$SMSRecord->getConnection()->beginTransaction();
+        $ucuser->getConnection()->beginTransaction();
+        $response = Event::onLoginAfter($ucuser, $parameter->tough('_appid'), $parameter->tough('_rid'));
+        $ucuser->getConnection()->commit();
 
+        return $response;
+
+        // 验证验证码
+        $SMSRecord = SMSRecord::verifyCode($mobile, $code);
+        if(!$SMSRecord) {
+            //throw new ApiException(ApiException::Remind, "验证码不正确，或已过期");
+        }
+
+        // 如果手机号已注册，则绑定、登陆。否则注册、绑定、登陆
         $ucuser = Ucusers::where('uid', $mobile)->orWhere('mobile', $mobile)->first();
 
         if(!$ucuser) {
@@ -73,16 +83,13 @@ class AccountController extends Controller {
             $ucuser = new Ucusers;
             $ucuser->ucid = $UcenterMember->uid;
             $ucuser->uid = $mobile;
+            $ucuser->mobile = $mobile;
             $ucuser->rid = $parameter->tough('_rid');
             $ucuser->uuid = '';
             $ucuser->pid = $parameter->tough('_appid');
             $ucuser->save();
 
             $ucuser_extend = new UcusersExtend;
-            $ucuser_extend->ucid = $UcenterMember->uid;
-            $ucuser_extend->nickname = $nickname;
-            $ucuser_extend->avatar = $avatar;
-            $ucuser_extend->save();
 
             try {
                 send_sms($mobile, env('APP_ID'), 'oauth_register', ['#type#' => $types[$type], '#username#' => $mobile, '#password#' => $password]);
@@ -92,19 +99,48 @@ class AccountController extends Controller {
             }
         }
 
+        $field = "bind_{$type}";
+
+        if(!isset($ucuser_extend)) {
+            if($ucuser->ucuser_extend) {
+                $ucuser_extend = $ucuser->ucuser_extend;
+                if($ucuser_extend->$field > 0) {
+                    throw new ApiException(ApiException::Remind, '该手机号码已经绑定了'.$types[$type]);
+                }
+            } else {
+                $ucuser_extend = new UcusersExtend;
+            }
+        }
+
         $user_oauth = UcuserOauth::where('type', $type)->where('openid', $openid)->first();
+        if($user_oauth) {
+            throw new ApiException(ApiException::Remind, '该{$types[$type]}已经绑定了其它账号');
+        }
+
         if(!$user_oauth) {
             $user_oauth = new UcuserOauth;
             $user_oauth->ucid = $ucuser->ucid;
             $user_oauth->type = $type;
             $user_oauth->openid = $openid;
             $user_oauth->save();
+
+            if(!$ucuser_extend->nickname) {
+                $ucuser_extend->nickname = $nickname;
+            }
+
+            if(!$ucuser_extend->avatar) {
+                $ucuser_extend->avatar = $avatar;
+            }
+
+            $field = "bind_{$type}";
+            $ucuser_extend->$field = $user_oauth->id;
+            $ucuser_extend->save();
         }
 
         $response = Event::onLoginAfter($ucuser, $parameter->tough('_appid'), $parameter->tough('_rid'));
-        //$SMSRecord->getConnection()->commit();
 
         return $response;
+        */
     }
 
     public function OauthLoginAction(Request $request, Parameter $parameter) {
@@ -116,7 +152,7 @@ class AccountController extends Controller {
             throw new ApiException(ApiException::OauthNotRegister, '用户尚未注册');
         }
 
-        $ucuser = Ucusers::find('ucid', $user_oauth->ucid);
+        $ucuser = Ucusers::find($user_oauth->ucid);
 
         if($ucuser->isFreeze()) {
             throw new ApiException(ApiException::AccountFreeze, '账号已被冻结，无法登录');
