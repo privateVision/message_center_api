@@ -64,7 +64,8 @@ class RedisHandle(object):
                 if broadcast_count > 0:
                     from Service.UsersService import get_user_broadcast_list
                     broadcast_data = get_user_broadcast_list(key_name)
-                    user_mark['broadcast'] = broadcast_data
+                    if broadcast_data is not None:
+                        user_mark['broadcast'] = broadcast_data
                     redis_store.hset(key, 'broadcast', 0)
             if redis_mark_data.has_key('message'):
                 user_mark['message'] = int(redis_mark_data['message'])
