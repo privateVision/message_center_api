@@ -10,7 +10,6 @@ class ApiException extends \Exception
     const Expire = 102;             // 会话已过期，遇到这个错误应该将玩家引导到登陆界面
     const OauthNotRegister = 103;   // 第三方openid尚未注册
     const MobileNotRegister = 104;  // 一键登陆在尚未收到短信回调时（一键登陆轮循继续）
-	
 
 	public function __construct($code, $message) {
 		parent::__construct($message, $code);
