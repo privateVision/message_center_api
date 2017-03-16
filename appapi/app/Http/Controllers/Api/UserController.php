@@ -63,6 +63,10 @@ class UserController extends AuthController
         Orders::where('sn', $sn)->update(['hide' => true]);
         return ['result' => true];
     }
+
+    public function BalanceAction(Request $request, Parameter $parameter) {
+        return ['balance' => $this->ucuser->balance];
+    }
     // --------------------------------------------------------------------------------------------------------------------------------
     
     const SMS_LIMIT = 3;

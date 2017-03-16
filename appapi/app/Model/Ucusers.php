@@ -31,6 +31,10 @@ class Ucusers extends Model
         return $this->hasOne(UcuserTotalPay::class, 'ucid', 'ucid');
     }
 
+    public function ucusers_extend() {
+        return $this->hasOne(UcusersExtend::class, 'ucid', 'ucid');
+    }
+
     public function getBalanceAttribute($value) {
         return number_format($value, 2);
     }
