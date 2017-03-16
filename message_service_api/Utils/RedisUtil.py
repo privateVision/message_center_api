@@ -48,7 +48,7 @@ class RedisHandle(object):
         key = "%s%s" % (RedisHandle.common_key_prefix, key_name)
         user_mark = {
             # "notice": 0,
-            "broadcast": None,
+            "broadcast": [],
             "message": 0,
             # "coupon": 0,
             # "rebate": 0,
@@ -64,7 +64,8 @@ class RedisHandle(object):
                 if broadcast_count > 0:
                     from Service.UsersService import get_user_broadcast_list
                     broadcast_data = get_user_broadcast_list(key_name)
-                    user_mark['broadcast'] = broadcast_data
+                    if broadcast_data is not None:
+                        user_mark['broadcast'] = broadcast_data
                     redis_store.hset(key, 'broadcast', 0)
             if redis_mark_data.has_key('message'):
                 user_mark['message'] = int(redis_mark_data['message'])
