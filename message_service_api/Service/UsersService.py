@@ -5,6 +5,8 @@ from mongoengine import Q
 from MiddleWare import service_logger
 from MongoModel.AppRulesModel import AppVipRules
 from MongoModel.MessageModel import UsersMessage
+from MongoModel.UserMessageModel import UserMessage
+from Utils.SystemUtils import get_current_timestamp
 
 
 def get_game_and_area_and_user_type_and_vip_users(game=None, user_type=None, vips=None):
@@ -110,6 +112,26 @@ def get_ucid_by_access_token(access_token=None):
             return user_info['ucid']
     return False
 
+
+# 根据用户id获取广播列表
+def get_user_broadcast_list(ucid=None):
+    current_timestamp = get_current_timestamp()
+    broadcast_list = UserMessage.objects(
+        Q(type='broadcast')
+        & Q(closed=0)
+        & Q(is_read=0)
+        & Q(start_time__lte=current_timestamp)
+        & Q(end_time__gte=current_timestamp)
+        & Q(ucid=ucid)).order_by('-start_time')[:1]
+    for message in broadcast_list:
+        message_info = get_broadcast_message_detail_info(message['mysql_id'])
+        message_resp = {
+            "content": message_info['content'],
+            "close_time": message_info['close_time']
+        }
+        UserMessage.objects(Q(type='broadcast') & Q(ucid=ucid)).update(set__is_read=1)
+        return message_resp
+    return None
 
 # def get_use_account_is_freeze_from_db(ucid=None):
 #     find_ucid_sql = "select isfreeze from ucusers_extend where ucid = %s" % (ucid,)
