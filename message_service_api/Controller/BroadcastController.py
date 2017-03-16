@@ -103,7 +103,7 @@ def v4_sdk_get_broadcast_list():
             start_index = (int(page) - 1) * int(count)
             end_index = start_index + int(count)
             service_logger.info("用户：%s 获取广播列表，数据从%s到%s" % (ucid, start_index, end_index))
-            # 查询用户相关的公告列表
+            # 查询用户相关的广播列表
             current_timestamp = get_current_timestamp()
             message_list_total_count = UserMessage.objects(
                 Q(type='broadcast')
