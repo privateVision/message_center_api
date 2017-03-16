@@ -44,6 +44,10 @@ $app->group(['prefix' => 'api'], function () use ($app) {
     $app->post('account/sms_reset_password', 'Api\\AccountController@SMSResetPasswordAction');          // 发送重设密码的验证码
     $app->post('account/reset_password', 'Api\\AccountController@ResetPasswordAction');                 // 重设密码
 
+    $app->post('account/oauth_sms_bind', 'Api\\AccountController@OauthSMSBindAction');                  // 平台注册绑定手机时发送验证码
+    $app->post('account/oauth_register', 'Api\\AccountController@OauthRegisterAction');                 // 平台注册
+    $app->post('account/oauth_login', 'Api\\AccountController@OauthLoginAction');                       // 平台登陆
+
     $app->post('user/logout', 'Api\\UserController@LogoutAction');                                      // 退出登录
     $app->post('user/message', 'Api\\UserController@MessageAction');                                    // 消息轮循
     $app->post('user/recharge', 'Api\\UserController@RechargeAction');                                  // 充值记录（充F币）

@@ -58,16 +58,14 @@ class UserController extends AuthController
         return $data;
     }
 
-    // --------------------------------------------------------------------------------------------------------------------------------
-    
-    const SMS_LIMIT = 3;
-
     public function HideOrderAction(Request $request, Parameter $parameter) {
         $sn = $parameter->tough('order_id');
         Orders::where('sn', $sn)->update(['hide' => true]);
         return ['result' => true];
     }
-
+    // --------------------------------------------------------------------------------------------------------------------------------
+    
+    const SMS_LIMIT = 3;
 
     /*
  * 获取短息验证码
