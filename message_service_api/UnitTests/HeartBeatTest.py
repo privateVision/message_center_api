@@ -15,7 +15,7 @@ class HeartBeatTest(unittest.TestCase):
             '_appid': 2,
             '_token': '70609a34090b9010b4bbe8eabd56a7a4'
         }
-        r = requests.post('http://localhost:5000/msa/v4/app/heartbeat', data=body_data)
+        r = requests.post('http://dev.sdkapi.com/msa/v4/app/heartbeat', data=body_data)
         print r.text
         self.assertEqual(r.status_code, 200)
 
