@@ -84,6 +84,8 @@ return [
             'sms_template' => [
                 'onekey_mobile_register' => '【安锋网】恭喜您注册成功，用户名：#username#  密码：#password#',
                 'reset_password' => '【安锋网】您正在使用该手机号码重置登陆密码，验证码为：#code#',
+                'oauth_login_bind' => '【安锋网】您正在通过该手机号码绑定安锋通行证，验证码为：#code#',
+                'oauth_register' => '【安锋网】恭喜您注册成功，您可以使用#type#直接登陆，也可以使用手机号码登陆，用户名：#username#  密码：#password#',
             ]
         ],
 

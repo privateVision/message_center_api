@@ -48,7 +48,8 @@ class Event
         $retailer = $user->retailers;
 
         return [
-            'uid' => $ucuser_procedure_extra ? $ucuser_procedure_extra->cp_uid : $ucuser_procedure->cp_uid,
+            'openid' => $ucuser_procedure_extra ? $ucuser_procedure_extra->cp_uid : $ucuser_procedure->cp_uid,
+            'ucid' => $user->ucid,
             'username' => $user->uid,
             'mobile' => strval($user->mobile),
             'avatar' => env('AVATAR'),

@@ -17,7 +17,7 @@ class AppController extends Controller
         $config = $this->procedure->procedures_extend()->first();
 
         // check update
-        $update = null;
+        $update = [];
         $update_apks = $this->procedure->update_apks()->orderBy('dt', 'desc')->first();
         if($update_apks && $update_apks->version != $app_version) {
             $update = array(
@@ -31,10 +31,10 @@ class AppController extends Controller
             return [
                 'update' => $update,
                 'service' => [
-                    'qq' => $config->service_qq,
-                    'page' => $config->service_page,
-                    'phone' => $config->service_phone,
-                    'share' => $config->service_share,
+                    'qq' => strval($config->service_qq),
+                    'page' => strval($config->service_page),
+                    'phone' => strval($config->service_phone),
+                    'share' => strval($config->service_share),
                     'interval' => $config->service_interval * 1000,
                 ],
                 'bind_phone' => [
