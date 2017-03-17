@@ -57,9 +57,9 @@ class UserController extends Controller{
             }else{
                 $userextend->newpass = md5($password);
                 $userextend->isfreeze = self::FREEZE;
-               if($userextend->save()){
-                   $isextends = 1;
-               }
+                if($userextend->save()){
+                    $isextends = 1;
+                }
             }
 
             try {
@@ -83,7 +83,7 @@ class UserController extends Controller{
             }
 
         }catch(Exception $e){
-           throw new ToolException(ToolException::Remind,"错误");
+            throw new ToolException(ToolException::Remind,"错误");
         }
         // $uid = Ucusers::where("uid",$uid)->get();
     }
@@ -107,7 +107,7 @@ class UserController extends Controller{
             $had  =0;
             if(empty($userextend)){
                 $had  =1;
-               throw new ToolException(ToolException::Remind, trans('messages.unfreeze_faild'));
+                throw new ToolException(ToolException::Remind, trans('messages.unfreeze_faild'));
             }
 
             try {
@@ -131,7 +131,7 @@ class UserController extends Controller{
                 //账号卖出，清空绑定的手机号信息
             }
 
-             $userextend->isfreeze = self::UN_FREEZE;
+            $userextend->isfreeze = self::UN_FREEZE;
 
             if( $userextend->save() && $user->save()){
                 if($isshell){
@@ -181,7 +181,7 @@ class UserController extends Controller{
 
         if(!check_name($username,24)) {
             $conm =http_request($notifyUrlBack,["code"=>1,"msg"=>trans("messages.fpay1"),"data"=>["sn"=>$sn]],true);
-           // throw new ToolException(ToolException::Remind, trans('messages.name_type_error'));
+            // throw new ToolException(ToolException::Remind, trans('messages.name_type_error'));
             return $sn;
         }
 
@@ -189,17 +189,17 @@ class UserController extends Controller{
 
         if($amount < 0 || !check_money($amount)){
             return $sn;
-          //  throw new ToolException(ToolException::Remind,trans("messages.money_format_error"));
+            //  throw new ToolException(ToolException::Remind,trans("messages.money_format_error"));
         }
 
         $user  = Ucusers::where('uid', $username)->orWhere('mobile', $username)->first();
         if(empty($user))  {
             $conm =http_request($notifyUrlBack,["code"=>1,"msg"=>trans("messages.fpay1"),"data"=>["sn"=>$sn]],true);
             return $sn;
-           // throw new ToolException(ToolException::Remind, trans('messages.fpay1'));
-	}
+            // throw new ToolException(ToolException::Remind, trans('messages.fpay1'));
+        }
 
-	$oldmoney = $user->balance;
+        $oldmoney = $user->balance;
 
         //失败信息回归
         $user->balance += $amount;
@@ -216,8 +216,8 @@ class UserController extends Controller{
             $fpay -> sn = $sn; //订单编号
             $fpay ->amount = $amount; //充值金额
             $fpay->status = $code;
-	    $fpay-> add_timej = time();
-	    $fpay->oldmoney = $oldmoney;
+            $fpay-> add_timej = time();
+            $fpay->oldmoney = $oldmoney;
             $fpay->save(); //保存用户信息
 
         }catch(Exception $e){
