@@ -3,7 +3,7 @@ from MiddleWare import redis_store
 
 
 class RedisHandle(object):
-    common_key_prefix = "sdk_msg_service_"
+    common_key_prefix = "msa_"
 
     @staticmethod
     def hincrby(key_name, field_name, incr_number=1):
