@@ -11,7 +11,7 @@ from MongoModel.MessageModel import UsersMessage
 from MongoModel.UserMessageModel import UserMessage
 from RequestForm.PostMessagesRequestForm import PostMessagesRequestForm
 from Service.UsersService import get_ucid_by_access_token, get_message_detail_info, find_user_account_is_freeze, \
-    sdk_api_request_check
+    sdk_api_request_check, cms_api_request_check
 from Utils.SystemUtils import get_current_timestamp, log_exception
 
 message_controller = Blueprint('MessageController', __name__)
@@ -19,11 +19,8 @@ message_controller = Blueprint('MessageController', __name__)
 
 # CMS 发送消息
 @message_controller.route('/msa/v4/message', methods=['POST'])
+@cms_api_request_check
 def v4_cms_post_broadcast():
-    from Utils.EncryptUtils import generate_checksum
-    check_result, check_exception = generate_checksum(request)
-    if not check_result:
-        return check_exception
     form = PostMessagesRequestForm(request.form)  # POST 表单参数封装
     if not form.validate():
         log_exception(request, '客户端请求错误: %s' % (json.dumps(form.errors)))
@@ -46,11 +43,8 @@ def v4_cms_post_broadcast():
 
 # CMS 删除消息
 @message_controller.route('/msa/v4/message', methods=['DELETE'])
+@cms_api_request_check
 def v4_cms_delete_post_broadcast():
-    from Utils.EncryptUtils import generate_checksum
-    check_result, check_exception = generate_checksum(request)
-    if not check_result:
-        return check_exception
     message_id = request.form['id']
     if message_id is None or message_id == '':
         log_exception(request, '客户端请求错误-message_id为空')

@@ -12,7 +12,7 @@ from MongoModel.UserMessageModel import UserMessage
 from RequestForm.PostCouponsRequestForm import PostCouponsRequestForm
 from Service.StorageService import system_coupon_update
 from Service.UsersService import get_ucid_by_access_token, get_coupon_message_detail_info, find_user_account_is_freeze, \
-    sdk_api_request_check
+    sdk_api_request_check, cms_api_request_check
 from Utils.SystemUtils import get_current_timestamp, log_exception
 
 coupon_controller = Blueprint('CouponController', __name__)
@@ -20,11 +20,8 @@ coupon_controller = Blueprint('CouponController', __name__)
 
 # CMS 添加卡券
 @coupon_controller.route('/msa/v4/coupon', methods=['POST'])
+@cms_api_request_check
 def v4_cms_add_coupon():
-    from Utils.EncryptUtils import generate_checksum
-    check_result, check_exception = generate_checksum(request)
-    if not check_result:
-        return check_exception
     form = PostCouponsRequestForm(request.form)  # POST 表单参数封装
     if not form.validate():
         log_exception(request, '客户端请求错误: %s' % (json.dumps(form.errors)))
@@ -45,11 +42,8 @@ def v4_cms_add_coupon():
 
 # CMS 更新卡券
 @coupon_controller.route('/msa/v4/coupon', methods=['PUT'])
+@cms_api_request_check
 def v4_cms_update_coupon():
-    from Utils.EncryptUtils import generate_checksum
-    check_result, check_exception = generate_checksum(request)
-    if not check_result:
-        return check_exception
     form = PostCouponsRequestForm(request.form)  # POST 表单参数封装
     if not form.validate():
         log_exception(request, '客户端请求错误: %s' % (json.dumps(form.errors)))
@@ -64,11 +58,8 @@ def v4_cms_update_coupon():
 
 # CMS 删除卡券
 @coupon_controller.route('/msa/v4/coupon', methods=['DELETE'])
+@cms_api_request_check
 def v4_cms_delete_coupon():
-    from Utils.EncryptUtils import generate_checksum
-    check_result, check_exception = generate_checksum(request)
-    if not check_result:
-        return check_exception
     coupon_id = request.form['id']
     if coupon_id is None or coupon_id == '':
         log_exception(request, '客户端请求错误-coupon_id为空')

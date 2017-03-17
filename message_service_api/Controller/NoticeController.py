@@ -13,7 +13,7 @@ from MongoModel.UserReadMessageLogModel import UserReadMessageLog
 from RequestForm.PostNoticesRequestForm import PostNoticesRequestForm
 from Service.StorageService import system_notices_update
 from Service.UsersService import get_notice_message_detail_info, get_ucid_by_access_token, find_user_account_is_freeze, \
-    sdk_api_request_check
+    sdk_api_request_check, cms_api_request_check
 from Utils.RedisUtil import RedisHandle
 from Utils.SystemUtils import get_current_timestamp, log_exception
 
@@ -22,11 +22,8 @@ notice_controller = Blueprint('NoticeController', __name__)
 
 # CMS 发送公告
 @notice_controller.route('/msa/v4/notice', methods=['POST'])
+@cms_api_request_check
 def v4_cms_post_notice():
-    from Utils.EncryptUtils import generate_checksum
-    check_result, check_exception = generate_checksum(request)
-    if not check_result:
-        return check_exception
     form = PostNoticesRequestForm(request.form)  # POST 表单参数封装
     if not form.validate():
         log_exception(request, "发送公告请求校验异常：%s" % (form.errors,))
@@ -49,11 +46,8 @@ def v4_cms_post_notice():
 
 # CMS 更新公告
 @notice_controller.route('/msa/v4/notice', methods=['PUT'])
+@cms_api_request_check
 def v4_cms_update_post_notice():
-    from Utils.EncryptUtils import generate_checksum
-    check_result, check_exception = generate_checksum(request)
-    if not check_result:
-        return check_exception
     form = PostNoticesRequestForm(request.form)  # POST 表单参数封装
     if not form.validate():
         log_exception(request, "更新公告请求校验异常：%s" % (form.errors,))
@@ -69,11 +63,8 @@ def v4_cms_update_post_notice():
 
 # CMS 关闭公告
 @notice_controller.route('/msa/v4/notice/close', methods=['POST'])
+@cms_api_request_check
 def v4_cms_set_post_notice_closed():
-    from Utils.EncryptUtils import generate_checksum
-    check_result, check_exception = generate_checksum(request)
-    if not check_result:
-        return check_exception
     notice_id = request.form['id']
     if notice_id is None or notice_id == '':
         log_exception(request, "客户端请求错误-notice_id为空")
@@ -89,11 +80,8 @@ def v4_cms_set_post_notice_closed():
 
 # CMS 打开公告
 @notice_controller.route('/msa/v4/notice/open', methods=['POST'])
+@cms_api_request_check
 def v4_cms_set_post_notice_open():
-    from Utils.EncryptUtils import generate_checksum
-    check_result, check_exception = generate_checksum(request)
-    if not check_result:
-        return check_exception
     notice_id = request.form['id']
     if notice_id is None or notice_id == '':
         log_exception(request, "客户端请求错误-notice_id为空")

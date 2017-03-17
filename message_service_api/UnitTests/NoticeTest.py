@@ -102,7 +102,7 @@ class NoticeFunctionTest(unittest.TestCase):
             '_token': 'bb427a702d53dbb0cdd4f001fb301620',
             '_appid': 2,
         }
-        r = requests.post('http://localhost:5000/msa/v4/notices', data=body_data)
+        r = requests.post('http://dev.sdkapi.com/msa/v4/notices', data=body_data)
         print r.text
 
     def tearDown(self):

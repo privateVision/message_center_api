@@ -12,7 +12,7 @@ from MongoModel.UserMessageModel import UserMessage
 from RequestForm.PostBroadcastsRequestForm import PostBroadcastsRequestForm
 from Service.StorageService import system_broadcast_update
 from Service.UsersService import get_ucid_by_access_token, get_broadcast_message_detail_info, \
-    find_user_account_is_freeze, sdk_api_request_check
+    find_user_account_is_freeze, sdk_api_request_check, cms_api_request_check
 from Utils.RedisUtil import RedisHandle
 from Utils.SystemUtils import get_current_timestamp, log_exception
 
@@ -21,11 +21,8 @@ broadcast_controller = Blueprint('BroadcastController', __name__)
 
 # CMS 发送广播
 @broadcast_controller.route('/msa/v4/broadcast', methods=['POST'])
+@cms_api_request_check
 def v4_cms_post_broadcast():
-    from Utils.EncryptUtils import generate_checksum
-    check_result, check_exception = generate_checksum(request)
-    if not check_result:
-        return check_exception
     form = PostBroadcastsRequestForm(request.form)  # POST 表单参数封装
     if not form.validate():
         log_exception(request, '客户端请求错误: %s' % (json.dumps(form.errors)))
@@ -48,11 +45,8 @@ def v4_cms_post_broadcast():
 
 # CMS 更新广播
 @broadcast_controller.route('/msa/v4/broadcast', methods=['PUT'])
+@cms_api_request_check
 def v4_cms_update_broadcast():
-    from Utils.EncryptUtils import generate_checksum
-    check_result, check_exception = generate_checksum(request)
-    if not check_result:
-        return check_exception
     form = PostBroadcastsRequestForm(request.form)  # POST 表单参数封装
     if not form.validate():
         log_exception(request, '客户端请求错误: %s' % (json.dumps(form.errors)))
@@ -69,11 +63,8 @@ def v4_cms_update_broadcast():
 
 # CMS 删除广播
 @broadcast_controller.route('/msa/v4/broadcast', methods=['DELETE'])
+@cms_api_request_check
 def v4_cms_delete_post_broadcast():
-    from Utils.EncryptUtils import generate_checksum
-    check_result, check_exception = generate_checksum(request)
-    if not check_result:
-        return check_exception
     broadcast_id = request.form['id']
     if broadcast_id is None or broadcast_id == '':
         log_exception(request, '客户端请求错误-广播id为空')

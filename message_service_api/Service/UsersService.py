@@ -174,6 +174,18 @@ def sdk_api_request_check(func):
         return func(*args, **kwargs)
     return wraper
 
+
+# cms api 请求通用装饰器
+def cms_api_request_check(func):
+    @wraps(func)
+    def wraper(*args, **kwargs):
+        from Utils.EncryptUtils import generate_checksum
+        check_result, check_exception = generate_checksum(request)
+        if not check_result:
+            return check_exception
+        return func(*args, **kwargs)
+    return wraper
+
 # def get_use_account_is_freeze_from_db(ucid=None):
 #     find_ucid_sql = "select isfreeze from ucusers_extend where ucid = %s" % (ucid,)
 #     from run import mysql_session
