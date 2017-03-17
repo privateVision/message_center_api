@@ -1,12 +1,15 @@
 # _*_ coding: utf-8 _*_
+from functools import wraps
 
+from flask import request
 from mongoengine import Q
 
+from Controller.BaseController import response_data
 from MiddleWare import service_logger
 from MongoModel.AppRulesModel import AppVipRules
 from MongoModel.MessageModel import UsersMessage
 from MongoModel.UserMessageModel import UserMessage
-from Utils.SystemUtils import get_current_timestamp
+from Utils.SystemUtils import get_current_timestamp, log_exception
 
 
 def get_game_and_area_and_user_type_and_vip_users(game=None, user_type=None, vips=None):
@@ -132,6 +135,44 @@ def get_user_broadcast_list(ucid=None):
         UserMessage.objects(Q(type='broadcast') & Q(ucid=ucid)).update(set__is_read=1)
         return message_resp
     return None
+
+
+def find_user_account_is_freeze(ucid=None):
+    find_is_freeze_sql = "select is_freeze from user where ucid = %s" % (ucid,)
+    from run import mysql_session
+    try:
+        user_info = mysql_session.execute(find_is_freeze_sql).first()
+    except Exception, err:
+        service_logger.error(err.message)
+        mysql_session.rollback()
+    finally:
+        mysql_session.close()
+    if user_info:
+        if user_info['is_freeze'] == 1:
+            return True
+    return False
+
+
+# sdk api 请求通用装饰器
+def sdk_api_request_check(func):
+    @wraps(func)
+    def wraper(*args, **kwargs):
+        from Utils.EncryptUtils import sdk_api_params_check, sdk_api_check_sign
+        is_params_checked = sdk_api_params_check(request)
+        if is_params_checked is False:
+            log_exception(request, '客户端请求错误-appid或sign或token为空')
+            return response_data(200, 0, '客户端参数错误')
+        is_sign_true = sdk_api_check_sign(request)
+        if is_sign_true is True:
+            ucid = get_ucid_by_access_token(request.form['_token'])
+            if ucid:
+                if find_user_account_is_freeze(ucid):
+                    return response_data(200, 101, '账号被冻结')
+            else:
+                log_exception(request, "根据token: %s 获取ucid失败" % (request.form['_token'],))
+                return response_data(200, 0, '根据token获取ucid失败')
+        return func(*args, **kwargs)
+    return wraper
 
 # def get_use_account_is_freeze_from_db(ucid=None):
 #     find_ucid_sql = "select isfreeze from ucusers_extend where ucid = %s" % (ucid,)
