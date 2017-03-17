@@ -182,6 +182,7 @@ def system_message_persist(data_json=None, update_user_message=True):
         users_message.id = '%s%s' % ('message', data_json['id'])
         users_message.mysql_id = data_json['id']
         users_message.type = 'message'
+        users_message.atype = data_json['atype']
         users_message.title = data_json['title']
         users_message.description = data_json['description']
         users_message.content = data_json['content']
