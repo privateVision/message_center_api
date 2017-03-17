@@ -368,7 +368,7 @@ class AccountController extends Controller {
 
         $user = User::where('uid', $mobile)->orWhere('mobile', $mobile)->first();
         if(!$user) {
-            throw new ApiException(ApiException::Remind, '手机号码尚未绑定');
+            throw new ApiException(ApiException::Remind, '手机号码尚未注册');
         }
 
         $code = rand(100000, 999999);

@@ -28,8 +28,8 @@ class User extends Model
         return $this->hasOne(UcusersExtend::class, 'ucid', 'ucid');
     }
 
-    public function ucuser_oauth() {
-        return $this->hasOne(UcuserOauth::class, 'ucid', 'ucid');
+    public function user_oauth() {
+        return $this->hasOne(UserOauth::class, 'ucid', 'ucid');
     }
 
     public function getIsFreezeAttribute() {
