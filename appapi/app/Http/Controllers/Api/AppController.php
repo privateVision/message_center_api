@@ -1,11 +1,9 @@
 <?php
-
 namespace App\Http\Controllers\Api;
 
+use App\Exceptions\ApiException;
 use Illuminate\Http\Request;
 use App\Parameter;
-use App\Model\Session;
-use App\Exceptions\ApiException;
 
 class AppController extends Controller
 {
@@ -16,7 +14,7 @@ class AppController extends Controller
         $config = $this->procedure->procedures_extend()->first();
 
         // check update
-        $update = null;
+        $update = [];
         $update_apks = $this->procedure->update_apks()->orderBy('dt', 'desc')->first();
         if($update_apks && $update_apks->version != $app_version) {
             $update = array(
@@ -30,10 +28,10 @@ class AppController extends Controller
             return [
                 'update' => $update,
                 'service' => [
-                    'qq' => $config->service_qq,
-                    'page' => $config->service_page,
-                    'phone' => $config->service_phone,
-                    'share' => $config->service_share,
+                    'qq' => strval($config->service_qq),
+                    'page' => strval($config->service_page),
+                    'phone' => strval($config->service_phone),
+                    'share' => strval($config->service_share),
                     'interval' => $config->service_interval * 1000,
                 ],
                 'bind_phone' => [
@@ -57,15 +55,26 @@ class AppController extends Controller
                     'interval' => 300000,
                 ],
                 'bind_phone' => [
-                    'need' => 1,
-                    'enforce' => 0,
+                    'need' => true,
+                    'enforce' => false,
                     'interval' => 86400000,
                 ],
                 'real_name' => [
-                    'need' => 0,
-                    'enforce' => 0,
+                    'need' => false,
+                    'enforce' => false,
                 ]
             ];
         }
+    }
+
+    public function VerifySMSAction(Request $request, Parameter $parameter) {
+        $mobile = $parameter->tough('mobile');
+        $code = $parameter->tough('code');
+
+        if(!verify_sms($mobile, $code)) {
+            throw new ApiException(ApiException::Remind, "验证码不正确，或已过期");
+        }
+
+        return ['result' => true];
     }
 }

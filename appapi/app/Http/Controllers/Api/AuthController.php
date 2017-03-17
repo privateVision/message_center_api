@@ -5,11 +5,11 @@ use Illuminate\Http\Request;
 use App\Exceptions\ApiException;
 use App\Parameter;
 use App\Model\Session;
-use App\Model\Ucusers;
+use App\Model\User;
 
 class AuthController extends Controller {
 
-	protected $ucuser = null;
+	protected $user = null;
 
 	public function before(Request $request, Parameter $parameter) {
 		parent::before($request, $parameter);
@@ -25,14 +25,14 @@ class AuthController extends Controller {
 			throw new ApiException(ApiException::Remind, '请先登陆');
 		}
 
-		$ucuser = Ucusers::find($ucid);
-		if(!$ucuser) {
+		$user = User::find($ucid);
+		if(!$user) {
 			throw new ApiException(ApiException::Error, '玩家未找到');
 		}
 
-		$this->ucuser = $ucuser;
+		$this->user = $user;
 
-		if(!$session->is_service_login && $this->ucuser->isFreeze()) {
+		if($this->user->is_freeze) {
 			throw new ApiException(ApiException::AccountFreeze, '账号已被冻结');
 		}
 	}

@@ -51,7 +51,7 @@ class Controller extends \App\Controller
 			$resdata = array('code' => ApiException::Error, 'msg' => $e->getMessage(), 'data' => null);
 		} catch(\Exception $e) {
 			log_error('error', ['message' => $e->getMessage(), 'code' => $e->getCode(), 'file' => $e->getFile(), 'line' => $e->getLine()]);
-			$resdata = array('code' => ApiException::Error, 'msg' => 'system error', 'data' => null);
+			$resdata = array('code' => ApiException::Error, 'msg' => $e->getMessage(), 'data' => null);
 		}
 
 		$type = $request->input('type');

@@ -1,15 +1,12 @@
 <?php
-
 namespace App\Http\Controllers\Api;
 
 use Illuminate\Http\Request;
 use App\Parameter;
 use App\Exceptions\ApiException;
 use App\Event;
-use App\Model\Gamebbs56\UcenterMembers;
-use App\Model\Ucusers;
+use App\Model\User;
 use App\Model\Orders;
-use Illuminate\Support\Facades\Cache;
 
 class UserController extends AuthController
 {
@@ -18,12 +15,12 @@ class UserController extends AuthController
     }
 
     public function LogoutAction(Request $request, Parameter $parameter) {
-        Event::onLogoutAfter($this->ucuser);
+        Event::onLogoutAfter($this->user);
         return ['result' => true];
     }
 
     public function RechargeAction(Request $request, Parameter $parameter) {
-        $order = $this->ucuser->orders()->where('vid', env('APP_SELF_ID'))->where('status', Orders::Status_Success)->where('hide', 0)->get();
+        $order = $this->user->orders()->where('vid', env('APP_SELF_ID'))->where('status', Orders::Status_Success)->where('hide', 0)->get();
 
         $data = [];
         foreach($order as $v) {
@@ -41,7 +38,7 @@ class UserController extends AuthController
     }
 
     public function ConsumeAction(Request $request, Parameter $parameter) {
-        $order = $this->ucuser->orders()->where('vid', '!=', env('APP_SELF_ID'))->where('status', Orders::Status_Success)->where('hide', 0)->get();
+        $order = $this->user->orders()->where('vid', '!=', env('APP_SELF_ID'))->where('status', Orders::Status_Success)->where('hide', 0)->get();
 
         $data = [];
         foreach($order as $v) {
@@ -58,16 +55,161 @@ class UserController extends AuthController
         return $data;
     }
 
-    // --------------------------------------------------------------------------------------------------------------------------------
-    
-    const SMS_LIMIT = 3;
-
     public function HideOrderAction(Request $request, Parameter $parameter) {
         $sn = $parameter->tough('order_id');
         Orders::where('sn', $sn)->update(['hide' => true]);
         return ['result' => true];
     }
 
+    public function BalanceAction(Request $request, Parameter $parameter) {
+        return ['balance' => $this->user->balance];
+    }
+
+    public function ByOldPasswordResetAction(Request $request, Parameter $parameter) {
+        $old_password = $parameter->tough('old_password');
+        $new_password = $parameter->tough('new_password');
+
+        if(!$this->user->checkPassword($old_password)) {
+            throw new ApiException(ApiException::Remind, "旧的密码不正确");
+        }
+
+        $this->user->password = $new_password;
+        $this->user->save();
+
+        return ['result' => true];
+    }
+
+    public function SMSBindPhoneAction(Request $request, Parameter $parameter) {
+        $mobile = $parameter->tough('mobile');
+
+        $user = User::where('uid', $mobile)->orWhere('mobile', $mobile)->first();
+        if($user) {
+            if($user->ucid != $this->user->ucid) {
+                throw new ApiException(ApiException::Remind, "手机号码已经绑定了其它账号");
+            } else {
+                throw new ApiException(ApiException::Remind, "该账号已经绑定了这个手机号码");
+            }
+        }
+
+        $code = rand(100000, 999999);
+
+        try {
+            send_sms($mobile, env('APP_ID'), 'bind_phone', ['#code#' => $code], $code);
+        } catch (\App\Exceptions\Exception $e) {
+            throw new ApiException(ApiException::Remind, $e->getMessage());
+        }
+
+        return [
+            'code' => md5($code . $this->procedure->appkey())
+        ];
+    }
+
+    public function BindPhoneAction(Request $request, Parameter $parameter) {
+        $mobile = $parameter->tough('mobile');
+        $code = $parameter->tough('code');
+
+        if(!verify_sms($mobile, $code)) {
+            throw new ApiException(ApiException::Remind, "绑定失败，验证码不正确，或已过期");
+        }
+
+        if($this->user->mobile) {
+            throw new ApiException(ApiException::Remind, "该账号已经绑定了手机号码");
+        }
+        
+        $user = User::where('uid', $mobile)->orWhere('mobile', $mobile)->first();
+        if($user) {
+            if($user->ucid != $this->user->ucid) {
+                throw new ApiException(ApiException::Remind, "手机号码已经绑定了其它账号");
+            }
+        } else {
+            $this->user->mobile = $mobile;
+            $this->user->save();
+        }
+
+        return ['result' => true];
+    }
+
+    public function SMSUnbindPhoneAction(Request $request, Parameter $parameter) {
+        if(!$this->user->mobile) {
+            throw new ApiException(ApiException::Remind, "还未绑定手机号码，无法解绑");
+        }
+
+        $mobile = $this->user->mobile;
+
+        $code = rand(100000, 999999);
+
+        try {
+            send_sms($mobile, env('APP_ID'), 'unbind_phone', ['#code#' => $code], $code);
+        } catch (\App\Exceptions\Exception $e) {
+            throw new ApiException(ApiException::Remind, $e->getMessage());
+        }
+
+        return [
+            'code' => md5($code . $this->procedure->appkey())
+        ];
+    }
+
+    public function UnbindPhoneAction(Request $request, Parameter $parameter) {
+        $code = $parameter->tough('code');
+
+        if(!$this->user->mobile) {
+            throw new ApiException(ApiException::Remind, "还未绑定手机号码，无法解绑");
+        }
+
+        $mobile = $this->user->mobile;
+
+        if(!verify_sms($mobile, $code)) {
+            throw new ApiException(ApiException::Remind, "手机号码解绑失败，验证码不正确，或已过期");
+        }
+        
+        $this->user->mobile = '';
+        $this->user->save();
+
+        return ['result' => true];
+    }
+
+    public function SMSPhoneResetPasswordAction(Request $request, Parameter $parameter) {
+        if(!$this->user->mobile) {
+            throw new ApiException(ApiException::Remind, "还未绑定手机号码，无法使用该方式重置密码");
+        }
+
+        $mobile = $this->user->mobile;
+
+        $code = rand(100000, 999999);
+
+        try {
+            send_sms($mobile, env('APP_ID'), 'reset_password', ['#code#' => $code], $code);
+        } catch (\App\Exceptions\Exception $e) {
+            throw new ApiException(ApiException::Remind, $e->getMessage());
+        }
+
+        return [
+            'code' => md5($code . $this->procedure->appkey())
+        ];
+    }
+
+    public function PhoneResetPasswordAction(Request $request, Parameter $parameter) {
+        $code = $parameter->tough('code');
+        $password = $parameter->tough('password');
+
+        if(!$this->user->mobile) {
+            throw new ApiException(ApiException::Remind, "还未绑定手机号码，无法使用该方式重置密码");
+        }
+
+        $mobile = $this->user->mobile;
+
+        if(!verify_sms($mobile, $code)) {
+            throw new ApiException(ApiException::Remind, "验证码不正确，或已过期");
+        }
+
+        $this->user->password = $password;
+        $this->user->save();
+
+        return ['result' => true];
+    }
+    // --------------------------------------------------------------------------------------------------------------------------------
+    
+    const SMS_LIMIT = 3;
 
     /*
  * 获取短息验证码
@@ -94,19 +236,19 @@ class UserController extends AuthController
 
         $chars = 'abcdefghjkmnpqrstuvwxy';
 
-        if($this->uucuser->mobile == $this->ucuser->uid){
-            $username = Ucusers::username();
-            $this->ucuser->ucenter_members->username = $username;
-            $this->ucuser->ucenter_members->save();
+        if($this->uuser->mobile == $this->user->uid){
+            $username = User::username();
+            $this->user->ucenter_members->username = $username;
+            $this->user->ucenter_members->save();
             $content = trans_choice('messages.phone_unbind_code', $username);
-            send_sms($this->ucuser->mobile,$content);
-            $this->ucuser->uid= $username;
-            $this->ucuser->save();
+            send_sms($this->user->mobile,$content);
+            $this->user->uid= $username;
+            $this->user->save();
         }else{
 
         }
 
-        UcenterMembers::where("username",$this->ucuser->uid)->get();
+        UcenterMembers::where("username",$this->user->uid)->get();
     }
 
     /*
@@ -144,10 +286,7 @@ class UserController extends AuthController
      * */
 
     public function walletAction(Request $request,Parameter $parameter){
-        return  ["wallet"=>$this->ucuser->balance];
+        return  ["wallet"=>$this->user->balance];
     }
-
-
-
 
 }

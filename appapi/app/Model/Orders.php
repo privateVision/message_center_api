@@ -17,8 +17,8 @@ class Orders extends Model
 
 	const CREATED_AT = 'createTime';
 
-	public function ucusers() {
-		return $this->belongsTo(Ucusers::class, 'ucid', 'ucid');
+	public function user() {
+		return $this->belongsTo(User::class, 'ucid', 'ucid');
 	}
 
 	public function procedures() {

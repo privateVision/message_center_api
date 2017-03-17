@@ -10,7 +10,7 @@ from MongoModel.AppRulesModel import AppVipRules
 from MongoModel.MessageModel import UsersMessage
 from MongoModel.MessageRevocationModel import MessageRevocation
 from MongoModel.UserMessageModel import UserMessage
-from Service.UsersService import get_ucid_by_access_token
+from Service.UsersService import get_ucid_by_access_token, sdk_api_request_check, cms_api_request_check
 from Utils.RedisUtil import RedisHandle
 from Utils.SystemUtils import log_exception
 
@@ -18,7 +18,7 @@ app_controller = Blueprint('AppController', __name__)
 
 
 # 获取游戏列表
-@app_controller.route('/v4/apps', methods=['GET'])
+@app_controller.route('/msa/v4/apps', methods=['GET'])
 def v4_get_app_list():
     from run import mysql_session
     find_users_by_user_type_sql = "select pid as id, pname as app_name, priKey as rsa_key, psingKey as sign_key " \
@@ -57,7 +57,7 @@ def v4_get_app_list():
 
 
 # 获取游戏区服列表
-@app_controller.route('/v4/app/<int:app_id>/zones', methods=['GET'])
+@app_controller.route('/msa/v4/app/<int:app_id>/zones', methods=['GET'])
 def v4_get_app_zone_list(app_id=None):
     if app_id is None or app_id <= 0:
         log_exception(request, 'app_id不能为空')
@@ -79,12 +79,9 @@ def v4_get_app_zone_list(app_id=None):
 
 
 # 设置VIP规则
-@app_controller.route('/v4/app/vip_rules', methods=['POST'])
+@app_controller.route('/msa/v4/app/vip_rules', methods=['POST'])
+@cms_api_request_check
 def v4_cms_set_vip_rules():
-    from Utils.EncryptUtils import generate_checksum
-    check_result, check_exception = generate_checksum(request)
-    if not check_result:
-        return check_exception
     data = json.loads(request.form['data'])
     if data is None or data == '':
         log_exception(request, '客户端请求错误')
@@ -100,12 +97,9 @@ def v4_cms_set_vip_rules():
 
 
 # 账号冻结
-@app_controller.route('/v4/app/user/close_account', methods=['POST'])
+@app_controller.route('/msa/v4/app/user/close_account', methods=['POST'])
+@cms_api_request_check
 def v4_cms_close_user_account():
-    from Utils.EncryptUtils import generate_checksum
-    check_result, check_exception = generate_checksum(request)
-    if not check_result:
-        return check_exception
     ucid = request.form['ucid']
     if ucid is None or ucid == '':
         log_exception(request, '客户端请求错误')
@@ -115,12 +109,9 @@ def v4_cms_close_user_account():
 
 
 # 账号解冻
-@app_controller.route('/v4/app/user/open_closed_account', methods=['POST'])
+@app_controller.route('/msa/v4/app/user/open_closed_account', methods=['POST'])
+@cms_api_request_check
 def v4_cms_open_closed_user_account():
-    from Utils.EncryptUtils import generate_checksum
-    check_result, check_exception = generate_checksum(request)
-    if not check_result:
-        return check_exception
     ucid = request.form['ucid']
     if ucid is None or ucid == '':
         log_exception(request, '客户端请求错误')
@@ -130,12 +121,9 @@ def v4_cms_open_closed_user_account():
 
 
 # 消息撤回
-@app_controller.route('/v4/app/message_revocation', methods=['POST'])
+@app_controller.route('/msa/v4/app/message_revocation', methods=['POST'])
+@cms_api_request_check
 def v4_cms_message_revocation():
-    from Utils.EncryptUtils import generate_checksum
-    check_result, check_exception = generate_checksum(request)
-    if not check_result:
-        return check_exception
     message_type = request.form['type']
     msg_id = request.form['mysql_id']
     if type is None or type == '' or msg_id is None or msg_id == '':
@@ -156,29 +144,22 @@ def v4_cms_message_revocation():
 
 
 # 心跳
-@app_controller.route('/v4/app/heartbeat/<int:ucid>', methods=['GET'])
-def v4_sdk_heartbeat(ucid):
-    # appid = request.form['appid']
-    # param = request.form['param']
-    # if appid is None or param is None:
-    #     return response_data(400, 400, '客户端请求错误')
-    # from Utils.EncryptUtils import sdk_api_check_key
-    # params = sdk_api_check_key(request)
-    # ucid = get_ucid_by_access_token(params['token'])
-    data = RedisHandle.get_user_data_mark_in_redis(ucid)
-    return response_data(data=data)
+@app_controller.route('/msa/v4/app/heartbeat', methods=['POST'])
+@sdk_api_request_check
+def v4_sdk_heartbeat():
+    ucid = get_ucid_by_access_token(request.form['_token'])
+    if ucid:
+        data = RedisHandle.get_user_data_mark_in_redis(ucid)
+        if data['is_freeze'] == 1:
+            return response_data(200, 101, '账号被冻结')
+        del data['is_freeze']
+        return response_data(data=data)
 
 
 # 心跳ACK
-@app_controller.route('/v4/app/heartbeat/ack', methods=['POST'])
+@app_controller.route('/msa/v4/app/heartbeat/ack', methods=['POST'])
+@sdk_api_request_check
 def v4_sdk_heartbeat_ack():
-    appid = request.form['appid']
-    param = request.form['param']
-    if appid is None or param is None:
-        log_exception(request, '客户端请求错误-appid或param为空')
-        return response_data(200, 0, '客户端请求错误')
-    from Utils.EncryptUtils import sdk_api_check_key
-    params = sdk_api_check_key(request)
-    ucid = get_ucid_by_access_token(params['token'])
-    RedisHandle.clear_user_data_mark_in_redis(ucid, params['type'])
+    ucid = get_ucid_by_access_token(request.form['_token'])
+    RedisHandle.clear_user_data_mark_in_redis(ucid, request.form['type'])
     return response_ok()

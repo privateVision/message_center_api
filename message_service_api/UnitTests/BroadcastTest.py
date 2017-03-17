@@ -36,7 +36,7 @@ class BroadcastFunctionTest(unittest.TestCase):
     #     }
     #     from Utils.EncryptUtils import get_md5_sign
     #     sign = get_md5_sign(data)
-    #     r = requests.post("http://localhost:5000/v4/broadcast?sign=%s" % (sign,), data=data)
+    #     r = requests.post("http://dev.sdkapi.com/msa/v4/broadcast?sign=%s" % (sign,), data=data)
     #     self.assertEqual(r.status_code, 200)
     #     print r.text
 
@@ -71,19 +71,13 @@ class BroadcastFunctionTest(unittest.TestCase):
 
 
     def test_get_broadcast_list(self):
-        origin_param = 'token=fd9c69f1fd62f3070aafa5bc210f32ee&page=1&count=5'
-        from Utils.EncryptUtils import sdk_api_gen_key
-        param = sdk_api_gen_key(778, origin_param)
-        print "加密后的参数为：%s" % (param,)
-        if param:
-            body_data = {
-                'appid': 778,
-                'param': param
-            }
-            r = requests.post('http://localhost:5000/v4/broadcasts', data=body_data)
-            print r.text
-        else:
-            print '加密失败'
+        body_data = {
+            '_sign': 'd69bfcae81537a571bd84163696e1bb2',
+            '_token': 'bb427a702d53dbb0cdd4f001fb301620',
+            '_appid': 2,
+        }
+        r = requests.post('http://dev.sdkapi.com/msa/v4/broadcasts', data=body_data)
+        print r.text
 
     def tearDown(self):
         pass

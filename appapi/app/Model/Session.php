@@ -19,12 +19,4 @@ class Session extends Model
 
 	const CREATED_AT = 'created_at';
     const UPDATED_AT = 'updated_at';
-
-    public function getIsServiceLoginAttribute() {
-		return $this->attributes['is_service_login'] == 1;
-	}
-
-	public function setIsServiceLoginAttribute($value) {
-		$this->attributes['is_service_login'] = $value ? 1 : 0;
-	}
 }

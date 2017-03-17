@@ -11,13 +11,11 @@
 */
 
 $app->get('/', function () use ($app) {
-    //http_response_code(404); exit;
-    //return \App\Model\UcuserProcedure::section(15)->find(111);
+    http_response_code(404); exit;
 });
 
 $app->get('test', 'TooltestController@fpayTestAction');// test
 $app->get('createuser','TestController@createUserAction');
-
 
 // 支付回调相关
 $app->group(['prefix' => 'pay_callback'], function () use ($app) {
@@ -34,19 +32,36 @@ $app->group(['prefix' => 'pub'], function () use ($app) {
 // API接口
 $app->group(['prefix' => 'api'], function () use ($app) {
     $app->post('app/initialize', 'Api\\AppController@InitializeAction');                                // 初始化
+    $app->post('app/verify_sms', 'Api\\AppController@VerifySMSAction');                                 // 验证手机验证码是否正确
 
     $app->post('account/login_token', 'Api\\AccountController@LoginTokenAction');                       // 自动登录
     $app->post('account/login', 'Api\\AccountController@LoginAction');                                  // 用户名或手机号码登陆
     $app->post('account/register', 'Api\\AccountController@RegisterAction');                            // 用户名注册
     $app->post('account/username', 'Api\\AccountController@UsernameAction');                            // 生成随机用户名
-    $app->post('account/login_phone', 'Api\\AccountController@LoginPhoneAction');                       // 手机号码一键登陆
-    $app->post('account/sms_token', 'Api\\AccountController@SMSTokenAction');                           // 手机号码一键登陆(获取发送短信的token)
+    $app->post('account/sms_onekey_token', 'Api\\AccountController@SMSOnekeyTokenAction');              // 手机号码一键登陆(获取发送短信的token)
+    $app->post('account/login_onekey', 'Api\\AccountController@LoginOnekeyAction');                     // 手机号码一键登陆
+    $app->post('account/sms_reset_password', 'Api\\AccountController@SMSResetPasswordAction');          // 发送重设密码的验证码
+    $app->post('account/reset_password', 'Api\\AccountController@ResetPasswordAction');                 // 重设密码
+    $app->post('account/sms_login_phone', 'Api\\AccountController@SMSLoginPhoneAction');                // 手机验证码登陆（发送短信）
+    $app->post('account/login_phone', 'Api\\AccountController@LoginPhoneAction');                      // 手机验证码登陆
+
+    $app->post('account/oauth_sms_bind', 'Api\\AccountController@OauthSMSBindAction');                  // 平台注册绑定手机时发送验证码
+    $app->post('account/oauth_register', 'Api\\AccountController@OauthRegisterAction');                 // 平台注册
+    $app->post('account/oauth_login', 'Api\\AccountController@OauthLoginAction');                       // 平台登陆
 
     $app->post('user/logout', 'Api\\UserController@LogoutAction');                                      // 退出登录
     $app->post('user/message', 'Api\\UserController@MessageAction');                                    // 消息轮循
     $app->post('user/recharge', 'Api\\UserController@RechargeAction');                                  // 充值记录（充F币）
     $app->post('user/consume', 'Api\\UserController@ConsumeAction');                                    // 消费记录
     $app->post('user/hide_order', 'Api\\UserController@HideOrderAction');                               // 隐藏订单
+    $app->post('user/balance', 'Api\\UserController@BalanceAction');                                    // 用户余额
+    $app->post('user/by_oldpassword_reset', 'Api\\UserController@ByOldPasswordResetAction');            // 通过旧的密码重设密码
+    $app->post('user/sms_bind_phone', 'Api\\UserController@SMSBindPhoneAction');                        // 发送绑定手机的短信
+    $app->post('user/bind_phone', 'Api\\UserController@BindPhoneAction');                               // 绑定手机号码
+    $app->post('user/sms_unbind_phone', 'Api\\UserController@SMSUnbindPhoneAction');                    // 发送解绑手机的短信
+    $app->post('user/unbind_phone', 'Api\\UserController@UnbindPhoneAction');                           // 解绑手机号码
+    $app->post('user/sms_phone_reset_password', 'Api\\UserController@SMSPhoneResetPasswordAction');     // 发送重置密码的短信
+    $app->post('user/phone_reset_password', 'Api\\UserController@PhoneResetPasswordAction');            // 通过手机号码重置密码
 
     $app->post('pay/order/new', 'Api\\Pay\\OrderController@NewAction');                                 // 创建订单
     $app->post('pay/order/anfeng/new', 'Api\\Pay\\OrderController@AnfengNewAction');                    // 充值F币的订单

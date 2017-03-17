@@ -82,7 +82,20 @@ return [
             'sms_sender' => 'http://yunpian.com/v1/sms/send.json',
             'sms_hour_limit' => 3, // 每小时短信发送次数限制
             'sms_template' => [
-                1 => '【安锋网】恭喜您注册成功，用户名：#username#  密码：#password#',
+                // 手机注册成功
+                'mobile_register' => '【安锋网】恭喜您注册成功，用户名：#username#  密码：#password#',
+                // 重置密码时发送手机验证码
+                'reset_password' => '【安锋网】您正在使用该手机号码重置登陆密码，验证码为：#code#',
+                // 平台登录时绑定手机发送短信验证码
+                'oauth_login_bind' => '【安锋网】您正在通过该手机号码绑定安锋通行证，验证码为：#code#',
+                // 平台注册成功后向用户发送账号密码
+                'oauth_register' => '【安锋网】恭喜您注册成功，您可以使用#type#直接登陆，也可以使用手机号码登陆，用户名：#username#  密码：#password#',
+                // 在用户中心绑定手机
+                'bind_phone' => '【安锋网】您正在通过该手机号码绑定安锋通行证，验证码为：#code#',
+                // 解除绑定手机号码
+                'unbind_phone' => '【安锋网】您正在通过该手机号码解绑安锋通行证，验证码为：#code#',
+                // 手机号码+验证码登陆
+                'login_phone' => '【安锋网】您正在使用该手机号码登陆安锋游戏，验证码为：#code#',
             ]
         ],
 

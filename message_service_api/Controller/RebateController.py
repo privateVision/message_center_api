@@ -11,18 +11,16 @@ from MongoModel.MessageModel import UsersMessage
 from MongoModel.UserMessageModel import UserMessage
 from RequestForm.PostRebatesRequestForm import PostRebatesRequestForm
 from Service.StorageService import system_rebate_persist
+from Service.UsersService import cms_api_request_check
 from Utils.SystemUtils import log_exception
 
 rebate_controller = Blueprint('RebateController', __name__)
 
 
 # CMS 添加优惠券
-@rebate_controller.route('/v4/rebate', methods=['POST'])
+@rebate_controller.route('/msa/v4/rebate', methods=['POST'])
+@cms_api_request_check
 def v4_cms_add_rebate():
-    from Utils.EncryptUtils import generate_checksum
-    check_result, check_exception = generate_checksum(request)
-    if not check_result:
-        return check_exception
     form = PostRebatesRequestForm(request.form)  # POST 表单参数封装
     if not form.validate():
         log_exception(request, "优惠券请求校验异常：%s" % (form.errors,))
@@ -44,12 +42,9 @@ def v4_cms_add_rebate():
 
 
 # CMS 更新优惠券
-@rebate_controller.route('/v4/rebate', methods=['PUT'])
+@rebate_controller.route('/msa/v4/rebate', methods=['PUT'])
+@cms_api_request_check
 def v4_cms_update_coupon():
-    from Utils.EncryptUtils import generate_checksum
-    check_result, check_exception = generate_checksum(request)
-    if not check_result:
-        return check_exception
     form = PostRebatesRequestForm(request.form)  # POST 表单参数封装
     if not form.validate():
         log_exception(request, "优惠券请求校验异常：%s" % (form.errors,))
@@ -63,12 +58,9 @@ def v4_cms_update_coupon():
 
 
 # CMS 删除优惠券
-@rebate_controller.route('/v4/rebate', methods=['DELETE'])
+@rebate_controller.route('/msa/v4/rebate', methods=['DELETE'])
+@cms_api_request_check
 def v4_cms_delete_coupon():
-    from Utils.EncryptUtils import generate_checksum
-    check_result, check_exception = generate_checksum(request)
-    if not check_result:
-        return check_exception
     rebate_id = request.form['id']
     if rebate_id is None or rebate_id == '':
         log_exception(request, "客户端请求错误-rebate_id为空")

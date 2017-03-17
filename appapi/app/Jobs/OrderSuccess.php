@@ -31,13 +31,13 @@ class OrderSuccess extends Job
         try {
             $order->getConnection()->beginTransaction();
 
-            if($order->ucusers) {
-                $ucuser = $order->ucusers;
+            if($order->user) {
+                $user = $order->user;
                 $orderExt = $order->ordersExt;
 
                 // 扣除代金道具
                 if($orderExt) {
-                    $fail = function() use($order, $ucuser, $lock_key) {
+                    $fail = function() use($order, $user, $lock_key) {
                         $order->getConnection()->rollback();
                         $order->status = Orders::Status_Success;
                         $order->save();
@@ -46,25 +46,25 @@ class OrderSuccess extends Job
 
                     foreach($orderExt as $k => $v) {
                         if($v->vcid == 0 && $v->fee > 0) { // 处理代币
-                            if($ucuser->balance < $v->fee) {
-                                log_error("balanceInsufficient", ['vcid' => $v->vcid, 'order_id' => $this->order_id, 'fee' => $v->fee, 'ucid' => $ucuser->ucid, 'balance' => $ucuser->balance]);
+                            if($user->balance < $v->fee) {
+                                log_error("balanceInsufficient", ['vcid' => $v->vcid, 'order_id' => $this->order_id, 'fee' => $v->fee, 'ucid' => $user->ucid, 'balance' => $user->balance]);
                                 return $fail();
                             } else {
-                                $ucuser->decrement('balance', $v->fee);
+                                $user->decrement('balance', $v->fee);
                             }
                         }
                     }
                 }
 
                 if($order->vid == env('APP_SELF_ID')) { // 买平台币
-                    $ucuser->increment('balance', $order->fee); // 原子操作很重要
-                    $ucuser->save();
+                    $user->increment('balance', $order->fee); // 原子操作很重要
+                    $user->save();
                 }
                 
-                $ucuser_total_pay = $ucuser->ucuser_total_pay;
+                $ucuser_total_pay = $user->ucuser_total_pay;
                 if(!$ucuser_total_pay) {
                     $ucuser_total_pay = new UcuserTotalPay();
-                    $ucuser_total_pay->ucid = $ucuser->ucid;
+                    $ucuser_total_pay->ucid = $user->ucid;
                     $ucuser_total_pay->pay_count = 1;
                     $ucuser_total_pay->pay_total = $order->fee;
                     $ucuser_total_pay->pay_fee = $order->real_fee();
