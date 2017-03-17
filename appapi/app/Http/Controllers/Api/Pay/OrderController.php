@@ -18,8 +18,8 @@ class OrderController extends Controller {
 
         $order = new Orders;
 
-        $order->ucid = $this->ucuser->ucid;
-        $order->uid = $this->ucuser->uid;
+        $order->ucid = $this->user->ucid;
+        $order->uid = $this->user->uid;
         $order->sn = date('ymdHis') . substr(microtime(), 2, 6) . str_pad(rand(0, 999999), 6, '0', STR_PAD_LEFT);
         $order->vid = $this->procedure->pid;
         $order->notify_url = $notify_url;
@@ -36,9 +36,9 @@ class OrderController extends Controller {
         return [
             'order_id' => $order->sn,
             'way' => [1, 2, 3],
-            'vip' => $this->ucuser->vip(),
-            'balance' => $this->ucuser->balance,
-            'coupon' => $this->ucuser->coupon(),
+            'vip' => $this->user->vip(),
+            'balance' => $this->user->balance,
+            'coupon' => $this->user->coupon(),
         ];
     }
 
@@ -49,8 +49,8 @@ class OrderController extends Controller {
 
         $order = new Orders;
 
-        $order->ucid = $this->ucuser->ucid;
-        $order->uid = $this->ucuser->uid;
+        $order->ucid = $this->user->ucid;
+        $order->uid = $this->user->uid;
         $order->sn = date('ymdHis') . substr(microtime(), 2, 6) . str_pad(rand(0, 999999), 6, '0', STR_PAD_LEFT);
         $order->vid = env('APP_SELF_ID');
         $order->fee = $fee;
@@ -65,9 +65,9 @@ class OrderController extends Controller {
         return [
             'order_id' => $order->sn,
             'way' => [1, 2, 3],
-            'vip' => $this->ucuser->vip(),
-            'balance' => $this->ucuser->balance,
-            'coupon' => $this->ucuser->coupon(),
+            'vip' => $this->user->vip(),
+            'balance' => $this->user->balance,
+            'coupon' => $this->user->coupon(),
         ];
     }
 }

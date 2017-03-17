@@ -45,14 +45,16 @@ function send_sms($mobile, $app, $template_id, $repalce, $code = '') {
 
     $SMSRecord = \App\Model\SMSRecord::where('mobile', $mobile)->where('date', date('Ymd'))->where('hour', date('G'))->orderBy('created_at', 'desc')->get();
 
-    if(count($SMSRecord) >= $app->sms_hour_limit) {
-        throw new \App\Exceptions\Exception(sprintf('短信发送次数超过限制，请%d分钟后再试', 60 - intval(date('i'))));
-    }
+    if(!env('APP_DEBUG')) {
+        if(count($SMSRecord) >= $app->sms_hour_limit) {
+            throw new \App\Exceptions\Exception(sprintf('短信发送次数超过限制，请%d分钟后再试', 60 - intval(date('i'))));
+        }
 
-    if(count($SMSRecord)) {
-        $last_sms = $SMSRecord[0];
-        if(time() - strtotime($last_sms->created_at) < 60) {
-            throw new \App\Exceptions\Exception('短信发送过于频繁');
+        if(count($SMSRecord)) {
+            $last_sms = $SMSRecord[0];
+            if(time() - strtotime($last_sms->created_at) < 60) {
+                throw new \App\Exceptions\Exception('短信发送过于频繁');
+            }
         }
     }
 
@@ -69,6 +71,14 @@ function send_sms($mobile, $app, $template_id, $repalce, $code = '') {
     Queue::push(new \App\Jobs\SendSMS($app, $mobile, $content, $code));
 
     return $content;
+}
+
+function verify_sms($mobile, $code) {
+    if(env('APP_DEBUG')) {
+        return true;
+    }
+
+    return Redis::get(sprintf("sms_%s_%s", $mobile, $code)) ? true : false;
 }
 
 function kafka_producer($topic, $content) {

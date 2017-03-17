@@ -35,6 +35,10 @@ class Ucusers extends Model
         return $this->hasOne(UcusersExtend::class, 'ucid', 'ucid');
     }
 
+    public function ucuser_oauth() {
+        return $this->hasOne(UcuserOauth::class, 'ucid', 'ucid');
+    }
+
     public function getBalanceAttribute($value) {
         return number_format($value, 2);
     }
@@ -86,7 +90,7 @@ class Ucusers extends Model
      * @return boolean
      */
     public function isReal() {
-        return $this->ucusers_extend ? $this->ucusers_extend->is_real : false;
+        return $this->ucusers_extend &&$this->ucusers_extend->card_id ? true : false;
     }
 
     /**
@@ -141,5 +145,10 @@ class Ucusers extends Model
      */
     public function coupon() {
         return [];
+    }
+
+    public static function getUcusers($email_phone_username) {
+        $ucenter_members = UcenterMembers::where('username', $email_phone_username)->orWhere('email', $email_phone_username)->get();
+        $ucusers = UcenterMembers::where('uid', $email_phone_username)->orWhere('mobile', $email_phone_username)->get();
     }
 }

@@ -7,19 +7,4 @@ class SMSRecord extends Model
     const UPDATED_AT = 'updated_at';
 
 	protected $table = 'sms_record';
-
-    public static function verifyCode($mobile, $code) {
-        $sms = static::where('mobile', $mobile)->where('code', $code)->orderBy('created_at', 'desc')->first();
-        if(!$sms) {
-            return null;
-        }
-
-        $t = strtotime($sms->created_at);
-
-        if((time() - $t) > 1800) {
-            return null;
-        }
-
-        return $sms;
-    }
 }
