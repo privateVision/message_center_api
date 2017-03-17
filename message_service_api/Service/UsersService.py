@@ -137,20 +137,41 @@ def get_user_broadcast_list(ucid=None):
     return None
 
 
+# 检查用户账号是否被冻结
 def find_user_account_is_freeze(ucid=None):
     find_is_freeze_sql = "select is_freeze from user where ucid = %s" % (ucid,)
     from run import mysql_session
     try:
         user_info = mysql_session.execute(find_is_freeze_sql).first()
+        if user_info:
+            if user_info['is_freeze'] == 1:
+                return True
     except Exception, err:
         service_logger.error(err.message)
         mysql_session.rollback()
     finally:
         mysql_session.close()
-    if user_info:
-        if user_info['is_freeze'] == 1:
-            return True
     return False
+
+
+# 检查用户子账号是否被冻结
+def find_user_child_account_is_freeze(ucid=None):
+    db_num = int(int(ucid) % 30)
+    find_is_freeze_sql = "select id from user_procedure_%s where is_freeze=1 and ucid = %s" % (db_num, ucid)
+    from run import mysql_session
+    try:
+        user_info_list = mysql_session.execute(find_is_freeze_sql)
+        child_id_list = []
+        if user_info_list:
+            for info in user_info_list:
+                child_id_list.append(info['id'])
+            return True, child_id_list
+    except Exception, err:
+        service_logger.error(err.message)
+        mysql_session.rollback()
+    finally:
+        mysql_session.close()
+    return False, []
 
 
 # sdk api 请求通用装饰器
@@ -186,17 +207,3 @@ def cms_api_request_check(func):
         return func(*args, **kwargs)
     return wraper
 
-# def get_use_account_is_freeze_from_db(ucid=None):
-#     find_ucid_sql = "select isfreeze from ucusers_extend where ucid = %s" % (ucid,)
-#     from run import mysql_session
-#     try:
-#         user_info = mysql_session.execute(find_ucid_sql).first()
-#     except Exception, err:
-#         service_logger.error(err.message)
-#         mysql_session.rollback()
-#     finally:
-#         mysql_session.close()
-#     if user_info:
-#         if user_info.has_key('isfreeze'):
-#             return user_info['isfreeze']
-#     return False

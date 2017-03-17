@@ -21,39 +21,25 @@ app_controller = Blueprint('AppController', __name__)
 @app_controller.route('/msa/v4/apps', methods=['GET'])
 def v4_get_app_list():
     from run import mysql_session
+    app_list = []
     find_users_by_user_type_sql = "select pid as id, pname as app_name, priKey as rsa_key, psingKey as sign_key " \
                                   "from procedures as p where p.status = 1 "
     try:
         origin_list = mysql_session.execute(find_users_by_user_type_sql)
+        for app in origin_list:
+            game = {
+                'id': app['id'],
+                'app_name': app['app_name'],
+                'rsa_key': app['rsa_key'],
+                'sign_key': app['sign_key']
+            }
+            app_list.append(game)
     except Exception, err:
         log_exception(request, err.message)
         mysql_session.rollback()
     finally:
         mysql_session.close()
-    app_list = []
-    for app in origin_list:
-        game = {
-            'id': app['id'],
-            'app_name': app['app_name'],
-            'rsa_key': app['rsa_key'],
-            'sign_key': app['sign_key']
-        }
-        app_list.append(game)
     return response_data(http_code=200, data=app_list)
-    # form = GetDataListRequestForm(request.args)
-    # start_index = (form.data['page'] - 1) * form.data['count']
-    # end_index = start_index + form.data['count']
-    # if not form.validate():
-    #     print form.errors
-    #     return response_data(400, 400, '客户端请求错误')
-    # else:
-    #     total_count = Apps.objects.count()
-    #     data_list = Apps.objects[start_index: end_index]
-    #     data = {
-    #         "total_count": total_count,
-    #         "data": data_list
-    #     }
-    #     return response_data(http_code=200, data=data)
 
 
 # 获取游戏区服列表
@@ -62,19 +48,18 @@ def v4_get_app_zone_list(app_id=None):
     if app_id is None or app_id <= 0:
         log_exception(request, 'app_id不能为空')
         return response_data(200, 0, 'app_id不能为空')
-    # data = Zonelists.objects.get(_id=app_id)
+    zone_list = []
     from run import mysql_session
     find_users_by_user_type_sql = "select distinct(zoneId), zoneName from roleDatas as r where r.vid = %s " % (app_id,)
     try:
         origin_list = mysql_session.execute(find_users_by_user_type_sql)
+        for zone in origin_list:
+            zone_list.append(zone['zoneName'])
     except Exception, err:
         log_exception(request, err.message)
         mysql_session.rollback()
     finally:
         mysql_session.close()
-    zone_list = []
-    for zone in origin_list:
-        zone_list.append(zone['zoneName'])
     return response_data(http_code=200, data=zone_list)
 
 
