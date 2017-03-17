@@ -20,7 +20,7 @@ class Session extends Model
 
 	const CREATED_AT = 'created_at';
     const UPDATED_AT = 'updated_at';
-/*
+
     public static function findFromToken($token) {
     	$data = static::where('token', $token)->first();
     	if($data) {
@@ -29,5 +29,5 @@ class Session extends Model
 
     	return $data;
     }
-*/
+
 }
