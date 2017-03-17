@@ -11,7 +11,8 @@
 */
 
 $app->get('/', function () use ($app) {
-    http_response_code(404); exit;
+    //http_response_code(404); exit;
+    //return \App\Model\Session::find_token('349dda6f41c6c291401b0549136d1cb5');
 });
 
 $app->get('test', 'TooltestController@fpayTestAction');// test
