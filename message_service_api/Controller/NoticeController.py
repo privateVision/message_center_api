@@ -142,19 +142,23 @@ def v4_sdk_get_notice_list():
                 & Q(ucid=ucid)).order_by('sortby, -create_time')[:1]
             # data_list = []
             message_resp = {
-                'type': 0,
-                'title': '',
-                'content': '',
-                'url': '',
-                'show_times': 0
+                # 'id': 0,
+                # 'type': 0,
+                # 'title': '',
+                # 'content': '',
+                # 'url': '',
+                # 'show_times': 0
             }
             for message in message_list:
                 message_info = get_notice_message_detail_info(message['mysql_id'])
-                message_resp['type'] = message_info['type']
+                message_resp['id'] = message_info['mysql_id']
+                message_resp['type'] = message_info['atype']
                 message_resp['title'] = message_info['title']
                 message_resp['content'] = message_info['content']
                 message_resp['url'] = message_info['url']
                 message_resp['show_times'] = message_info['show_times']
+                message_resp['button_content'] = message_info['button_content']
+                message_resp['button_url'] = message_info['button_url']
                 # message_resp = {
                 #     "meta_info": {},
                 #     "head": {},

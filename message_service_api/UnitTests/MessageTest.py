@@ -38,19 +38,19 @@ class MessageFunctionTest(unittest.TestCase):
     #     }
     #     from Utils.EncryptUtils import get_md5_sign
     #     sign = get_md5_sign(data)
-    #     r = requests.post("http://localhost:5000/v4/message?sign=%s" % (sign,), data=data)
+    #     r = requests.post("http://dev.sdkapi.com/msa/v4/message?sign=%s" % (sign,), data=data)
     #     self.assertEqual(r.status_code, 200)
     #     print r.text
 
-    def test_delete_message(self):
-        data = {
-            "id": "2"
-        }
-        from Utils.EncryptUtils import get_md5_sign
-        sign = get_md5_sign(data)
-        r = requests.delete("http://localhost:5000/v4/message?sign=%s" % (sign,), data=data)
-        self.assertEqual(r.status_code, 200)
-        print r.text
+    # def test_delete_message(self):
+    #     data = {
+    #         "id": "2"
+    #     }
+    #     from Utils.EncryptUtils import get_md5_sign
+    #     sign = get_md5_sign(data)
+    #     r = requests.delete("http://localhost:5000/v4/message?sign=%s" % (sign,), data=data)
+    #     self.assertEqual(r.status_code, 200)
+    #     print r.text
 
     # def test_get_message_list(self):
     #     origin_param = 'token=fd9c69f1fd62f3070aafa5bc210f32ee&page=1&count=5'
