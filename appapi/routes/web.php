@@ -38,10 +38,12 @@ $app->group(['prefix' => 'api'], function () use ($app) {
     $app->post('account/login', 'Api\\AccountController@LoginAction');                                  // 用户名或手机号码登陆
     $app->post('account/register', 'Api\\AccountController@RegisterAction');                            // 用户名注册
     $app->post('account/username', 'Api\\AccountController@UsernameAction');                            // 生成随机用户名
-    $app->post('account/login_phone', 'Api\\AccountController@LoginPhoneAction');                       // 手机号码一键登陆
-    $app->post('account/sms_token', 'Api\\AccountController@SMSTokenAction');                           // 手机号码一键登陆(获取发送短信的token)
+    $app->post('account/sms_onekey_token', 'Api\\AccountController@SMSOnekeyTokenAction');              // 手机号码一键登陆(获取发送短信的token)
+    $app->post('account/login_onekey', 'Api\\AccountController@LoginOnekeyAction');                     // 手机号码一键登陆
     $app->post('account/sms_reset_password', 'Api\\AccountController@SMSResetPasswordAction');          // 发送重设密码的验证码
     $app->post('account/reset_password', 'Api\\AccountController@ResetPasswordAction');                 // 重设密码
+    $app->post('account/sms_login_phone', 'Api\\AccountController@SMSLoginPhoneAction');                // 手机验证码登陆（发送短信）
+    $app->post('account/login_phone', 'Api\\AccountController@LoginPhoneAction');                      // 手机验证码登陆
 
     $app->post('account/oauth_sms_bind', 'Api\\AccountController@OauthSMSBindAction');                  // 平台注册绑定手机时发送验证码
     $app->post('account/oauth_register', 'Api\\AccountController@OauthRegisterAction');                 // 平台注册

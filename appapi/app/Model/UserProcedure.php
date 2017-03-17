@@ -1,9 +1,9 @@
 <?php
 namespace App\Model;
 
-class UcuserProcedure extends PartModel
+class UserProcedure extends PartModel
 {
-    protected $table = 'ucuser_procedure';
+    protected $table = 'user_procedure';
 
     public function getTable() {
         $id = @$this->id ?: @$this->section['id'];
@@ -22,7 +22,7 @@ class UcuserProcedure extends PartModel
         parent::boot();
     
         static::creating(function($entry) {
-            $count = UcuserProcedure::part($entry->ucid)->where('ucid', $entry->ucid)->where('pid', $entry->pid)->count();
+            $count = UserProcedure::part($entry->ucid)->where('ucid', $entry->ucid)->where('pid', $entry->pid)->count();
             $entry->name = sprintf('AF%09d_%02d', $entry->ucid, $count + 1);
         });
     }

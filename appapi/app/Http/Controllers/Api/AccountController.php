@@ -245,7 +245,7 @@ class AccountController extends Controller {
 
     }
 
-    public function LoginPhoneAction(Request $request, Parameter $parameter) {
+    public function LoginOnekeyAction(Request $request, Parameter $parameter) {
         $sms_token = $parameter->tough('sms_token');
 
         $yunpian_callback = YunpianCallback::where('text', $sms_token)->first();
@@ -284,7 +284,7 @@ class AccountController extends Controller {
 
         // 将密码发给用户，通过队列异步发送
         try {
-            send_sms($mobile, env('APP_ID'), 'onekey_mobile_register', ['#username#' => $mobile, '#password#' => $password]);
+            send_sms($mobile, env('APP_ID'), 'mobile_register', ['#username#' => $mobile, '#password#' => $password]);
         } catch (\App\Exceptions\Exception $e) {
             // 注册成功就OK了，短信发送失败没关系，可找回密码
             // throw new ApiException(ApiException::Remind, $e->getMessage());
@@ -293,13 +293,74 @@ class AccountController extends Controller {
         return Event::onRegisterAfter($user, $parameter->tough('_appid'), $parameter->tough('_rid'));
     }
 
-    public function SMSTokenAction(Request $request, Parameter $parameter) {
+    public function SMSOnekeyTokenAction(Request $request, Parameter $parameter) {
         $config = config('common.apps.'.env('APP_ID'));
         if(!$config) {
             throw new ApiException(ApiException::Error, '短信接口未配置');
         }
 
         return ['sms_token' => uuid(), 'send_to' => $config->sms_receiver];
+    }
+
+    public function SMSLoginPhoneAction(Request $request, Parameter $parameter) {
+        $mobile = $parameter->tough('mobile');
+
+        $code = rand(100000, 999999);
+
+        try {
+            send_sms($mobile, env('APP_ID'), 'login_phone', ['#code#' => $code], $code);
+        } catch (\App\Exceptions\Exception $e) {
+            throw new ApiException(ApiException::Remind, $e->getMessage());
+        }
+
+        return [
+            'code' => md5($code . $this->procedure->appkey())
+        ];
+    }
+
+    public function LoginPhoneAction(Request $request, Parameter $parameter) {
+        $mobile = $parameter->tough('mobile');
+        $code = $parameter->tough('code');
+
+        if(!verify_sms($mobile, $code)) {
+            throw new ApiException(ApiException::Remind, "验证码不正确，或已过期");
+        }
+
+        // 登陆
+        $user = User::where('uid', $mobile)->orWhere('mobile', $mobile)->first();
+        if($user) {
+            if($user->is_freeze) {
+                throw new ApiException(ApiException::AccountFreeze, '账号已被冻结，无法登录');
+            }
+
+            return Event::onLoginAfter($user, $parameter->tough('_appid'), $parameter->tough('_rid'));
+        }
+
+        // 注册
+        $password = rand(100000, 999999);
+
+        $user = new User;
+        $user->password = $password;
+        $user->uid = $mobile;
+        $user->email = $mobile . "@anfan.com";;
+        $user->regip = $request->ip();
+        $user->regdate = time();
+        $user->mobile = $mobile;
+        $user->nickname = $mobile;
+        $user->rid = $parameter->tough('_rid');
+        $user->uuid = '';
+        $user->pid = $parameter->tough('_appid');
+        $user->save();
+
+        // 将密码发给用户，通过队列异步发送
+        try {
+            send_sms($mobile, env('APP_ID'), 'mobile_register', ['#username#' => $mobile, '#password#' => $password]);
+        } catch (\App\Exceptions\Exception $e) {
+            // 注册成功就OK了，短信发送失败没关系，可找回密码
+            // throw new ApiException(ApiException::Remind, $e->getMessage());
+        }
+
+        return Event::onRegisterAfter($user, $parameter->tough('_appid'), $parameter->tough('_rid'));
     }
 
     public function SMSResetPasswordAction(Request $request, Parameter $parameter) {
