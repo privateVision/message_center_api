@@ -22,7 +22,7 @@ class Controller extends BaseController {
         $order->save();
 
         if($balance > 0) {
-            if($this->ucuser->balance < $balance) {
+            if($this->user->balance < $balance) {
                 throw new ApiException(ApiException::Remind, '爪币余额不足');
             }
             

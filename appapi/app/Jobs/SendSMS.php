@@ -1,6 +1,7 @@
 <?php
 namespace App\Jobs;
 use App\Model\SMSRecord;
+use Illuminate\Support\Facades\Redis;
 
 class SendSMS extends Job
 {
@@ -27,6 +28,9 @@ class SendSMS extends Job
             $SMSRecord->date = date('Ymd');
             $SMSRecord->hour = date('G');
             $SMSRecord->save();
+
+            Redis::setex(sprintf("sms_%s_%s", $this->mobile, $this->code), 1800, 1);
+
             return ;
         }
 
@@ -59,6 +63,8 @@ class SendSMS extends Job
             $SMSRecord->date = date('Ymd');
             $SMSRecord->hour = date('G');
             $SMSRecord->save();
+
+            Redis::setex(sprintf("sms_%s_%s", $this->mobile, $this->code), 1800, 1);
         } else {
             return $this->release(5);
         }

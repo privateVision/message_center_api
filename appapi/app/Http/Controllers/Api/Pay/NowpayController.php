@@ -17,8 +17,8 @@ class NowpayController extends Controller {
         $config = config('common.nowpay.wechat');
 
         $mht['appId'] = $config['appId'];
-        //$mht['consumerId'] = $this->ucuser->ucid;
-        //$mht['consumerName'] = $this->ucuser->uid;
+        //$mht['consumerId'] = $this->user->ucid;
+        //$mht['consumerName'] = $this->user->uid;
         $mht['mhtCharset'] = $config['mhtCharset'];
         $mht['mhtCurrencyType'] = $config['mhtCurrencyType'];
         $mht['mhtOrderAmt'] = (env('APP_DEBUG', true) ? 0.01 : $order->real_fee()) * 100;

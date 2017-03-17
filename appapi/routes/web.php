@@ -54,6 +54,13 @@ $app->group(['prefix' => 'api'], function () use ($app) {
     $app->post('user/consume', 'Api\\UserController@ConsumeAction');                                    // 消费记录
     $app->post('user/hide_order', 'Api\\UserController@HideOrderAction');                               // 隐藏订单
     $app->post('user/balance', 'Api\\UserController@BalanceAction');                                    // 用户余额
+    $app->post('user/by_oldpassword_reset', 'Api\\UserController@ByOldPasswordResetAction');            // 通过旧的密码重设密码
+    $app->post('user/sms_bind_phone', 'Api\\UserController@SMSBindPhoneAction');                        // 发送绑定手机的短信
+    $app->post('user/bind_phone', 'Api\\UserController@BindPhoneAction');                               // 绑定手机号码
+    $app->post('user/sms_unbind_phone', 'Api\\UserController@SMSUnbindPhoneAction');                    // 发送解绑手机的短信
+    $app->post('user/unbind_phone', 'Api\\UserController@UnbindPhoneAction');                           // 解绑手机号码
+    $app->post('user/sms_phone_reset_password', 'Api\\UserController@SMSPhoneResetPasswordAction');     // 发送重置密码的短信
+    $app->post('user/phone_reset_password', 'Api\\UserController@PhoneResetPasswordAction');            // 通过手机号码重置密码
 
     $app->post('pay/order/new', 'Api\\Pay\\OrderController@NewAction');                                 // 创建订单
     $app->post('pay/order/anfeng/new', 'Api\\Pay\\OrderController@AnfengNewAction');                    // 充值F币的订单

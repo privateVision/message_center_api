@@ -1,12 +1,9 @@
 <?php
-
 namespace App\Http\Controllers\Api;
 
 use App\Exceptions\ApiException;
 use Illuminate\Http\Request;
 use App\Parameter;
-use App\Model\Session;
-use App\Model\SMSRecord;
 
 class AppController extends Controller
 {
@@ -74,9 +71,7 @@ class AppController extends Controller
         $mobile = $parameter->tough('mobile');
         $code = $parameter->tough('code');
 
-        $SMSRecord = SMSRecord::verifyCode($mobile, $code);
-
-        if(!$SMSRecord) {
+        if(!verify_sms($mobile, $code)) {
             throw new ApiException(ApiException::Remind, "验证码不正确，或已过期");
         }
 

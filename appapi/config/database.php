@@ -119,6 +119,7 @@ return [
             'port'     => env('REDIS_PORT'),
             'database' => env('REDIS_DATABASE'),
             'password' => env('REDIS_PASSWORD'),
+            'prefix' => env('REDIS_PREFIX'),
         ],
 
     ],

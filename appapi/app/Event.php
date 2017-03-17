@@ -5,11 +5,11 @@ use App\Parameter;
 use App\Model\Session;
 use App\Model\UcuserProcedure;
 use App\Model\UcuserProcedureExtra;
-use App\Model\Ucusers;
+use App\Model\User;
 
 class Event
 {
-	public static function onLoginAfter(Ucusers $user, $pid, $rid) {
+	public static function onLoginAfter(User $user, $pid, $rid) {
 
         $ucuser_procedure_extra = UcuserProcedureExtra::where('ucid', $user->ucid)->where('status', UcuserProcedureExtra::Status_Normal)->orderBy('priority', 'desc')->first();
 
@@ -43,30 +43,27 @@ class Event
 
         // todo: 兼容旧的自动登陆
         $user->uuid = $session->token;
-        $user->save();
-
-        $retailer = $user->retailers;
+        $user->save(); // 这一句必须要
 
         return [
             'openid' => $ucuser_procedure_extra ? $ucuser_procedure_extra->cp_uid : $ucuser_procedure->cp_uid,
             'uid' => $user->ucid,
             'username' => $user->uid,
             'mobile' => strval($user->mobile),
-            'avatar' => env('AVATAR'),
+            'avatar' => $user->avatar ? $user->avatar : env('AVATAR'),
             'is_real' => $user->isReal(),
             'is_adult' => $user->isAdult(),
-            'rtype' => $retailer ? $retailer->rtype : 0,
             'vip' => $user->vip(),
             'token' => $session->token,
             'balance' => $user->balance,
         ];
 	}
 
-	public static function onLogoutAfter($user) {
+	public static function onLogoutAfter(User $user) {
 
 	}
 
-	public static function onRegisterAfter(Ucusers $user, $pid, $rid) {
+	public static function onRegisterAfter(User $user, $pid, $rid) {
 		return static::onLoginAfter($user, $pid, $rid);
 	}
 }
