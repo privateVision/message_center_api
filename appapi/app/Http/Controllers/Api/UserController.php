@@ -167,7 +167,8 @@ class UserController extends AuthController
 
         return [
             'result' => true,
-            'text' => '解绑成功，您不可以再使用该手机号码登陆，请使用用户名登陆，用户名：'. $this->uid,
+            'username' => $this->user->uid,
+            'text' => '解绑成功，您不可以再使用该手机号码登陆，请使用用户名登陆，用户名：'. $this->user->uid,
         ];
     }
 
