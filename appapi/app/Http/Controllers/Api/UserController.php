@@ -165,7 +165,10 @@ class UserController extends AuthController
         $this->user->mobile = '';
         $this->user->save();
 
-        return ['result' => true];
+        return [
+            'result' => true,
+            'text' => '解绑成功，您不可以再使用该手机号码登陆，请使用用户名登陆，用户名：'. $this->uid,
+        ];
     }
 
     public function SMSPhoneResetPasswordAction(Request $request, Parameter $parameter) {
