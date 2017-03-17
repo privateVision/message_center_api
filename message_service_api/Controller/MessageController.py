@@ -93,7 +93,7 @@ def v4_sdk_get_message_list():
             message_list = UserMessage.objects(
                 Q(type='message')
                 & Q(closed=0)
-                # & Q(is_read=0)2
+                # & Q(is_read=0)
                 & Q(start_time__lte=current_timestamp)
                 & Q(end_time__gte=current_timestamp)
                 & Q(ucid=ucid)).order_by('-create_time')[start_index:end_index]
@@ -118,15 +118,13 @@ def v4_sdk_get_message_list():
                 # message_resp['body']['start_time'] = message_info['start_time']
                 message_resp = {
                     'title': message_info['title'],
-                    'description': message_info['description'],
-                    'type': message_info['type'],
+                    'summary': message_info['description'],
+                    'type': message_info['atype'],
                     'id': message_info['mysql_id'],
                     'content': message_info['content'],
                     'img': message_info['img'],
                     'url': message_info['url'],
-                    'is_read': message['is_read'],
-                    'start_time': message_info['start_time'],
-                    'end_time': message_info['end_time']
+                    'is_read': message['is_read']
                 }
                 data_list.append(message_resp)
             # data = {
