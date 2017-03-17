@@ -72,15 +72,9 @@ class BroadcastFunctionTest(unittest.TestCase):
 
     def test_get_broadcast_list(self):
         body_data = {
-            'username': 'n88530190',
-            '_sign': '9bf6db5d54faa4293e4d9eb35d8e41cc',
-            '_type': 'json',
-            '_timestamp': 1489566717,
-            '_rid': 255,
-            '_sign_type': 'md5',
+            '_sign': 'd69bfcae81537a571bd84163696e1bb2',
+            '_token': 'bb427a702d53dbb0cdd4f001fb301620',
             '_appid': 2,
-            'rid': 255,
-            'password': 123456
         }
         r = requests.post('http://dev.sdkapi.com/msa/v4/broadcasts', data=body_data)
         print r.text

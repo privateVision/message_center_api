@@ -11,7 +11,8 @@ from MongoModel.MessageModel import UsersMessage
 from MongoModel.UserMessageModel import UserMessage
 from RequestForm.PostBroadcastsRequestForm import PostBroadcastsRequestForm
 from Service.StorageService import system_broadcast_update
-from Service.UsersService import get_ucid_by_access_token, get_broadcast_message_detail_info
+from Service.UsersService import get_ucid_by_access_token, get_broadcast_message_detail_info, \
+    find_user_account_is_freeze, sdk_api_request_check, cms_api_request_check
 from Utils.RedisUtil import RedisHandle
 from Utils.SystemUtils import get_current_timestamp, log_exception
 
@@ -20,11 +21,8 @@ broadcast_controller = Blueprint('BroadcastController', __name__)
 
 # CMS 发送广播
 @broadcast_controller.route('/msa/v4/broadcast', methods=['POST'])
+@cms_api_request_check
 def v4_cms_post_broadcast():
-    from Utils.EncryptUtils import generate_checksum
-    check_result, check_exception = generate_checksum(request)
-    if not check_result:
-        return check_exception
     form = PostBroadcastsRequestForm(request.form)  # POST 表单参数封装
     if not form.validate():
         log_exception(request, '客户端请求错误: %s' % (json.dumps(form.errors)))
@@ -47,11 +45,8 @@ def v4_cms_post_broadcast():
 
 # CMS 更新广播
 @broadcast_controller.route('/msa/v4/broadcast', methods=['PUT'])
+@cms_api_request_check
 def v4_cms_update_broadcast():
-    from Utils.EncryptUtils import generate_checksum
-    check_result, check_exception = generate_checksum(request)
-    if not check_result:
-        return check_exception
     form = PostBroadcastsRequestForm(request.form)  # POST 表单参数封装
     if not form.validate():
         log_exception(request, '客户端请求错误: %s' % (json.dumps(form.errors)))
@@ -68,11 +63,8 @@ def v4_cms_update_broadcast():
 
 # CMS 删除广播
 @broadcast_controller.route('/msa/v4/broadcast', methods=['DELETE'])
+@cms_api_request_check
 def v4_cms_delete_post_broadcast():
-    from Utils.EncryptUtils import generate_checksum
-    check_result, check_exception = generate_checksum(request)
-    if not check_result:
-        return check_exception
     broadcast_id = request.form['id']
     if broadcast_id is None or broadcast_id == '':
         log_exception(request, '客户端请求错误-广播id为空')
@@ -87,70 +79,128 @@ def v4_cms_delete_post_broadcast():
 
 
 # SDK 获取广播列表
+# @broadcast_controller.route('/msa/v4/broadcasts', methods=['POST'])
+# def v4_sdk_get_broadcast_list():
+#     from Utils.EncryptUtils import sdk_api_params_check, sdk_api_check_sign
+#     is_params_checked = sdk_api_params_check(request)
+#     if is_params_checked is False:
+#         log_exception(request, '客户端请求错误-appid或sign或token为空')
+#         return response_data(200, 0, '客户端参数错误')
+#     is_sign_true = sdk_api_check_sign(request)
+#     if is_sign_true is True:
+#         ucid = get_ucid_by_access_token(request.form['_token'])
+#         if ucid:
+#             if find_user_account_is_freeze(ucid):
+#                 return response_data(200, 101, '账号被冻结')
+#             page = request.form['page'] if request.form.has_key('page') and request.form['page'] else 1
+#             count = request.form['count'] if request.form.has_key('count') and request.form['count'] else 10
+#             start_index = (int(page) - 1) * int(count)
+#             end_index = start_index + int(count)
+#             service_logger.info("用户：%s 获取广播列表，数据从%s到%s" % (ucid, start_index, end_index))
+#             # 查询用户相关的广播列表
+#             current_timestamp = get_current_timestamp()
+#             message_list_total_count = UserMessage.objects(
+#                 Q(type='broadcast')
+#                 & Q(closed=0)
+#                 & Q(is_read=0)
+#                 & Q(start_time__lte=current_timestamp)
+#                 & Q(end_time__gte=current_timestamp)
+#                 & Q(ucid=ucid)) \
+#                 .count()
+#             message_list = UserMessage.objects(
+#                 Q(type='broadcast')
+#                 & Q(closed=0)
+#                 & Q(is_read=0)
+#                 & Q(start_time__lte=current_timestamp)
+#                 & Q(end_time__gte=current_timestamp)
+#                 & Q(ucid=ucid)).order_by('-start_time')[start_index:end_index]
+#             data_list = []
+#             for message in message_list:
+#                 message_info = get_broadcast_message_detail_info(message['mysql_id'])
+#                 message_resp = {
+#                     "meta_info": {},
+#                     "head": {},
+#                     "body": {}
+#                 }
+#                 message_resp['meta_info']['app'] = message_info['app']
+#                 message_resp['meta_info']['rtype'] = message_info['rtype']
+#                 message_resp['meta_info']['vip'] = message_info['vip']
+#                 message_resp['head']['title'] = message_info['title']
+#                 message_resp['head']['type'] = message_info['type']
+#                 message_resp['head']['mysql_id'] = message_info['mysql_id']
+#                 message_resp['body']['content'] = message_info['content']
+#                 message_resp['body']['start_time'] = message_info['start_time']
+#                 # message_resp['body']['end_time'] = message_info['end_time']
+#                 message_resp['body']['close_time'] = message_info['close_time']
+#                 message['is_read'] = 1
+#                 message.save()
+#                 data_list.append(message_resp)
+#             # 重置用户广播标记
+#             RedisHandle.clear_user_data_mark_in_redis(ucid, 'broadcast')
+#             data = {
+#                 "total_count": message_list_total_count,
+#                 "data": data_list
+#             }
+#             return response_data(http_code=200, data=data)
+#         else:
+#             log_exception(request, "根据token: %s 获取ucid失败" % (request.form['_token'],))
+#             return response_data(200, 0, '根据token获取ucid失败')
+#     else:
+#         log_exception(request, "客户端参数签名校验失败")
+#         return response_data(200, 0, '客户端参数签名校验失败')
+
+
 @broadcast_controller.route('/msa/v4/broadcasts', methods=['POST'])
+@sdk_api_request_check
 def v4_sdk_get_broadcast_list():
-    from Utils.EncryptUtils import sdk_api_params_check, sdk_api_check_sign
-    is_params_checked = sdk_api_params_check(request)
-    if is_params_checked is False:
-        log_exception(request, '客户端请求错误-appid或sign或token为空')
-        return response_data(200, 0, '客户端参数错误')
-    is_sign_true = sdk_api_check_sign(request)
-    if is_sign_true is True:
-        ucid = get_ucid_by_access_token(request.form['_token'])
-        if ucid:
-            page = request.form['page'] if request.form.has_key('page') and request.form['page'] else 1
-            count = request.form['count'] if request.form.has_key('count') and request.form['count'] else 10
-            start_index = (int(page) - 1) * int(count)
-            end_index = start_index + int(count)
-            service_logger.info("用户：%s 获取广播列表，数据从%s到%s" % (ucid, start_index, end_index))
-            # 查询用户相关的广播列表
-            current_timestamp = get_current_timestamp()
-            message_list_total_count = UserMessage.objects(
-                Q(type='broadcast')
-                & Q(closed=0)
-                & Q(is_read=0)
-                & Q(start_time__lte=current_timestamp)
-                & Q(end_time__gte=current_timestamp)
-                & Q(ucid=ucid)) \
-                .count()
-            message_list = UserMessage.objects(
-                Q(type='broadcast')
-                & Q(closed=0)
-                & Q(is_read=0)
-                & Q(start_time__lte=current_timestamp)
-                & Q(end_time__gte=current_timestamp)
-                & Q(ucid=ucid)).order_by('-start_time')[start_index:end_index]
-            data_list = []
-            for message in message_list:
-                message_info = get_broadcast_message_detail_info(message['mysql_id'])
-                message_resp = {
-                    "meta_info": {},
-                    "head": {},
-                    "body": {}
-                }
-                message_resp['meta_info']['app'] = message_info['app']
-                message_resp['meta_info']['rtype'] = message_info['rtype']
-                message_resp['meta_info']['vip'] = message_info['vip']
-                message_resp['head']['title'] = message_info['title']
-                message_resp['head']['type'] = message_info['type']
-                message_resp['head']['mysql_id'] = message_info['mysql_id']
-                message_resp['body']['content'] = message_info['content']
-                message_resp['body']['start_time'] = message_info['start_time']
-                # message_resp['body']['end_time'] = message_info['end_time']
-                message_resp['body']['close_time'] = message_info['close_time']
-                message['is_read'] = 1
-                message.save()
-                data_list.append(message_resp)
-            # 重置用户广播标记
-            RedisHandle.clear_user_data_mark_in_redis(ucid, 'broadcast')
-            data = {
-                "total_count": message_list_total_count,
-                "data": data_list
-            }
-            return response_data(http_code=200, data=data)
-        else:
-            log_exception(request, "根据token: %s 获取ucid失败" % (request.form['_token'],))
-            return response_data(200, 0, '根据token获取ucid失败')
-    else:
-        log_exception(request, "客户端参数签名校验失败")
-        return response_data(200, 0, '客户端参数签名校验失败')
+    ucid = get_ucid_by_access_token(request.form['_token'])
+    page = request.form['page'] if request.form.has_key('page') and request.form['page'] else 1
+    count = request.form['count'] if request.form.has_key('count') and request.form['count'] else 10
+    start_index = (int(page) - 1) * int(count)
+    end_index = start_index + int(count)
+    service_logger.info("用户：%s 获取广播列表，数据从%s到%s" % (ucid, start_index, end_index))
+    # 查询用户相关的广播列表
+    current_timestamp = get_current_timestamp()
+    message_list_total_count = UserMessage.objects(
+        Q(type='broadcast')
+        & Q(closed=0)
+        & Q(is_read=0)
+        & Q(start_time__lte=current_timestamp)
+        & Q(end_time__gte=current_timestamp)
+        & Q(ucid=ucid)) \
+        .count()
+    message_list = UserMessage.objects(
+        Q(type='broadcast')
+        & Q(closed=0)
+        & Q(is_read=0)
+        & Q(start_time__lte=current_timestamp)
+        & Q(end_time__gte=current_timestamp)
+        & Q(ucid=ucid)).order_by('-start_time')[start_index:end_index]
+    data_list = []
+    for message in message_list:
+        message_info = get_broadcast_message_detail_info(message['mysql_id'])
+        message_resp = {
+            "meta_info": {},
+            "head": {},
+            "body": {}
+        }
+        message_resp['meta_info']['app'] = message_info['app']
+        message_resp['meta_info']['rtype'] = message_info['rtype']
+        message_resp['meta_info']['vip'] = message_info['vip']
+        message_resp['head']['title'] = message_info['title']
+        message_resp['head']['type'] = message_info['type']
+        message_resp['head']['mysql_id'] = message_info['mysql_id']
+        message_resp['body']['content'] = message_info['content']
+        message_resp['body']['start_time'] = message_info['start_time']
+        # message_resp['body']['end_time'] = message_info['end_time']
+        message_resp['body']['close_time'] = message_info['close_time']
+        message['is_read'] = 1
+        message.save()
+        data_list.append(message_resp)
+    # 重置用户广播标记
+    RedisHandle.clear_user_data_mark_in_redis(ucid, 'broadcast')
+    data = {
+        "total_count": message_list_total_count,
+        "data": data_list
+    }
+    return response_data(http_code=200, data=data)
