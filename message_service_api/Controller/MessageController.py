@@ -120,7 +120,7 @@ def v4_sdk_get_message_list():
                     'title': message_info['title'],
                     'description': message_info['description'],
                     'type': message_info['type'],
-                    'mysql_id': message_info['mysql_id'],
+                    'id': message_info['mysql_id'],
                     'content': message_info['content'],
                     'img': message_info['img'],
                     'url': message_info['url'],
