@@ -167,11 +167,11 @@ def v4_sdk_get_notice_list():
         # message_resp['body']['url'] = message_info['url']
         # message_resp['body']['url_type'] = message_info['url_type']
         # data_list.append(message_resp)
-    message_list_total_count = len(message_list)
+    # message_list_total_count = len(message_list)
     # 用户没有公告，重设redis标记，避免再次获取
-    if message_list_total_count == 0:
-        message_resp = []
-        RedisHandle.clear_user_data_mark_in_redis(ucid, 'notice')
+    # if message_list_total_count == 0:
+    #     message_resp = []
+    #     RedisHandle.clear_user_data_mark_in_redis(ucid, 'notice')
     # data = {
     #     "total_count": message_list_total_count,
     #     "data": message_resp
