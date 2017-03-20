@@ -76,28 +76,28 @@ def v4_sdk_get_gifts_list():
     return response_data(http_code=200, data=data)
 
 
-# 领取礼包
-@gift_controller.route('/msa/v4/get_gift', methods=['POST'])
-@sdk_api_request_check
-def v4_sdk_user_get_gift():
-    return response_data(http_code=200, data=None)
-
-
-# 查询游戏是否有未领取礼包
-@gift_controller.route('/msa/v4/unget_game_gift', methods=['POST'])
-@sdk_api_request_check
-def v4_sdk_user_unget_gift():
-    return response_data(http_code=200, data=None)
-
-
-# 推荐游戏列表
-@gift_controller.route('/msa/v4/recommend_game_list', methods=['POST'])
-@sdk_api_request_check
-def v4_sdk_user_get_recommend_game_list():
-    ucid = get_ucid_by_access_token(request.form['_token'])
-    page = request.form['page'] if request.form.has_key('page') and request.form['page'] else 1
-    count = request.form['count'] if request.form.has_key('count') and request.form['count'] else 10
-    start_index = (int(page) - 1) * int(count)
-    end_index = start_index + int(count)
-    service_logger.info("用户：%s 获取推荐游戏列表，数据从%s到%s" % (ucid, start_index, end_index))
-    return response_data(http_code=200, data=None)
+# # 领取礼包
+# @gift_controller.route('/msa/v4/get_gift', methods=['POST'])
+# # @sdk_api_request_check
+# def v4_sdk_user_get_gift():
+#     return response_data(http_code=200, data=None)
+#
+#
+# # 查询游戏是否有未领取礼包
+# @gift_controller.route('/msa/v4/unget_game_gift', methods=['POST'])
+# @sdk_api_request_check
+# def v4_sdk_user_unget_gift():
+#     return response_data(http_code=200, data=None)
+#
+#
+# # 推荐游戏列表
+# @gift_controller.route('/msa/v4/recommend_game_list', methods=['POST'])
+# @sdk_api_request_check
+# def v4_sdk_user_get_recommend_game_list():
+#     ucid = get_ucid_by_access_token(request.form['_token'])
+#     page = request.form['page'] if request.form.has_key('page') and request.form['page'] else 1
+#     count = request.form['count'] if request.form.has_key('count') and request.form['count'] else 10
+#     start_index = (int(page) - 1) * int(count)
+#     end_index = start_index + int(count)
+#     service_logger.info("用户：%s 获取推荐游戏列表，数据从%s到%s" % (ucid, start_index, end_index))
+#     return response_data(http_code=200, data=None)

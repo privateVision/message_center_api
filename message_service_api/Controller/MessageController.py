@@ -104,6 +104,10 @@ def v4_sdk_get_message_list():
         # message_resp['body']['img'] = message_info['img']
         # message_resp['body']['url'] = message_info['url']
         # message_resp['body']['start_time'] = message_info['start_time']
+        if int(message['is_read']) == 1:
+            message['id_read'] = True
+        else:
+            message['is_read'] = False
         message_resp = {
             'title': message_info['title'],
             'summary': message_info['description'],
