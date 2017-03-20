@@ -58,6 +58,9 @@ def create_app():
     app.config['SQLALCHEMY_DATABASE_URI'] = app.config.get('SQLALCHEMY_DATABASE_URI')
     mysql_engine = create_engine(app.config['SQLALCHEMY_DATABASE_URI'], encoding="utf-8", echo=True,
                                  pool_recycle=30, pool_size=10)
+    zhuayou_sdk_mysql_engine = create_engine(app.config['SQLALCHEMY_ZHUAYOU_SDK_DATABASE_URI'], encoding="utf-8",
+                                             echo=True, pool_recycle=30, pool_size=10)
     mysql_session = sessionmaker(autocommit=False, bind=mysql_engine)
+    zhuayou_sdk_mysql_session = sessionmaker(autocommit=False, bind=zhuayou_sdk_mysql_engine)
 
-    return app, kafka_producer, kafka_consumer, mysql_session()
+    return app, kafka_producer, kafka_consumer, mysql_session(), zhuayou_sdk_mysql_session()
