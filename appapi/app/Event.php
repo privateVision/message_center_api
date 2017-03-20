@@ -45,7 +45,7 @@ class Event
          
         $user->uuid = $session->token; // todo: 兼容旧的自动登陆
         $user->last_login_at = datetime();
-        $user->default_user_procedure_id = $user_procedure->id;
+        //$user->default_user_procedure_id = $user_procedure->id;
         $user->save();
 
         return [
