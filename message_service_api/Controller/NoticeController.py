@@ -174,44 +174,31 @@ def v4_sdk_get_notice_list():
 
 # SDK 设置消息已读（消息通用）
 @notice_controller.route('/msa/v4/message/read', methods=['POST'])
+@sdk_api_request_check
 def v4_sdk_set_notice_have_read():
-    from Utils.EncryptUtils import sdk_api_params_check, sdk_api_check_sign
-    is_params_checked = sdk_api_params_check(request)
-    if is_params_checked is False:
-        log_exception(request, '客户端请求错误-appid或sign或token为空')
-        return response_data(200, 0, '客户端参数错误')
-    is_sign_true = sdk_api_check_sign(request)
-    if is_sign_true:
-        ucid = get_ucid_by_access_token(request.form['_token'])
-        if ucid:
-            message_info = request.form['message_info']
-            if message_info['type'] is None or message_info['message_ids'] is None:
-                log_exception(request, '客户端请求错误-type或message_ids为空')
-                return response_data(200, 0, '客户端请求错误')
-            message_info_json = json.loads(message_info)
-            for message in message_info_json:
-                for message_id in message['message_ids']:
-                    is_exist = UserReadMessageLog.objects(Q(type=message['type'])
-                                                          & Q(message_id=message_id)
-                                                          & Q(ucid=ucid)).count()
-                    if is_exist == 0:
-                        user_read_message_log = UserReadMessageLog(type=message['type'],
-                                                                   message_id=message_id,
-                                                                   ucid=ucid)
-                        try:
-                            UserMessage.objects(Q(type=message['type'])
-                                                & Q(mysql_id=message_id)
-                                                & Q(ucid=ucid)).update(set__is_read=1)
-                            # 减少缓存未读消息数
-                            RedisHandle.hdecrby(ucid, message['type'])
-                            user_read_message_log.save()
-                        except Exception as err:
-                            log_exception(request, "设置消息已读异常：%s" % (err.message,))
-                            return response_data(http_code=200, code=0, message="服务器出错啦/(ㄒoㄒ)/~~")
-            return response_data(http_code=200)
-        else:
-            log_exception(request, "根据token: %s 获取ucid失败" % (request.form['_token'],))
-            return response_data(200, 0, '根据token获取ucid失败')
-    else:
-        log_exception(request, "客户端参数签名校验失败")
-        return response_data(200, 0, '客户端参数签名校验失败')
+    ucid = get_ucid_by_access_token(request.form['_token'])
+    message_type = request.form['type']
+    message_id = request.form['message_id']
+    if message_type is None or message_id is None:
+        log_exception(request, '客户端请求错误-type或message_id为空')
+        return response_data(200, 0, '客户端请求错误')
+
+    is_exist = UserReadMessageLog.objects(Q(type=message_type)
+                                          & Q(message_id=message_id)
+                                          & Q(ucid=ucid)).count()
+    if is_exist == 0:
+        user_read_message_log = UserReadMessageLog(type=message_type,
+                                                   message_id=message_id,
+                                                   ucid=ucid)
+        try:
+            UserMessage.objects(Q(type=message_type)
+                                & Q(mysql_id=message_id)
+                                & Q(ucid=ucid)).update(set__is_read=1)
+            # 减少缓存未读消息数
+            # RedisHandle.hdecrby(ucid, message_type)
+            user_read_message_log.save()
+        except Exception as err:
+            log_exception(request, "设置消息已读异常：%s" % (err.message,))
+            return response_data(http_code=200, code=0, message="服务器出错啦/(ㄒoㄒ)/~~")
+    return response_data(http_code=200)
+
