@@ -195,7 +195,7 @@ def v4_sdk_set_notice_have_read():
                                 & Q(mysql_id=message_id)
                                 & Q(ucid=ucid)).update(set__is_read=1)
             # 减少缓存未读消息数
-            # RedisHandle.hdecrby(ucid, message_type)
+            RedisHandle.hdecrby(ucid, message_type)
             user_read_message_log.save()
         except Exception as err:
             log_exception(request, "设置消息已读异常：%s" % (err.message,))
