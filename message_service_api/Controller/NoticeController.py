@@ -121,16 +121,9 @@ def v4_sdk_get_notice_list():
         # & Q(is_read=0)
         & Q(start_time__lte=current_timestamp)
         & Q(end_time__gte=current_timestamp)
-        & Q(ucid=ucid)).order_by('sortby, -create_time')[:1]
-    # data_list = []
-    message_resp = {
-        # 'id': 0,
-        # 'type': 0,
-        # 'title': '',
-        # 'content': '',
-        # 'url': '',
-        # 'show_times': 0
-    }
+        & Q(ucid=ucid)).order_by('sortby, -create_time')
+    data_list = []
+    message_resp = {}
     for message in message_list:
         message_info = get_notice_message_detail_info(message['mysql_id'])
         message_resp['id'] = message_info['mysql_id']
@@ -166,7 +159,7 @@ def v4_sdk_get_notice_list():
         # message_resp['body']['show_times'] = message_info['show_times']
         # message_resp['body']['url'] = message_info['url']
         # message_resp['body']['url_type'] = message_info['url_type']
-        # data_list.append(message_resp)
+        data_list.append(message_resp)
     # message_list_total_count = len(message_list)
     # 用户没有公告，重设redis标记，避免再次获取
     # if message_list_total_count == 0:
@@ -176,7 +169,7 @@ def v4_sdk_get_notice_list():
     #     "total_count": message_list_total_count,
     #     "data": message_resp
     # }
-    return response_data(http_code=200, data=message_resp)
+    return response_data(http_code=200, data=data_list)
 
 
 # SDK 设置消息已读（消息通用）

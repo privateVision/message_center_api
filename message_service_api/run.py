@@ -7,7 +7,7 @@ import sys
 reload(sys)
 sys.setdefaultencoding('utf-8')
 
-app, kafka_producer, kafka_consumer, mysql_session = create_app()
+app, kafka_producer, kafka_consumer, mysql_session, zhuayou_sdk_mysql_session = create_app()
 
 db = MongoEngine()  # 建立MongoDB Engine
 db.init_app(app)
@@ -22,11 +22,11 @@ def page_not_found(error):
 def page_not_found(error):
     return 'Server Exception', 500
 
-if __name__ == '__main__':
-    host = app.config.get('HOST')
-    port = app.config.get('PORT')
-    debug = app.config.get('DEBUG')
-    app.run(host='0.0.0.0', port=port, debug=debug)
+# if __name__ == '__main__':
+#     host = app.config.get('HOST')
+#     port = app.config.get('PORT')
+#     debug = app.config.get('DEBUG')
+#     app.run(host=host, port=port, debug=debug)
 
 
 #  uwsgi 启动脚本： uwsgi --socket 127.0.0.1:5000 --wsgi-file run.py --callable app --enable-threads
