@@ -37,7 +37,7 @@ class Event
 
         $session = new Session;
         $session->ucid = $user->ucid;
-        $session->user_procedure_id = $user_procedure->id;
+        //$session->user_procedure_id = $user_procedure->id;
         $session->token = uuid();
         $session->expired_ts = time() + 2592000; // 1个月有效期
         $session->date = date('Ymd');
