@@ -300,7 +300,7 @@ class UserController extends Controller{
             throw new ToolException(ToolException::Remind,trans("messages.mobile_type_error"));
         }
 
-        $code = rand(111111,999999);
+        $code = smscode();
         $content = trans("messages.sms_code").$code;
 
         //发送短信验证码限制 防止短信炸弹

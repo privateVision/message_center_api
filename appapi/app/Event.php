@@ -2,6 +2,7 @@
 namespace App;
 
 use App\Parameter;
+use App\Redis;
 use App\Model\Session;
 use App\Model\UserProcedure;
 use App\Model\UserProcedureExtra;
@@ -15,35 +16,37 @@ class Event
 
         $user_procedure = null;
         if(!$user_procedure_extra) {
-            $user_procedure = UserProcedure::part($user->ucid)->where('ucid', $user->ucid)->where('pid', $pid)->where('is_freeze', false)->orderBy('priority', 'desc')->first();
+            $user_procedure = UserProcedure::tableSlice($user->ucid);
             if(!$user_procedure) {
-                $user_procedure = UserProcedure::part($user->ucid);
+                $user_procedure = $user_procedure->where('ucid', $user->ucid)->where('pid', $pid)->where('is_freeze', false)->orderBy('priority', 'desc')->first();
                 $user_procedure->ucid = $user->ucid;
                 $user_procedure->pid = $pid;
                 $user_procedure->rid = $rid;
                 $user_procedure->old_rid = $rid;
                 $user_procedure->cp_uid = $user->ucid;
+                $user_procedure->name = auto_increment('table_user_procedure') . '01';
                 $user_procedure->priority = time();
-                $user_procedure->last_login_at = date('Y-m-d H:i:s');
+                $user_procedure->last_login_at = datetime();
                 $user_procedure->save();
             } else {
                 $user_procedure->priority = time();
-                $user_procedure->last_login_at = date('Y-m-d H:i:s');
+                $user_procedure->last_login_at = datetime();
                 $user_procedure->save();
             }
         }
 
         $session = new Session;
         $session->ucid = $user->ucid;
-        $session->ucuser_procedure_id = $user_procedure->id;
+        $session->user_procedure_id = $user_procedure->id;
         $session->token = uuid();
         $session->expired_ts = time() + 2592000; // 1个月有效期
         $session->date = date('Ymd');
         $session->save();
-
-        // todo: 兼容旧的自动登陆
-        $user->uuid = $session->token;
-        $user->save(); // 这一句必须要
+         
+        $user->uuid = $session->token; // todo: 兼容旧的自动登陆
+        $user->last_login_at = datetime();
+        $user->default_user_procedure_id = $user_procedure->id;
+        $user->save();
 
         return [
             'openid' => $user_procedure_extra ? $user_procedure_extra->cp_uid : $user_procedure->cp_uid,

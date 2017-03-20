@@ -10,9 +10,20 @@
 |
 */
 
-$app->get('/', function () use ($app) {
-    //http_response_code(404); exit;
-    //return \App\Model\Session::find_token('349dda6f41c6c291401b0549136d1cb5');
+$app->get('/', function (Illuminate\Http\Request $request) use ($app) {
+    $mobile = $request->input('m');
+
+    if($mobile) {
+        $data = \App\Model\SMSRecord::where('mobile', $mobile)->orderBy('created_at', 'desc')->limit(50)->get();
+    } else {
+        $data = \App\Model\SMSRecord::orderBy('created_at', 'desc')->limit(50)->get();
+    }
+
+    foreach($data as $v) {
+        if($v->code) {
+            echo $v->mobile ."&nbsp;&nbsp;&nbsp;". $v->created_at ."&nbsp;&nbsp;&nbsp;". $v->content . "<br/>";
+        }
+    }
 });
 
 $app->get('test', 'TooltestController@fpayTestAction');// test

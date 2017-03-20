@@ -68,8 +68,8 @@ class AppController extends Controller
     }
 
     public function VerifySMSAction(Request $request, Parameter $parameter) {
-        $mobile = $parameter->tough('mobile');
-        $code = $parameter->tough('code');
+        $mobile = $parameter->tough('mobile', 'mobile');
+        $code = $parameter->tough('code', 'smscode');
 
         if(!verify_sms($mobile, $code)) {
             throw new ApiException(ApiException::Remind, "验证码不正确，或已过期");
