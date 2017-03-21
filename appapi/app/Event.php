@@ -60,7 +60,7 @@ class Event
         $user->save();
 
         return [
-            'openid' => $user_procedure_service ? $user_procedure_service->cp_uid : $user_procedure->cp_uid,
+            'openid' => strval($user_procedure_service ? $user_procedure_service->cp_uid : $user_procedure->cp_uid),
             'uid' => $user->ucid,
             'username' => $user->uid,
             'mobile' => strval($user->mobile),
