@@ -16,9 +16,9 @@ class Event
 
         $user_procedure = null;
         if(!$user_procedure_extra) {
-            $user_procedure = UserProcedure::tableSlice($user->ucid)->where('ucid', $user->ucid)->where('pid', $pid)->where('is_freeze', false)->orderBy('priority', 'desc')->first();
+            $user_procedure = UserProcedure::tableSlice($user->ucid);
             if(!$user_procedure) {
-                $user_procedure = UserProcedure::tableSlice($user->ucid);
+                $user_procedure = $user_procedure->where('ucid', $user->ucid)->where('pid', $pid)->where('is_freeze', false)->orderBy('priority', 'desc')->first();
                 $user_procedure->ucid = $user->ucid;
                 $user_procedure->pid = $pid;
                 $user_procedure->rid = $rid;
@@ -28,7 +28,6 @@ class Event
                 $user_procedure->priority = time();
                 $user_procedure->last_login_at = datetime();
                 $user_procedure->save();
-
             } else {
                 $user_procedure->priority = time();
                 $user_procedure->last_login_at = datetime();
@@ -38,7 +37,7 @@ class Event
 
         $session = new Session;
         $session->ucid = $user->ucid;
-        $session->user_procedure_id = $user_procedure->id;
+        //$session->user_procedure_id = $user_procedure->id;
         $session->token = uuid();
         $session->expired_ts = time() + 2592000; // 1个月有效期
         $session->date = date('Ymd');

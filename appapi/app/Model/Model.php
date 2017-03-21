@@ -20,7 +20,7 @@ abstract class Model extends Eloquent
             $this->slice = $parameters[0];
             return $this;
         }
-/*
+
         if(substr($method, 0, 10) === 'from_cache') {
             $value = $parameters[0];
             if($method !== 'from_cache') {
@@ -65,7 +65,7 @@ abstract class Model extends Eloquent
 
             return null;
         }
-*/
+
         return parent::__call($method, $parameters);
     }
 
