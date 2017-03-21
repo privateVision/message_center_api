@@ -19,10 +19,10 @@ coupon_controller = Blueprint('CouponController', __name__)
 
 
 # CMS 添加卡券
-@coupon_controller.route('/msa/v4/coupon', methods=['POST'])
+@coupon_controller.route('/msa/v4/add_coupon', methods=['POST'])
 @cms_api_request_check
 def v4_cms_add_coupon():
-    form = PostCouponsRequestForm(request.form)  # POST 表单参数封装
+    form = PostCouponsRequestForm.from_json(request.json)
     if not form.validate():
         log_exception(request, '客户端请求错误: %s' % (json.dumps(form.errors)))
         return response_data(200, 0, '客户端请求错误')
@@ -41,10 +41,10 @@ def v4_cms_add_coupon():
 
 
 # CMS 更新卡券
-@coupon_controller.route('/msa/v4/coupon', methods=['PUT'])
+@coupon_controller.route('/msa/v4/update_coupon', methods=['POST'])
 @cms_api_request_check
 def v4_cms_update_coupon():
-    form = PostCouponsRequestForm(request.form)  # POST 表单参数封装
+    form = PostCouponsRequestForm.from_json(request.json)
     if not form.validate():
         log_exception(request, '客户端请求错误: %s' % (json.dumps(form.errors)))
         return response_data(200, 0, '客户端请求错误')
@@ -57,10 +57,10 @@ def v4_cms_update_coupon():
 
 
 # CMS 删除卡券
-@coupon_controller.route('/msa/v4/coupon', methods=['DELETE'])
+@coupon_controller.route('/msa/v4/delete_coupon', methods=['POST'])
 @cms_api_request_check
 def v4_cms_delete_coupon():
-    coupon_id = request.form['id']
+    coupon_id = request.json.get('id')
     if coupon_id is None or coupon_id == '':
         log_exception(request, '客户端请求错误-coupon_id为空')
         return response_data(200, 0, '客户端请求错误')
