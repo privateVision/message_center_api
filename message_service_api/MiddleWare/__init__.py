@@ -2,6 +2,7 @@
 import threading
 from logging.handlers import TimedRotatingFileHandler
 
+import wtforms_json
 from flask import Flask
 from flask_redis import FlaskRedis
 from kafka import KafkaConsumer
@@ -31,6 +32,7 @@ service_logger.addHandler(fh)
 service_logger.addHandler(ch)
 
 redis_store = FlaskRedis()
+wtforms_json.init()
 
 
 def create_app():

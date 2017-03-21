@@ -17,7 +17,7 @@ class PostNoticesRequestForm(Form):
     enter_status = StringField('enter_status', default='normal')  # 'normal' 允许进入游戏
     stime = IntegerField('stime', [InputRequired()])
     etime = IntegerField('etime', [InputRequired()])
-    create_time = IntegerField('create_time', [InputRequired()])
+    create_time = IntegerField('create_time')
     img = StringField('img')
     url = StringField('url')
     open_type = IntegerField('open_type')

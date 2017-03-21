@@ -18,10 +18,10 @@ message_controller = Blueprint('MessageController', __name__)
 
 
 # CMS 发送消息
-@message_controller.route('/msa/v4/message', methods=['POST'])
+@message_controller.route('/msa/v4/add_message', methods=['POST'])
 @cms_api_request_check
 def v4_cms_post_broadcast():
-    form = PostMessagesRequestForm(request.form)  # POST 表单参数封装
+    form = PostMessagesRequestForm.from_json(request.json)
     if not form.validate():
         log_exception(request, '客户端请求错误: %s' % (json.dumps(form.errors)))
         return response_data(200, 0, '客户端请求错误')
@@ -42,10 +42,10 @@ def v4_cms_post_broadcast():
 
 
 # CMS 删除消息
-@message_controller.route('/msa/v4/message', methods=['DELETE'])
+@message_controller.route('/msa/v4/delete_message', methods=['POST'])
 @cms_api_request_check
 def v4_cms_delete_post_broadcast():
-    message_id = request.form['id']
+    message_id = request.json.get('id')
     if message_id is None or message_id == '':
         log_exception(request, '客户端请求错误-message_id为空')
         return response_data(200, 0, '客户端请求错误')

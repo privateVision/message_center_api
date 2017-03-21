@@ -12,7 +12,7 @@ from MongoModel.UserMessageModel import UserMessage
 from MongoModel.UserReadMessageLogModel import UserReadMessageLog
 from RequestForm.PostNoticesRequestForm import PostNoticesRequestForm
 from Service.StorageService import system_notices_update
-from Service.UsersService import get_notice_message_detail_info, get_ucid_by_access_token, find_user_account_is_freeze, \
+from Service.UsersService import get_notice_message_detail_info, get_ucid_by_access_token, \
     sdk_api_request_check, cms_api_request_check
 from Utils.RedisUtil import RedisHandle
 from Utils.SystemUtils import get_current_timestamp, log_exception
@@ -21,10 +21,10 @@ notice_controller = Blueprint('NoticeController', __name__)
 
 
 # CMS 发送公告
-@notice_controller.route('/msa/v4/notice', methods=['POST'])
+@notice_controller.route('/msa/v4/add_notice', methods=['POST'])
 @cms_api_request_check
 def v4_cms_post_notice():
-    form = PostNoticesRequestForm(request.form)  # POST 表单参数封装
+    form = PostNoticesRequestForm.from_json(request.json)  # JSON 数据转换
     if not form.validate():
         log_exception(request, "发送公告请求校验异常：%s" % (form.errors,))
         return response_data(200, 0, '客户端请求错误')
@@ -45,10 +45,10 @@ def v4_cms_post_notice():
 
 
 # CMS 更新公告
-@notice_controller.route('/msa/v4/notice', methods=['PUT'])
+@notice_controller.route('/msa/v4/update_notice', methods=['POST'])
 @cms_api_request_check
 def v4_cms_update_post_notice():
-    form = PostNoticesRequestForm(request.form)  # POST 表单参数封装
+    form = PostNoticesRequestForm.from_json(request.json)  # JSON 数据转换
     if not form.validate():
         log_exception(request, "更新公告请求校验异常：%s" % (form.errors,))
         return response_data(200, 0, '客户端请求错误')
@@ -65,7 +65,7 @@ def v4_cms_update_post_notice():
 @notice_controller.route('/msa/v4/notice/close', methods=['POST'])
 @cms_api_request_check
 def v4_cms_set_post_notice_closed():
-    notice_id = request.form['id']
+    notice_id = request.json.get('id')
     if notice_id is None or notice_id == '':
         log_exception(request, "客户端请求错误-notice_id为空")
         return response_data(200, 0, '客户端请求错误')
@@ -82,7 +82,7 @@ def v4_cms_set_post_notice_closed():
 @notice_controller.route('/msa/v4/notice/open', methods=['POST'])
 @cms_api_request_check
 def v4_cms_set_post_notice_open():
-    notice_id = request.form['id']
+    notice_id = request.json.get('id')
     if notice_id is None or notice_id == '':
         log_exception(request, "客户端请求错误-notice_id为空")
         return response_data(200, 0, '客户端请求错误')
@@ -201,4 +201,3 @@ def v4_sdk_set_notice_have_read():
             log_exception(request, "设置消息已读异常：%s" % (err.message,))
             return response_data(http_code=200, code=0, message="服务器出错啦/(ㄒoㄒ)/~~")
     return response_data(http_code=200)
-
