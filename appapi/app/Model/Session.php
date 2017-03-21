@@ -1,6 +1,5 @@
 <?php
 namespace App\Model;
-use Illuminate\Support\Facades\Redis;
 
 class Session extends Model
 {
@@ -20,14 +19,4 @@ class Session extends Model
 
 	const CREATED_AT = 'created_at';
     const UPDATED_AT = 'updated_at';
-
-    public static function findFromToken($token) {
-    	$data = static::where('token', $token)->first();
-    	if($data) {
-    		Redis::setex(sprintf('table_session_%s', $data->getTable(), $token), 86400, serialize($data));
-    	}
-
-    	return $data;
-    }
-
 }

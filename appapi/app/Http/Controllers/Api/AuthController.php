@@ -10,15 +10,18 @@ use App\Model\User;
 class AuthController extends Controller {
 
 	protected $user = null;
+	protected $session = null;
 
 	public function before(Request $request, Parameter $parameter) {
 		parent::before($request, $parameter);
 
 		$token = $parameter->tough('_token');
-		$session = Session::findFromToken($token);
+		$session = Session::from_cache_token($token);
 		if(!$session) {
 			throw new ApiException(ApiException::Remind, '会话未找到，或已过期');
 		}
+
+		$this->session = $session;
 
 		$ucid = $session->ucid;
 		if(!$ucid) {
@@ -32,7 +35,7 @@ class AuthController extends Controller {
 
 		$this->user = $user;
 
-		if($this->user->is_freeze) {
+		if($user->is_freeze) {
 			throw new ApiException(ApiException::AccountFreeze, '账号已被冻结');
 		}
 	}

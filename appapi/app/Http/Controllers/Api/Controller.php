@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use Illuminate\Http\Request;
 use App\Exceptions\ApiException;
 use App\Parameter;
+use App\Redis;
 use App\Model\Procedures;
 
 class Controller extends \App\Controller
@@ -14,18 +15,26 @@ class Controller extends \App\Controller
     public function execute(Request $request, $action, $parameters) {
 		try {
 			$data = $request->all();
-			$parameter = new Parameter($data);
 
+			$parameter = new Parameter($data);
 			$appid = $parameter->tough('_appid');
+			$sign = $parameter->tough('_sign');
+/*
+			$rediskey = sprintf(Redis::KSTR_REQUEST_SIGN_LOCK, $sign);
+			if(Redis::setnx($rediskey, 1)) {
+				Redis::expire($rediskey, 28800);
+			} else {
+				throw new ApiException(ApiException::Remind, '操作太频繁');
+			}
+*/
 			$procedure = Procedures::find($appid);
 			if (!$procedure) {
-				throw new ApiException(ApiException::Error, "appid不正确:" . $appid);
+				throw new ApiException(ApiException::Error, "appid不正确:{$appid}");
 			}
 
 			$this->procedure = $procedure;
 			$appkey = $procedure->appkey();
 			
-			$sign = $parameter->tough('_sign');
 			unset($data['_sign']);
 			ksort($data);
 			$_sign = md5(http_build_query($data) . '&key=' . $appkey);
@@ -54,13 +63,11 @@ class Controller extends \App\Controller
 			$resdata = array('code' => ApiException::Error, 'msg' => $e->getMessage(), 'data' => null);
 		}
 
-		$type = $request->input('type');
+		$type = $parameter->tough('_type');
 
 		if($type === 'jsonp') {
-			$callback = $request->input('callback');
-			if($callback) {
-				return sprintf('%s(%s);', $callback, json_encode($resdata));
-			}
+			$callback = $parameter->tough('_callback');
+			return sprintf('%s(%s);', $callback, json_encode($resdata));
 		} else {
 			return $resdata;
 		}

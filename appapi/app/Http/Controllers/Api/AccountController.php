@@ -13,9 +13,9 @@ use App\Model\UserOauth;
 class AccountController extends Controller {
 
     public function OauthSMSBindAction(Request $request, Parameter $parameter) {
-        $mobile = $parameter->tough('mobile');
+        $mobile = $parameter->tough('mobile', 'mobile');
 
-        $code = rand(100000, 999999);
+        $code = smscode();
 
         try {
             send_sms($mobile, env('APP_ID'), 'oauth_login_bind', ['#code#' => $code], $code);
@@ -29,8 +29,8 @@ class AccountController extends Controller {
     }
 
     public function OauthRegisterAction(Request $request, Parameter $parameter) {
-        $mobile = $parameter->tough('mobile');
-        $code = $parameter->tough('code');
+        $mobile = $parameter->tough('mobile', 'mobile');
+        $code = $parameter->tough('code', 'smscode');
         $openid = $parameter->tough('openid');
         $type = $parameter->tough('type');
         $nickname = $parameter->get('nickname');
@@ -77,7 +77,7 @@ class AccountController extends Controller {
                 $user->nickname = $nickname;
             }
             
-            $user->save();
+            $user->delaySave();
 
             return Event::onLoginAfter($user, $parameter->tough('_appid'), $parameter->tough('_rid'));
         }
@@ -103,7 +103,7 @@ class AccountController extends Controller {
                 $mobile_user->nickname = $nickname;
             }
 
-            $mobile_user->save();
+            $mobile_user->delaySave();
         }
 
         // ------------ 都不存在，注册
@@ -202,12 +202,8 @@ class AccountController extends Controller {
     }
 
     public function RegisterAction(Request $request, Parameter $parameter){
-        $username = $parameter->tough('username');
+        $username = $parameter->tough('username', 'username');
         $password = $parameter->tough('password');
-
-        //if(!check_name($username, 24)){
-        //    throw new ApiException(ApiException::Remind, "用户名格式不正确，请填写正确的格式");
-        //}
 
         $isRegister  = User::where("mobile", $username)->orWhere('uid', $username)->count();
 
@@ -242,7 +238,6 @@ class AccountController extends Controller {
                 return ['username' => $username];
             }
         } while(true);
-
     }
 
     public function LoginOnekeyAction(Request $request, Parameter $parameter) {
@@ -303,9 +298,9 @@ class AccountController extends Controller {
     }
 
     public function SMSLoginPhoneAction(Request $request, Parameter $parameter) {
-        $mobile = $parameter->tough('mobile');
+        $mobile = $parameter->tough('mobile', 'mobile');
 
-        $code = rand(100000, 999999);
+        $code = smscode();
 
         try {
             send_sms($mobile, env('APP_ID'), 'login_phone', ['#code#' => $code], $code);
@@ -319,8 +314,8 @@ class AccountController extends Controller {
     }
 
     public function LoginPhoneAction(Request $request, Parameter $parameter) {
-        $mobile = $parameter->tough('mobile');
-        $code = $parameter->tough('code');
+        $mobile = $parameter->tough('mobile', 'mobile');
+        $code = $parameter->tough('code', 'smscode');
 
         if(!verify_sms($mobile, $code)) {
             throw new ApiException(ApiException::Remind, "验证码不正确，或已过期");
@@ -364,14 +359,14 @@ class AccountController extends Controller {
     }
 
     public function SMSResetPasswordAction(Request $request, Parameter $parameter) {
-        $mobile = $parameter->tough('mobile');
+        $mobile = $parameter->tough('mobile', 'mobile');
 
         $user = User::where('uid', $mobile)->orWhere('mobile', $mobile)->first();
         if(!$user) {
             throw new ApiException(ApiException::Remind, '手机号码尚未注册');
         }
 
-        $code = rand(100000, 999999);
+        $code = smscode();
 
         try {
             send_sms($mobile, env('APP_ID'), 'reset_password', ['#code#' => $code], $code);
@@ -385,8 +380,8 @@ class AccountController extends Controller {
     }
 
     public function ResetPasswordAction(Request $request, Parameter $parameter) {
-        $mobile = $parameter->tough('mobile');
-        $code = $parameter->tough('code');
+        $mobile = $parameter->tough('mobile', 'mobile');
+        $code = $parameter->tough('code', 'smscode');
         $password = $parameter->tough('password');
 
         if(!verify_sms($mobile, $code)) {

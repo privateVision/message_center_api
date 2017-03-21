@@ -1,6 +1,13 @@
 <?php
-use Illuminate\Support\Facades\Redis;
+use App\Redis;
 use Illuminate\Support\Facades\Queue;
+
+// 设置redis的key在过期时间
+// 1. 一个用户的所有数据应该同时过期
+// 2. 避开在服务器高压状态时过期
+function cache_expire_second() {
+    return 86400;
+}
 
 function encrypt3des($data, $key = null) {
     if(empty($key)) {
@@ -19,7 +26,23 @@ function decrypt3des($data, $key = null) {
 }
 
 function uuid() {
-    return md5(uniqid() . rand(0, 999999) . microtime());
+    return md5(uniqid(mt_rand(), true) . microtime() . mt_rand());
+}
+
+function datetime($time = 0) {
+    if($time) {
+        return date('Y-m-d H:i:s', $time);
+    }
+
+    return date('Y-m-d H:i:s');
+}
+
+function smscode() {
+    return rand(100000, 999999);
+}
+
+function user_log($user, $type, $procedure, $text_format) {
+
 }
 
 function order_success($order_id) {
@@ -78,7 +101,7 @@ function verify_sms($mobile, $code) {
         return true;
     }
 
-    return Redis::get(sprintf("sms_%s_%s", $mobile, $code)) ? true : false;
+    return Redis::get(sprintf(Redis::KSTR_SMS, $mobile, $code)) ? true : false;
 }
 
 function kafka_producer($topic, $content) {
@@ -98,7 +121,7 @@ function log_debug ($keyword, $content) {
         'level' => 'DEBUG', 
         'ip' => $app->request->ip(),
         'pid' => getmypid(),
-        'datetime' => date('Y-m-d H:i:s'),
+        'datetime' =>datetime(),
         'content' => $content,
     ]));
 }
@@ -112,7 +135,7 @@ function log_info ($keyword, $content) {
         'level' => 'INFO', 
         'ip' => $app->request->ip(),
         'pid' => getmypid(),
-        'datetime' => date('Y-m-d H:i:s'),
+        'datetime' =>datetime(),
         'content' => $content,
     ]));
 }
@@ -126,7 +149,7 @@ function log_warning ($keyword, $content) {
         'level' => 'WARNING', 
         'ip' => $app->request->ip(),
         'pid' => getmypid(),
-        'datetime' => date('Y-m-d H:i:s'),
+        'datetime' =>datetime(),
         'content' => $content,
     ]));
 }
@@ -140,7 +163,7 @@ function log_error ($keyword, $content) {
         'level' => 'ERROR', 
         'ip' => $app->request->ip(),
         'pid' => getmypid(),
-        'datetime' => date('Y-m-d H:i:s'),
+        'datetime' =>datetime(),
         'content' => $content,
     ]));
 }

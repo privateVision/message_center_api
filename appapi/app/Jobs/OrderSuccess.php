@@ -2,7 +2,7 @@
 namespace App\Jobs;
 
 use Illuminate\Support\Facades\Queue;
-use Illuminate\Support\Facades\Redis;
+use App\Redis;
 use App\Model\Orders;
 use App\Model\OrdersExt;
 use App\Model\UcuserTotalPay;
@@ -24,9 +24,9 @@ class OrderSuccess extends Job
         }
 
         // 互斥锁， 防止多次操作
-        $lock_key = 'laravel_order_lock_' . $this->order_id;
-        if(!Redis::setnx($lock_key, '1')) return $this->release(5);
-        Redis::expire($lock_key, 60);
+        $rediskey = sprintf(Redis::KSTR_ORDER_SUCCESS_LOCK, $this->order_id);
+        if(!Redis::setnx($rediskey, '1')) return $this->release(5);
+        Redis::expire($rediskey, 60);
 
         try {
             $order->getConnection()->beginTransaction();
@@ -37,11 +37,11 @@ class OrderSuccess extends Job
 
                 // 扣除代金道具
                 if($orderExt) {
-                    $fail = function() use($order, $user, $lock_key) {
+                    $fail = function() use($order, $user, $rediskey) {
                         $order->getConnection()->rollback();
                         $order->status = Orders::Status_Success;
                         $order->save();
-                        Redis::del($lock_key);
+                        Redis::del($rediskey);
                     };
 
                     foreach($orderExt as $k => $v) {
@@ -93,6 +93,6 @@ class OrderSuccess extends Job
             $this->release(5);
         }
 
-        Redis::del($lock_key);
+        Redis::del($rediskey);
     }
 }

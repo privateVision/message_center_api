@@ -1,9 +1,9 @@
 <?php
 namespace App\Http\Controllers\Api;
 
+use App\Exceptions\ApiException;
 use Illuminate\Http\Request;
 use App\Parameter;
-use App\Exceptions\ApiException;
 use App\Event;
 use App\Model\User;
 use App\Model\Orders;
@@ -80,7 +80,7 @@ class UserController extends AuthController
     }
 
     public function SMSBindPhoneAction(Request $request, Parameter $parameter) {
-        $mobile = $parameter->tough('mobile');
+        $mobile = $parameter->tough('mobile', 'mobile');
 
         $user = User::where('uid', $mobile)->orWhere('mobile', $mobile)->first();
         if($user) {
@@ -91,7 +91,7 @@ class UserController extends AuthController
             }
         }
 
-        $code = rand(100000, 999999);
+        $code = smscode();
 
         try {
             send_sms($mobile, env('APP_ID'), 'bind_phone', ['#code#' => $code], $code);
@@ -105,8 +105,8 @@ class UserController extends AuthController
     }
 
     public function BindPhoneAction(Request $request, Parameter $parameter) {
-        $mobile = $parameter->tough('mobile');
-        $code = $parameter->tough('code');
+        $mobile = $parameter->tough('mobile', 'mobile');
+        $code = $parameter->tough('code', 'smscode');
 
         if(!verify_sms($mobile, $code)) {
             throw new ApiException(ApiException::Remind, "绑定失败，验证码不正确，或已过期");
@@ -136,7 +136,7 @@ class UserController extends AuthController
 
         $mobile = $this->user->mobile;
 
-        $code = rand(100000, 999999);
+        $code = smscode();
 
         try {
             send_sms($mobile, env('APP_ID'), 'unbind_phone', ['#code#' => $code], $code);
@@ -150,7 +150,7 @@ class UserController extends AuthController
     }
 
     public function UnbindPhoneAction(Request $request, Parameter $parameter) {
-        $code = $parameter->tough('code');
+        $code = $parameter->tough('code', 'smscode');
 
         if(!$this->user->mobile) {
             throw new ApiException(ApiException::Remind, "还未绑定手机号码，无法解绑");
@@ -179,7 +179,7 @@ class UserController extends AuthController
 
         $mobile = $this->user->mobile;
 
-        $code = rand(100000, 999999);
+        $code = smscode();
 
         try {
             send_sms($mobile, env('APP_ID'), 'reset_password', ['#code#' => $code], $code);
@@ -193,7 +193,7 @@ class UserController extends AuthController
     }
 
     public function PhoneResetPasswordAction(Request $request, Parameter $parameter) {
-        $code = $parameter->tough('code');
+        $code = $parameter->tough('code', 'smscode');
         $password = $parameter->tough('password');
 
         if(!$this->user->mobile) {
@@ -222,7 +222,7 @@ class UserController extends AuthController
  * return $code 生成的短信验证码
  * */
     public function getAuthCodeAction(Request $request,Parameter $parameter){
-        $code = rand(111111,999999); #生成短信验证码
+        $code = smscode();
         $content  = trans('messages.phone_unbind_code').$code;
         send_sms($this->session->mobile,$content,$code);
     }
@@ -265,7 +265,7 @@ class UserController extends AuthController
             throw new ApiException(ApiException::Remind,trans("messages.mobile_type_error"));
         }
 
-        $code = rand(111111,999999);
+        $code = smscode();
         $content = trans("messages.sms_code").$code;
 
         //发送短信验证码限制 防止短信炸弹
