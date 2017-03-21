@@ -11,7 +11,7 @@ from MongoModel.MessageModel import UsersMessage
 from MongoModel.UserMessageModel import UserMessage
 from RequestForm.PostCouponsRequestForm import PostCouponsRequestForm
 from Service.StorageService import system_coupon_update
-from Service.UsersService import get_ucid_by_access_token, get_coupon_message_detail_info, find_user_account_is_freeze, \
+from Service.UsersService import get_ucid_by_access_token, get_coupon_message_detail_info, \
     sdk_api_request_check, cms_api_request_check
 from Utils.SystemUtils import get_current_timestamp, log_exception
 

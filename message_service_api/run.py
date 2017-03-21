@@ -7,7 +7,7 @@ import sys
 reload(sys)
 sys.setdefaultencoding('utf-8')
 
-app, kafka_producer, kafka_consumer, mysql_session = create_app()
+app, kafka_producer, kafka_consumer, mysql_session, zhuayou_sdk_mysql_session = create_app()
 
 db = MongoEngine()  # 建立MongoDB Engine
 db.init_app(app)

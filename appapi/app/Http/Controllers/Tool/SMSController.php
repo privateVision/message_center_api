@@ -9,7 +9,7 @@ use App\Model\SMSRecord;
 class SMSController extends Controller {
 
     public function SendAction(Request $request, Parameter $parameter) {
-        $mobile = $parameter->tough('mobile');
+        $mobile = $parameter->tough('mobile', 'mobile');
         $template_id = $parameter->tough('template_id');
         $replace = $parameter->get('replace');
         $code = $parameter->get('code');
@@ -24,8 +24,8 @@ class SMSController extends Controller {
     }
 
     public function VerifyAction(Request $request, Parameter $parameter) {
-        $mobile = $parameter->tough('mobile');
-        $code = $parameter->tough('code');
+        $mobile = $parameter->tough('mobile', 'mobile');
+        $code = $parameter->tough('code', 'smscode');
 
         if(!verify_sms($mobile, $code)) {
             throw new ToolException(ToolException::Remind, "验证码不正确，或已过期");

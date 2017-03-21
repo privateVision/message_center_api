@@ -70,20 +70,21 @@ def sdk_api_gen_key(appid, data):
     from run import mysql_session
     try:
         app_info = mysql_session.execute(find_prikey_sql).first()
+        if app_info:
+            pri_key = app_info['priKey']
+            m = hashlib.md5()
+            m.update(pri_key)
+            md5_key = m.hexdigest()
+            sign_str = "%s%s" % (md5_key[0:16], md5_key[0:8])
+            service_logger.info("运算生成加密key为：%s" % (sign_str,))
+            return encrypt_des(data, sign_str)
+        service_logger.error("根据appid未找到相关的应用信息pri_key")
+        return False
     except Exception, err:
         service_logger.error(err.message)
         mysql_session.rollback()
     finally:
         mysql_session.close()
-    if app_info:
-        pri_key = app_info['priKey']
-        m = hashlib.md5()
-        m.update(pri_key)
-        md5_key = m.hexdigest()
-        sign_str = "%s%s" % (md5_key[0:16], md5_key[0:8])
-        service_logger.info("运算生成加密key为：%s" % (sign_str,))
-        return encrypt_des(data, sign_str)
-    service_logger.error("根据appid未找到相关的应用信息pri_key")
     return False
 
 
@@ -107,26 +108,26 @@ def sdk_api_check_sign(request):
     from run import mysql_session
     try:
         app_info = mysql_session.execute(find_prikey_sql).first()
+        if app_info:
+            pri_key = app_info['priKey']
+            m = hashlib.md5()
+            m.update(pri_key)
+            md5_key = m.hexdigest()
+            pri_key = "%s%s" % (md5_key[0:16], md5_key[0:8])
+            m = hashlib.md5()
+            m.update(data_str + "key=" + pri_key)
+            service_logger.error(data_str + "key=" + pri_key)
+            md5_sign = m.hexdigest()
+            service_logger.info("客户端sign为：%s" % (request.form['_sign'],))
+            service_logger.info("服务器运算生成sign为：%s" % (md5_sign,))
+            if md5_sign == request.form['_sign']:
+                return True
+            service_logger.error("服务端与客户端签名不匹配")
+            return False
+        service_logger.error("根据appid未找到相关的应用信息pri_key")
     except Exception, err:
         service_logger.error(err.message)
         mysql_session.rollback()
     finally:
         mysql_session.close()
-    if app_info:
-        pri_key = app_info['priKey']
-        m = hashlib.md5()
-        m.update(pri_key)
-        md5_key = m.hexdigest()
-        pri_key = "%s%s" % (md5_key[0:16], md5_key[0:8])
-        m = hashlib.md5()
-        m.update(data_str + "key=" + pri_key)
-        service_logger.error(data_str + "key=" + pri_key)
-        md5_sign = m.hexdigest()
-        service_logger.info("客户端sign为：%s" % (request.form['_sign'],))
-        service_logger.info("服务器运算生成sign为：%s" % (md5_sign,))
-        if md5_sign == request.form['_sign']:
-            return True
-        service_logger.error("服务端与客户端签名不匹配")
-        return False
-    service_logger.error("根据appid未找到相关的应用信息pri_key")
     return False

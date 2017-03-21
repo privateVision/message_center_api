@@ -59,8 +59,19 @@ class MessageFunctionTest(unittest.TestCase):
             '_token': 'bb427a702d53dbb0cdd4f001fb301620',
             '_appid': 2
         }
-        r = requests.post('http://dev.sdkapi.com/msa/v4/messages', data=body_data)
+        r = requests.post('http://localhost:5000/msa/v4/messages', data=body_data)
         print r.text
+
+    # def test_set_message_readed(self):
+    #     body_data = {
+    #         '_sign': 'ed81ac86bc1fca205703c27d16d0d70e',
+    #         '_token': 'bb427a702d53dbb0cdd4f001fb301620',
+    #         'type': 'message',
+    #         'message_id': 2,
+    #         '_appid': 2
+    #     }
+    #     r = requests.post('http://dev.sdkapi.com/msa/v4/message/read', data=body_data)
+    #     print r.text
 
     def tearDown(self):
         pass
