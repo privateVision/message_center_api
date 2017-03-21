@@ -1,9 +1,9 @@
 <?php
 namespace App\Model;
 
-class UserProcedure extends Model
+class UserSub extends Model
 {
-    protected $table = 'user_procedure';
+    protected $table = 'user_sub';
 
     const CREATED_AT = 'created_at';
     const UPDATED_AT = 'updated_at';

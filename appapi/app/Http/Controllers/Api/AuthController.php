@@ -10,6 +10,7 @@ use App\Model\User;
 class AuthController extends Controller {
 
 	protected $user = null;
+	protected $session = null;
 
 	public function before(Request $request, Parameter $parameter) {
 		parent::before($request, $parameter);
@@ -19,6 +20,8 @@ class AuthController extends Controller {
 		if(!$session) {
 			throw new ApiException(ApiException::Remind, '会话未找到，或已过期');
 		}
+
+		$this->session = $session;
 
 		$ucid = $session->ucid;
 		if(!$ucid) {
