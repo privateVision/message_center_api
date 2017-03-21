@@ -18,15 +18,18 @@ def generate_checksum(request):
     if sign is None:
         log_exception(request, "加密签名不能为空")
         return False, response_exception(http_code=200, code=0, message="加密签名不能为空")
-    if not check_cms_api_data_sign(request.form, sign):
+    if not check_cms_api_data_sign(request.get_data(), sign):
         log_exception(request, "数据签名校验失败")
         return False, response_exception(http_code=200, code=0, message="数据签名校验失败")
     return True, True
 
 
 def check_cms_api_data_sign(data, sign):
-    gen_sign = get_md5_sign(data)
-    service_logger.info("客户端数据：%s" % (data,))
+    m = hashlib.md5()
+    str = "%s%s" % (data, app.config.get('MD5_SIGN_KEY'))
+    m.update(str)
+    gen_sign = m.hexdigest()
+    service_logger.info("生成md5的数据：%s" % (str,))
     service_logger.info("客户端数据生成签名：%s" % (gen_sign,))
     if gen_sign == sign:
         return True

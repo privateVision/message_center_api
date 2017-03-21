@@ -18,7 +18,7 @@ app_controller = Blueprint('AppController', __name__)
 
 
 # 获取游戏列表
-@app_controller.route('/msa/v4/apps', methods=['GET'])
+@app_controller.route('/msa/v4/apps', methods=['POST'])
 def v4_get_app_list():
     from run import mysql_session
     app_list = []
@@ -43,7 +43,7 @@ def v4_get_app_list():
 
 
 # 获取游戏区服列表
-@app_controller.route('/msa/v4/app/<int:app_id>/zones', methods=['GET'])
+@app_controller.route('/msa/v4/app/<int:app_id>/zones', methods=['POST'])
 def v4_get_app_zone_list(app_id=None):
     if app_id is None or app_id <= 0:
         log_exception(request, 'app_id不能为空')
