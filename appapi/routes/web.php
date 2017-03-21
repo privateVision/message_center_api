@@ -76,6 +76,8 @@ $app->group(['prefix' => 'api'], function () use ($app) {
     $app->post('user/phone_reset_password', 'Api\\UserController@PhoneResetPasswordAction');            // 通过手机号码重置密码
 
     $app->post('user_sub/list', 'Api\\UserSubController@ListAction');                                   // 小号列表
+    $app->post('user_sub/new', 'Api\\UserSubController@NewAction');                                     // 添加小号
+    $app->post('user_sub/switch', 'Api\\UserSubController@SwitchAction');                               // 添加小号
 
     $app->post('pay/order/new', 'Api\\Pay\\OrderController@NewAction');                                 // 创建订单
     $app->post('pay/order/anfeng/new', 'Api\\Pay\\OrderController@AnfengNewAction');                    // 充值F币的订单
