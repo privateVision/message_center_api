@@ -20,10 +20,10 @@ broadcast_controller = Blueprint('BroadcastController', __name__)
 
 
 # CMS 发送广播
-@broadcast_controller.route('/msa/v4/broadcast', methods=['POST'])
+@broadcast_controller.route('/msa/v4/add_broadcast', methods=['POST'])
 @cms_api_request_check
 def v4_cms_post_broadcast():
-    form = PostBroadcastsRequestForm(request.form)  # POST 表单参数封装
+    form = PostBroadcastsRequestForm.from_json(request.json)
     if not form.validate():
         log_exception(request, '客户端请求错误: %s' % (json.dumps(form.errors)))
         return response_data(200, 0, '客户端请求错误')
@@ -44,10 +44,10 @@ def v4_cms_post_broadcast():
 
 
 # CMS 更新广播
-@broadcast_controller.route('/msa/v4/broadcast', methods=['PUT'])
+@broadcast_controller.route('/msa/v4/update_broadcast', methods=['POST'])
 @cms_api_request_check
 def v4_cms_update_broadcast():
-    form = PostBroadcastsRequestForm(request.form)  # POST 表单参数封装
+    form = PostBroadcastsRequestForm.from_json(request.json)
     if not form.validate():
         log_exception(request, '客户端请求错误: %s' % (json.dumps(form.errors)))
         return response_data(200, 0, '客户端请求错误')
@@ -62,10 +62,10 @@ def v4_cms_update_broadcast():
 
 
 # CMS 删除广播
-@broadcast_controller.route('/msa/v4/broadcast', methods=['DELETE'])
+@broadcast_controller.route('/msa/v4/delete_broadcast', methods=['POST'])
 @cms_api_request_check
 def v4_cms_delete_post_broadcast():
-    broadcast_id = request.form['id']
+    broadcast_id = request.json.get('id')
     if broadcast_id is None or broadcast_id == '':
         log_exception(request, '客户端请求错误-广播id为空')
         return response_data(200, 0, '客户端请求错误')
