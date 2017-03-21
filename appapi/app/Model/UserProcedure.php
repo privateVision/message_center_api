@@ -9,13 +9,10 @@ class UserProcedure extends Model
     const UPDATED_AT = 'updated_at';
 
     public function getTable() {
-        $id = @$this->id ?: @$this->slice['id'];
-        $ucid = @$this->ucid ?: (@$this->slice['ucid'] ?: $this->slice);
+        $ucid = @$this->ucid ?: ($this->slice ?: 0);
 
         if($ucid) {
-            return $this->table .'_'. 0;//$ucid % 30;
-        } else if($id) {
-            return $this->table .'_'. 0;//int(($id - 1) / 71582788);
+            return $this->table .'_'. 0;//($ucid / 500000);
         }
 
         return $this->table;
