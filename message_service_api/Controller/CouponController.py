@@ -33,7 +33,9 @@ def v4_cms_add_coupon():
                 "type": "coupon",
                 "message": form.data
             }
-            kafka_producer.send('message-service', json.dumps(message_info))
+            coupon_str = json.dumps(message_info)
+            service_logger.info("发送卡券：%s" % (coupon_str,))
+            kafka_producer.send('message-service', coupon_str)
         except Exception, err:
             log_exception(request, err.message)
             return response_data(http_code=200, code=0, message="kafka服务异常")
