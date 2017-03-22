@@ -15,6 +15,20 @@ from config.config import config
 
 import logging
 
+# hdfs 待分析日志记录
+hdfs_logger = logging.getLogger('hdfs_log_service')
+hdfs_logger.setLevel(logging.DEBUG)
+hdfs_fh = TimedRotatingFileHandler('./logs/message_service_hdfs.log',
+                                   when="d",
+                                   interval=1,
+                                   backupCount=10)
+hdfs_fh.suffix = "%Y%m%d.log"
+hdfs_fh.setLevel(logging.DEBUG)
+formatter = logging.Formatter('%(asctime)s - %(name)s - %(message)s')
+hdfs_fh.setFormatter(formatter)
+hdfs_logger.addHandler(hdfs_fh)
+
+# 后台业务日志
 service_logger = logging.getLogger('message_service')
 service_logger.setLevel(logging.DEBUG)
 fh = TimedRotatingFileHandler('./logs/message_service_api.log',

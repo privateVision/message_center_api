@@ -2,6 +2,7 @@
 import json
 import threading
 
+import time
 from mongoengine import Q
 
 from MiddleWare import service_logger
@@ -14,7 +15,8 @@ from Utils.RedisUtil import RedisHandle
 def add_message_to_user_message_list(game, users_type, vip_user, specify_user, type, msg_id,
                                      start_time, end_time, is_time):
     users_list = get_game_and_area_and_user_type_and_vip_users(game, users_type, vip_user)
-    users_list.extend(specify_user)
+    specify_user_list = get_ucid_list_by_user_uid_name_list(specify_user)
+    users_list.extend(specify_user_list)
     try:
         for user in users_list:
             user_message = UserMessage()
@@ -31,9 +33,27 @@ def add_message_to_user_message_list(game, users_type, vip_user, specify_user, t
         service_logger.error("添加消息到每个用户的消息列表发生异常：%s" % (err.message,))
 
 
+def get_ucid_list_by_user_uid_name_list(specify_user):
+    ucid_list = []
+    from run import mysql_session
+    for uid in specify_user:
+        find_ucid_sql = "select ucid from user where uid = '%s'" % (uid,)
+        try:
+            user_info = mysql_session.execute(find_ucid_sql).fetchone()
+            if user_info:
+                ucid_list.append(user_info['ucid'])
+        except Exception, err:
+            service_logger.error(err.message)
+            mysql_session.rollback()
+        finally:
+            mysql_session.close()
+    return ucid_list
+
+
 # 给用户在redis中设置标记位
 def add_mark_to_user_redis(ucid, message_type):
-    RedisHandle.hincrby(ucid, message_type, 1)  # 自增数量，表示分类消息的未读数量
+    if message_type == 'message':
+        RedisHandle.hincrby(ucid, message_type, 1)  # 自增数量，表示消息的未读数量
 
 
 def add_to_every_related_users_message_list(users_message):
@@ -80,6 +100,7 @@ def system_notices_persist(data_json=None):
             users_message.save()
         except Exception, err:
             service_logger.error("mongodb保存公告异常：%s" % (err.message,))
+            return
         add_to_every_related_users_message_list(users_message)
 
 
@@ -130,7 +151,6 @@ def system_broadcast_persist(data_json=None):
         users_message.title = data_json['title']
         users_message.content = data_json['content']
         users_message.start_time = data_json['stime']
-        # users_message.end_time = data_json['etime']
         users_message.end_time = int(data_json['stime']) + 30
         users_message.close_time = data_json['close_time']
         users_message.users = data_json['specify_user'].split(",")
@@ -143,6 +163,7 @@ def system_broadcast_persist(data_json=None):
             users_message.save()
         except Exception, err:
             service_logger.error("mongodb保存广播异常：%s" % (err.message,))
+            return
         add_to_every_related_users_message_list(users_message)
 
 
@@ -155,8 +176,7 @@ def system_broadcast_update(data_json=None, update_user_message=True):
         users_message.title = data_json['title']
         users_message.content = data_json['content']
         users_message.start_time = data_json['stime']
-        # users_message.end_time = data_json['etime']
-        users_message.end_time = int(data_json['stime']) + 5
+        users_message.end_time = int(data_json['stime']) + 30
         users_message.close_time = data_json['close_time']
         users_message.users = data_json['specify_user'].split(",")
         users_message.rtype = data_json['users_type'].split(",")
@@ -172,6 +192,7 @@ def system_broadcast_update(data_json=None, update_user_message=True):
                 upsert=False)
         except Exception, err:
             service_logger.error("mongodb保存广播异常：%s" % (err.message,))
+            return
         if update_user_message:
             add_to_every_related_users_message_list(users_message)
 
@@ -182,14 +203,19 @@ def system_message_persist(data_json=None, update_user_message=True):
         users_message.id = '%s%s' % ('message', data_json['id'])
         users_message.mysql_id = data_json['id']
         users_message.type = 'message'
-        users_message.atype = data_json['atype']
+        if data_json['msg_type'] == 'image_text':
+            users_message.atype = 2
+        if data_json['msg_type'] == 'html_text':
+            users_message.atype = 1
         users_message.title = data_json['title']
         users_message.description = data_json['description']
         users_message.content = data_json['content']
         users_message.img = data_json['img']
         users_message.url = data_json['url']
-        users_message.start_time = data_json['send_time']
-        users_message.end_time = int(data_json['send_time']) + 5
+        if data_json['send_time'] == 0:
+            users_message.start_time = int(time.time())
+        else:
+            users_message.start_time = data_json['send_time']
         users_message.sys = data_json['sys']
         users_message.users = data_json['specify_user'].split(",")
         users_message.rtype = data_json['users_type'].split(",")
@@ -201,6 +227,7 @@ def system_message_persist(data_json=None, update_user_message=True):
             users_message.save()
         except Exception, err:
             service_logger.error("mongodb保存消息异常：%s" % (err.message,))
+            return
         if update_user_message:
             add_to_every_related_users_message_list(users_message)
 
@@ -211,10 +238,10 @@ def system_coupon_persist(data_json=None):
         users_message.id = '%s%s' % ('coupon', data_json['id'])
         users_message.mysql_id = data_json['id']
         users_message.type = 'coupon'
-        users_message.title = data_json['title']
+        users_message.name = data_json['name']
         users_message.is_time = data_json['is_time']
-        users_message.start_time = data_json['stime']
-        users_message.end_time = data_json['etime']
+        users_message.start_time = data_json['start_time']
+        users_message.end_time = data_json['end_time']
         users_message.is_first = data_json['is_first']
         users_message.info = data_json['info']
         users_message.num = data_json['num']
@@ -230,6 +257,7 @@ def system_coupon_persist(data_json=None):
             users_message.save()
         except Exception, err:
             service_logger.error("mongodb保存卡券异常：%s" % (err.message,))
+            return
         add_to_every_related_users_message_list(users_message)
 
 
@@ -239,10 +267,10 @@ def system_coupon_update(data_json=None):
         users_message.id = '%s%s' % ('coupon', data_json['id'])
         users_message.mysql_id = data_json['id']
         users_message.type = 'coupon'
-        users_message.title = data_json['title']
+        users_message.name = data_json['name']
         users_message.is_time = data_json['is_time']
-        users_message.start_time = data_json['stime']
-        users_message.end_time = data_json['etime']
+        users_message.start_time = data_json['start_time']
+        users_message.end_time = data_json['end_time']
         users_message.is_first = data_json['is_first']
         users_message.info = data_json['info']
         users_message.num = data_json['num']
