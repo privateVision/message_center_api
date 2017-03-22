@@ -1,6 +1,7 @@
 # _*_ coding: utf-8 _*_
 import json
 
+import time
 from flask import Blueprint
 from flask import request
 from mongoengine import Q
@@ -102,30 +103,49 @@ def v4_sdk_get_broadcast_list():
     data_list = []
     for message in message_list:
         message_info = get_coupon_message_detail_info(message['mysql_id'])
+        # message_resp = {
+        #     "meta_info": {},
+        #     "head": {},
+        #     "body": {}
+        # }
+        # message_resp['meta_info']['app'] = message_info['app']
+        # message_resp['meta_info']['rtype'] = message_info['rtype']
+        # message_resp['meta_info']['vip'] = message_info['vip']
+        # message_resp['head']['name'] = message_info['name']
+        # message_resp['head']['type'] = message_info['type']
+        # message_resp['head']['mysql_id'] = message_info['mysql_id']
+        # message_resp['body']['is_first'] = message_info['is_first']
+        # message_resp['body']['info'] = message_info['info']
+        # message_resp['body']['num'] = message_info['num']
+        # message_resp['body']['full'] = message_info['full']
+        # message_resp['body']['money'] = message_info['money']
+        # message_resp['body']['method'] = message_info['method']
+        # message_resp['body']['start_time'] = message_info['start_time']
+        # message_resp['body']['end_time'] = message_info['end_time']
+        # message_resp['body']['is_time'] = message_info['is_time']
+        unlimited_time = True
+        if message_info['is_time'] == 0:
+            unlimited_time = False
+        time_out = False
+        now = int(time.time())
+        if message_info['end_time'] < now:
+            time_out = True
         message_resp = {
-            "meta_info": {},
-            "head": {},
-            "body": {}
+            'id': message_info['mysql_id'],
+            'name': message_info['name'],
+            'start_time': message_info['start_time'],
+            'end_time': message_info['end_time'],
+            'desc': message_info['info'],
+            'fee': message_info['money'],
+            'method': message_info['method'],
+            'use_condition': "满%s可用" % (message_info['full'],),
+            'unlimited_time': unlimited_time,
+            'time_out': time_out
         }
-        message_resp['meta_info']['app'] = message_info['app']
-        message_resp['meta_info']['rtype'] = message_info['rtype']
-        message_resp['meta_info']['vip'] = message_info['vip']
-        message_resp['head']['title'] = message_info['title']
-        message_resp['head']['type'] = message_info['type']
-        message_resp['head']['mysql_id'] = message_info['mysql_id']
-        message_resp['body']['is_first'] = message_info['is_first']
-        message_resp['body']['info'] = message_info['info']
-        message_resp['body']['num'] = message_info['num']
-        message_resp['body']['full'] = message_info['full']
-        message_resp['body']['money'] = message_info['money']
-        message_resp['body']['method'] = message_info['method']
-        message_resp['body']['start_time'] = message_info['start_time']
-        message_resp['body']['end_time'] = message_info['end_time']
-        message_resp['body']['is_time'] = message_info['is_time']
         data_list.append(message_resp)
-    data = {
-        "total_count": message_list_total_count,
-        "data": data_list
-    }
-    return response_data(http_code=200, data=data)
+    # data = {
+    #     "total_count": message_list_total_count,
+    #     "data": data_list
+    # }
+    return response_data(http_code=200, data=data_list)
 
