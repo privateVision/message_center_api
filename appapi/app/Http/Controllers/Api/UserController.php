@@ -227,6 +227,13 @@ class UserController extends AuthController
 
         return ['result' => true];
     }
+
+    public function AttestAction(Request $request, Parameter $parameter) {
+        $name = $parameter->tough('name');
+        $card_id = $parameter->tough('card_id');
+
+        
+    }
     // --------------------------------------------------------------------------------------------------------------------------------
     
     const SMS_LIMIT = 3;

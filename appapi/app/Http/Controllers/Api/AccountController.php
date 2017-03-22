@@ -162,7 +162,7 @@ class AccountController extends Controller {
     }
 
     public function LoginTokenAction(Request $request, Parameter $parameter) {
-        $token = $parameter->tough('token');
+        $token = $parameter->tough('_token');
 
         $session = Session::where('token', $token)->first();
         if(!$session) {
