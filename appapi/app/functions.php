@@ -38,6 +38,24 @@ function decrypt3des($data, $key = null) {
 }
 
 /**
+ * 生成唯一用户名
+ * @return [type] [description]
+ */
+function username() {
+    $username = null;
+
+    $chars = 'abcdefghjkmnpqrstuvwxy';
+    do {
+        $username = $chars[rand(0, 21)] . rand(10000, 99999999);
+
+        $count = \App\Model\User::where('uid', $username)->count();
+        if($count == 0) {
+            return $username;
+        }
+    } while(true);
+}
+
+/**
  * 生成唯一ID，24~25位36进制
  * @param  string $prefix [description]
  * @return [type]         [description]
