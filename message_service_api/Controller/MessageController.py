@@ -83,7 +83,7 @@ def v4_sdk_get_message_list():
         & Q(closed=0)
         # & Q(is_read=0)
         & Q(start_time__lte=current_timestamp)
-        & Q(end_time__gte=current_timestamp)
+        # & Q(end_time__gte=current_timestamp)  # 消息发送后是一直存在的
         & Q(ucid=ucid)).order_by('-create_time')[start_index:end_index]
     data_list = []
     for message in message_list:

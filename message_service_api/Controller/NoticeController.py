@@ -124,24 +124,20 @@ def v4_sdk_get_notice_list():
         & Q(ucid=ucid)).order_by('sortby, -create_time')
     data_list = []
     message_resp = {
-  #       title
-  #
-  # 'type'
-  #   'id'] = message_info['mysql_id']
-  #   # message_resp['head']['atype'] = message_info['atype']
-  #   # message_resp['body']['content'] = message_info['content']
-  #   # message_resp['body']['button_content'] = message_info['button_content']
-  #   # message_resp['body']['button_type'] = message_info['button_type']
-  #   # message_resp['body']['button_url'] = message_info['button_url']
-  #   # message_resp['body']['end_time'] = message_info['end_time']
-  #   # message_resp['body']['enter_status'] = message_info['enter_status']
-  #   # message_resp['body']['img'] = message_info['img']
-  #   # message_resp['body']['open_type'] = message_info['open_type']
-  #   # message_resp['body']['start_time'] = message_info['start_time']
-  #   # message_resp['body']['end_time'] = message_info['end_time']
-  #   # message_resp['body']['show_times'] = message_info['show_times']
-  #   # message_resp['body']['url'] = message_info['url']
-  #   # message_resp['body']['url_type'
+        'title': '',
+        'type': '',
+        'id': '',
+        'content': '',
+        'button_content': '',
+        'button_type': '',
+        'button_url': '',
+        'end_time': '',
+        'enter_status': '',
+        'img': '',
+        'open_type': '',
+        'show_times': '',
+        'url': '',
+        'url_type': ''
     }
     for message in message_list:
         message_info = get_notice_message_detail_info(message['mysql_id'])
