@@ -74,6 +74,7 @@ $app->group(['prefix' => 'api'], function () use ($app) {
     $app->post('user/unbind_phone', 'Api\\UserController@UnbindPhoneAction');                           // 解绑手机号码
     $app->post('user/sms_phone_reset_password', 'Api\\UserController@SMSPhoneResetPasswordAction');     // 发送重置密码的短信
     $app->post('user/phone_reset_password', 'Api\\UserController@PhoneResetPasswordAction');            // 通过手机号码重置密码
+    $app->post('user/report_role', 'Api\\UserController@ReportRoleAction');                             // 上报玩家角色信息
 
     $app->post('user_sub/list', 'Api\\UserSubController@ListAction');                                   // 小号列表
     $app->post('user_sub/new', 'Api\\UserSubController@NewAction');                                     // 添加小号

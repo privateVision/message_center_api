@@ -9,6 +9,12 @@ function cache_expire_second() {
     return 86400;
 }
 
+/**
+ * 3DES加密
+ * @param  [type] $data [description]
+ * @param  [type] $key  [description]
+ * @return [type]       [description]
+ */
 function encrypt3des($data, $key = null) {
     if(empty($key)) {
         $key = env('API_3DES_KEY');
@@ -17,6 +23,12 @@ function encrypt3des($data, $key = null) {
     return \App\Crypt3DES::encrypt($data, $key);
 }
 
+/**
+ * 3DES解密
+ * @param  [type] $data [description]
+ * @param  [type] $key  [description]
+ * @return [type]       [description]
+ */
 function decrypt3des($data, $key = null) {
     if(empty($key)) {
         $key = env('API_3DES_KEY');
@@ -25,10 +37,29 @@ function decrypt3des($data, $key = null) {
     return \App\Crypt3DES::decrypt($data, $key);
 }
 
+/**
+ * 生成唯一ID，24~25位36进制
+ * @param  string $prefix [description]
+ * @return [type]         [description]
+ */
 function uuid($prefix = "") {
-    return md5($prefix . uniqid(mt_rand(), true) . microtime() . mt_rand());
+    return base_convert(md5($prefix . uniqid(mt_rand(), true) . microtime() . mt_rand()), 16, 36);
 }
 
+/**
+ * 主要用于生成多联的KEY，24~25位36进制
+ * @return [type] [description]
+ */
+function joinkey() {
+    $key = implode('_', func_get_args());
+    return base_convert(md5($key), 16, 36);
+}
+
+/**
+ * 当前时间，Y-m-d H:i:s
+ * @param  integer $time [description]
+ * @return [type]        [description]
+ */
 function datetime($time = 0) {
     if($time) {
         return date('Y-m-d H:i:s', $time);
@@ -37,8 +68,32 @@ function datetime($time = 0) {
     return date('Y-m-d H:i:s');
 }
 
+/**
+ * 生成验证码code
+ * @return [type] [description]
+ */
 function smscode() {
     return rand(100000, 999999);
+}
+
+/**
+ * 异步执行Model::save()方法，对应Model::asyncSave
+ * @param  [type] $model [description]
+ * @return [type]        [description]
+ */
+function async_query($model) {
+    Queue::push(new \App\Jobs\AsyncQuery(serialize($model)));
+}
+
+/**
+ * 异步执行\App\Jobs\AsyncExecute里的方法
+ * @param  [string] $method 方法名
+ * @return [type]         [description]
+ */
+function async_execute($method) {
+    $arguments = func_get_args();
+    unset($arguments[0]);
+    Queue::push(new \App\Jobs\AsyncExecute($method, $arguments));
 }
 
 function user_log($user, $type, $procedure, $text_format) {

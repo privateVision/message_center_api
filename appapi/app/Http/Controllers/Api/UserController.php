@@ -7,6 +7,8 @@ use App\Parameter;
 use App\Event;
 use App\Model\User;
 use App\Model\Orders;
+use App\Model\UserRole;
+use App\Model\ProceduresZone;
 
 class UserController extends AuthController
 {
@@ -208,6 +210,20 @@ class UserController extends AuthController
 
         $this->user->password = $password;
         $this->user->save();
+
+        return ['result' => true];
+    }
+
+    public function ReportRoleAction(Request $request, Parameter $parameter) {
+        $zone_id = $parameter->tough('zone_id');
+        $zone_name = $parameter->tough('zone_name');
+        $role_id = $parameter->tough('role_id');
+        $role_level = $parameter->tough('role_level');
+        $role_name = $parameter->tough('role_name');
+
+        $pid = $parameter->tough('_appid');
+
+        async_execute('report_role', $this->user->ucid, $pid, $this->session->user_sub_id, $zone_id, $zone_name, $role_id, $role_name, $role_level);
 
         return ['result' => true];
     }
