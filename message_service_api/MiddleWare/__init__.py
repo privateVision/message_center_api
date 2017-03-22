@@ -24,7 +24,7 @@ hdfs_fh = TimedRotatingFileHandler('./logs/message_service_hdfs.log',
                                    backupCount=10)
 hdfs_fh.suffix = "%Y%m%d.log"
 hdfs_fh.setLevel(logging.DEBUG)
-formatter = logging.Formatter('%(asctime)s - %(name)s - %(message)s')
+formatter = logging.Formatter('%(asctime)s - %(message)s')
 hdfs_fh.setFormatter(formatter)
 hdfs_logger.addHandler(hdfs_fh)
 
@@ -38,7 +38,7 @@ fh = TimedRotatingFileHandler('./logs/message_service_api.log',
 fh.suffix = "%Y%m%d.log"
 fh.setLevel(logging.DEBUG)
 ch = logging.StreamHandler()
-ch.setLevel(logging.DEBUG)
+ch.setLevel(logging.INFO)
 formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s - [%(filename)s:%(lineno)s]')
 fh.setFormatter(formatter)
 ch.setFormatter(formatter)

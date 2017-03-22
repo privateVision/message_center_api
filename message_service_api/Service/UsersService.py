@@ -190,7 +190,7 @@ def sdk_api_request_check(func):
             if ucid:
                 if find_user_account_is_freeze(ucid):
                     return response_data(200, 101, '账号被冻结')
-                hdfs_logger.info("ucid-%s-addr-%s-uri-%s" % (ucid, request.remote_addr, request.url))
+                hdfs_logger.info("ucid-%s-uri-%s" % (ucid, request.url))
             else:
                 log_exception(request, "根据token: %s 获取ucid失败" % (request.form['_token'],))
                 return response_data(200, 0, '根据token获取ucid失败')

@@ -113,11 +113,13 @@ def v4_sdk_get_message_list():
             'summary': message_info['description'],
             'type': message_info['atype'],
             'id': message_info['mysql_id'],
-            'img': message_info['img'],
+            'img': '',
             'url': '',
             'content': '',
             'is_read': message['is_read']
         }
+        if 'img' in message_info:
+            message_resp['img'] = message_info['img']
         if 'content' in message_info:
             message_resp['content'] = message_info['content']
         if 'url' in message_info:
