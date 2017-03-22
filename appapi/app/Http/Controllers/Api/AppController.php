@@ -65,4 +65,8 @@ class AppController extends Controller
 
         return ['result' => true];
     }
+
+    public function UuidAction(Request $request, Parameter $parameter) {
+        return ['uuid' => uuid()];
+    }
 }

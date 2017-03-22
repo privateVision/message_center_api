@@ -45,6 +45,7 @@ $app->group(['prefix' => 'pub'], function () use ($app) {
 $app->group(['prefix' => 'api'], function () use ($app) {
     $app->post('app/initialize', 'Api\\AppController@InitializeAction');                                // 初始化
     $app->post('app/verify_sms', 'Api\\AppController@VerifySMSAction');                                 // 验证手机验证码是否正确
+    $app->post('app/uuid', 'Api\\AppController@UuidAction');                                            // 初始化
 
     $app->post('account/login_token', 'Api\\AccountController@LoginTokenAction');                       // 自动登录
     $app->post('account/login', 'Api\\AccountController@LoginAction');                                  // 用户名或手机号码登陆
