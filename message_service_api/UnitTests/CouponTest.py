@@ -78,8 +78,8 @@ class CouponFunctionTest(unittest.TestCase):
 
     def test_get_coupon_list(self):
         body_data = {
-            '_sign': '18c6426f78b7135a98c1730d2541114c',
-            '_token': 'bed992d8ba58d215a494f4d0ffcdcbbf',
+            '_sign': '141aa24d6419b7ba2850bdcab13e95da',
+            '_token': 'c31fc6b6b2f7b993713c124f8104209d',
             '_appid': 2
         }
         r = requests.post('http://localhost:5000/msa/v4/coupons', data=body_data)
