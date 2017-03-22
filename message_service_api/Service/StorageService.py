@@ -184,16 +184,16 @@ def system_message_persist(data_json=None, update_user_message=True):
         users_message.mysql_id = data_json['id']
         users_message.type = 'message'
         if data_json['msg_type'] == 'image_text':
-            users_message.atype = 1
-        if data_json['msg_type'] == 'html_text':
             users_message.atype = 2
+        if data_json['msg_type'] == 'html_text':
+            users_message.atype = 1
         users_message.title = data_json['title']
         users_message.description = data_json['description']
         users_message.content = data_json['content']
         users_message.img = data_json['img']
         users_message.url = data_json['url']
         users_message.start_time = data_json['send_time']
-        users_message.end_time = int(data_json['send_time']) + 5
+        users_message.end_time = int(data_json['send_time']) + 12000
         users_message.sys = data_json['sys']
         users_message.users = data_json['specify_user'].split(",")
         users_message.rtype = data_json['users_type'].split(",")
