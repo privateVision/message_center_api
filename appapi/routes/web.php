@@ -26,8 +26,7 @@ $app->get('/', function (Illuminate\Http\Request $request) use ($app) {
     }
 });
 
-$app->get('test', 'TooltestController@fpayTestAction');// test
-$app->get('createuser','TestController@createUserAction');
+$app->get('test', 'TooltestController@iosTestAction');// test
 
 // 支付回调相关
 $app->group(['prefix' => 'pay_callback'], function () use ($app) {
@@ -81,6 +80,9 @@ $app->group(['prefix' => 'api'], function () use ($app) {
     $app->post('pay/nowpay/alipay', 'Api\\Pay\\NowpayController@AlipayAction');                         // 现在支付，支付宝
     $app->post('pay/nowpay/unionpay', 'Api\\Pay\\NowpayController@UnionpayAction');                     // 现在支付，银联
     $app->post('pay/anfeng/request', 'Api\\Pay\\AnfengController@RequestAction');                       // 安锋支付，（帐户余额支付）
+    $app->post('ios/order/receipt/verify','Api\\AppleController@validateReceiptAction');                // 验证苹果支付的信息
+    $app->get('ios/order/create','Api\\Pay\\AppleController@orderCreateAction');                            // 验证苹果支付的信息
+
 });
 
 // 对内部调用的API接口

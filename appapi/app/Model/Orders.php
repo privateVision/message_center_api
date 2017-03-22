@@ -41,6 +41,10 @@ class Orders extends Model
 		$this->attributes['hide'] = $value ? 1 : 0;
 	}
 
+	public function ios_order_ext(){
+		return $this->belongsTo(IosOrderExt::class,'oid','id');
+	}
+
 	public function real_fee() {
 		$fee = OrdersExt::where('oid', $this->id)->sum('fee');
 		return bcsub($this->fee, $fee, 2);

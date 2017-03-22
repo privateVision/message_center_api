@@ -6,8 +6,11 @@
  * Time: 13:50
  */
 namespace App\Http\Controllers\Web;
+use App\Exceptions\ToolException;
+use App\Model\User;
+use App\Parameter;
 use Illuminate\Http\Request;
-use Mockery\Generator\Parameter;
+
 
 class AccountController extends Controller{
     /*
@@ -33,6 +36,47 @@ class AccountController extends Controller{
     public function getUserInfo(){
 
     }
+
+
+    /*
+     * 安峰通行证账号冻结
+     * */
+    public function userFreeze(Request $request ,Parameter $parameter){
+        $username = $parameter->tough("uid");
+        $freezeType = $parameter->touch("freezeType");
+
+        if(!check_name($username)) return trans("messages.user_type_error");
+        if(!preg_match("/^[01]$/",$freezeType)) return trans("messages.param_type_error");
+        $user = User::where("uid",$username)->frist();
+        if(empty($user)) return trans("messages.user_not_found");
+
+        $user ->setIsFreezeAttribute(1);
+        $ret = $user->save();
+
+        //controller log
+        try{
+            //修改的信息记录到日志
+            $account_log = new  AccountLog();
+            $account_log->ucid           = $user['ucid'];
+            $account_log->username      = $user['uid'];
+            $account_log->salt          = $user['salt'];
+            $account_log->addtime       = date('Y-m-d H:i:s',time());
+            $account_log->save();
+        }catch(\Exception $e){
+
+        }
+
+        if($ret) return trans("messages.freeze_success");
+
+        throw new ToolException(ToolException::Remind,trans("messages.freeze_failed"));
+
+    }
+
+
+
+
+
+
 
 }
 

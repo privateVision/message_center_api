@@ -10,7 +10,7 @@ use Laravel\Lumen\Routing\Controller as BaseController;
 
 class ToolTestController extends \App\Controller
 {
-    const BASEURL = '192.168.1.116/';
+    const BASEURL = 'wwww.sdkapi.com/';
 
 
     public function senurl($url,$data,$ispost=true){
@@ -65,6 +65,7 @@ class ToolTestController extends \App\Controller
         curl_close($curlobj);// 关闭cURL
 
         $res_data = json_decode($output, true);
+        var_dump($res_data);
         if(!$res_data) {
             echo "<span style=\"color:red\">返回值无法解析：$output</span><br/>";
             return false;
@@ -81,19 +82,31 @@ class ToolTestController extends \App\Controller
     }
 
 
-    public function fpayTestAction(Request $request){
+    public function iosTestAction(Request $request){
 
         //$dat = ["_appid"=>1001,"amount"=>10,"username"=>"z80189495","sn"=>"12345678","notifyurl"=>"http://192.168.1.156:73/api/WithdrawAction/notify"];
          $dd = ["uid"=>"z80189495","_appid"=>"1001","password"=>"123456"];
         //$dd = ["mobile"=>18801273298,"_appid"=>1001];
 
         //$dd = ["_appid"=>1001,"amount"=>10,"username"=>"z80189495","sn"=>"t201703031808596173","notifyUrlBack"=>"http://dev.haochong.com/api/WithdrawAction/notifyUrlBack"];
-        ksort($dd);
-        $_token = md5(http_build_query($dd) . env('APP_' . @$dd['_appid']));
 
-        $dd['_token'] = $_token;
+        $ddt = [];
+        $ddt['product_id'] = "com.anfeng.cqws600";
+        $ddt['role_name'] = "浪子商";
+        $ddt['ucid'] = 4819823;
+        $ddt['uid'] = "hhtyh1717";
+        $ddt['vorderid'] = 20170321181544;
+        $ddt["zone_name"] = 57;
+        $ddt["_sign"] = "rwwEZvBA3o0xFxEKQVCQ0SMmgz+2uUxs4xhgo87yRwAF2CcNpFszo4lT7SUvI8+g
+MnZYlexsUywTg9YLnKTOrbqNZxCnonUmUSb3j6p+fMy20xKQmWYFSuVmgK//1J0C
+5LqFyUAXRLTXAlTdKWmSg10QKZcRE9CqzfkOPPwHjng=";
 
-        $this->sendrequest(self::BASEURL."tool/user/freeze",true,$dd);
+        //ksort($ddt);
+        //$_token = md5(http_build_query($dd) . env('APP_' . @$dd['_appid']));
+
+        //$dd['_token'] = $_token;
+
+        $this->sendrequest(self::BASEURL."api/ios/order/create",true,$ddt);
 
     }
 
