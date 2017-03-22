@@ -4,14 +4,23 @@ namespace App\Http\Controllers\Api;
 use App\Exceptions\ApiException;
 use Illuminate\Http\Request;
 use App\Parameter;
+use App\Model\ProceduresExtend;
 
 class AppController extends Controller
 {
     public function InitializeAction(Request $request, Parameter $parameter) {
+        $pid = $parameter->tough('_appid');
         $app_version = $parameter->tough('app_version');
 
         // config
-        $config = $this->procedure->procedures_extend()->first();
+        $config = ProceduresExtend::from_cache($pid);
+        if(!$config) {
+            $config = new ProceduresExtend;
+            $config->pid = $pid;
+            $config->save();
+
+            $config = ProceduresExtend::from_cache($pid);
+        }
 
         // check update
         $update = [];
@@ -24,47 +33,26 @@ class AppController extends Controller
             );
         }
 
-        if($config) {
-            return [
-                'update' => $update,
-                'service' => [
-                    'qq' => strval($config->service_qq),
-                    'page' => strval($config->service_page),
-                    'phone' => strval($config->service_phone),
-                    'share' => strval($config->service_share),
-                    'interval' => $config->service_interval * 1000,
-                ],
-                'bind_phone' => [
-                    'need' => $config->bind_phone_need,
-                    'enforce' => $config->bind_phone_enforce,
-                    'interval' => $config->time_interval * 1000,
-                ],
-                'real_name' => [
-                    'need' => $config->real_name_need,
-                    'enforce' => $config->real_name_enforce,
-                ]
-            ];
-        } else {
-            return [
-                'update' => $update,
-                'service' => [
-                    'qq' => env('SERVICE_QQ'),
-                    'page' => env('SERVICE_PAGE'),
-                    'phone' => env('SERVICE_PHONE'),
-                    'share' => env('SERVICE_SHARE'),
-                    'interval' => 300000,
-                ],
-                'bind_phone' => [
-                    'need' => true,
-                    'enforce' => false,
-                    'interval' => 86400000,
-                ],
-                'real_name' => [
-                    'need' => false,
-                    'enforce' => false,
-                ]
-            ];
-        }
+        return [
+            'allow_sub_num' => $config->allow_num,
+            'update' => $update,
+            'service' => [
+                'qq' => $config->service_qq,
+                'page' => $config->service_page,
+                'phone' => $config->service_phone,
+                'share' => $config->service_share,
+                'interval' => $config->service_interval * 1000,
+            ],
+            'bind_phone' => [
+                'need' => $config->bind_phone_need,
+                'enforce' => $config->bind_phone_enforce,
+                'interval' => $config->time_interval * 1000,
+            ],
+            'real_name' => [
+                'need' => $config->real_name_need,
+                'enforce' => $config->real_name_enforce,
+            ]
+        ];
     }
 
     public function VerifySMSAction(Request $request, Parameter $parameter) {

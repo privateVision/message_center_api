@@ -4,7 +4,8 @@ namespace App\Model;
 class UserSub extends Model
 {
     protected $table = 'user_sub';
-
+    public $incrementing = false;
+    
     const CREATED_AT = 'created_at';
     const UPDATED_AT = 'updated_at';
 
@@ -16,5 +17,9 @@ class UserSub extends Model
         }
 
         return $this->table;
+    }
+
+    public function getIsFreezeAttribute() {
+        return $this->attributes['is_freeze'] == 1;
     }
 }
