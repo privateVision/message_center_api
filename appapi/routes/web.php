@@ -45,6 +45,7 @@ $app->group(['prefix' => 'pub'], function () use ($app) {
 $app->group(['prefix' => 'api'], function () use ($app) {
     $app->post('app/initialize', 'Api\\AppController@InitializeAction');                                // 初始化
     $app->post('app/verify_sms', 'Api\\AppController@VerifySMSAction');                                 // 验证手机验证码是否正确
+    $app->post('app/uuid', 'Api\\AppController@UuidAction');                                            // 初始化
 
     $app->post('account/login_token', 'Api\\AccountController@LoginTokenAction');                       // 自动登录
     $app->post('account/login', 'Api\\AccountController@LoginAction');                                  // 用户名或手机号码登陆
@@ -74,6 +75,8 @@ $app->group(['prefix' => 'api'], function () use ($app) {
     $app->post('user/unbind_phone', 'Api\\UserController@UnbindPhoneAction');                           // 解绑手机号码
     $app->post('user/sms_phone_reset_password', 'Api\\UserController@SMSPhoneResetPasswordAction');     // 发送重置密码的短信
     $app->post('user/phone_reset_password', 'Api\\UserController@PhoneResetPasswordAction');            // 通过手机号码重置密码
+    $app->post('user/report_role', 'Api\\UserController@ReportRoleAction');                             // 上报玩家角色信息
+    $app->post('user/attest', 'Api\\UserController@AttestAction');                                      // 实名认证
 
     $app->post('user_sub/list', 'Api\\UserSubController@ListAction');                                   // 小号列表
     $app->post('user_sub/new', 'Api\\UserSubController@NewAction');                                     // 添加小号

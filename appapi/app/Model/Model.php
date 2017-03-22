@@ -33,7 +33,10 @@ abstract class Model extends Eloquent
                     $k_2 = true;
                     $data = Redis::get($rediskey_2);
                     if($data) {
-                        $this->forceFill(json_decode($data, true));
+                        $data = json_decode($data, true);
+                        $this->forceFill($data);
+                        $this->original = $data;
+                        $this->exists = true;
                         return $this;
                     }
                 }
@@ -52,7 +55,10 @@ abstract class Model extends Eloquent
                 $rediskey_2 = $this->table .'_'. $value;
                 $data = Redis::get($rediskey_2);
                 if($data) {
-                    $this->forceFill(json_decode($data, true));
+                    $data = json_decode($data, true);
+                    $this->forceFill($data);
+                    $this->original = $data;
+                    $this->exists = true;
                     return $this;
                 }
 
@@ -74,7 +80,7 @@ abstract class Model extends Eloquent
     
         static::updated(function($entry) {
             $rediskey_2 = $entry->table . $entry->getKey();
-            Redis::set($rediskey_2, serialize($entry), 'XX');
+            Redis::set($rediskey_2, json_encode($entry), 'XX');
         });
 
         static::deleted(function($entry) {
@@ -88,13 +94,18 @@ abstract class Model extends Eloquent
      * @param  array  $options [description]
      * @return [type]          [description]
      */
-    public function delaySave(array $options = []) {
+    public function delaySave() {
         if(!$this->getKey()) {
-            return parent::save($options);
+            return parent::save();
         }
 
         $this->is_delay_save = true;
 
+        return $this;
+    }
+
+    public function asyncSave() {
+        async_query($this);
         return $this;
     }
 

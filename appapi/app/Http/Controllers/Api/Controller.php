@@ -44,18 +44,18 @@ class Controller extends \App\Controller
 
 			log_debug('response', $response);
 
-			$resdata = array('code' => ApiException::Success, 'msg' => null, 'data' => $response);
+			return array('code' => ApiException::Success, 'msg' => null, 'data' => $response);
 		} catch (ApiException $e) {
 			log_warning('ApiException', ['message' => $e->getMessage(), 'code' => $e->getCode()]);
-			$resdata = array('code' => $e->getCode(), 'msg' => $e->getMessage(), 'data' => null);
+			return array('code' => $e->getCode(), 'msg' => $e->getMessage(), 'data' => null);
 		} catch (\App\Exceptions\Exception $e) {
 			log_warning('Exception', ['message' => $e->getMessage(), 'code' => $e->getCode()]);
-			$resdata = array('code' => ApiException::Error, 'msg' => $e->getMessage(), 'data' => null);
+			return array('code' => ApiException::Error, 'msg' => $e->getMessage(), 'data' => null);
 		} catch(\Exception $e) {
 			log_error('error', ['message' => $e->getMessage(), 'code' => $e->getCode(), 'file' => $e->getFile(), 'line' => $e->getLine()]);
-			$resdata = array('code' => ApiException::Error, 'msg' => $e->getMessage(), 'data' => null);
+			return array('code' => ApiException::Error, 'msg' => $e->getMessage(), 'data' => null);
 		}
-
+/*
 		$type = $parameter->tough('_type');
 
 		if($type === 'jsonp') {
@@ -64,6 +64,7 @@ class Controller extends \App\Controller
 		} else {
 			return $resdata;
 		}
+*/
 	}
 
 	public function before(Request $request, Parameter $parameter) {

@@ -23,7 +23,7 @@ class AppController extends Controller
         }
 
         // check update
-        $update = [];
+        $update = new \stdClass;
         $update_apks = $this->procedure->update_apks()->orderBy('dt', 'desc')->first();
         if($update_apks && $update_apks->version != $app_version) {
             $update = array(
@@ -64,5 +64,9 @@ class AppController extends Controller
         }
 
         return ['result' => true];
+    }
+
+    public function UuidAction(Request $request, Parameter $parameter) {
+        return ['uuid' => uuid()];
     }
 }

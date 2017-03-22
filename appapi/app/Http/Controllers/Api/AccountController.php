@@ -107,11 +107,13 @@ class AccountController extends Controller {
         }
 
         // ------------ 都不存在，注册
+        $username = username();
+        
         if(!$mobile_user) {
             $password = rand(100000, 999999);
 
             $mobile_user = new User;
-            $mobile_user->uid = $mobile;
+            $mobile_user->uid = $username;
             $mobile_user->mobile = $mobile;
             $mobile_user->rid = $parameter->tough('_rid');
             $mobile_user->uuid = '';
@@ -124,7 +126,7 @@ class AccountController extends Controller {
             $mobile_user->save();
 
             try {
-                send_sms($mobile, env('APP_ID'), 'oauth_register', ['#type#' => $types[$type], '#username#' => $mobile, '#password#' => $password]);
+                send_sms($mobile, env('APP_ID'), 'oauth_register', ['#type#' => $types[$type], '#username#' => $username, '#password#' => $password]);
             } catch (\App\Exceptions\Exception $e) {
                 // 注册成功就OK了，短信发送失败没关系，可找回密码
                 // throw new ApiException(ApiException::Remind, $e->getMessage());
@@ -160,7 +162,7 @@ class AccountController extends Controller {
     }
 
     public function LoginTokenAction(Request $request, Parameter $parameter) {
-        $token = $parameter->tough('token');
+        $token = $parameter->tough('_token');
 
         $session = Session::where('token', $token)->first();
         if(!$session) {
@@ -260,11 +262,12 @@ class AccountController extends Controller {
         }
 
         // 注册
+        $username = username();
         $password = rand(100000, 999999);
 
         $user = new User;
         $user->password = $password;
-        $user->uid = $mobile;
+        $user->uid = $username;
         $user->email = $mobile . "@anfan.com";;
         $user->regip = $request->ip();
         $user->mobile = $mobile;
@@ -276,7 +279,7 @@ class AccountController extends Controller {
 
         // 将密码发给用户，通过队列异步发送
         try {
-            send_sms($mobile, env('APP_ID'), 'mobile_register', ['#username#' => $mobile, '#password#' => $password]);
+            send_sms($mobile, env('APP_ID'), 'mobile_register', ['#username#' => $username, '#password#' => $password]);
         } catch (\App\Exceptions\Exception $e) {
             // 注册成功就OK了，短信发送失败没关系，可找回密码
             // throw new ApiException(ApiException::Remind, $e->getMessage());
@@ -329,11 +332,12 @@ class AccountController extends Controller {
         }
 
         // 注册
+        $username = username();
         $password = rand(100000, 999999);
 
         $user = new User;
         $user->password = $password;
-        $user->uid = $mobile;
+        $user->uid = $username;
         $user->email = $mobile . "@anfan.com";;
         $user->regip = $request->ip();
         $user->mobile = $mobile;
@@ -345,7 +349,7 @@ class AccountController extends Controller {
 
         // 将密码发给用户，通过队列异步发送
         try {
-            send_sms($mobile, env('APP_ID'), 'mobile_register', ['#username#' => $mobile, '#password#' => $password]);
+            send_sms($mobile, env('APP_ID'), 'mobile_register', ['#username#' => $username, '#password#' => $password]);
         } catch (\App\Exceptions\Exception $e) {
             // 注册成功就OK了，短信发送失败没关系，可找回密码
             // throw new ApiException(ApiException::Remind, $e->getMessage());

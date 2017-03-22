@@ -7,6 +7,7 @@ use App\Model\Session;
 use App\Model\UserSub;
 use App\Model\UserSubService;
 use App\Model\User;
+use Request;
 
 class Event
 {
@@ -54,7 +55,7 @@ class Event
         $session->expired_ts = time() + 2592000; // 1个月有效期
         $session->date = date('Ymd');
         $session->save();
-         
+        
         $user->uuid = $session->token; // todo: 兼容旧的自动登陆
         $user->last_login_at = datetime();
         $user->save();
