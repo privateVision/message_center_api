@@ -5,7 +5,7 @@ from flask import request
 from mongoengine import Q
 
 from Controller.BaseController import response_data
-from MiddleWare import service_logger
+from MiddleWare import service_logger, hdfs_logger
 from MongoModel.AppRulesModel import AppVipRules
 from MongoModel.MessageModel import UsersMessage
 from MongoModel.UserMessageModel import UserMessage
@@ -190,10 +190,13 @@ def sdk_api_request_check(func):
             if ucid:
                 if find_user_account_is_freeze(ucid):
                     return response_data(200, 101, '账号被冻结')
+                hdfs_logger.info("ucid-%s-addr-%s-uri-%s" % (ucid, request.remote_addr, request.url))
             else:
                 log_exception(request, "根据token: %s 获取ucid失败" % (request.form['_token'],))
                 return response_data(200, 0, '根据token获取ucid失败')
-        return func(*args, **kwargs)
+            return func(*args, **kwargs)
+        else:
+            return response_data(200, 0, '请求校验错误')
     return wraper
 
 

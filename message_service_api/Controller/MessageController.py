@@ -113,11 +113,12 @@ def v4_sdk_get_message_list():
             'summary': message_info['description'],
             'type': message_info['atype'],
             'id': message_info['mysql_id'],
-            'content': message_info['content'],
             'img': message_info['img'],
             'url': message_info['url'],
             'is_read': message['is_read']
         }
+        if 'content' in message_info:
+            message_resp['content'] = message_info['content']
         data_list.append(message_resp)
     # data = {
     #     "total_count": message_list_total_count,
