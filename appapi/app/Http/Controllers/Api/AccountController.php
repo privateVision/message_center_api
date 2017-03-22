@@ -119,7 +119,6 @@ class AccountController extends Controller {
             $mobile_user->password = $password;
             $mobile_user->email = $mobile . "@anfan.com";
             $mobile_user->regip = $request->ip();
-            $mobile_user->regdate = time();
             $mobile_user->avatar = $avatar;
             $mobile_user->nickname = $nickname;
             $mobile_user->save();
@@ -215,7 +214,6 @@ class AccountController extends Controller {
         $user->password = $password;
         $user->email = $username . "@anfan.com";;
         $user->regip = $request->ip();
-        $user->regdate = time();
         $user->uid = $username;
         $user->nickname = $username;
         $user->rid = $parameter->tough('_rid');
@@ -269,7 +267,6 @@ class AccountController extends Controller {
         $user->uid = $mobile;
         $user->email = $mobile . "@anfan.com";;
         $user->regip = $request->ip();
-        $user->regdate = time();
         $user->mobile = $mobile;
         $user->nickname = $mobile;
         $user->rid = $parameter->tough('_rid');
@@ -339,7 +336,6 @@ class AccountController extends Controller {
         $user->uid = $mobile;
         $user->email = $mobile . "@anfan.com";;
         $user->regip = $request->ip();
-        $user->regdate = time();
         $user->mobile = $mobile;
         $user->nickname = $mobile;
         $user->rid = $parameter->tough('_rid');

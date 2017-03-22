@@ -1,9 +1,9 @@
 <?php
 namespace App\Http\Controllers\Api;
 
+use App\Exceptions\ApiException;
 use Illuminate\Http\Request;
 use App\Parameter;
-use App\Exceptions\ApiException;
 use App\Event;
 use App\Model\User;
 use App\Model\Orders;

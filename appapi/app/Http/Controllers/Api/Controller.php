@@ -19,15 +19,8 @@ class Controller extends \App\Controller
 			$parameter = new Parameter($data);
 			$appid = $parameter->tough('_appid');
 			$sign = $parameter->tough('_sign');
-/*
-			$rediskey = sprintf(Redis::KSTR_REQUEST_SIGN_LOCK, $sign);
-			if(Redis::setnx($rediskey, 1)) {
-				Redis::expire($rediskey, 28800);
-			} else {
-				throw new ApiException(ApiException::Remind, '操作太频繁');
-			}
-*/
-			$procedure = Procedures::find($appid);
+
+			$procedure = Procedures::from_cache($appid);
 			if (!$procedure) {
 				throw new ApiException(ApiException::Error, "appid不正确:{$appid}");
 			}

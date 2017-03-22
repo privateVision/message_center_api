@@ -80,6 +80,7 @@ def system_notices_persist(data_json=None):
             users_message.save()
         except Exception, err:
             service_logger.error("mongodb保存公告异常：%s" % (err.message,))
+            return
         add_to_every_related_users_message_list(users_message)
 
 
@@ -130,7 +131,6 @@ def system_broadcast_persist(data_json=None):
         users_message.title = data_json['title']
         users_message.content = data_json['content']
         users_message.start_time = data_json['stime']
-        # users_message.end_time = data_json['etime']
         users_message.end_time = int(data_json['stime']) + 30
         users_message.close_time = data_json['close_time']
         users_message.users = data_json['specify_user'].split(",")
@@ -143,6 +143,7 @@ def system_broadcast_persist(data_json=None):
             users_message.save()
         except Exception, err:
             service_logger.error("mongodb保存广播异常：%s" % (err.message,))
+            return
         add_to_every_related_users_message_list(users_message)
 
 
@@ -155,8 +156,7 @@ def system_broadcast_update(data_json=None, update_user_message=True):
         users_message.title = data_json['title']
         users_message.content = data_json['content']
         users_message.start_time = data_json['stime']
-        # users_message.end_time = data_json['etime']
-        users_message.end_time = int(data_json['stime']) + 5
+        users_message.end_time = int(data_json['stime']) + 30
         users_message.close_time = data_json['close_time']
         users_message.users = data_json['specify_user'].split(",")
         users_message.rtype = data_json['users_type'].split(",")
@@ -172,6 +172,7 @@ def system_broadcast_update(data_json=None, update_user_message=True):
                 upsert=False)
         except Exception, err:
             service_logger.error("mongodb保存广播异常：%s" % (err.message,))
+            return
         if update_user_message:
             add_to_every_related_users_message_list(users_message)
 
@@ -182,7 +183,10 @@ def system_message_persist(data_json=None, update_user_message=True):
         users_message.id = '%s%s' % ('message', data_json['id'])
         users_message.mysql_id = data_json['id']
         users_message.type = 'message'
-        users_message.atype = data_json['atype']
+        if data_json['msg_type'] == 'image_text':
+            users_message.atype = 1
+        if data_json['msg_type'] == 'html_text':
+            users_message.atype = 2
         users_message.title = data_json['title']
         users_message.description = data_json['description']
         users_message.content = data_json['content']
@@ -201,6 +205,7 @@ def system_message_persist(data_json=None, update_user_message=True):
             users_message.save()
         except Exception, err:
             service_logger.error("mongodb保存消息异常：%s" % (err.message,))
+            return
         if update_user_message:
             add_to_every_related_users_message_list(users_message)
 
@@ -211,10 +216,10 @@ def system_coupon_persist(data_json=None):
         users_message.id = '%s%s' % ('coupon', data_json['id'])
         users_message.mysql_id = data_json['id']
         users_message.type = 'coupon'
-        users_message.title = data_json['title']
+        users_message.name = data_json['name']
         users_message.is_time = data_json['is_time']
-        users_message.start_time = data_json['stime']
-        users_message.end_time = data_json['etime']
+        users_message.start_time = data_json['start_time']
+        users_message.end_time = data_json['end_time']
         users_message.is_first = data_json['is_first']
         users_message.info = data_json['info']
         users_message.num = data_json['num']
@@ -230,6 +235,7 @@ def system_coupon_persist(data_json=None):
             users_message.save()
         except Exception, err:
             service_logger.error("mongodb保存卡券异常：%s" % (err.message,))
+            return
         add_to_every_related_users_message_list(users_message)
 
 
@@ -239,10 +245,10 @@ def system_coupon_update(data_json=None):
         users_message.id = '%s%s' % ('coupon', data_json['id'])
         users_message.mysql_id = data_json['id']
         users_message.type = 'coupon'
-        users_message.title = data_json['title']
+        users_message.name = data_json['name']
         users_message.is_time = data_json['is_time']
-        users_message.start_time = data_json['stime']
-        users_message.end_time = data_json['etime']
+        users_message.start_time = data_json['start_time']
+        users_message.end_time = data_json['end_time']
         users_message.is_first = data_json['is_first']
         users_message.info = data_json['info']
         users_message.num = data_json['num']

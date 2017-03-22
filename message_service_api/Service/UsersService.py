@@ -17,6 +17,7 @@ def get_game_and_area_and_user_type_and_vip_users(game=None, user_type=None, vip
     user_type_users_list = get_user_type_users(user_type)
     vip_users_list = get_vip_users(vips)
     # 游戏区服不为空
+    # game的结构可能不一样，卡券只有单个游戏，没有区服，其他的有多个游戏和区服
     if game is not None:
         from run import mysql_session
         # 不是所有游戏区服
@@ -28,13 +29,13 @@ def get_game_and_area_and_user_type_and_vip_users(game=None, user_type=None, vip
                                                       % (game_info['apk_id'], zone)
                         try:
                             tmp_user_list = mysql_session.execute(find_users_in_game_area_sql)
+                            for ucid in tmp_user_list:
+                                game_users_list.append(ucid[0])
                         except Exception, err:
                             service_logger.error(err.message)
                             mysql_session.rollback()
                         finally:
                             mysql_session.close()
-                        for ucid in tmp_user_list:
-                            game_users_list.append(ucid[0])
             return list(set(user_type_users_list).intersection(set(game_users_list)).intersection(set(vip_users_list)))
         else:
             return list(set(user_type_users_list).intersection(set(vip_users_list)))

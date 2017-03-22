@@ -11,9 +11,7 @@ class Redis extends BaseRedis {
     // S   Set 集合，以S开头的命令
     // SS  SortedSet 有序集合，以Z开头的命令
     // P   Pub 发布
-    const KSTR_REQUEST_SIGN_LOCK = 'sl_%s';         // 请求锁：%ssign
-    const KSTR_SMS = 'sms_%s_%s';                   // 发短信记录：%s手机号码%s验证码
-    const KSTR_ORDER_SUCCESS_LOCK = 'ol_%s';        // 订单成功处理锁：%sorder_id
-    const KH_USER = 'u_%s';
-    const KSTR_INCR = 'incr_%s';
+    const KSTR_SMS = 'sms_%s_%s';                   // 发短信记录：%s:手机号码,%s:验证码
+    const KSTR_ORDER_SUCCESS_LOCK = 'ol_%s';        // 订单成功处理锁：%s:order_id
+    const KH_USERSUB_NUM = 'u_sub_n';               // 用户小号数量
 }

@@ -25,12 +25,8 @@ function decrypt3des($data, $key = null) {
     return \App\Crypt3DES::decrypt($data, $key);
 }
 
-function uuid() {
-    return md5(uniqid(mt_rand(), true) . microtime() . mt_rand());
-}
-
-function auto_increment($type) {
-    return Redis::incr(sprintf(Redis::KSTR_INCR, $type));
+function uuid($prefix = "") {
+    return md5($prefix . uniqid(mt_rand(), true) . microtime() . mt_rand());
 }
 
 function datetime($time = 0) {
