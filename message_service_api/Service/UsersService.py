@@ -72,17 +72,17 @@ def get_user_type_users(user_type):
     if user_type is not None:
         from run import mysql_session
         for type in user_type:
-            find_users_by_user_type_sql = "select ucid from ucusers as u, retailers as r where u.rid = r.rid " \
+            find_users_by_user_type_sql = "select distinct(ucid) from ucusers as u, retailers as r where u.rid = r.rid " \
                                           "and r.rtype = %s" % (type,)
             try:
-                origin_list = mysql_session.execute(find_users_by_user_type_sql)
+                origin_list = mysql_session.execute(find_users_by_user_type_sql).fetchall()
+                for item in origin_list:
+                    users_list.append(item['ucid'])
             except Exception, err:
                 service_logger.error(err.message)
                 mysql_session.rollback()
             finally:
                 mysql_session.close()
-            for ucid in origin_list:
-                users_list.append(ucid[0])
     return users_list
 
 
@@ -95,16 +95,16 @@ def get_vip_users(vips):
             vip_rule_info = AppVipRules.objects(level=vip).first()
             if vip_rule_info is not None:
                 fee = vip_rule_info['fee']
-                find_users_by_vip_sql = "select ucid from ucuser_total_pay as u where u.pay_fee >= %s " % (fee,)
+                find_users_by_vip_sql = "select distinct(ucid) from ucuser_total_pay as u where u.pay_fee >= %s " % (fee,)
                 try:
-                    origin_list = mysql_session.execute(find_users_by_vip_sql)
+                    origin_list = mysql_session.execute(find_users_by_vip_sql).fetchall()
+                    for item in origin_list:
+                        users_list.append(item['ucid'])
                 except Exception, err:
                     service_logger.error(err.message)
                     mysql_session.rollback()
                 finally:
                     mysql_session.close()
-                for ucid in origin_list:
-                    users_list.append(ucid[0])
     return users_list
 
 
