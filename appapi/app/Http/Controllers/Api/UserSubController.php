@@ -15,7 +15,7 @@ class UserSubController extends AuthController
         $pid = $parameter->tough('_appid');
 
         $data = [];
-        $user_sub = UserSub::tableSlice($this->user->ucid)->where('ucid', $this->user->ucid)->where('pid', $pid)->orderBy('priority', 'desc')->get();
+        $user_sub = UserSub::tableSlice($this->user->ucid)->where('ucid', $this->user->ucid)->where('pid', $pid)->orderBy('name', 'asc')->get();
         foreach($user_sub as $v) {
             $data[] = [
                 'id' => $v->id,
