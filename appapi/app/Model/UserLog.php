@@ -3,7 +3,7 @@ namespace App\Model;
 
 use App\Model\MongoDB\AppVipRules;
 
-class User extends Model
+class UserLog extends Model
 {
     protected $table = 'user_log';
     protected $primaryKey = 'id';

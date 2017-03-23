@@ -35,6 +35,21 @@ class AppController extends Controller
 
         return [
             'allow_sub_num' => $config->allow_num,
+            'oauth_login' => [
+                'qq' => [
+                    'url' => env('oauth_url_qq'),
+                ],
+                'weixin' => [
+                    'url' => env('oauth_url_weixin'),
+                ],
+                'weibo' => [
+                    'url' => env('oauth_url_weibo'),
+                ]
+            ],
+            'protocol' => [
+                'title' => env('protocol_title'),
+                'url' => env('protocol_url'),
+            ],
             'update' => $update,
             'service' => [
                 'qq' => $config->service_qq,
@@ -68,5 +83,9 @@ class AppController extends Controller
 
     public function UuidAction(Request $request, Parameter $parameter) {
         return ['uuid' => uuid()];
+    }
+
+    public function UseProtocolAction(Request $request, Parameter $parameter) {
+        
     }
 }
