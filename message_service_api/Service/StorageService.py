@@ -153,10 +153,13 @@ def system_broadcast_persist(data_json=None):
         users_message.start_time = data_json['stime']
         users_message.end_time = int(data_json['stime']) + 30
         users_message.close_time = data_json['close_time']
-        users_message.users = data_json['specify_user'].split(",")
-        users_message.rtype = data_json['users_type'].split(",")
+        if 'specify_user' in data_json and data_json['specify_user'] is not None:
+            users_message.users = data_json['specify_user'].split(",")
+        if 'users_type' in data_json and data_json['users_type'] is not None:
+            users_message.rtype = data_json['users_type'].split(",")
         users_message.app = json.loads(data_json['game'])
-        users_message.vip = data_json['vip_user'].split(",")
+        if 'vip_user' in data_json and data_json['vip_user'] is not None:
+            users_message.vip = data_json['vip_user'].split(",")
         users_message.is_time = 1
         users_message.expire_at = users_message.end_time
         try:
@@ -178,10 +181,13 @@ def system_broadcast_update(data_json=None, update_user_message=True):
         users_message.start_time = data_json['stime']
         users_message.end_time = int(data_json['stime']) + 30
         users_message.close_time = data_json['close_time']
-        users_message.users = data_json['specify_user'].split(",")
-        users_message.rtype = data_json['users_type'].split(",")
+        if 'specify_user' in data_json and data_json['specify_user'] is not None:
+            users_message.users = data_json['specify_user'].split(",")
+        if 'users_type' in data_json and data_json['users_type'] is not None:
+            users_message.rtype = data_json['users_type'].split(",")
         users_message.app = json.loads(data_json['game'])
-        users_message.vip = data_json['vip_user'].split(",")
+        if 'vip_user' in data_json and data_json['vip_user'] is not None:
+            users_message.vip = data_json['vip_user'].split(",")
         users_message.is_time = 1
         users_message.expire_at = users_message.end_time
         try:
