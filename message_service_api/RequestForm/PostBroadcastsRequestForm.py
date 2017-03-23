@@ -5,9 +5,9 @@ from wtforms.validators import InputRequired
 
 class PostBroadcastsRequestForm(Form):
     game = StringField('game', [InputRequired()])
-    users_type = StringField('user_type', [InputRequired()])
-    vip_user = StringField('vip_user', [InputRequired()])
-    specify_user = StringField('specify_user', [InputRequired()])
+    users_type = StringField('user_type')
+    vip_user = StringField('vip_user')
+    specify_user = StringField('specify_user')
 
     id = IntegerField('id', [InputRequired()])
     title = StringField('title', [InputRequired()])

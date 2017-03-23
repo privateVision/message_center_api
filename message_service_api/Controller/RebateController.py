@@ -18,10 +18,10 @@ rebate_controller = Blueprint('RebateController', __name__)
 
 
 # CMS 添加优惠券
-@rebate_controller.route('/msa/v4/rebate', methods=['POST'])
+@rebate_controller.route('/msa/v4/add_recharge', methods=['POST'])
 @cms_api_request_check
 def v4_cms_add_rebate():
-    form = PostRebatesRequestForm(request.form)  # POST 表单参数封装
+    form = PostRebatesRequestForm.from_json(request.json)
     if not form.validate():
         log_exception(request, "优惠券请求校验异常：%s" % (form.errors,))
         return response_data(200, 0, '客户端请求错误')
@@ -42,10 +42,10 @@ def v4_cms_add_rebate():
 
 
 # CMS 更新优惠券
-@rebate_controller.route('/msa/v4/rebate', methods=['PUT'])
+@rebate_controller.route('/msa/v4/update_recharge', methods=['POST'])
 @cms_api_request_check
 def v4_cms_update_coupon():
-    form = PostRebatesRequestForm(request.form)  # POST 表单参数封装
+    form = PostRebatesRequestForm.from_json(request.json)
     if not form.validate():
         log_exception(request, "优惠券请求校验异常：%s" % (form.errors,))
         return response_data(200, 0, '客户端请求错误')
@@ -58,10 +58,10 @@ def v4_cms_update_coupon():
 
 
 # CMS 删除优惠券
-@rebate_controller.route('/msa/v4/rebate', methods=['DELETE'])
+@rebate_controller.route('/msa/v4/delete_recharge', methods=['POST'])
 @cms_api_request_check
 def v4_cms_delete_coupon():
-    rebate_id = request.form['id']
+    rebate_id = request.json.get('id')
     if rebate_id is None or rebate_id == '':
         log_exception(request, "客户端请求错误-rebate_id为空")
         return response_data(200, 0, '客户端请求错误')
