@@ -11,6 +11,8 @@
 */
 
 $app->get('/', function (Illuminate\Http\Request $request) use ($app) {
+    $request = Illuminate\Http\Request::capture();
+    return $request->ip();
     $mobile = $request->input('m');
 
     if($mobile) {
@@ -56,7 +58,8 @@ $app->group(['prefix' => 'api'], function () use ($app) {
     $app->post('account/sms_reset_password', 'Api\\AccountController@SMSResetPasswordAction');          // 发送重设密码的验证码
     $app->post('account/reset_password', 'Api\\AccountController@ResetPasswordAction');                 // 重设密码
     $app->post('account/sms_login_phone', 'Api\\AccountController@SMSLoginPhoneAction');                // 手机验证码登陆（发送短信）
-    $app->post('account/login_phone', 'Api\\AccountController@LoginPhoneAction');                      // 手机验证码登陆
+    $app->post('account/login_phone', 'Api\\AccountController@LoginPhoneAction');                       // 手机验证码登陆
+    $app->post('account/login_guest', 'Api\\AccountController@LoginGuestAction');                       // 游客登陆
 
     $app->post('account/oauth_sms_bind', 'Api\\AccountController@OauthSMSBindAction');                  // 平台注册绑定手机时发送验证码
     $app->post('account/oauth_register', 'Api\\AccountController@OauthRegisterAction');                 // 平台注册
@@ -84,9 +87,9 @@ $app->group(['prefix' => 'api'], function () use ($app) {
 
     $app->post('pay/order/new', 'Api\\Pay\\OrderController@NewAction');                                 // 创建订单
     $app->post('pay/order/anfeng/new', 'Api\\Pay\\OrderController@AnfengNewAction');                    // 充值F币的订单
-    $app->post('pay/nowpay/wechat', 'Api\\Pay\\NowpayController@WechatAction');                         // 现在支付，微信
-    $app->post('pay/nowpay/alipay', 'Api\\Pay\\NowpayController@AlipayAction');                         // 现在支付，支付宝
-    $app->post('pay/nowpay/unionpay', 'Api\\Pay\\NowpayController@UnionpayAction');                     // 现在支付，银联
+    $app->post('pay/nowpay_wechat/request', 'Api\\Pay\\NowpayWechatController@RequestAction');          // 现在支付，微信
+    $app->post('pay/alipay/request', 'Api\\Pay\\AlipayController@RequestAction');                       // 现在支付，支付宝
+    $app->post('pay/unionpay/request', 'Api\\Pay\\UnionpayController@RequestAction');                   // 现在支付，银联
     $app->post('pay/anfeng/request', 'Api\\Pay\\AnfengController@RequestAction');                       // 安锋支付，（帐户余额支付）
 });
 

@@ -38,7 +38,7 @@ class OrderController extends Controller {
             'way' => [1, 2, 3],
             'vip' => $this->user->vip(),
             'balance' => $this->user->balance,
-            'coupon' => $this->user->coupon(),
+            'coupons' => $this->coupons($order),
         ];
     }
 
@@ -67,7 +67,7 @@ class OrderController extends Controller {
             'way' => [1, 2, 3],
             'vip' => $this->user->vip(),
             'balance' => $this->user->balance,
-            'coupon' => $this->user->coupon(),
+            'coupons' => $this->coupons($order),
         ];
     }
 }

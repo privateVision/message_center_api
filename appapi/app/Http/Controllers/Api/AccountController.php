@@ -5,12 +5,46 @@ use App\Exceptions\ApiException;
 use Illuminate\Http\Request;
 use App\Parameter;
 use App\Event;
+use App\Redis;
 use App\Model\Session;
 use App\Model\User;
 use App\Model\YunpianCallback;
 use App\Model\UserOauth;
 
 class AccountController extends Controller {
+
+    public function LoginGuestAction(Request $request, Parameter $parameter) {
+        $uuid = $parameter->tough('_device_id');
+
+        $rediskey = sprintf('guest_%s', $uuid);
+        $ucid = Redis::get($rediskey);
+        if($ucid) {
+            $user = User::from_cache($ucid);
+        }
+
+        if(!isset($user)) {
+            $username = username();
+            $password = rand(100000, 999999);
+
+            $user = new User;
+            $user->password = $password;
+            $user->email = $username . "@anfan.com";;
+            $user->regip = $request->ip();
+            $user->uid = $username;
+            $user->nickname = $username;
+            $user->rid = $parameter->tough('_rid');
+            $user->uuid = '';
+            $user->pid = $parameter->tough('_appid');
+            $user->save();
+
+            Redis::set($rediskey, $user->ucid);
+
+            user_log($user, $this->procedure, 'register', '【游客注册】用户名(%s), 密码[%s]', $username, $user->password);
+            return Event::onRegisterAfter($user, $parameter->tough('_appid'), $parameter->tough('_rid'));
+        }
+
+        return Event::onLoginAfter($user, $parameter->tough('_appid'), $parameter->tough('_rid'));
+    }
 
     public function OauthSMSBindAction(Request $request, Parameter $parameter) {
         $mobile = $parameter->tough('mobile', 'mobile');

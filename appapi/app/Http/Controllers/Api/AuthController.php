@@ -39,4 +39,8 @@ class AuthController extends Controller {
 			throw new ApiException(ApiException::AccountFreeze, '账号已被冻结');
 		}
 	}
+
+	public function onLogoutAfter() {
+		
+	}
 }

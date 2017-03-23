@@ -6,7 +6,7 @@ use App\Exceptions\ApiException;
 use App\Parameter;
 use App\Model\Orders;
 
-class AnfengController extends Controller {
+class AnfengController extends PayController {
 
     public function RequestAction(Request $request, Parameter $parameter) {
 

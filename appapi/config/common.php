@@ -21,23 +21,11 @@ return [
         ]
     ],
 */
-    'nowpay' => [
-        'wechat' => [
-            'appId' => '1440581085864755',
-            'secure_key' => 'vm4ZhxWPzagx3BH9KnHIcmUGyVngEJtD',
-            'mhtCharset' => 'UTF-8',
-            'mhtCurrencyType' => '156',
-            'dtFormat' => 'YmdHis',
-            'mhtOrderTimeOut' => '3600',
-            'mhtOrderType' => '01',
-            'payChannelType' => '13',
-            'mhtSignType' => 'MD5',
-        ],
-
+    'payconfig' => [
         'alipay' => [
             'AppID' => "2088411293741002",
-            'PriKey' => __DIR__ . '/nowpay_alipay_prikey.pem', 
-            'PubKey' => __DIR__ . '/nowpay_alipay_pubkey.pem',
+            'PriKey' => __DIR__ . '/alipay_prikey.pem', 
+            'PubKey' => __DIR__ . '/alipay_pubkey.pem',
         ],
 
         'unionpay' => [
@@ -70,6 +58,18 @@ return [
             证件号    341126197709218366
             姓名      互联网
             */
+        ],
+
+        'nowpay_wechat' => [
+            'appId' => '1440581085864755',
+            'secure_key' => 'vm4ZhxWPzagx3BH9KnHIcmUGyVngEJtD',
+            'mhtCharset' => 'UTF-8',
+            'mhtCurrencyType' => '156',
+            'dtFormat' => 'YmdHis',
+            'mhtOrderTimeOut' => '3600',
+            'mhtOrderType' => '01',
+            'payChannelType' => '13',
+            'mhtSignType' => 'MD5',
         ],
     ],
 
