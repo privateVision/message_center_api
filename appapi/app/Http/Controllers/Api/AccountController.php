@@ -40,6 +40,7 @@ class AccountController extends Controller {
             Redis::set($rediskey, $user->ucid);
 
             user_log($user, $this->procedure, 'register', '【游客注册】用户名(%s), 密码[%s]', $username, $user->password);
+            
             return Event::onRegisterAfter($user, $parameter->tough('_appid'), $parameter->tough('_rid'));
         }
 
