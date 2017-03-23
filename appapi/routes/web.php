@@ -11,8 +11,6 @@
 */
 
 $app->get('/', function (Illuminate\Http\Request $request) use ($app) {
-    $request = Illuminate\Http\Request::capture();
-    return $request->ip();
     $mobile = $request->input('m');
 
     if($mobile) {
