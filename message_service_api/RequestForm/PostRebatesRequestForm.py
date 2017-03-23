@@ -1,5 +1,5 @@
 # _*_ coding: utf-8 _*_
-from wtforms import Form, IntegerField, StringField
+from wtforms import Form, IntegerField, StringField, FieldList
 from wtforms.validators import InputRequired
 
 
@@ -13,4 +13,4 @@ class PostRebatesRequestForm(Form):
     content = StringField('content')
     stime = IntegerField('stime')
     etime = IntegerField('etime')
-    rules = StringField('rules')
+    rule = StringField('rule')

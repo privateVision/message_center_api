@@ -302,12 +302,13 @@ def system_rebate_persist(data_json=None, update_user_message=True):
         users_message.content = data_json['content']
         users_message.start_time = data_json['stime']
         users_message.end_time = data_json['etime']
-        users_message.rules = json.loads(data_json['rules'])
+        users_message.rule = json.loads(data_json['rule'])
         users_message.users = data_json['specify_user'].split(",")
         users_message.rtype = data_json['users_type'].split(",")
-        users_message.vip = data_json['vip_user'].split(",")
+        users_message.vip = None
         users_message.expire_at = users_message.end_time
         users_message.app = None
+        users_message.is_time = 1
         try:
             users_message.save()
         except Exception, err:
