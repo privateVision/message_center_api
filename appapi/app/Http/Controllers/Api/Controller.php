@@ -53,7 +53,7 @@ class Controller extends \App\Controller
 			return array('code' => ApiException::Error, 'msg' => $e->getMessage(), 'data' => null);
 		} catch(\Exception $e) {
 			log_error('error', ['message' => $e->getMessage(), 'code' => $e->getCode(), 'file' => $e->getFile(), 'line' => $e->getLine()]);
-			return array('code' => ApiException::Error, 'msg' => 'system error', 'data' => null);
+			return array('code' => ApiException::Error, 'msg' => $e->getMessage(), 'data' => null);
 		}
 /*
 		$type = $parameter->tough('_type');
