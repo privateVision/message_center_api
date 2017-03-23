@@ -20,7 +20,7 @@ class NowpayWechatController extends PayController {
         $mht['appId'] = $config['appId'];
         $mht['mhtCharset'] = $config['mhtCharset'];
         $mht['mhtCurrencyType'] = $config['mhtCurrencyType'];
-        $mht['mhtOrderAmt'] = (env('APP_DEBUG', true) ? 0.01 : $real_fee) * 100;
+        $mht['mhtOrderAmt'] = env('APP_DEBUG', true) ? 1 : $real_fee;
         $mht['mhtOrderName'] = $order->subject;
         $mht['mhtOrderDetail'] = $order->body;
         $mht['mhtOrderNo'] = $order->sn;

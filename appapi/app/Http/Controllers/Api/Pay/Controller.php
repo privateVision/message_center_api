@@ -13,7 +13,7 @@ use App\Model\MongoDB\UsersMessage;
 class Controller extends BaseController {
 
     public function coupons(Orders $order) {
-        $ucid = $this->user->ucid;
+        $ucid = 100000183;//$this->user->ucid;
         // 储值卡
         $coupon_1 = [];
         $ucusersVC = UcusersVC::where('ucid', $ucid)->get();
@@ -23,9 +23,10 @@ class Controller extends BaseController {
             $virtualCurrencies = VirtualCurrencies::from_cache($v->vcid);
 
             if($virtualCurrencies && $this->check_1($virtualCurrencies)) {
+                $fee = intval($v->balance * 100);
                 $coupon_1[] = [
-                    'id' => sprintf('%d%d', 1, $virtualCurrencies->vcid),
-                    'fee' => $v->balance,
+                    'id' => encrypt3des(json_encode(['type' => 1, 'fee' => $fee, 'id' => $virtualCurrencies->vcid])),
+                    'fee' => $fee,
                     'name' => $virtualCurrencies->vcname,
                 ];
             }
@@ -38,9 +39,10 @@ class Controller extends BaseController {
             $coupon = UsersMessage::where('type', 'coupon')->where('mysql_id', $v->mysql_id)->first();
 
             if($coupon && $this->check_2($coupon, $order->fee)) {
+                $fee = intval($coupon->money);
                 $coupon_2[] = [
-                    'id' => sprintf('%d%d', 2, $coupon->mysql_id),
-                    'fee' => intval($coupon->money / 100),
+                    'id' => encrypt3des(json_encode(['type' => 2, 'fee' => $fee, 'id' => $coupon->mysql_id])),
+                    'fee' => $fee,
                     'name' => $coupon->name,
                 ];
             }
@@ -65,6 +67,7 @@ class Controller extends BaseController {
 
     public function check_2($coupon, $fee) {
         $full = intval($coupon->full / 100);
+        return true;
     }
 
 }

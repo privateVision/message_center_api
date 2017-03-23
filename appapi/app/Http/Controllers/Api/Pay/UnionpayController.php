@@ -33,7 +33,7 @@ class UnionpayController extends PayController {
         $data['certId'] = $certid;
         $data['orderId'] = $order->sn;
         $data['txnTime'] = date('YmdHis');
-        $data['txnAmt']  = (env('APP_DEBUG', true) ? 0.01 : $real_fee) * 100;
+        $data['txnAmt']  = env('APP_DEBUG', true) ? 1 : $real_fee;
         $data['txnType'] = '01';
         $data['bizType'] = '000201';
         $data['txnSubType'] = '01';
