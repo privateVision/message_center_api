@@ -36,17 +36,18 @@ def add_message_to_user_message_list(game, users_type, vip_user, specify_user, t
 def get_ucid_list_by_user_uid_name_list(specify_user):
     ucid_list = []
     from run import mysql_session
-    for uid in specify_user:
-        find_ucid_sql = "select ucid from user where uid = '%s'" % (uid,)
-        try:
-            user_info = mysql_session.execute(find_ucid_sql).fetchone()
-            if user_info:
-                ucid_list.append(user_info['ucid'])
-        except Exception, err:
-            service_logger.error(err.message)
-            mysql_session.rollback()
-        finally:
-            mysql_session.close()
+    if specify_user is not None and specify_user != '':
+        for uid in specify_user:
+            find_ucid_sql = "select ucid from user where uid = '%s'" % (uid,)
+            try:
+                user_info = mysql_session.execute(find_ucid_sql).fetchone()
+                if user_info:
+                    ucid_list.append(user_info['ucid'])
+            except Exception, err:
+                service_logger.error(err.message)
+                mysql_session.rollback()
+            finally:
+                mysql_session.close()
     return ucid_list
 
 
