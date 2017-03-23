@@ -87,7 +87,7 @@ abstract class PayController extends Controller {
             $data = $this->handle($request, $parameter, $order, $fee);
         }
 
-        $data['real_fee'] = $fee;
+        $data['real_fee'] = strval($fee);
 
         return $data;
     }
