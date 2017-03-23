@@ -86,4 +86,10 @@ class Event
         
         return static::onLoginAfter($user, $pid, $rid);
     }
+
+    public static function onResetPassword(User $user, $new_password) {
+        $user->password = $new_password;
+        $user->save();
+        return $user;
+    }
 }

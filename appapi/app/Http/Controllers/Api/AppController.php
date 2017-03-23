@@ -69,4 +69,8 @@ class AppController extends Controller
     public function UuidAction(Request $request, Parameter $parameter) {
         return ['uuid' => uuid()];
     }
+
+    public function UseProtocolAction(Request $request, Parameter $parameter) {
+        
+    }
 }
