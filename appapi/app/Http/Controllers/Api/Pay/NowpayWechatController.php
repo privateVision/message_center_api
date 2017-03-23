@@ -4,13 +4,17 @@ namespace App\Http\Controllers\Api\Pay;
 use Illuminate\Http\Request;
 use App\Exceptions\ApiException;
 use App\Parameter;
+use App\Model\Orders;
 
 class NowpayWechatController extends PayController {
 
     const PayType = '-5';
     const PayTypeText = '微信';
+    const EnableStoreCard = true;
+    const EnableCoupon = true;
+    const EnableBalance = true;
 
-    public function handle(Request $request, Parameter $parameter, $order, $real_fee) {
+    public function handle(Request $request, Parameter $parameter, Orders $order, $real_fee) {
         $config = config('common.payconfig.nowpay_wechat');
 
         $mht['appId'] = $config['appId'];

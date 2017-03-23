@@ -28,12 +28,12 @@ abstract class PayController extends Controller {
         $order->save();
 
         // 使用储值卡或卡券
-        if($vcid) {
+        if($vcid && $order->vid < 100) {
             $type = substr($vcid, 0, 1);
             $vcid = substr($vcid, 1);
 
             // 储值卡
-            if($type === '1') {
+            if(static::EnableStoreCard && $type === '1') {
                 $ucusersVC = UcusersVC::where('ucid', $ucid)->where('vcid', $vcid)->first();
                 if($ucusersVC) {
                     $balance = $ucusersVC->balance;
@@ -48,7 +48,7 @@ abstract class PayController extends Controller {
                     $fee = $fee - $use_fee;
                 }
             // 优惠券
-            } elseif($type === '2') {
+            } elseif(static::EnableCoupon && $type === '2') {
                 // todo: 读取卡券金额
                 $balance = 0;
                 $use_fee = min($fee, $balance);
@@ -63,7 +63,7 @@ abstract class PayController extends Controller {
         }
 
         // 使用余额
-        if($fee > 0 && $this->user->balance > 0) {
+        if(static::EnableBalance && $order->vid < 100 && $fee > 0 && $this->user->balance > 0) {
             $use_fee = min($fee, $this->user->balance);
             
             $ordersExt = new OrdersExt;
@@ -76,16 +76,29 @@ abstract class PayController extends Controller {
         }
 
         // 实际支付
+        $data = [];
         if($fee > 0) {
             $ordersExt = new OrdersExt;
             $ordersExt->oid = $order->id;
             $ordersExt->vcid = static::PayType;
             $ordersExt->fee = $fee;
             $ordersExt->save();
+
+            $data = $this->handle($request, $parameter, $order, $fee);
         }
 
-        return $this->handle($request, $parameter, $order, $fee);
+        $data['real_fee'] = $fee;
+
+        return $data;
     }
 
-    abstract public function handle(Request $request, Parameter $parameter, $order, $real_fee);
+    /**
+     * 订单处理函数
+     * @param  Request   $request   [description]
+     * @param  Parameter $parameter [description]
+     * @param  [type]    $order     [description]
+     * @param  [type]    $real_fee  [description]
+     * @return [type]               [description]
+     */
+    abstract public function handle(Request $request, Parameter $parameter, Orders $order, $real_fee);
 }
