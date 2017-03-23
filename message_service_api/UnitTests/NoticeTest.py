@@ -25,7 +25,7 @@ class NoticeFunctionTest(unittest.TestCase):
     #         "game":"[{\"apk_id\": \"all\"}]",
     #         "users_type":"255,3",
     #         "vip_user":"3",
-    #         "specify_user":"123,253",
+    #         "specify_user":"",
     #         "id": "3",
     #         "title":"测试公告4",
     #         "content": "公告的详细内容",
@@ -44,7 +44,7 @@ class NoticeFunctionTest(unittest.TestCase):
     #     }
     #     from Utils.EncryptUtils import get_md5_sign
     #     sign = get_md5_sign(data)
-    #     r = requests.post("http://yangchujie.sdkapi.com/v4/notice?sign=%s" % (sign,), data=data)
+    #     r = requests.post("http://localhost:5000/msa/v4/notice?sign=%s" % (sign,), data=data)
     #     self.assertEqual(r.status_code, 200)
     #     print r.text
 
