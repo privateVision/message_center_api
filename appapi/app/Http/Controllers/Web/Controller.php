@@ -25,18 +25,7 @@ class Controller extends \App\Controller
                 throw new ToolException(ToolException::Error, '缺少"_appid"');
             }
 
-            $this->app = config('common.apps.'.$data['_appid'], null);
-            if(!$this->app) {
-                throw new ToolException(ToolException::Error, '应用未授权');
-            }
 
-            $appkey = $this->app->appkey;
-
-            $_token = md5(http_build_query($data) . $appkey);
-
-            if($_token !== $token) {
-                throw new ToolException(ToolException::Error, '"_token"错误');
-            }
 
             log_debug('request', ['route' => $request->path(), 'data' => $data]);
 

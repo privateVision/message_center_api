@@ -27,8 +27,8 @@ $app->register(Jenssegers\Mongodb\MongodbServiceProvider::class);
 $app->singleton('mailer', function () use ($app) {
     return $app->loadComponent('mail', Illuminate\Mail\MailServiceProvider::class, 'mailer');
 });
-
 $app->withFacades();
+
 $app->withEloquent();
 
 /*
