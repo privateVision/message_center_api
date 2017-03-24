@@ -21,7 +21,7 @@ class AlipayController extends PayController {
         $data.= sprintf('&out_trade_no="%s"', $order->sn);
         $data.= sprintf('&subject="%s"', $order->subject);
         $data.= sprintf('&body="%s"', $order->body);
-        $data.= sprintf('&total_fee="%.2f"', env('APP_DEBUG', true) ? 0.01 : $order->real_fee);
+        $data.= sprintf('&total_fee="%.2f"', env('APP_DEBUG', true) ? 0.01 : $real_fee / 100);
         $data.= sprintf('&notify_url="%s"', urlencode(url('pay_callback/nowpay_alipay')));
         $data.= '&service="mobile.securitypay.pay"';
         $data.= '&_input_charset="UTF-8"';
