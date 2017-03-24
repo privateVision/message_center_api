@@ -9,6 +9,7 @@ from MiddleWare import service_logger, hdfs_logger
 from MongoModel.AppRulesModel import AppVipRules
 from MongoModel.MessageModel import UsersMessage
 from MongoModel.UserMessageModel import UserMessage
+from Utils.RedisUtil import RedisHandle
 from Utils.SystemUtils import get_current_timestamp, log_exception
 
 
@@ -125,18 +126,21 @@ def get_coupon_message_detail_info(msg_id=None):
 
 
 def get_ucid_by_access_token(access_token=None):
+    ucid = RedisHandle.get_ucid_from_redis_by_token(access_token)
+    if ucid is not None:
+        return ucid
     find_ucid_sql = "select ucid from session where token = '%s'" % (access_token,)
     from run import mysql_session
     try:
         user_info = mysql_session.execute(find_ucid_sql).first()
+        if user_info:
+            if user_info['ucid']:
+                return user_info['ucid']
     except Exception, err:
         service_logger.error(err.message)
         mysql_session.rollback()
     finally:
         mysql_session.close()
-    if user_info:
-        if user_info['ucid']:
-            return user_info['ucid']
     return False
 
 
