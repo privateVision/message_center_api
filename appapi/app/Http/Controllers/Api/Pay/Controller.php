@@ -22,10 +22,10 @@ class Controller extends BaseController {
 
             $virtualCurrencies = VirtualCurrencies::from_cache($v->vcid);
 
-            if($virtualCurrencies && $this->check_1($virtualCurrencies)) {
+            if($virtualCurrencies && $this->check_1($order, $virtualCurrencies)) {
                 $fee = intval($v->balance * 100);
                 $coupon_1[] = [
-                    'id' => encrypt3des(json_encode(['type' => 1, 'fee' => $fee, 'id' => $virtualCurrencies->vcid])),
+                    'id' => encrypt3des(json_encode(['order_id' => $order->id, 'type' => 1, 'fee' => $fee, 'id' => $virtualCurrencies->vcid])),
                     'fee' => $fee,
                     'name' => $virtualCurrencies->vcname,
                 ];
@@ -38,10 +38,10 @@ class Controller extends BaseController {
         foreach($user_coupon as $v) {
             $coupon = UsersMessage::where('type', 'coupon')->where('mysql_id', $v->mysql_id)->first();
 
-            if($coupon && $this->check_2($coupon, $order->fee)) {
+            if($coupon && $this->check_2($order, $coupon)) {
                 $fee = intval($coupon->money);
                 $coupon_2[] = [
-                    'id' => encrypt3des(json_encode(['type' => 2, 'fee' => $fee, 'id' => $coupon->mysql_id])),
+                    'id' => encrypt3des(json_encode(['order_id' => $order->id, 'type' => 2, 'fee' => $fee, 'id' => $coupon->mysql_id])),
                     'fee' => $fee,
                     'name' => $coupon->name,
                 ];
@@ -51,9 +51,9 @@ class Controller extends BaseController {
         return array_merge($coupon_1, $coupon_2);
     }
 
-    public function check_1($virtualCurrencies) {
+    public function check_1(Orders $order, $virtualCurrencies) {
         if($virtualCurrencies->lockApp != $this->procedure->pid) return false;
-        if($virtualCurrencies->untimed) {
+        if(!$virtualCurrencies->untimed) {
             $s = strtotime($virtualCurrencies->startTime);
             $e = strtotime($virtualCurrencies->endTime);
             $t = time();
@@ -65,9 +65,27 @@ class Controller extends BaseController {
         return true;
     }
 
-    public function check_2($coupon, $fee) {
-        $full = intval($coupon->full / 100);
-        return true;
+    public function check_2(Orders $order, $coupon) {
+        $fee = $order->fee * 100;
+
+        if($coupon->full < $fee) return false;
+        if($coupon->is_first == 1 && !$order->is_first()) return false;
+        if(!$coupon->is_time) {
+            $s = $coupon->start_time;
+            $e = $coupon->end_time;
+            $t = time();
+            if($s > $e || $s > $t || $e < $t) {
+                return false;
+            }
+        }
+
+        if(is_array($coupon->app)) {
+            foreach($coupon->app[0] as $v) {
+                if($v['apk_id'] == $order->pid) return true;
+            }
+        }
+
+        return false;
     }
 
 }

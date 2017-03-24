@@ -23,20 +23,23 @@ abstract class PayController extends Controller {
             throw new ApiException(ApiException::Remind, '订单状态不正确');
         }
 
-        $is_pay_balance = $order->vid < 100;
+        $discount_enable = $order->vid >= 100;
         $fee = $order->fee * 100;
         $order->paymentMethod = static::PayTypeText;
         $order->save();
 
         // 使用储值卡或卡券
         do {
-            if(!$vcid || $is_pay_balance)  break;
+            if(!$vcid || !$discount_enable)  break;
 
             $vcinfo = json_decode(decrypt3des($vcid), true);
             if(!$vcinfo)  break;
 
             $id = $vcinfo['id'];
             $balance = $vcinfo['fee'];
+            $bind_order_id = $vcinfo['order_id'];
+
+            if($bind_order_id != $order->id) break;
 
             // 储值卡
             if(static::EnableStoreCard && $vcinfo['type'] == 1) {
@@ -64,7 +67,7 @@ abstract class PayController extends Controller {
         } while(false);
 
         // 使用余额
-        if(static::EnableBalance && $is_pay_balance && $fee > 0 && $this->user->balance > 0) {
+        if(static::EnableBalance && $discount_enable && $fee > 0 && $this->user->balance > 0) {
             $use_fee = min($fee, $this->user->balance * 100);
             
             $ordersExt = new OrdersExt;
@@ -78,7 +81,7 @@ abstract class PayController extends Controller {
 
         // 实际支付
         $data = [];
-        if($fee) {
+        if($fee > 0) {
             $ordersExt = new OrdersExt;
             $ordersExt->oid = $order->id;
             $ordersExt->vcid = static::PayType;
@@ -87,7 +90,7 @@ abstract class PayController extends Controller {
 
             $data = $this->handle($request, $parameter, $order, $fee);
         } else {
-            order_success($order->id);
+            order_success($order->id); // 不用支付，直接发货
         }
 
         $data['real_fee'] = $fee;

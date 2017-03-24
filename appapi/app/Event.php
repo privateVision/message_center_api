@@ -35,7 +35,7 @@ class Event
                 $user_sub->rid = $rid;
                 $user_sub->old_rid = $rid;
                 $user_sub->cp_uid = $user->ucid;
-                $user_sub->name = base_convert(sprintf("%011d%09d", $user->ucid, $pid), 10, 36) . '01';
+                $user_sub->name = '小号01';
                 $user_sub->priority = time();
                 $user_sub->last_login_at = datetime();
                 $user_sub->save();
