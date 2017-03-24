@@ -1,6 +1,7 @@
 # _*_ coding: utf-8 _*_
 from functools import wraps
 
+import time
 from flask import request
 from mongoengine import Q
 
@@ -144,6 +145,32 @@ def get_ucid_by_access_token(access_token=None):
     return None
 
 
+def is_session_expired_by_access_token(access_token=None):
+    expired_ts = RedisHandle.get_expired_ts_from_redis_by_token(access_token)
+    now = int(time.time())
+    if expired_ts is not None:
+        if expired_ts < now:
+            return True
+        else:
+            return False
+    find_expired_ts_sql = "select expired_ts from session where token = '%s'" % (access_token,)
+    from run import mysql_session
+    try:
+        user_info = mysql_session.execute(find_expired_ts_sql).first()
+        if user_info:
+            if user_info['expired_ts'] is not None:
+                if user_info['expired_ts'] < now:
+                    return True
+                else:
+                    return False
+    except Exception, err:
+        service_logger.error(err.message)
+        mysql_session.rollback()
+    finally:
+        mysql_session.close()
+    return True
+
+
 def get_user_is_freeze_by_access_token(access_token=None):
     freeze = RedisHandle.get_user_is_freeze_from_redis_by_token(access_token)
     if freeze is not None:
@@ -230,6 +257,10 @@ def sdk_api_request_check(func):
         if is_params_checked is False:
             log_exception(request, '客户端请求错误-appid或sign或token为空')
             return response_data(200, 0, '客户端参数错误')
+        # 会话是否过期判断
+        is_session_expired = is_session_expired_by_access_token(request.form['_token'])
+        if is_session_expired:
+            return response_data(200, 102, '用户未登录或session已过期')
         is_sign_true = sdk_api_check_sign(request)
         if is_sign_true is True:
             ucid = get_ucid_by_access_token(request.form['_token'])
