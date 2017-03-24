@@ -47,6 +47,6 @@ class Orders extends Model
 	}
 
 	public function is_first() {
-		return static::where('ucid', $this->ucid)->where('status', '!=', 0)->count() > 0
+		return static::where('ucid', $this->ucid)->where('status', '!=', 0)->count() > 0;
 	}
 }
