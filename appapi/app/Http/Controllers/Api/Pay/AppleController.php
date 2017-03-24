@@ -81,7 +81,6 @@ class  AppleController extends Controller{
         }
 
         //订单完成，通知发货，添加日志记录
-
     }
     //验证
     protected function getReceiptData($receipt, $isSandbox = false) {
@@ -150,7 +149,7 @@ class  AppleController extends Controller{
             $order->ucid = !isset($this->user->ucid)?$ucid:$this->user->ucid;
             $order->uid = !isset($this->user->uid)?$uid:$this->user->uid;
             $order->sn = date('ymdHis') . substr(microtime(), 2, 6) . str_pad(rand(0, 999999), 6, '0', STR_PAD_LEFT);
-            //$order->vid = $this->procedure->pid;
+            $order->vid = $this->procedure->pid;
             $order->notify_url = $dat[0]->notify_url;
             $order->vorderid = $vorderid;
             $order->fee = $dat[0]->fee;
