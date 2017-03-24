@@ -156,7 +156,8 @@ def v4_sdk_user_get_gift():
                                                                 "where fortype=2 and gift_id=%s " % (gift_id,)
                                 zhuayou_sdk_mysql_session.execute(update_gift_count_sql)
                                 zhuayou_sdk_mysql_session.execute(update_gift_fortype_count_sql)
-                                return response_data(200, 1, game_gift_code['code'])
+                                data = {'code': game_gift_code['code']}
+                                return response_data(200, 1, '领取成功', data)
                     else:
                         return response_data(200, 0, '礼包被领取完了')
                 else:
