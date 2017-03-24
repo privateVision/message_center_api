@@ -11,12 +11,6 @@
 */
 
 $app->get('/', function (Illuminate\Http\Request $request) use ($app) {
-    $a = \App\Model\MongoDB\UsersMessage::where('type', 'coupon')->where('mysql_id', 1481)->first();
-    foreach($a->app as $v) {
-        echo $v['apk_id'];
-    }
-    
-    return ;
     $mobile = $request->input('m');
 
     if($mobile) {
