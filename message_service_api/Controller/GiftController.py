@@ -98,8 +98,8 @@ def v4_sdk_user_get_gift():
     game_id = request.form['game_id']
     gift_id = request.form['gift_id']
     username = request.form['username']
-    ip = request.form['ip']
-    mac = request.form['mac']
+    ip = request.remote_addr  # 请求源ip
+    mac = request.form['_device_id']  # 通用参数中的device_id
     end_for_time = int(time.time()) - 3600 * 24  # 限制24小时的时间间隔
     if game_id is None or gift_id is None or ip is None or mac is None:
         log_exception(request, '客户端请求错误-gameid或giftid或ip\mac为空')
