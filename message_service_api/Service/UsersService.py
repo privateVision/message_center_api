@@ -141,7 +141,26 @@ def get_ucid_by_access_token(access_token=None):
         mysql_session.rollback()
     finally:
         mysql_session.close()
-    return False
+    return None
+
+
+def get_user_is_freeze_by_access_token(access_token=None):
+    freeze = RedisHandle.get_user_is_freeze_from_redis_by_token(access_token)
+    if freeze is not None:
+        return freeze
+    find_freeze_sql = "select freeze from session where token = '%s'" % (access_token,)
+    from run import mysql_session
+    try:
+        user_info = mysql_session.execute(find_freeze_sql).first()
+        if user_info:
+            if user_info['freeze']:
+                return user_info['freeze']
+    except Exception, err:
+        service_logger.error(err.message)
+        mysql_session.rollback()
+    finally:
+        mysql_session.close()
+    return None
 
 
 # 根据用户id获取广播列表
