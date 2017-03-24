@@ -7,6 +7,8 @@ use App\Parameter;
 use App\Event;
 use App\Model\User;
 use App\Model\Orders;
+use App\Model\UserRole;
+use App\Model\ProceduresZone;
 
 class UserController extends AuthController
 {
@@ -73,8 +75,9 @@ class UserController extends AuthController
             throw new ApiException(ApiException::Remind, "旧的密码不正确");
         }
 
-        $this->user->password = $new_password;
-        $this->user->save();
+        $old_password = $this->user->password;
+        Event::onResetPassword($this->user, $new_password);
+        user_log($this->user, $this->procedure, 'reset_password', '【重置用户密码】通过旧密码，旧密码[%s]，新密码[%s]', $old_password, $this->user->password);
 
         return ['result' => true];
     }
@@ -126,6 +129,8 @@ class UserController extends AuthController
             $this->user->save();
         }
 
+        user_log($this->user, $this->procedure, 'bind_phone', '【绑定手机】手机号码{%s}', $mobile);
+
         return ['result' => true];
     }
 
@@ -164,6 +169,8 @@ class UserController extends AuthController
         
         $this->user->mobile = '';
         $this->user->save();
+
+        user_log($this->user, $this->procedure, 'unbind_phone', '【解绑手机】手机号码{%s}', $mobile);
 
         return [
             'result' => true,
@@ -206,91 +213,44 @@ class UserController extends AuthController
             throw new ApiException(ApiException::Remind, "验证码不正确，或已过期");
         }
 
-        $this->user->password = $password;
-        $this->user->save();
+        $old_password = $this->user->password;
+        Event::onResetPassword($this->user, $password);
+        user_log($this->user, $this->procedure, 'reset_password', '【重置用户密码】通过手机验证码，手机号码{%s}，新密码[%s]，旧密码[%s]', $mobile, $this->user->password, $old_password);
 
         return ['result' => true];
     }
-    // --------------------------------------------------------------------------------------------------------------------------------
-    
-    const SMS_LIMIT = 3;
 
-    /*
- * 获取短息验证码
- * @param  uid
- * $param mobile
- * return $code 生成的短信验证码
- * */
-    public function getAuthCodeAction(Request $request,Parameter $parameter){
-        $code = smscode();
-        $content  = trans('messages.phone_unbind_code').$code;
-        send_sms($this->session->mobile,$content,$code);
+    public function ReportRoleAction(Request $request, Parameter $parameter) {
+        $zone_id = $parameter->tough('zone_id');
+        $zone_name = $parameter->tough('zone_name');
+        $role_id = $parameter->tough('role_id');
+        $role_level = $parameter->tough('role_level');
+        $role_name = $parameter->tough('role_name');
+
+        $pid = $parameter->tough('_appid');
+
+        async_execute('report_role', $this->user->ucid, $pid, $this->session->user_sub_id, $zone_id, $zone_name, $role_id, $role_name, $role_level);
+
+        return ['result' => true];
     }
 
-    /*
-     * 手机解绑
-     * @param $mobile
-     * */
+    public function AttestAction(Request $request, Parameter $parameter) {
+        $name = $parameter->tough('name');
+        $card_id = $parameter->tough('card_id');
 
-    public function unbindAction(Request $request,Parameter $parameter){
-        $mobile = $this->session->mobile;
-        $code = $request->input('code');
-
-        if(!preg_match('/^\d{6}$/',$code)) throw new ApiException(ApiException::Remind, "验证码格式不正确！");
-
-        $chars = 'abcdefghjkmnpqrstuvwxy';
-
-        if($this->uuser->mobile == $this->user->uid){
-            $username = User::username();
-            $this->user->ucenter_members->username = $username;
-            $this->user->ucenter_members->save();
-            $content = trans_choice('messages.phone_unbind_code', $username);
-            send_sms($this->user->mobile,$content);
-            $this->user->uid= $username;
-            $this->user->save();
-        }else{
-
+        $card_info = parse_card_id($card_id);
+        if(!$card_info) {
+            throw new ApiException(ApiException::Remind, "身份证号码不正确");
         }
 
-        UcenterMembers::where("username",$this->user->uid)->get();
+        $this->user->real_name = $name;
+        $this->user->card_id = $card_id;
+        $this->user->birthday = $card_info['birthday'];
+        $this->user->gender = $card_info['gender'];
+        $this->user->asyncSave();
+
+        user_log($this->user, $this->procedure, 'real_name_attest', '【实名认证】通过手机验证码，姓名:%s，身份证号码:%s', $name, $card_id);
+
+        return ['result' => true];
     }
-
-    /*
-     * 手机绑定短信
-     * */
-    public function bind(Request $request ,Parameter $parameter){
-        $mobile = $request->input("mobile");
-
-        if(!check_mobile($mobile)){
-            throw new ApiException(ApiException::Remind,trans("messages.mobile_type_error"));
-        }
-
-        $code = smscode();
-        $content = trans("messages.sms_code").$code;
-
-        //发送短信验证码限制 防止短信炸弹
-        $rkey = $mobile.":".$this->code;
-        $numj = Cache::get($rkey);
-
-        if(!$numj ) {
-            Cache::store("redis")->put($rkey, 1, 60 * 24); //保存一天 一天内发送短信的次数的限制
-        }
-        if($numj == self::SMS_LIMIT){
-            throw  new ApiException(ApiException::Remind,trans("messages.sms_limit_code"));
-        }else{
-            Cache::increment($rkey); //发送短信次数增加
-        }
-
-        send_sms($mobile, $content,$code);
-        return ['code'=>$code];
-    }
-
-    /*
-     * 获取用户的钱包的信息
-     * */
-
-    public function walletAction(Request $request,Parameter $parameter){
-        return  ["wallet"=>$this->user->balance];
-    }
-
 }

@@ -21,23 +21,11 @@ return [
         ]
     ],
 */
-    'nowpay' => [
-        'wechat' => [
-            'appId' => '1440581085864755',
-            'secure_key' => 'vm4ZhxWPzagx3BH9KnHIcmUGyVngEJtD',
-            'mhtCharset' => 'UTF-8',
-            'mhtCurrencyType' => '156',
-            'dtFormat' => 'YmdHis',
-            'mhtOrderTimeOut' => '3600',
-            'mhtOrderType' => '01',
-            'payChannelType' => '13',
-            'mhtSignType' => 'MD5',
-        ],
-
+    'payconfig' => [
         'alipay' => [
             'AppID' => "2088411293741002",
-            'PriKey' => __DIR__ . '/nowpay_alipay_prikey.pem', 
-            'PubKey' => __DIR__ . '/nowpay_alipay_pubkey.pem',
+            'PriKey' => __DIR__ . '/alipay_prikey.pem', 
+            'PubKey' => __DIR__ . '/alipay_pubkey.pem',
         ],
 
         'unionpay' => [
@@ -71,6 +59,18 @@ return [
             姓名      互联网
             */
         ],
+
+        'nowpay_wechat' => [
+            'appId' => '1440581085864755',
+            'secure_key' => 'vm4ZhxWPzagx3BH9KnHIcmUGyVngEJtD',
+            'mhtCharset' => 'UTF-8',
+            'mhtCurrencyType' => '156',
+            'dtFormat' => 'YmdHis',
+            'mhtOrderTimeOut' => '3600',
+            'mhtOrderType' => '01',
+            'payChannelType' => '13',
+            'mhtSignType' => 'MD5',
+        ],
     ],
 
     'apps' => [
@@ -83,13 +83,13 @@ return [
             'sms_hour_limit' => 3, // 每小时短信发送次数限制
             'sms_template' => [
                 // 手机注册成功
-                'mobile_register' => '【安锋网】恭喜您注册成功，用户名：#username#  密码：#password#',
+                'mobile_register' => '【安锋网】恭喜您注册成功，用户名：#username#  密码：#password#，同时您也可以使用手机号码登陆',
                 // 重置密码时发送手机验证码
                 'reset_password' => '【安锋网】您正在使用该手机号码重置登陆密码，验证码为：#code#',
                 // 平台登录时绑定手机发送短信验证码
                 'oauth_login_bind' => '【安锋网】您正在通过该手机号码绑定安锋通行证，验证码为：#code#',
                 // 平台注册成功后向用户发送账号密码
-                'oauth_register' => '【安锋网】恭喜您注册成功，您可以使用#type#直接登陆，也可以使用手机号码登陆，用户名：#username#  密码：#password#',
+                'oauth_register' => '【安锋网】恭喜您注册成功，您可以使用#type#直接登陆，也可以使用手机号码或用户名登陆，用户名：#username#  密码：#password#',
                 // 在用户中心绑定手机
                 'bind_phone' => '【安锋网】您正在通过该手机号码绑定安锋通行证，验证码为：#code#',
                 // 解除绑定手机号码

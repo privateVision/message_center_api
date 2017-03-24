@@ -38,7 +38,7 @@ class OrderController extends Controller {
             'way' => [1, 2, 3],
             'vip' => $this->user->vip(),
             'balance' => $this->user->balance,
-            'coupon' => $this->user->coupon(),
+            'coupons' => $this->coupons($order),
         ];
     }
 
@@ -52,7 +52,7 @@ class OrderController extends Controller {
         $order->ucid = $this->user->ucid;
         $order->uid = $this->user->uid;
         $order->sn = date('ymdHis') . substr(microtime(), 2, 6) . str_pad(rand(0, 999999), 6, '0', STR_PAD_LEFT);
-        $order->vid = env('APP_SELF_ID');
+        $order->vid = 0;
         $order->fee = $fee;
         $order->subject = $subject;
         $order->body = $body;
@@ -67,7 +67,7 @@ class OrderController extends Controller {
             'way' => [1, 2, 3],
             'vip' => $this->user->vip(),
             'balance' => $this->user->balance,
-            'coupon' => $this->user->coupon(),
+            'coupons' => $this->coupons($order),
         ];
     }
 }

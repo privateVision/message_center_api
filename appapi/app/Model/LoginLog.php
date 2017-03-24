@@ -3,9 +3,9 @@ namespace App\Model;
 
 use App\Model\MongoDB\AppVipRules;
 
-class UserLog extends Model
+class LoginLog extends Model
 {
-    protected $table = 'user_log';
+    protected $table = 'login_log';
     protected $primaryKey = 'id';
 
     const CREATED_AT = 'created_at';

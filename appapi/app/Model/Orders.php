@@ -49,4 +49,8 @@ class Orders extends Model
 		$fee = OrdersExt::where('oid', $this->id)->sum('fee');
 		return bcsub($this->fee, $fee, 2);
 	}
+
+	public function is_first() {
+		return static::where('ucid', $this->ucid)->where('status', '!=', 0)->count() > 0
+	}
 }

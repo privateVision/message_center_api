@@ -15,14 +15,16 @@ class UserSubController extends AuthController
         $pid = $parameter->tough('_appid');
 
         $data = [];
-        $user_sub = UserSub::tableSlice($this->user->ucid)->where('ucid', $this->user->ucid)->where('pid', $pid)->orderBy('priority', 'desc')->get();
+        $user_sub = UserSub::tableSlice($this->user->ucid)->where('ucid', $this->user->ucid)->where('pid', $pid)->orderBy('name', 'asc')->get();
         foreach($user_sub as $v) {
             $data[] = [
                 'id' => $v->id,
                 'openid' => $v->cp_uid,
                 'name' => $v->name,
                 'is_freeze' => $v->is_freeze,
-                'is_default' => $v->id === $this->session->user_sub_id
+                'is_unused' => $v->last_login_at ? true : false,
+                'is_default' => $v->id === $this->session->user_sub_id,
+                'last_login_at' => strval($v->last_login_at),
             ];
         }
 
@@ -54,7 +56,7 @@ class UserSubController extends AuthController
         $user_sub->rid = $rid;
         $user_sub->old_rid = $rid;
         $user_sub->cp_uid = uuid();
-        $user_sub->name = base_convert(sprintf("%011d%09d", $this->user->ucid, $pid), 10, 36) . sprintf('%02d', $user_sub_num + 1);
+        $user_sub->name = "小号" . sprintf('%02d', $user_sub_num + 1);
         $user_sub->priority = 0;
         $user_sub->last_login_at = null;
         $user_sub->save();
@@ -70,7 +72,9 @@ class UserSubController extends AuthController
             'openid' => $user_sub->cp_uid,
             'name' => $user_sub->name,
             'is_freeze' => false,
+            'is_unused' => true,
             'is_default' => false,
+            'last_login_at' => "",
         ];
     }
 

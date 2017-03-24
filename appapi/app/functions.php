@@ -9,6 +9,12 @@ function cache_expire_second() {
     return 86400;
 }
 
+/**
+ * 3DES加密
+ * @param  [type] $data [description]
+ * @param  [type] $key  [description]
+ * @return [type]       [description]
+ */
 function encrypt3des($data, $key = null) {
     if(empty($key)) {
         $key = env('API_3DES_KEY');
@@ -17,6 +23,12 @@ function encrypt3des($data, $key = null) {
     return \App\Crypt3DES::encrypt($data, $key);
 }
 
+/**
+ * 3DES解密
+ * @param  [type] $data [description]
+ * @param  [type] $key  [description]
+ * @return [type]       [description]
+ */
 function decrypt3des($data, $key = null) {
     if(empty($key)) {
         $key = env('API_3DES_KEY');
@@ -25,10 +37,98 @@ function decrypt3des($data, $key = null) {
     return \App\Crypt3DES::decrypt($data, $key);
 }
 
-function uuid($prefix = "") {
-    return md5($prefix . uniqid(mt_rand(), true) . microtime() . mt_rand());
+/**
+ * 解析身份证号码
+ * @param  [type] $card_id [description]
+ * @return [type]          [description]
+ */
+function parse_card_id($card_id) {
+    $len = strlen($card_id);
+
+    if($len !== 15 && $len !== 18) return false;
+
+    $provinces = [
+        11 => '北京', 12 => '天津', 13 => '河北', 14 => '山西', 15 => '内蒙古', 
+        21 => '辽宁', 22 => '吉林', 23 => '黑龙江', 
+        31 => '上海', 32 => '江苏', 33 => '浙江', 34 => '安徽', 35 => '福建', 36 => '江西', 37 => '山东', 
+        41 => '河南', 42 => '湖北', 43 => '湖南', 44 => '广东', 45 => '广西', 46 => '海南', 
+        50 => '重庆', 51 => '四川', 52 => '贵州', 53 => '云南', 54 => '西藏', 
+        61 => '陕西', 62 => '甘肃', 63 => '青海', 64 => '宁夏', 65 => '新疆', 
+        71 => '台湾', 81 => '香港', 82 => '澳门', 91 => '国外',
+    ];
+    
+    $province = @$provinces[substr($card_id, 0, 2)];
+
+    if(!$province) return false;
+
+    if(strlen($card_id) === 18) {
+        $factor = [7, 9, 10, 5, 8, 4, 2, 1, 6, 3, 7, 9, 10, 5, 8, 4, 2];
+        $mod = ['1', '0', 'X', '9', '8', '7', '6', '5', '4', '3', '2'];
+
+        $n = 0;
+        for($i = 0; $i < strlen($card_id) - 1; $i++) {
+            $char = $card_id[$i];
+            $n += intval($char) * $factor[$i];
+        }
+
+        $code = $mod[$n % 11];
+
+        if(strtoupper(substr($card_id, 17, 1)) !== $code) return false;
+
+        $birthday = substr($card_id, 6, 8);
+        $gender = intval(substr($card_id, 16, 1)) % 2 == 1 ? 1 : 2;
+    } else {
+        $birthday = substr($card_id, 6, 6);
+        if(intval($birthday) > 800101) return false; // 15位身份证早就没颁发了，骗纸
+        $birthday = '19' . $birthday;
+
+        $gender = intval(substr($card_id, 14, 1)) % 2 == 1 ? 1 : 2;
+    }
+
+    return ['birthday' => $birthday, 'gender' => $gender, 'province' => $province];
 }
 
+/**
+ * 生成唯一用户名
+ * @return [type] [description]
+ */
+function username() {
+    $username = null;
+
+    $chars = 'abcdefghjkmnpqrstuvwxy';
+    do {
+        $username = $chars[rand(0, 21)] . rand(10000, 99999999);
+
+        $count = \App\Model\User::where('uid', $username)->count();
+        if($count == 0) {
+            return $username;
+        }
+    } while(true);
+}
+
+/**
+ * 生成唯一ID，24~25位36进制
+ * @param  string $prefix [description]
+ * @return [type]         [description]
+ */
+function uuid($prefix = "") {
+    return base_convert(md5($prefix . uniqid(mt_rand(), true) . microtime() . mt_rand()), 16, 36);
+}
+
+/**
+ * 主要用于生成多联的KEY，24~25位36进制
+ * @return [type] [description]
+ */
+function joinkey() {
+    $key = implode('_', func_get_args());
+    return base_convert(md5($key), 16, 36);
+}
+
+/**
+ * 当前时间，Y-m-d H:i:s
+ * @param  integer $time [description]
+ * @return [type]        [description]
+ */
 function datetime($time = 0) {
     if($time) {
         return date('Y-m-d H:i:s', $time);
@@ -37,12 +137,54 @@ function datetime($time = 0) {
     return date('Y-m-d H:i:s');
 }
 
+/**
+ * 生成验证码code
+ * @return [type] [description]
+ */
 function smscode() {
     return rand(100000, 999999);
 }
 
-function user_log($user, $type, $procedure, $text_format) {
+/**
+ * 异步执行Model::save()方法，对应Model::asyncSave
+ * @param  [type] $model [description]
+ * @return [type]        [description]
+ */
+function async_query($model) {
+    Queue::push(new \App\Jobs\AsyncQuery(serialize($model)));
+}
 
+/**
+ * 异步执行\App\Jobs\AsyncExecute里的方法
+ * @param  [string] $method 方法名
+ * @return [type]         [description]
+ */
+function async_execute($method) {
+    $arguments = func_get_args();
+    unset($arguments[0]);
+    Queue::push(new \App\Jobs\AsyncExecute($method, $arguments));
+}
+
+function user_log($user, $procedure, $type, $text_format) {
+    if(is_numeric($user)) {
+        $user = \App\Model\User::from_cache($user);
+        if(!$user) return;
+    }
+
+    if(is_numeric($procedure)) {
+        $procedure = \App\Model\Procedures::from_cache($procedure);
+    }
+
+    $format_arguments = array_slice(func_get_args(), 4);
+
+    $user_log = new \App\Model\UserLog;
+    $user_log->type = $type;
+    $user_log->ucid = $user->ucid;
+    $user_log->mobile = $user->mobile;
+    $user_log->pid = $procedure ? $procedure->pid : '';
+    $user_log->pname = $procedure ? $procedure->pname : '';
+    $user_log->text = count($format_arguments) ? sprintf($text_format, ...$format_arguments) : $text_format;
+    $user_log->asyncSave();
 }
 
 function order_success($order_id) {

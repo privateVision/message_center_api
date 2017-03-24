@@ -5,10 +5,11 @@ from flask import request
 from mongoengine import Q
 
 from Controller.BaseController import response_data
-from MiddleWare import service_logger
+from MiddleWare import service_logger, hdfs_logger
 from MongoModel.AppRulesModel import AppVipRules
 from MongoModel.MessageModel import UsersMessage
 from MongoModel.UserMessageModel import UserMessage
+from Utils.RedisUtil import RedisHandle
 from Utils.SystemUtils import get_current_timestamp, log_exception
 
 
@@ -25,20 +26,43 @@ def get_game_and_area_and_user_type_and_vip_users(game=None, user_type=None, vip
             for game_info in game:
                 if game_info.has_key('zone_id_list'):
                     for zone in game_info['zone_id_list']:
-                        find_users_in_game_area_sql = "select ucid from roleDatas where vid = %s and zoneName = '%s'"\
+                        find_users_in_game_area_sql = "select distinct(ucid) from roleDatas where vid = %s " \
+                                                      "and zoneName = '%s'"\
                                                       % (game_info['apk_id'], zone)
                         try:
-                            tmp_user_list = mysql_session.execute(find_users_in_game_area_sql)
-                            for ucid in tmp_user_list:
-                                game_users_list.append(ucid[0])
+                            tmp_user_list = mysql_session.execute(find_users_in_game_area_sql).fetchall()
+                            for item in tmp_user_list:
+                                game_users_list.append(item['ucid'])
                         except Exception, err:
                             service_logger.error(err.message)
                             mysql_session.rollback()
                         finally:
                             mysql_session.close()
+                else: # 没传区服信息，那就所有区服咯
+                    find_users_in_game_area_sql = "select distinct(ucid) from roleDatas where vid = %s " \
+                                                  % (game_info['apk_id'],)
+                    try:
+                        tmp_user_list = mysql_session.execute(find_users_in_game_area_sql).fetchall()
+                        for item in tmp_user_list:
+                            game_users_list.append(item['ucid'])
+                    except Exception, err:
+                        service_logger.error(err.message)
+                        mysql_session.rollback()
+                    finally:
+                        mysql_session.close()
             return list(set(user_type_users_list).intersection(set(game_users_list)).intersection(set(vip_users_list)))
-        else:
-            return list(set(user_type_users_list).intersection(set(vip_users_list)))
+        else: # 所有游戏，太可怕了
+            find_all_game_users_sql = "select distinct(ucid) from roleDatas"
+            try:
+                tmp_user_list = mysql_session.execute(find_all_game_users_sql).fetchall()
+                for item in tmp_user_list:
+                    game_users_list.append(item['ucid'])
+            except Exception, err:
+                service_logger.error(err.message)
+                mysql_session.rollback()
+            finally:
+                mysql_session.close()
+            return list(set(game_users_list).intersection(set(user_type_users_list)).intersection(set(vip_users_list)))
     # 游戏区服为空
     else:
         return []
@@ -49,17 +73,17 @@ def get_user_type_users(user_type):
     if user_type is not None:
         from run import mysql_session
         for type in user_type:
-            find_users_by_user_type_sql = "select ucid from ucusers as u, retailers as r where u.rid = r.rid " \
+            find_users_by_user_type_sql = "select distinct(ucid) from ucusers as u, retailers as r where u.rid = r.rid " \
                                           "and r.rtype = %s" % (type,)
             try:
-                origin_list = mysql_session.execute(find_users_by_user_type_sql)
+                origin_list = mysql_session.execute(find_users_by_user_type_sql).fetchall()
+                for item in origin_list:
+                    users_list.append(item['ucid'])
             except Exception, err:
                 service_logger.error(err.message)
                 mysql_session.rollback()
             finally:
                 mysql_session.close()
-            for ucid in origin_list:
-                users_list.append(ucid[0])
     return users_list
 
 
@@ -72,16 +96,16 @@ def get_vip_users(vips):
             vip_rule_info = AppVipRules.objects(level=vip).first()
             if vip_rule_info is not None:
                 fee = vip_rule_info['fee']
-                find_users_by_vip_sql = "select ucid from ucuser_total_pay as u where u.pay_fee >= %s " % (fee,)
+                find_users_by_vip_sql = "select distinct(ucid) from ucuser_total_pay as u where u.pay_fee >= %s " % (fee,)
                 try:
-                    origin_list = mysql_session.execute(find_users_by_vip_sql)
+                    origin_list = mysql_session.execute(find_users_by_vip_sql).fetchall()
+                    for item in origin_list:
+                        users_list.append(item['ucid'])
                 except Exception, err:
                     service_logger.error(err.message)
                     mysql_session.rollback()
                 finally:
                     mysql_session.close()
-                for ucid in origin_list:
-                    users_list.append(ucid[0])
     return users_list
 
 
@@ -102,18 +126,21 @@ def get_coupon_message_detail_info(msg_id=None):
 
 
 def get_ucid_by_access_token(access_token=None):
+    ucid = RedisHandle.get_ucid_from_redis_by_token(access_token)
+    if ucid is not None:
+        return ucid
     find_ucid_sql = "select ucid from session where token = '%s'" % (access_token,)
     from run import mysql_session
     try:
         user_info = mysql_session.execute(find_ucid_sql).first()
+        if user_info:
+            if user_info['ucid']:
+                return user_info['ucid']
     except Exception, err:
         service_logger.error(err.message)
         mysql_session.rollback()
     finally:
         mysql_session.close()
-    if user_info:
-        if user_info['ucid']:
-            return user_info['ucid']
     return False
 
 
@@ -190,10 +217,13 @@ def sdk_api_request_check(func):
             if ucid:
                 if find_user_account_is_freeze(ucid):
                     return response_data(200, 101, '账号被冻结')
+                hdfs_logger.info("ucid-%s-uri-%s" % (ucid, request.url))
             else:
                 log_exception(request, "根据token: %s 获取ucid失败" % (request.form['_token'],))
                 return response_data(200, 0, '根据token获取ucid失败')
-        return func(*args, **kwargs)
+            return func(*args, **kwargs)
+        else:
+            return response_data(200, 0, '请求校验错误')
     return wraper
 
 

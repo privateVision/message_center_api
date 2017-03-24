@@ -2,6 +2,7 @@
 import json
 import threading
 
+import time
 from mongoengine import Q
 
 from MiddleWare import service_logger
@@ -14,7 +15,8 @@ from Utils.RedisUtil import RedisHandle
 def add_message_to_user_message_list(game, users_type, vip_user, specify_user, type, msg_id,
                                      start_time, end_time, is_time):
     users_list = get_game_and_area_and_user_type_and_vip_users(game, users_type, vip_user)
-    users_list.extend(specify_user)
+    specify_user_list = get_ucid_list_by_user_uid_name_list(specify_user)
+    users_list.extend(specify_user_list)
     try:
         for user in users_list:
             user_message = UserMessage()
@@ -25,15 +27,36 @@ def add_message_to_user_message_list(game, users_type, vip_user, specify_user, t
             user_message.start_time = start_time
             user_message.end_time = end_time
             user_message.is_time = is_time
+            if user_message.type == 'broadcast':
+                user_message.expireAt = user_message.end_time + 10  # 10s后自动过期删除
             user_message.save()
             add_mark_to_user_redis(user, type)
     except Exception, err:
         service_logger.error("添加消息到每个用户的消息列表发生异常：%s" % (err.message,))
 
 
+def get_ucid_list_by_user_uid_name_list(specify_user):
+    ucid_list = []
+    from run import mysql_session
+    if specify_user is not None and specify_user != '':
+        for uid in specify_user:
+            find_ucid_sql = "select ucid from user where uid = '%s'" % (uid,)
+            try:
+                user_info = mysql_session.execute(find_ucid_sql).fetchone()
+                if user_info:
+                    ucid_list.append(user_info['ucid'])
+            except Exception, err:
+                service_logger.error(err.message)
+                mysql_session.rollback()
+            finally:
+                mysql_session.close()
+    return ucid_list
+
+
 # 给用户在redis中设置标记位
 def add_mark_to_user_redis(ucid, message_type):
-    RedisHandle.hincrby(ucid, message_type, 1)  # 自增数量，表示分类消息的未读数量
+    if message_type == 'message':
+        RedisHandle.hincrby(ucid, message_type, 1)  # 自增数量，表示消息的未读数量
 
 
 def add_to_every_related_users_message_list(users_message):
@@ -70,12 +93,18 @@ def system_notices_persist(data_json=None):
         users_message.open_type = data_json['open_type']
         users_message.img = data_json['img']
         users_message.url = data_json['url']
-        users_message.users = data_json['specify_user'].split(",")
-        users_message.rtype = data_json['users_type'].split(",")
+        users_message.users = None
+        if 'specify_user' in data_json and data_json['specify_user'] is not None:
+            users_message.users = data_json['specify_user'].split(",")
+        users_message.rtype = None
+        if 'users_type' in data_json and data_json['users_type'] is not None:
+            users_message.rtype = data_json['users_type'].split(",")
         users_message.app = json.loads(data_json['game'])
-        users_message.vip = data_json['vip_user'].split(",")
+        users_message.vip = None
+        if 'vip_user' in data_json and data_json['vip_user'] is not None:
+            users_message.vip = data_json['vip_user'].split(",")
         users_message.is_time = 1
-        users_message.expire_at = users_message.end_time
+        users_message.expireAt = users_message.end_time
         try:
             users_message.save()
         except Exception, err:
@@ -106,12 +135,18 @@ def system_notices_update(data_json=None):
         users_message.open_type = data_json['open_type']
         users_message.img = data_json['img']
         users_message.url = data_json['url']
-        users_message.users = data_json['specify_user'].split(",")
-        users_message.rtype = data_json['users_type'].split(",")
+        users_message.users = None
+        if 'specify_user' in data_json and data_json['specify_user'] is not None:
+            users_message.users = data_json['specify_user'].split(",")
+        users_message.rtype = None
+        if 'users_type' in data_json and data_json['users_type'] is not None:
+            users_message.rtype = data_json['users_type'].split(",")
         users_message.app = json.loads(data_json['game'])
-        users_message.vip = data_json['vip_user'].split(",")
+        users_message.vip = None
+        if 'vip_user' in data_json and data_json['vip_user'] is not None:
+            users_message.vip = data_json['vip_user'].split(",")
         users_message.is_time = 1
-        users_message.expire_at = users_message.end_time
+        users_message.expireAt = users_message.end_time
         try:
             users_message.save()
             UserMessage.objects(Q(type=users_message.type) & Q(mysql_id=users_message.mysql_id)).update(
@@ -133,12 +168,18 @@ def system_broadcast_persist(data_json=None):
         users_message.start_time = data_json['stime']
         users_message.end_time = int(data_json['stime']) + 30
         users_message.close_time = data_json['close_time']
-        users_message.users = data_json['specify_user'].split(",")
-        users_message.rtype = data_json['users_type'].split(",")
+        users_message.users = None
+        if 'specify_user' in data_json and data_json['specify_user'] is not None:
+            users_message.users = data_json['specify_user'].split(",")
+        users_message.rtype = None
+        if 'users_type' in data_json and data_json['users_type'] is not None:
+            users_message.rtype = data_json['users_type'].split(",")
         users_message.app = json.loads(data_json['game'])
-        users_message.vip = data_json['vip_user'].split(",")
+        users_message.vip = None
+        if 'vip_user' in data_json and data_json['vip_user'] is not None:
+            users_message.vip = data_json['vip_user'].split(",")
         users_message.is_time = 1
-        users_message.expire_at = users_message.end_time
+        users_message.expireAt = users_message.end_time + 10  # 10s后自动过期删除
         try:
             users_message.save()
         except Exception, err:
@@ -158,12 +199,18 @@ def system_broadcast_update(data_json=None, update_user_message=True):
         users_message.start_time = data_json['stime']
         users_message.end_time = int(data_json['stime']) + 30
         users_message.close_time = data_json['close_time']
-        users_message.users = data_json['specify_user'].split(",")
-        users_message.rtype = data_json['users_type'].split(",")
+        users_message.users = None
+        if 'specify_user' in data_json and data_json['specify_user'] is not None:
+            users_message.users = data_json['specify_user'].split(",")
+        users_message.rtype = None
+        if 'users_type' in data_json and data_json['users_type'] is not None:
+            users_message.rtype = data_json['users_type'].split(",")
         users_message.app = json.loads(data_json['game'])
-        users_message.vip = data_json['vip_user'].split(",")
+        users_message.vip = None
+        if 'vip_user' in data_json and data_json['vip_user'] is not None:
+            users_message.vip = data_json['vip_user'].split(",")
         users_message.is_time = 1
-        users_message.expire_at = users_message.end_time
+        users_message.expireAt = users_message.end_time
         try:
             users_message.save()
             UserMessage.objects(Q(type=users_message.type) & Q(mysql_id=users_message.mysql_id)).update(
@@ -184,23 +231,31 @@ def system_message_persist(data_json=None, update_user_message=True):
         users_message.mysql_id = data_json['id']
         users_message.type = 'message'
         if data_json['msg_type'] == 'image_text':
-            users_message.atype = 1
-        if data_json['msg_type'] == 'html_text':
             users_message.atype = 2
+        if data_json['msg_type'] == 'html_text':
+            users_message.atype = 1
         users_message.title = data_json['title']
         users_message.description = data_json['description']
         users_message.content = data_json['content']
         users_message.img = data_json['img']
         users_message.url = data_json['url']
-        users_message.start_time = data_json['send_time']
-        users_message.end_time = int(data_json['send_time']) + 5
+        if data_json['send_time'] == 0:
+            users_message.start_time = int(time.time())
+        else:
+            users_message.start_time = data_json['send_time']
         users_message.sys = data_json['sys']
-        users_message.users = data_json['specify_user'].split(",")
-        users_message.rtype = data_json['users_type'].split(",")
+        users_message.users = None
+        if 'specify_user' in data_json and data_json['specify_user'] is not None:
+            users_message.users = data_json['specify_user'].split(",")
+        users_message.rtype = None
+        if 'users_type' in data_json and data_json['users_type'] is not None:
+            users_message.rtype = data_json['users_type'].split(",")
         users_message.app = json.loads(data_json['game'])
-        users_message.vip = data_json['vip_user'].split(",")
+        users_message.vip = None
+        if 'vip_user' in data_json and data_json['vip_user'] is not None:
+            users_message.vip = data_json['vip_user'].split(",")
         users_message.is_time = 1
-        users_message.expire_at = users_message.end_time
+        users_message.expireAt = users_message.end_time
         try:
             users_message.save()
         except Exception, err:
@@ -226,11 +281,17 @@ def system_coupon_persist(data_json=None):
         users_message.full = data_json['full']
         users_message.money = data_json['money']
         users_message.method = data_json['method']
-        users_message.users = data_json['specify_user'].split(",")
-        users_message.rtype = data_json['users_type'].split(",")
+        users_message.users = None
+        if 'specify_user' in data_json and data_json['specify_user'] is not None:
+            users_message.users = data_json['specify_user'].split(",")
+        users_message.rtype = None
+        if 'users_type' in data_json and data_json['users_type'] is not None:
+            users_message.rtype = data_json['users_type'].split(",")
         users_message.app = json.loads(data_json['game'])
-        users_message.vip = data_json['vip_user'].split(",")
-        users_message.expire_at = users_message.end_time
+        users_message.vip = None
+        if 'vip_user' in data_json and data_json['vip_user'] is not None:
+            users_message.vip = data_json['vip_user'].split(",")
+        users_message.expireAt = users_message.end_time
         try:
             users_message.save()
         except Exception, err:
@@ -255,11 +316,17 @@ def system_coupon_update(data_json=None):
         users_message.full = data_json['full']
         users_message.money = data_json['money']
         users_message.method = data_json['method']
-        users_message.users = data_json['specify_user'].split(",")
-        users_message.rtype = data_json['users_type'].split(",")
+        users_message.users = None
+        if 'specify_user' in data_json and data_json['specify_user'] is not None:
+            users_message.users = data_json['specify_user'].split(",")
+        users_message.rtype = None
+        if 'users_type' in data_json and data_json['users_type'] is not None:
+            users_message.rtype = data_json['users_type'].split(",")
         users_message.app = json.loads(data_json['game'])
-        users_message.vip = data_json['vip_user'].split(",")
-        users_message.expire_at = users_message.end_time
+        users_message.vip = None
+        if 'vip_user' in data_json and data_json['vip_user'] is not None:
+            users_message.vip = data_json['vip_user'].split(",")
+        users_message.expireAt = users_message.end_time
         try:
             users_message.save()
             UserMessage.objects(Q(type=users_message.type) & Q(mysql_id=users_message.mysql_id)).update(
@@ -280,12 +347,17 @@ def system_rebate_persist(data_json=None, update_user_message=True):
         users_message.content = data_json['content']
         users_message.start_time = data_json['stime']
         users_message.end_time = data_json['etime']
-        users_message.rules = json.loads(data_json['rules'])
-        users_message.users = data_json['specify_user'].split(",")
-        users_message.rtype = data_json['users_type'].split(",")
-        users_message.vip = data_json['vip_user'].split(",")
+        users_message.rule = json.loads(data_json['rule'])
+        users_message.users = None
+        if 'specify_user' in data_json and data_json['specify_user'] is not None:
+            users_message.users = data_json['specify_user'].split(",")
+        users_message.rtype = None
+        if 'users_type' in data_json and data_json['users_type'] is not None:
+            users_message.rtype = data_json['users_type'].split(",")
+        users_message.vip = None
         users_message.expire_at = users_message.end_time
         users_message.app = None
+        users_message.is_time = 1
         try:
             users_message.save()
         except Exception, err:

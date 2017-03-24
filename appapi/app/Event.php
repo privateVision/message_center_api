@@ -7,6 +7,7 @@ use App\Model\Session;
 use App\Model\UserSub;
 use App\Model\UserSubService;
 use App\Model\User;
+use Request;
 
 class Event
 {
@@ -34,7 +35,7 @@ class Event
                 $user_sub->rid = $rid;
                 $user_sub->old_rid = $rid;
                 $user_sub->cp_uid = $user->ucid;
-                $user_sub->name = base_convert(sprintf("%011d%09d", $user->ucid, $pid), 10, 36) . '01';
+                $user_sub->name = '小号01';
                 $user_sub->priority = time();
                 $user_sub->last_login_at = datetime();
                 $user_sub->save();
@@ -54,7 +55,7 @@ class Event
         $session->expired_ts = time() + 2592000; // 1个月有效期
         $session->date = date('Ymd');
         $session->save();
-         
+        
         $user->uuid = $session->token; // todo: 兼容旧的自动登陆
         $user->last_login_at = datetime();
         $user->save();
@@ -84,5 +85,11 @@ class Event
         $user->delaySave();
         
         return static::onLoginAfter($user, $pid, $rid);
+    }
+
+    public static function onResetPassword(User $user, $new_password) {
+        $user->password = $new_password;
+        $user->save();
+        return $user;
     }
 }

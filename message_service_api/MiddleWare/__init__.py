@@ -15,6 +15,20 @@ from config.config import config
 
 import logging
 
+# hdfs 待分析日志记录
+hdfs_logger = logging.getLogger('hdfs_log_service')
+hdfs_logger.setLevel(logging.DEBUG)
+hdfs_fh = TimedRotatingFileHandler('./logs/message_service_hdfs.log',
+                                   when="d",
+                                   interval=1,
+                                   backupCount=10)
+hdfs_fh.suffix = "%Y%m%d.log"
+hdfs_fh.setLevel(logging.DEBUG)
+formatter = logging.Formatter('%(asctime)s - %(message)s')
+hdfs_fh.setFormatter(formatter)
+hdfs_logger.addHandler(hdfs_fh)
+
+# 后台业务日志
 service_logger = logging.getLogger('message_service')
 service_logger.setLevel(logging.DEBUG)
 fh = TimedRotatingFileHandler('./logs/message_service_api.log',
@@ -24,7 +38,7 @@ fh = TimedRotatingFileHandler('./logs/message_service_api.log',
 fh.suffix = "%Y%m%d.log"
 fh.setLevel(logging.DEBUG)
 ch = logging.StreamHandler()
-ch.setLevel(logging.DEBUG)
+ch.setLevel(logging.INFO)
 formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s - [%(filename)s:%(lineno)s]')
 fh.setFormatter(formatter)
 ch.setFormatter(formatter)
@@ -50,7 +64,7 @@ def create_app():
     redis_store.init_app(app)
 
     kafka_producer = KafkaProducer(bootstrap_servers=app.config.get('KAFKA_URL'))
-    kafka_consumer = KafkaConsumer(bootstrap_servers=app.config.get('KAFKA_URL'), group_id='anfeng_message_service')
+    kafka_consumer = KafkaConsumer(bootstrap_servers=app.config.get('KAFKA_URL'), group_id='dev_anfeng_message_service')
     kafka_consumer.subscribe([app.config.get('KAFKA_TOPIC')])
     from Service.KafkaHandler import kafka_consume_func
     kafka_consumer_thread = threading.Thread(target=kafka_consume_func, args=(kafka_consumer,))

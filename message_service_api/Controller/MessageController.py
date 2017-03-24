@@ -83,7 +83,7 @@ def v4_sdk_get_message_list():
         & Q(closed=0)
         # & Q(is_read=0)
         & Q(start_time__lte=current_timestamp)
-        & Q(end_time__gte=current_timestamp)
+        # & Q(end_time__gte=current_timestamp)  # 消息发送后是一直存在的
         & Q(ucid=ucid)).order_by('-create_time')[start_index:end_index]
     data_list = []
     for message in message_list:
@@ -113,11 +113,17 @@ def v4_sdk_get_message_list():
             'summary': message_info['description'],
             'type': message_info['atype'],
             'id': message_info['mysql_id'],
-            'content': message_info['content'],
-            'img': message_info['img'],
-            'url': message_info['url'],
+            'img': '',
+            'url': '',
+            'content': '',
             'is_read': message['is_read']
         }
+        if 'img' in message_info:
+            message_resp['img'] = message_info['img']
+        if 'content' in message_info:
+            message_resp['content'] = message_info['content']
+        if 'url' in message_info:
+            message_resp['url'] = message_info['url']
         data_list.append(message_resp)
     # data = {
     #     "total_count": message_list_total_count,

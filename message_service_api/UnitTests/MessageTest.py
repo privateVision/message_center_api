@@ -55,8 +55,8 @@ class MessageFunctionTest(unittest.TestCase):
 
     def test_get_message_list(self):
         body_data = {
-            '_sign': 'd69bfcae81537a571bd84163696e1bb2',
-            '_token': 'bb427a702d53dbb0cdd4f001fb301620',
+            '_sign': '141aa24d6419b7ba2850bdcab13e95da',
+            '_token': 'c31fc6b6b2f7b993713c124f8104209d',
             '_appid': 2
         }
         r = requests.post('http://localhost:5000/msa/v4/messages', data=body_data)
