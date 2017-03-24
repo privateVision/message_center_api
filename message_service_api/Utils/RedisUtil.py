@@ -49,18 +49,12 @@ class RedisHandle(object):
     def get_user_data_mark_in_redis(key_name):
         key = "%s%s" % (RedisHandle.common_key_prefix, key_name)
         user_mark = {
-            # "notice": 0,
             "broadcast": [],
             "message": 0,
-            # "coupon": 0,
-            # "rebate": 0,
-            "gift_num": 0,
-            "is_freeze": 0
+            "gift_num": 0
         }
         if redis_store.exists(key):
             redis_mark_data = redis_store.hgetall(key)
-            # if redis_mark_data.has_key('notice'):
-            #     user_mark['notice'] = int(redis_mark_data['notice'])
             if redis_mark_data.has_key('broadcast'):
                 broadcast_count = int(redis_mark_data['broadcast'])
                 if broadcast_count > 0:
@@ -71,10 +65,6 @@ class RedisHandle(object):
                     redis_store.hset(key, 'broadcast', 0)
             if redis_mark_data.has_key('message'):
                 user_mark['message'] = int(redis_mark_data['message'])
-            # if redis_mark_data.has_key('coupon'):
-            #     user_mark['coupon'] = int(redis_mark_data['coupon'])
-            # if redis_mark_data.has_key('rebate'):
-            #     user_mark['rebate'] = int(redis_mark_data['rebate'])
         return user_mark
 
     @staticmethod
@@ -88,3 +78,15 @@ class RedisHandle(object):
             return None
         user_info = json.loads(user_info_str)
         return user_info['ucid']
+
+    @staticmethod
+    def get_user_is_freeze_from_redis_by_token(token=None):
+        get_token_key = 'session_token_%s' % (token,)
+        get_token_value = redis_store.get(get_token_key)
+        if get_token_value is None:
+            return None
+        user_info_str = redis_store.get(get_token_value)
+        if user_info_str is None:
+            return None
+        user_info = json.loads(user_info_str)
+        return user_info['freeze']

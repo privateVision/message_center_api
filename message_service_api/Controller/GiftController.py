@@ -16,7 +16,7 @@ gift_controller = Blueprint('GiftController', __name__)
 @sdk_api_request_check
 def v4_sdk_get_gifts_list():
     ucid = get_ucid_by_access_token(request.form['_token'])
-    game_id = request.form['game_id']
+    game_id = request.form['_appid']  # 游戏id
     page = request.form['page'] if request.form.has_key('page') and request.form['page'] else 1
     count = request.form['count'] if request.form.has_key('count') and request.form['count'] else 10
     start_index = (int(page) - 1) * int(count)
@@ -95,7 +95,7 @@ def v4_sdk_get_gifts_list():
 @sdk_api_request_check
 def v4_sdk_user_get_gift():
     ucid = get_ucid_by_access_token(request.form['_token'])
-    game_id = request.form['game_id']
+    game_id = request.form['_appid']  # 游戏id
     gift_id = request.form['gift_id']
     username = request.form['username']
     ip = request.remote_addr  # 请求源ip
