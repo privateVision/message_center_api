@@ -156,6 +156,7 @@ def v4_sdk_user_get_gift():
                                                                 "where fortype=2 and gift_id=%s " % (gift_id,)
                                 zhuayou_sdk_mysql_session.execute(update_gift_count_sql)
                                 zhuayou_sdk_mysql_session.execute(update_gift_fortype_count_sql)
+                                return response_data(200, 1, game_gift_code['code'])
                     else:
                         return response_data(200, 0, '礼包被领取完了')
                 else:
@@ -166,7 +167,7 @@ def v4_sdk_user_get_gift():
             return response_data(200, 0, '已经领取过了')
     else:
         return response_data(200, 0, '礼包不存在')
-    return response_data(http_code=200, data=None)
+    return response_data(http_code=200, code=0, message='礼包领取失败')
 
 
 # # 查询游戏是否有未领取礼包
