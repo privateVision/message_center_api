@@ -28,12 +28,14 @@ class  AppleController extends Controller{
         //匹配当前的操作的实现
         $receipt = $request->input('receipt');
         $transaction = $parameter->tough("transaction_id");
-
-        $dy = IosOrderExt::where("transaction_id",$transaction)->frist();
-        if(!empty($dy)) throw new ApiException(ApiException::Remind,"had in ");
-        $bundle_id = $parameter->tough("bundle_id");
-        //保存当前的操作
         $receipt = urldecode($receipt);
+        
+        $logsql = "select id from ios_receipt_log WHERE receipt_md5 = ".md5($receipt);
+        $log_data = app('db')->select($logsql);
+        if(count($log_data)) throw new ApiException(ApiException::Remind,"had in ");
+
+        //保存当前的操作
+
         $sql = "insert into ios_receipt_log (`receipt_md5`,`receipt_base64`) VALUES ({md5($receipt)},$receipt)";
         app('db')->select($sql);
 
@@ -67,7 +69,7 @@ class  AppleController extends Controller{
                             return trans("messages.app_buy_faild");
                         }
                         //通知发货
-
+                        order_success($orders->id);
                         return trans("messages.apple_buy_success");
                     }else{
                         throw new ApiException(ApiException::Remind,trans("messages.app_buy_faild"));
