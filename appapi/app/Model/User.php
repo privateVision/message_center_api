@@ -80,7 +80,7 @@ class User extends Model
 
             $interval = date_diff(date_create("{$y}-{$m}-{$d}"), date_create(date('Y-m-d')));
 
-            return $interval && @$interval['y'] >= 18;
+            return $interval && @$interval->y >= 18;
         }
 
         return false;
