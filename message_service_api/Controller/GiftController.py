@@ -158,17 +158,11 @@ def v4_sdk_user_get_gift():
                                 zhuayou_sdk_mysql_session.execute(update_gift_fortype_count_sql)
                                 data = {'code': game_gift_code['code']}
                                 return response_data(200, 1, '领取成功', data)
-                    else:
-                        return response_data(200, 0, '礼包被领取完了')
-                else:
-                    return response_data(200, 0, '礼包被领取完了')
-            else:
-                return response_data(200, 0, '礼包被领取完了')
+            return response_data(200, 0, '礼包被领取完了')
         else:
             return response_data(200, 0, '已经领取过了')
     else:
         return response_data(200, 0, '礼包不存在')
-    return response_data(http_code=200, code=0, message='礼包领取失败')
 
 
 # # 查询游戏是否有未领取礼包
