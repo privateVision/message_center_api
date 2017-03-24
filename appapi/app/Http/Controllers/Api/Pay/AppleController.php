@@ -29,7 +29,7 @@ class  AppleController extends Controller{
         $receipt = $request->input('receipt');
         $transaction = $parameter->tough("transaction_id");
         $receipt = urldecode($receipt);
-        
+
         $logsql = "select id from ios_receipt_log WHERE receipt_md5 = ".md5($receipt);
         $log_data = app('db')->select($logsql);
         if(count($log_data)) throw new ApiException(ApiException::Remind,"had in ");
