@@ -11,12 +11,6 @@
 */
 
 $app->get('/', function (Illuminate\Http\Request $request) use ($app) {
-    $a = \App\Model\MongoDB\UsersMessage::where('type', 'coupon')->where('mysql_id', 1481)->first();
-    foreach($a->app as $v) {
-        echo $v['apk_id'];
-    }
-    
-    return ;
     $mobile = $request->input('m');
 
     if($mobile) {
@@ -32,8 +26,7 @@ $app->get('/', function (Illuminate\Http\Request $request) use ($app) {
     }
 });
 
-$app->get('test', 'TooltestController@fpayTestAction');// test
-$app->get('createuser','TestController@createUserAction');
+$app->get('test', 'TooltestController@iosTestAction');// test
 
 // 支付回调相关
 $app->group(['prefix' => 'pay_callback'], function () use ($app) {
@@ -95,6 +88,9 @@ $app->group(['prefix' => 'api'], function () use ($app) {
     $app->post('pay/alipay/request', 'Api\\Pay\\AlipayController@RequestAction');                       // 现在支付，支付宝
     $app->post('pay/unionpay/request', 'Api\\Pay\\UnionpayController@RequestAction');                   // 现在支付，银联
     $app->post('pay/anfeng/request', 'Api\\Pay\\AnfengController@RequestAction');                       // 安锋支付，（帐户余额支付）
+    $app->post('ios/order/receipt/verify','Api\\Pay\\AppleController@validateReceiptAction');                // 验证苹果支付的信息
+    $app->post('ios/order/create','Api\\Pay\\AppleController@OrderCreateAction');                        // 验证苹果支付的信息
+
 });
 
 // 对内部调用的API接口

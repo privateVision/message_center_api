@@ -80,7 +80,7 @@ class Controller extends BaseController {
         }
 
         if(is_array($coupon->app)) {
-            foreach($coupon->app[0] as $v) {
+            foreach($coupon->app as $v) {
                 if($v['apk_id'] == $order->pid) return true;
             }
         }

@@ -31,5 +31,11 @@ return [
     "password_type_error"           => "您好，密码格式不正确！",
     "mobile_type_error"             => "请填写正确的，手机号格式",
     'phone_register'                => "【安锋网】恭喜您注册成功，用户名：:username  密码：:password", // 手机一键登陆成功后给发送用户帐户信息
-    "sms_limit_code"                => "您好，每天最多发送三次!"
+    "sms_limit_code"                => "您好，每天最多发送三次!",
+    "app_buy_faild"                 => "您好，充值失败！",
+    "request_time_out"              => "您好，请求超时，请重试！",
+    "apple_rer_error_type"          => "苹果返回的数据有误，请重新尝试！",
+    "apple_buy_success"             => "苹果购买成功！",
+    "app_param_type_error"          => "您好，传递的参数的格式错误！",
+
 ];

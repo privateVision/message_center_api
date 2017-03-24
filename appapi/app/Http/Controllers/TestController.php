@@ -91,52 +91,6 @@ class TestController extends \App\Controller
 
     //创建用户
 
-    public function createUserAction(Request $request){
-
-        // 初始化，并获取access_token
-        $data = static::httpRequest('api/app/initialize', array(
-            'imei' => '90012e76a270a94d34c38811c7db1ff3',
-            'rid' => static::RID,
-            'device_code' => '90012e76a270a94d34c38811c7db1ff3',
-            'device_name' => 'iphone 6plus',
-            'device_platform' => 16,
-            'version' => '1.0.0',
-            'app_version' => '1.1.0'
-        ));
-
-        $username = $this->UsernameAction();
-        $username   = $username['username'] ;
-        $password   = "123456";
-
-        if(!check_name($username, 24)){
-            throw new ApiException(ApiException::Remind, "用户名格式不正确，请填写正确的格式");
-        }
-
-        $isRegister  = Ucusers::where("mobile", $username)->orWhere('uid', $username)->count();
-
-        if($isRegister) {
-            throw new  ApiException(ApiException::Remind, "用户已注册，请直接登陆");
-        }
-
-        $UcenterMember = new UcenterMembers;
-        $UcenterMember->password = $password;
-        $UcenterMember->email = $username . "@anfan.com";;
-        $UcenterMember->regip = $request->ip();
-        $UcenterMember->username = $username;
-        $UcenterMember->regdate = time();
-        $uucid =$UcenterMember->save();
-
-        $ucuser = $UcenterMember->ucusers()->create([
-            'ucid' =>$uucid,
-            'uid' => $username,
-            'uuid' => $data['access_token'],
-        ]);
-
-        echo "username:".$username."   password: 123456";
-        return ;
-
-    }
-
 
 
 }
