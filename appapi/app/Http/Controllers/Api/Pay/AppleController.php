@@ -129,7 +129,6 @@ class  AppleController extends Controller{
 
     public function OrderCreateAction(Request $request,Parameter $parameter){
         //上层添加API 时间请求次数限制
-
         $uid = $this->user->uid;
         $ucid = $this->user->ucid;
         $vorderid = $parameter->tough('vorderid'); //厂家订单id
@@ -139,6 +138,7 @@ class  AppleController extends Controller{
         $appid  = $request->input("_appid");
 
         $ord = Orders::where("ucid",$ucid)->where('vorderid',$vorderid)->get();
+
         if(count($ord)) return "had exists"; //限制关闭
         try {
             $sql = "select p.fee,p.product_name,con.notify_url,con.iap from ios_products as p LEFT JOIN ios_application_config as con ON p.app_id = con.app_id WHERE p.product_id = '{$product_id}' AND p.app_id = {$appid}";
@@ -146,7 +146,7 @@ class  AppleController extends Controller{
 
             $order = new Orders;
             $order->ucid = $ucid;
-            $order->uid = $ucid;
+            $order->uid = $uid;
             $order->sn = date('ymdHis') . substr(microtime(), 2, 6) . str_pad(rand(0, 999999), 6, '0', STR_PAD_LEFT);
             $order->vid = $this->procedure->pid;
             $order->notify_url = $dat[0]->notify_url;
@@ -165,12 +165,13 @@ class  AppleController extends Controller{
             $ext->product_id = $product_id;
             $ext->zone_name = $zone_name;
             $ext->role_name = $role_name;
+            $ext->transaction_id = time();
             $oext = $ext->save();
 
             $pay_type = $dat[0]->iap;
             return [
                 'order_id' => $order->sn,
-                'id'      =>$ord->id,//返回当前的订单
+                'id'      =>$order->id,//返回当前的订单
                 'fee' => $dat[0]->fee,
                 "iap" =>$pay_type //支付的方式0 ios 1为第三方支付
             ];
@@ -179,5 +180,53 @@ class  AppleController extends Controller{
         }
 
     }
+
+    /*
+     * 重写 注册方法
+     * */
+    protected function create_order(Orders $order, Request $request, Parameter $parameter) {
+        $uid = $parameter->tough('uid');
+        $ucid = $parameter->tough("ucid");
+        $vorderid = $parameter->tough('vorderid'); //厂家订单id
+        $zone_name = $parameter->tough("zone_name");
+        $role_name = $parameter->tough('role_name');
+        $product_id = $parameter->tough('product_id');
+        $appid  = $request->input("_appid");
+
+        $ord = Orders::where("ucid",$ucid)->where('vorderid',$vorderid)->get();
+        if(count($ord)) return "had exists"; //限制关闭
+        try {
+            $sql = "select p.fee,p.product_name,con.notify_url from ios_products as p LEFT JOIN ios_application_config as con ON p.app_id = con.app_id WHERE p.product_id = '{$product_id}' AND p.app_id = {$appid}";
+            $dat = app('db')->select($sql);
+
+
+            $order->vid = $this->procedure->pid;
+            $order->notify_url = $dat[0]->notify_url;
+            $order->vorderid = $vorderid;
+            $order->fee = $dat[0]->fee;
+            $order->subject = $dat[0]->product_name;
+            $order->body = "role_name: " . $role_name . "zone_name: " . $zone_name;
+
+            $order->save();
+
+            $ext = new IosOrderExt;
+            $ext->oid = $order->id;
+            $ext->product_id = $product_id;
+            $ext->zone_name = $zone_name;
+            $ext->role_name = $role_name;
+            $oext = $ext->save();
+
+            return [
+                'order_id' => $order->sn,
+                'id'      =>$ord->id,//返回当前的订单
+                'fee' => $dat[0]->fee,
+                'iap' => $dat[0]->iap
+            ];
+        }catch(\Exception $e){
+            echo  $e->getMessage();
+        }
+    }
+
+
 
 }
