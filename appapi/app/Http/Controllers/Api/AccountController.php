@@ -233,7 +233,7 @@ class AccountController extends Controller {
     }
 
     public function LoginAction(Request $request, Parameter $parameter) {
-        $username = $parameter->tough('username', 'username');
+        $username = $parameter->tough('username');
         $password = $parameter->tough('password');
 
         $user = User::where('uid', $username)->orWhere('mobile', $username)->first();
