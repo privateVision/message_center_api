@@ -29,6 +29,7 @@ def add_message_to_user_message_list(game, users_type, vip_user, specify_user, t
             user_message.start_time = start_time
             user_message.end_time = end_time
             user_message.is_time = is_time
+            user_message.expireAt = datetime.datetime.fromtimestamp(user_message.end_time)
             if user_message.type == 'coupon':
                 user_message.id = "%s%s%s%s" % (user, type, msg_id, distribute)
                 user_message.distribute = distribute
@@ -301,7 +302,7 @@ def system_coupon_persist(data_json=None):
         users_message.vip = None
         if 'vip_user' in data_json and data_json['vip_user'] is not None:
             users_message.vip = data_json['vip_user'].split(",")
-        users_message.expireAt = datetime.datetime.utcfromtimestamp(users_message.end_time)
+        users_message.expireAt = datetime.datetime.fromtimestamp(users_message.end_time)
         try:
             users_message.save()
         except Exception, err:
