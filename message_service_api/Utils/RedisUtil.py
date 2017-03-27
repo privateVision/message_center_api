@@ -80,6 +80,18 @@ class RedisHandle(object):
         return user_info['ucid']
 
     @staticmethod
+    def get_expired_ts_from_redis_by_token(token=None):
+        get_token_key = 'session_token_%s' % (token,)
+        get_token_value = redis_store.get(get_token_key)
+        if get_token_value is None:
+            return None
+        user_info_str = redis_store.get(get_token_value)
+        if user_info_str is None:
+            return None
+        user_info = json.loads(user_info_str)
+        return user_info['expired_ts']
+
+    @staticmethod
     def get_user_is_freeze_from_redis_by_token(token=None):
         get_token_key = 'session_token_%s' % (token,)
         get_token_value = redis_store.get(get_token_key)

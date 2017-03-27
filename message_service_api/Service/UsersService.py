@@ -1,6 +1,9 @@
 # _*_ coding: utf-8 _*_
 from functools import wraps
 
+import time
+
+import datetime
 from flask import request
 from mongoengine import Q
 
@@ -27,7 +30,7 @@ def get_game_and_area_and_user_type_and_vip_users(game=None, user_type=None, vip
                 if game_info.has_key('zone_id_list'):
                     for zone in game_info['zone_id_list']:
                         find_users_in_game_area_sql = "select distinct(ucid) from roleDatas where vid = %s " \
-                                                      "and zoneName = '%s'"\
+                                                      "and zoneName = '%s'" \
                                                       % (game_info['apk_id'], zone)
                         try:
                             tmp_user_list = mysql_session.execute(find_users_in_game_area_sql).fetchall()
@@ -38,7 +41,7 @@ def get_game_and_area_and_user_type_and_vip_users(game=None, user_type=None, vip
                             mysql_session.rollback()
                         finally:
                             mysql_session.close()
-                else: # 没传区服信息，那就所有区服咯
+                else:  # 没传区服信息，那就所有区服咯
                     find_users_in_game_area_sql = "select distinct(ucid) from roleDatas where vid = %s " \
                                                   % (game_info['apk_id'],)
                     try:
@@ -51,7 +54,7 @@ def get_game_and_area_and_user_type_and_vip_users(game=None, user_type=None, vip
                     finally:
                         mysql_session.close()
             return list(set(user_type_users_list).intersection(set(game_users_list)).intersection(set(vip_users_list)))
-        else: # 所有游戏，太可怕了
+        else:  # 所有游戏，太可怕了
             find_all_game_users_sql = "select distinct(ucid) from roleDatas"
             try:
                 tmp_user_list = mysql_session.execute(find_all_game_users_sql).fetchall()
@@ -96,7 +99,8 @@ def get_vip_users(vips):
             vip_rule_info = AppVipRules.objects(level=vip).first()
             if vip_rule_info is not None:
                 fee = vip_rule_info['fee']
-                find_users_by_vip_sql = "select distinct(ucid) from ucuser_total_pay as u where u.pay_fee >= %s " % (fee,)
+                find_users_by_vip_sql = "select distinct(ucid) from ucuser_total_pay as u where u.pay_fee >= %s " % (
+                    fee,)
                 try:
                     origin_list = mysql_session.execute(find_users_by_vip_sql).fetchall()
                     for item in origin_list:
@@ -142,6 +146,32 @@ def get_ucid_by_access_token(access_token=None):
     finally:
         mysql_session.close()
     return None
+
+
+def is_session_expired_by_access_token(access_token=None):
+    expired_ts = RedisHandle.get_expired_ts_from_redis_by_token(access_token)
+    now = int(time.time())
+    if expired_ts is not None:
+        if expired_ts < now:
+            return True
+        else:
+            return False
+    find_expired_ts_sql = "select expired_ts from session where token = '%s'" % (access_token,)
+    from run import mysql_session
+    try:
+        user_info = mysql_session.execute(find_expired_ts_sql).first()
+        if user_info:
+            if user_info['expired_ts'] is not None:
+                if user_info['expired_ts'] < now:
+                    return True
+                else:
+                    return False
+    except Exception, err:
+        service_logger.error(err.message)
+        mysql_session.rollback()
+    finally:
+        mysql_session.close()
+    return True
 
 
 def get_user_is_freeze_by_access_token(access_token=None):
@@ -221,6 +251,44 @@ def find_user_child_account_is_freeze(ucid=None):
     return False, []
 
 
+def get_stored_value_card_list(ucid, start_index, end_index):
+    from run import mysql_session
+    total_count = 0
+    value_card_list = []
+    time_now = datetime.datetime.now()
+    find_user_store_value_card_list_sql = "select vc.* from ucusersVC as uvc, virtualCurrencies as vc where " \
+                                          "uvc.vcid = vc.vcid and uvc.balance > 0 and uvc.ucid = %s and " \
+                                          "((untimed = 0) or ((untimed = 1) and startTime <= %s and endTime >= %s) " \
+                                          "limit %s, %s " % \
+                                          (ucid, time_now, time_now, start_index, end_index)
+    find_user_store_value_card_count_sql = "select count(*) from ucusersVC as uvc, virtualCurrencies as vc where " \
+                                           "uvc.vcid = vc.vcid and uvc.balance > 0 and uvc.ucid = %s and " \
+                                           "((untimed = 0) or ((untimed = 1) and startTime <= %s and endTime >= %s) " % \
+                                           (ucid, time_now, time_now)
+    try:
+        total_count = mysql_session.execute(find_user_store_value_card_count_sql).scalar()
+        card_list = mysql_session.execute(find_user_store_value_card_list_sql).fetchall()
+        if total_count > 0:
+            for card in card_list:
+                item = {
+                    'vcid': card['vcid'],
+                    'vcname': card['vaname'],
+                    'supportDivide': card['supportDivide'],
+                    'untimed': card['untimed'],
+                    'startTime': card['startTime'],
+                    'endTime': card['endTime'],
+                    'lockApp': card['lockApp'],
+                    'descript': card['descript']
+                }
+                value_card_list.append(item)
+    except Exception, err:
+        service_logger.error(err.message)
+        mysql_session.rollback()
+    finally:
+        mysql_session.close()
+    return total_count, value_card_list
+
+
 # sdk api 请求通用装饰器
 def sdk_api_request_check(func):
     @wraps(func)
@@ -230,6 +298,10 @@ def sdk_api_request_check(func):
         if is_params_checked is False:
             log_exception(request, '客户端请求错误-appid或sign或token为空')
             return response_data(200, 0, '客户端参数错误')
+        # 会话是否过期判断
+        is_session_expired = is_session_expired_by_access_token(request.form['_token'])
+        if is_session_expired:
+            return response_data(200, 102, '用户未登录或session已过期')
         is_sign_true = sdk_api_check_sign(request)
         if is_sign_true is True:
             ucid = get_ucid_by_access_token(request.form['_token'])
@@ -243,6 +315,7 @@ def sdk_api_request_check(func):
             return func(*args, **kwargs)
         else:
             return response_data(200, 0, '请求校验错误')
+
     return wraper
 
 
@@ -255,5 +328,5 @@ def cms_api_request_check(func):
         if not check_result:
             return check_exception
         return func(*args, **kwargs)
-    return wraper
 
+    return wraper

@@ -6,7 +6,12 @@ from mongoengine import StringField, IntField, DynamicDocument, DateTimeField, L
 
 # MongoDB user_message 对应模型
 class UserMessage(DynamicDocument):
-    meta = {'collection': 'sdk_api_user_message'}
+    meta = {
+        'collection': 'sdk_api_user_message',
+        'indexes': [
+            {'fields': ['expireAt'], 'expireAfterSeconds': 0}
+        ]
+    }
     id = StringField(required=True, primary_key=True)
     ucid = LongField(required=True)
     type = StringField(required=True)

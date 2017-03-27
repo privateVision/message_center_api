@@ -73,15 +73,14 @@ class User extends Model
      * @return boolean
      */
     public function isAdult() {
-        if($this->card_id) {
-            $card = $this->card_id;
-            $y = substr($card, 6, 4);
-            $m = substr($card, 10, 2);
-            $d = substr($card, 12, 2);
+        if($this->birthday && strlen($this->birthday) == 8) {
+            $y = substr($this->birthday, 0, 4);
+            $m = substr($this->birthday, 4, 2);
+            $d = substr($this->birthday, 6, 2);
 
             $interval = date_diff(date_create("{$y}-{$m}-{$d}"), date_create(date('Y-m-d')));
 
-            return $interval && @$interval['y'] >= 18;
+            return $interval && @$interval->y >= 18;
         }
 
         return false;

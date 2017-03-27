@@ -3,6 +3,8 @@ import json
 import threading
 
 import time
+
+import datetime
 from mongoengine import Q
 
 from MiddleWare import service_logger
@@ -13,7 +15,7 @@ from Utils.RedisUtil import RedisHandle
 
 
 def add_message_to_user_message_list(game, users_type, vip_user, specify_user, type, msg_id,
-                                     start_time, end_time, is_time):
+                                     start_time, end_time, is_time, distribute):
     users_list = get_game_and_area_and_user_type_and_vip_users(game, users_type, vip_user)
     specify_user_list = get_ucid_list_by_user_uid_name_list(specify_user)
     users_list.extend(specify_user_list)
@@ -27,8 +29,13 @@ def add_message_to_user_message_list(game, users_type, vip_user, specify_user, t
             user_message.start_time = start_time
             user_message.end_time = end_time
             user_message.is_time = is_time
+            user_message.expireAt = datetime.datetime.fromtimestamp(user_message.end_time)
+            if user_message.type == 'coupon':
+                user_message.id = "%s%s%s%s" % (user, type, msg_id, distribute)
+                user_message.distribute = distribute
             if user_message.type == 'broadcast':
-                user_message.expireAt = user_message.end_time + 10  # 10s后自动过期删除
+                expire_at_stamp = user_message.end_time + 10  # 10s后自动过期删除
+                user_message.expireAt = datetime.datetime.fromtimestamp(expire_at_stamp)
             user_message.save()
             add_mark_to_user_redis(user, type)
     except Exception, err:
@@ -60,12 +67,14 @@ def add_mark_to_user_redis(ucid, message_type):
 
 
 def add_to_every_related_users_message_list(users_message):
+    if 'distribute' not in users_message:
+        users_message.distribute = None
     add_user_message_thread = threading.Thread(target=add_message_to_user_message_list,
                                                args=(users_message.app, users_message.rtype,
                                                      users_message.vip, users_message.users,
                                                      users_message.type, users_message.mysql_id,
                                                      users_message.start_time, users_message.end_time,
-                                                     users_message.is_time))
+                                                     users_message.is_time, users_message.distribute))
     add_user_message_thread.setDaemon(True)
     add_user_message_thread.start()
 
@@ -104,7 +113,7 @@ def system_notices_persist(data_json=None):
         if 'vip_user' in data_json and data_json['vip_user'] is not None:
             users_message.vip = data_json['vip_user'].split(",")
         users_message.is_time = 1
-        users_message.expireAt = users_message.end_time
+        users_message.expireAt = datetime.datetime.fromtimestamp(users_message.end_time)
         try:
             users_message.save()
         except Exception, err:
@@ -146,7 +155,7 @@ def system_notices_update(data_json=None):
         if 'vip_user' in data_json and data_json['vip_user'] is not None:
             users_message.vip = data_json['vip_user'].split(",")
         users_message.is_time = 1
-        users_message.expireAt = users_message.end_time
+        users_message.expireAt = datetime.datetime.fromtimestamp(users_message.end_time)
         try:
             users_message.save()
             UserMessage.objects(Q(type=users_message.type) & Q(mysql_id=users_message.mysql_id)).update(
@@ -179,7 +188,8 @@ def system_broadcast_persist(data_json=None):
         if 'vip_user' in data_json and data_json['vip_user'] is not None:
             users_message.vip = data_json['vip_user'].split(",")
         users_message.is_time = 1
-        users_message.expireAt = users_message.end_time + 10  # 10s后自动过期删除
+        expire_at_stamp = users_message.end_time + 10  # 10s后自动过期删除
+        users_message.expireAt = datetime.datetime.fromtimestamp(expire_at_stamp)
         try:
             users_message.save()
         except Exception, err:
@@ -210,7 +220,7 @@ def system_broadcast_update(data_json=None, update_user_message=True):
         if 'vip_user' in data_json and data_json['vip_user'] is not None:
             users_message.vip = data_json['vip_user'].split(",")
         users_message.is_time = 1
-        users_message.expireAt = users_message.end_time
+        users_message.expireAt = datetime.datetime.fromtimestamp(users_message.end_time)
         try:
             users_message.save()
             UserMessage.objects(Q(type=users_message.type) & Q(mysql_id=users_message.mysql_id)).update(
@@ -255,7 +265,7 @@ def system_message_persist(data_json=None, update_user_message=True):
         if 'vip_user' in data_json and data_json['vip_user'] is not None:
             users_message.vip = data_json['vip_user'].split(",")
         users_message.is_time = 1
-        users_message.expireAt = users_message.end_time
+        users_message.expireAt = datetime.datetime.fromtimestamp(users_message.end_time)
         try:
             users_message.save()
         except Exception, err:
@@ -268,7 +278,8 @@ def system_message_persist(data_json=None, update_user_message=True):
 def system_coupon_persist(data_json=None):
     if data_json is not None:
         users_message = UsersMessage()
-        users_message.id = '%s%s' % ('coupon', data_json['id'])
+        users_message.distribute = int(time.time())
+        users_message.id = '%s%s%s' % ('coupon', data_json['id'], users_message.distribute)
         users_message.mysql_id = data_json['id']
         users_message.type = 'coupon'
         users_message.name = data_json['name']
@@ -291,7 +302,7 @@ def system_coupon_persist(data_json=None):
         users_message.vip = None
         if 'vip_user' in data_json and data_json['vip_user'] is not None:
             users_message.vip = data_json['vip_user'].split(",")
-        users_message.expireAt = users_message.end_time
+        users_message.expireAt = datetime.datetime.fromtimestamp(users_message.end_time)
         try:
             users_message.save()
         except Exception, err:
@@ -326,7 +337,7 @@ def system_coupon_update(data_json=None):
         users_message.vip = None
         if 'vip_user' in data_json and data_json['vip_user'] is not None:
             users_message.vip = data_json['vip_user'].split(",")
-        users_message.expireAt = users_message.end_time
+        users_message.expireAt = datetime.datetime.fromtimestamp(users_message.end_time)
         try:
             users_message.save()
             UserMessage.objects(Q(type=users_message.type) & Q(mysql_id=users_message.mysql_id)).update(
