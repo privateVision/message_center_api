@@ -32,7 +32,7 @@ def v4_sdk_get_gifts_list():
         game['name'] = game_info['name']
     else:
         return response_data(200, 0, '游戏未找到')
-    now = time.time()
+    now = int(time.time())
     start_timestamp = int(now - (now % 86400) + time.timezone)
     end_timestamp = int(start_timestamp + 86399)
     find_today_gifts_count_sql = "select count(*) from zy_game_gift where game_id = %s and status = 'normal' " \
@@ -160,11 +160,34 @@ def v4_sdk_user_get_gift():
         return response_data(200, 0, '礼包不存在')
 
 
-# # 查询游戏是否有未领取礼包
-# @gift_controller.route('/msa/v4/unget_game_gift', methods=['POST'])
-# @sdk_api_request_check
-# def v4_sdk_user_unget_gift():
-#     return response_data(http_code=200, data=None)
+# 查询游戏是否有未领取礼包
+@gift_controller.route('/msa/v4/unget_game_gift', methods=['POST'])
+@sdk_api_request_check
+def v4_sdk_user_unget_gift():
+    ucid = get_ucid_by_access_token(request.form['_token'])
+    game_id = request.form['_appid']  # 游戏id
+    if game_id is None:
+        log_exception(request, '客户端请求错误-gameid为空')
+        return response_data(200, 0, '客户端参数错误')
+    now = int(time.time())
+    raw_sql = "select count(*) as num from zy_game_gift as a join zy_game_gift_fortype as b" \
+              " on a.id = b.gift_id where a.id not in(select gift_id from zy_game_gift as gift " \
+              "join zy_game_gift_log as log on gift.id = log.gift_id where log.uid = %s and gift.game_id = %s) " \
+              "and a.game_id = %s and a.fail_time > %s and b.fortype=2 and b.num>0 and a.status='normal'" \
+              % (ucid, game_id, game_id, now)
+    from run import mysql_session
+    gift_num = mysql_session.execute(raw_sql).scalar()
+    if gift_num > 0:
+        data = {
+            'new_gift': True,
+            'num': gift_num
+        }
+    else:
+        data = {
+            'new_gift': False,
+            'num': 0
+        }
+    return response_data(http_code=200, data=data)
 
 
 # 推荐游戏列表
