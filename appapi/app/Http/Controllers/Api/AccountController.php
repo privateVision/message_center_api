@@ -233,12 +233,12 @@ class AccountController extends Controller {
     }
 
     public function LoginAction(Request $request, Parameter $parameter) {
-        $username = $parameter->tough('username');
+        $username = $parameter->tough('username', 'username');
         $password = $parameter->tough('password');
 
         $user = User::where('uid', $username)->orWhere('mobile', $username)->first();
 
-        if(!$user) {
+        if(!$user || !$user->checkPassword($username)) {
             throw new ApiException(ApiException::Remind, "登录失败，用户名或者密码不正确");
         }
 
