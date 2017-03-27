@@ -11,8 +11,8 @@
 */
 
 $app->get('/', function (Illuminate\Http\Request $request) use ($app) {
-    order_success(1810235);
-    exit;
+    //order_success(1810235);
+    //exit;
     
     $mobile = $request->input('m');
 

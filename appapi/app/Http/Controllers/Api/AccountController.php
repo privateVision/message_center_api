@@ -238,7 +238,7 @@ class AccountController extends Controller {
 
         $user = User::where('uid', $username)->orWhere('mobile', $username)->first();
 
-        if(!$user) {
+        if(!$user || !$user->checkPassword($password)) {
             throw new ApiException(ApiException::Remind, "登录失败，用户名或者密码不正确");
         }
 

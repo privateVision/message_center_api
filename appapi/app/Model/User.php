@@ -1,8 +1,6 @@
 <?php
 namespace App\Model;
 
-use App\Model\MongoDB\AppVipRules;
-
 class User extends Model
 {
     protected $table = 'user';
@@ -34,6 +32,10 @@ class User extends Model
 
     public function getIsFreezeAttribute() {
         return $this->attributes['is_freeze'] == 1;
+    }
+
+    public function getVipAttribute() {
+        return intval(@$this->attributes['vip']);
     }
 
     public function setIsFreezeAttribute($value) {

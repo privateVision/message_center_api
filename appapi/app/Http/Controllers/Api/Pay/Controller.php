@@ -13,7 +13,7 @@ use App\Model\MongoDB\UsersMessage;
 class Controller extends BaseController {
 
     public function coupons(Orders $order) {
-        $ucid = 100000183;//$this->user->ucid;
+        $ucid = $this->user->ucid;
         // 储值卡
         $coupon_1 = [];
         $ucusersVC = UcusersVC::where('ucid', $ucid)->get();
