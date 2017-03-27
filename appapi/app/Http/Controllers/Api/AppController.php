@@ -15,6 +15,7 @@ class AppController extends Controller
         // config
         $config = ProceduresExtend::from_cache($pid);
         if(!$config) {
+            // todo: 后台添加procedures的同时把procedures_extend也加上就不用写这里了
             $config = new ProceduresExtend;
             $config->pid = $pid;
             $config->save();
