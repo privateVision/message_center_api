@@ -100,8 +100,11 @@ def v4_sdk_get_broadcast_list():
             coupon_start_index = 0
             coupone_end_index = left_count
         else:
-            head_count = ((left_page + 1) * count) - value_card_total_count
-            coupon_start_index = head_count + (int(left_page) - 1) * int(count)
+            head_count = ((int(value_card_total_count/10) + 1) * count) - value_card_total_count
+            if left_page == 0:
+                coupon_start_index = int(left_page)*head_count
+            else:
+                coupon_start_index = int(left_page) * head_count + (int(left_page) - 1) * int(count)
             coupone_end_index = left_count
         # 查询用户相关的卡券列表
         current_timestamp = get_current_timestamp()
@@ -110,7 +113,7 @@ def v4_sdk_get_broadcast_list():
             |
             (Q(type='coupon') & Q(closed=0) & Q(is_read=0) & Q(is_time=1) & Q(ucid=ucid)
              & Q(start_time__lte=current_timestamp) & Q(end_time__gte=current_timestamp))) \
-                           .order_by('-start_time')[start_index:end_index]
+                           .order_by('-start_time')[coupon_start_index:coupone_end_index]
         data_list = []
         for message in message_list:
             message_info = get_coupon_message_detail_info(message['mysql_id'])

@@ -258,13 +258,17 @@ def get_stored_value_card_list(ucid, start_index, end_index):
     time_now = datetime.datetime.now()
     find_user_store_value_card_list_sql = "select vc.* from ucusersVC as uvc, virtualCurrencies as vc where " \
                                           "uvc.vcid = vc.vcid and uvc.balance > 0 and uvc.ucid = %s and " \
-                                          "((untimed = 0) or ((untimed = 1) and startTime <= %s and endTime >= %s) " \
+                                          "((vc.untimed = 0) or ((vc.untimed = 1) and " \
+                                          "unix_timestamp(vc.startTime) <= unix_timestamp('%s') " \
+                                          "and unix_timestamp(vc.endTime) >= unix_timestamp('%s'))) " \
                                           "limit %s, %s " % \
                                           (ucid, time_now, time_now, start_index, end_index)
     find_user_store_value_card_count_sql = "select count(*) from ucusersVC as uvc, virtualCurrencies as vc where " \
                                            "uvc.vcid = vc.vcid and uvc.balance > 0 and uvc.ucid = %s and " \
-                                           "((untimed = 0) or ((untimed = 1) and startTime <= '%s' and endTime >= " \
-                                           "'%s') " % (ucid, time_now, time_now)
+                                           "((vc.untimed = 0) or ((vc.untimed = 1) " \
+                                           "and unix_timestamp(vc.startTime) <= unix_timestamp('%s')" \
+                                           " and unix_timestamp(vc.endTime) >= unix_timestamp('%s'))) "\
+                                           % (ucid, time_now, time_now)
     try:
         total_count = mysql_session.execute(find_user_store_value_card_count_sql).scalar()
         card_list = mysql_session.execute(find_user_store_value_card_list_sql).fetchall()
@@ -272,7 +276,7 @@ def get_stored_value_card_list(ucid, start_index, end_index):
             for card in card_list:
                 item = {
                     'vcid': card['vcid'],
-                    'vcname': card['vaname'],
+                    'vcname': card['vcname'],
                     'supportDivide': card['supportDivide'],
                     'untimed': card['untimed'],
                     'startTime': card['startTime'],
