@@ -23,27 +23,26 @@ abstract class PayController extends Controller {
             throw new ApiException(ApiException::Remind, '订单状态不正确');
         }
 
-        $discount_enable = $order->vid >= 100;
+        $is_f = $order->vid < 100; // 小于100的应用是内部应用，只能充F币
         $fee = $order->fee * 100;
         $order->paymentMethod = static::PayTypeText;
         $order->save();
 
         // 使用储值卡或卡券
         do {
-            if(!$vcid || !$discount_enable)  break;
+            if(!$vcid || $is_f)  break;
 
             $vcinfo = json_decode(decrypt3des($vcid), true);
             if(!$vcinfo)  break;
 
             $id = $vcinfo['id'];
-            $balance = $vcinfo['fee'];
-            $bind_order_id = $vcinfo['order_id'];
+            $vc_fee = $vcinfo['fee'];
 
-            if($bind_order_id != $order->id) break;
+            if($vcinfo['order_id'] != $order->id) break;
 
             // 储值卡
             if(static::EnableStoreCard && $vcinfo['type'] == 1) {
-                $use_fee = min($fee, $balance);
+                $use_fee = min($fee, $vc_fee);
 
                 $ordersExt = new OrdersExt;
                 $ordersExt->oid = $order->id;
@@ -54,7 +53,7 @@ abstract class PayController extends Controller {
                 $fee = $fee - $use_fee;
             // 优惠券
             } elseif(static::EnableCoupon && $vcinfo['type'] == 2) {
-                $use_fee = min($fee, $balance);
+                $use_fee = min($fee, $vc_fee);
 
                 $ordersExt = new OrdersExt;
                 $ordersExt->oid = $order->id;
@@ -67,7 +66,7 @@ abstract class PayController extends Controller {
         } while(false);
 
         // 使用余额
-        if(static::EnableBalance && $discount_enable && $fee > 0 && $this->user->balance > 0) {
+        if(static::EnableBalance && $balance > 0 && !$is_f && $fee > 0 && $this->user->balance > 0) {
             $use_fee = min($fee, $this->user->balance * 100);
             
             $ordersExt = new OrdersExt;
@@ -90,7 +89,7 @@ abstract class PayController extends Controller {
 
             $data = $this->handle($request, $parameter, $order, $fee);
         } else {
-            order_success($order->id); // 不用支付，直接发货
+            //order_success($order->id); // 不用支付，直接发货
         }
 
         $data['real_fee'] = $fee;

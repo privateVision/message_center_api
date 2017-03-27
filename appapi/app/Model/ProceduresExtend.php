@@ -12,22 +12,22 @@ class ProceduresExtend extends Model
 
 	public function getBindPhoneNeedAttribute() {
 		$value = $this->attributes['bind_phone_need'];
-		return ($value === null || $value === "") ? true : $value == 1;
+		return ($value === null || $value === "") ? true : $value == 1; // default: true
 	}
 
 	public function getBindPhoneEnforceAttribute() {
 		$value = $this->attributes['bind_phone_enforce'];
-		return ($value === null || $value === "") ? false : $value == 1;
+		return ($value === null || $value === "") ? false : $value == 1; // default: false
 	}
 
 	public function getRealNameNeedAttribute() {
 		$value = $this->attributes['real_name_need'];
-		return ($value === null || $value === "") ? false : $value == 1;
+		return ($value === null || $value === "") ? false : $value == 1; // default: false
 	}
 
 	public function getRealNameEnforceAttribute() {
 		$value = $this->attributes['real_name_enforce'];
-		return ($value === null || $value === "") ? false : $value == 1;
+		return ($value === null || $value === "") ? false : $value == 1; // default: false
 	}
 
 	public function getServiceQqAttribute() {
@@ -63,5 +63,28 @@ class ProceduresExtend extends Model
 	public function getAllowNumAttribute() {
 		$value = intval($this->attributes['allow_num']);
 		return $value ?: 1;
+	}
+
+	public function getLogoutImgAttribute() {
+		$value = $this->attributes['logout_img'];
+		return $value ?: env('logout_img');
+	}
+
+	public function getLogoutTypeAttribute() {
+		$logout_img = $this->attributes['logout_img'];
+		$logout_type = $this->attributes['logout_type'];
+		return $logout_img && $logout_type ? $value : env('logout_type');
+	}
+
+	public function getLogoutRedirectAttribute() {
+		$logout_img = $this->attributes['logout_img'];
+		$logout_type = $this->attributes['logout_type'];
+		$logout_redirect = $this->attributes['logout_redirect'];
+		return $logout_img && $logout_redirect ? $logout_redirect : env('logout_redirect');
+	}
+
+	public function getLogoutInsideAttribute() {
+		$value = $this->attributes['logout_inside'];
+		return $value ? true : env('logout_inside');
 	}
 }

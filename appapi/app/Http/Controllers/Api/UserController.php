@@ -9,6 +9,7 @@ use App\Model\User;
 use App\Model\Orders;
 use App\Model\UserRole;
 use App\Model\ProceduresZone;
+use App\Model\ProceduresExtend;
 
 class UserController extends AuthController
 {
@@ -17,8 +18,14 @@ class UserController extends AuthController
     }
 
     public function LogoutAction(Request $request, Parameter $parameter) {
+        $procedures_extend = ProceduresExtend::from_cache($this->procedure->pid);
         Event::onLogoutAfter($this->user);
-        return ['result' => true];
+        return [
+            'img' => $procedures_extend->logout_img,
+            'type' => $procedures_extend->logout_type,
+            'redirect' => $procedures_extend->logout_redirect,
+            'inside' => $procedures_extend->logout_inside,
+        ];
     }
 
     public function RechargeAction(Request $request, Parameter $parameter) {

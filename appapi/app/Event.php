@@ -47,6 +47,7 @@ class Event
             $user_sub->last_login_at = datetime();
             $user_sub->save();
         }
+        
 
         $session = new Session;
         $session->ucid = $user->ucid;
