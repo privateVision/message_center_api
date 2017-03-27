@@ -39,10 +39,8 @@ class Redis extends BaseRedis {
             }
            
             BaseRedis::del($key);
-
-            return true;
         }
 
-        return false;
+        return true;
     }
 }

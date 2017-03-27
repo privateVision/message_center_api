@@ -56,7 +56,7 @@ class Event
         $session->token = uuid();
         $session->expired_ts = time() + 2592000; // 1个月有效期
         $session->date = date('Ymd');
-        $session->save();
+        $session->saveAndCache();
         
         $user->uuid = $session->token; // todo: 兼容旧的自动登陆
         $user->last_login_at = datetime();

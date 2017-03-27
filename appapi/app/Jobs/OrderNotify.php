@@ -16,7 +16,7 @@ class OrderNotify extends Job
 
     public function handle()
     {
-        $order = Orders::find($this->order_id);
+        $order = Orders::from_cache($this->order_id);
         if(!$order) return ;
 
         if(!preg_match('/^https*:\/\/.*$/', $order->notify_url)) return ;
@@ -27,7 +27,7 @@ class OrderNotify extends Job
         $appkey = $procedures->psingKey;
 
         $data['uid'] = $order->uid;
-        $data['ucid'] = $order->ucid;
+        $data['ucid'] = $order->cp_uid ? $order->cp_uid : $order->ucid; // todo: 兼容旧系统
         $data['body'] = $order->body;
         $data['subject'] = $order->subject;
         $data['fee'] = sprintf('%.2f',$order->fee);

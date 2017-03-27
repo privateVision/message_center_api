@@ -100,7 +100,7 @@ trait Pay {
         }
 
         $order->paymentMethod = static::PayTypeText;
-        $order->save();
+        $order->saveAndCache();
         $order->getConnection()->commit();
 
         $data['real_fee'] = $fee;

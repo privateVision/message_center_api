@@ -216,6 +216,8 @@ class AccountController extends Controller {
             throw new ApiException(ApiException::Remind, '会话已结束，请重新登录');
         }
 
+        // todo: 验证token失效
+
         if(!$session->ucid) {
             throw new ApiException(ApiException::Remind, '会话失效，请重新登录');
         }
