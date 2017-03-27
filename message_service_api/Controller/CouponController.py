@@ -94,13 +94,13 @@ def v4_sdk_get_broadcast_list():
         return response_data(http_code=200, data=value_card_list)
     # 储值卡数据不够一页，用卡券数据补充
     else:
-        left_count = need_total_count - value_card_total_count  # 还缺少的数据量
+        left_count = int(need_total_count) - int(value_card_total_count)  # 还缺少的数据量
         left_page = int(left_count/int(count))
         if left_page == 0:
             coupon_start_index = 0
             coupone_end_index = left_count
         else:
-            head_count = ((int(value_card_total_count/10) + 1) * count) - value_card_total_count
+            head_count = ((int(int(value_card_total_count)/10) + 1) * count) - int(value_card_total_count)
             if left_page == 0:
                 coupon_start_index = int(left_page)*head_count
             else:
