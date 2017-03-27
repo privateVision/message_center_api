@@ -5,8 +5,11 @@ use Illuminate\Support\Facades\Queue;
 use App\Redis;
 use App\Model\Orders;
 use App\Model\OrdersExt;
+use App\Model\OrderExtend;
 use App\Model\UcuserTotalPay;
 use App\Model\User;
+use App\Model\UcusersVC;
+use App\Model\VirtualCurrencies;
 
 class OrderSuccess extends Job
 {
@@ -28,25 +31,31 @@ class OrderSuccess extends Job
 
             $user = User::from_cache($order->ucid);
 
-            $real_fee = 0;
             do {
                 if(!$user) break;
 
                 $orderExt = $order->ordersExt;
                 if(!$orderExt) break;
 
+                $is_s = true;
+
                 foreach($orderExt as $k => $v) {
                     $fee = intval($v->fee * 100);
-                    $balance = intval($user->balance * 100);
                     if($fee <= 0) continue;
 
                     if($v->vcid > 1490587069) { // vcid > 1490587069：优惠券
 
                     } elseif($v->vcid > 0) { // vcid > 0：储值卡
-
+                        $ucusersvc = UcusersVC::where('ucid', $order->ucid)->where('vcid', $v->vcid)->first(); // todo: 联合主键，ORM不支持
+                        if(!$ucusersvc || intval($ucusersvc->balance * 100) < $fee) {
+                            log_error("orderFail", ['text' => '储值卡余额不足以抵扣订单', 'order_id' => $this->order_id, 'fee' => $fee, 'ucid' => $user->ucid, 'vcid' => $v->vcid]);
+                            $is_s = false;
+                        } else {
+                             UcusersVC::where('ucid', $order->ucid)->where('vcid', $v->vcid)->decrement('balance', $fee / 100); // todo: 联合主键，ORM不支持
+                        }
                     } elseif($v->vcid == 0) { // vcid == 0：F币
-                        if($balance < $fee) {
-                            log_error("balanceError", ['text' => 'F币不足以抵扣订单', 'order_id' => $this->order_id, 'fee' => $fee, 'ucid' => $user->ucid, 'balance' => $balance]);
+                        if(intval($user->balance * 100) < $fee) {
+                            log_error("orderFail", ['text' => 'F币不足以抵扣订单', 'order_id' => $this->order_id, 'fee' => $fee, 'ucid' => $user->ucid, 'balance' => $balance]);
                             $is_s = false;
                         } else {
                             $user->decrement('balance', $fee / 100);
@@ -81,7 +90,7 @@ class OrderSuccess extends Job
                 } else {
                     $ucuser_total_pay->increment('pay_count', 1);
                     $ucuser_total_pay->increment('pay_total', $order->fee);
-                    $ucuser_total_pay->increment('pay_fee', $order_extend->real_fee / 100;
+                    $ucuser_total_pay->increment('pay_fee', $order_extend->real_fee / 100);
                     $ucuser_total_pay->save();
                 }
             } while(false);
