@@ -95,7 +95,7 @@ def v4_sdk_get_broadcast_list():
     # 储值卡数据不够一页，用卡券数据补充
     else:
         left_count = need_total_count - value_card_total_count  # 还缺少的数据量
-        left_page = int(left_count/count)
+        left_page = int(left_count/int(count))
         if left_page == 0:
             coupon_start_index = 0
             coupone_end_index = left_count

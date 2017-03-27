@@ -255,7 +255,7 @@ def get_stored_value_card_list(ucid, start_index, end_index):
     from run import mysql_session
     total_count = 0
     value_card_list = []
-    time_now = datetime.datetime.now()
+    time_now = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
     find_user_store_value_card_list_sql = "select vc.* from ucusersVC as uvc, virtualCurrencies as vc where " \
                                           "uvc.vcid = vc.vcid and uvc.balance > 0 and uvc.ucid = %s and " \
                                           "((vc.untimed = 0) or ((vc.untimed = 1) and " \
