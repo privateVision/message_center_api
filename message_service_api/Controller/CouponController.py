@@ -100,7 +100,7 @@ def v4_sdk_get_broadcast_list():
             coupon_start_index = 0
             coupone_end_index = left_count
         else:
-            head_count = ((int(int(value_card_total_count)/10) + 1) * count) - int(value_card_total_count)
+            head_count = ((int(value_card_total_count/10) + 1) * int(count)) - int(value_card_total_count)
             if left_page == 0:
                 coupon_start_index = int(left_page)*head_count
             else:
