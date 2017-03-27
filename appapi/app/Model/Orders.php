@@ -47,6 +47,7 @@ class Orders extends Model
 	}
 
 	public function is_first() {
+		// todo: 单独字段标识，这太Low了
 		return static::where('ucid', $this->ucid)->where('status', '!=', 0)->count() > 0;
 	}
 
@@ -55,6 +56,6 @@ class Orders extends Model
 	 * @return boolean [description]
 	 */
 	public function is_f() {
-		return $this->vcid < 100;
+		return $this->vid < 100;
 	}
 }

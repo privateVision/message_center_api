@@ -22,11 +22,11 @@ class OrderSuccess extends Job
 
     public function handle()
     {
-        $order = Orders::find($this->order_id);
+        $order = Orders::from_cache($this->order_id);
         if(!$order || $order->status != Orders::Status_WaitPay) return;
 
         $rediskey = sprintf('ol_%s', $this->order_id);
-        Redis::mutex_lock($rediskey, function() use($order) { // 互斥锁， 防止多次操作
+        $is_mutex = Redis::mutex_lock($rediskey, function() use($order) { // 互斥锁， 防止多次操作
             $order->getConnection()->beginTransaction();
 
             $user = User::from_cache($order->ucid);
@@ -76,7 +76,7 @@ class OrderSuccess extends Job
                     $user->increment('balance', $order->fee); // 原子操作很重要
                     $user->save();
                 }
-
+/*
                 $order_extend = OrderExtend::from_cache($order->id);
 
                 $ucuser_total_pay = UcuserTotalPay::from_cache($user->ucid);
@@ -93,6 +93,7 @@ class OrderSuccess extends Job
                     $ucuser_total_pay->increment('pay_fee', $order_extend->real_fee / 100);
                     $ucuser_total_pay->save();
                 }
+*/
             } while(false);
 
             $order->status = Orders::Status_Success;
@@ -105,5 +106,9 @@ class OrderSuccess extends Job
 
             $order->getConnection()->commit();
         });
+
+        if($is_mutex) {
+            $this->release(5);
+        }
     }
 }
