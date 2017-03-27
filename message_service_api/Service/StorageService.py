@@ -3,6 +3,8 @@ import json
 import threading
 
 import time
+
+import datetime
 from mongoengine import Q
 
 from MiddleWare import service_logger
@@ -305,8 +307,9 @@ def system_coupon_persist(data_json=None):
         users_message.vip = None
         if 'vip_user' in data_json and data_json['vip_user'] is not None:
             users_message.vip = data_json['vip_user'].split(",")
-        time_array = time.localtime(users_message.end_time)
-        users_message.expireAt = time.strftime('%Y-%m-%d %H:%M:%S', time_array)
+        # time_array = time.localtime(users_message.end_time)
+        users_message.expireAt = datetime.datetime.fromtimestamp(users_message.end_time)
+        # users_message.expireAt = time.strftime('%Y-%m-%d %H:%M:%S', time_array)
         try:
             users_message.save()
         except Exception, err:
