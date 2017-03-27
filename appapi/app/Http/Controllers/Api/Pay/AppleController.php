@@ -131,8 +131,8 @@ class  AppleController extends Controller{
     public function OrderCreateAction(Request $request,Parameter $parameter){
         //上层添加API 时间请求次数限制
 
-        $uid = $this->user->uid;
-        $ucid = $this->user->ucid;
+        $uid = $parameter->tough('uid');
+        $ucid = $parameter->tough("ucid");
         $vorderid = $parameter->tough('vorderid'); //厂家订单id
         $zone_name = $parameter->tough("zone_name");
         $role_name = $parameter->tough('role_name');
@@ -146,8 +146,8 @@ class  AppleController extends Controller{
             $dat = app('db')->select($sql);
 
             $order = new Orders;
-            $order->ucid = $ucid;
-            $order->uid = $ucid;
+            $order->ucid = !isset($this->user->ucid)?$ucid:$this->user->ucid;
+            $order->uid = !isset($this->user->uid)?$uid:$this->user->uid;
             $order->sn = date('ymdHis') . substr(microtime(), 2, 6) . str_pad(rand(0, 999999), 6, '0', STR_PAD_LEFT);
             $order->vid = $this->procedure->pid;
             $order->notify_url = $dat[0]->notify_url;

@@ -25,7 +25,7 @@ class Controller extends BaseController {
             if($virtualCurrencies && $this->check_1($order, $virtualCurrencies)) {
                 $fee = intval($v->balance * 100);
                 $coupon_1[] = [
-                    'id' => encrypt3des(json_encode(['order_id' => $order->id, 'type' => 1, 'fee' => $fee, 'id' => $virtualCurrencies->vcid])),
+                    'id' => encrypt3des(json_encode(['oid' => $order->id, 'type' => 1, 'fee' => $fee, 'id' => $virtualCurrencies->vcid])),
                     'fee' => $fee,
                     'name' => $virtualCurrencies->vcname,
                 ];
@@ -41,7 +41,7 @@ class Controller extends BaseController {
             if($coupon && $this->check_2($order, $coupon)) {
                 $fee = intval($coupon->money);
                 $coupon_2[] = [
-                    'id' => encrypt3des(json_encode(['order_id' => $order->id, 'type' => 2, 'fee' => $fee, 'id' => $coupon->mysql_id])),
+                    'id' => encrypt3des(json_encode(['oid' => $order->id, 'type' => 2, 'fee' => $fee, 'id' => $coupon->mysql_id])),
                     'fee' => $fee,
                     'name' => $coupon->name,
                 ];

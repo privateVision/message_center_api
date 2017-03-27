@@ -3,6 +3,7 @@ namespace App\Jobs;
 
 use Illuminate\Support\Facades\Redis;
 use App\Model\Orders;
+use App\Model\Procedures;
 
 class OrderNotify extends Job
 {
@@ -18,10 +19,12 @@ class OrderNotify extends Job
         $order = Orders::find($this->order_id);
         if(!$order) return ;
 
-        if(!$order->procedures) return ;
         if(!preg_match('/^https*:\/\/.*$/', $order->notify_url)) return ;
 
-        $appkey = $order->procedures->psingKey;
+        $procedures = Procedures::from_cache($order->vid);
+        if(!$procedures) return ;
+
+        $appkey = $procedures->psingKey;
 
         $data['uid'] = $order->uid;
         $data['ucid'] = $order->ucid;
@@ -53,6 +56,9 @@ class OrderNotify extends Job
         if($res != 'SUCCESS' && $res != 'OK') {
             return $this->retry();
         }
+
+        $order->status = Orders::Status_NotifySuccess;
+        $order->save();
     }
 
     protected function retry() {

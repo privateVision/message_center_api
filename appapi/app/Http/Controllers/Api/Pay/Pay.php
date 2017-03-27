@@ -7,7 +7,7 @@ use App\Parameter;
 use App\Model\Orders;
 use App\Model\OrdersExt;
 
-abstract class PayController extends Controller {
+trait Pay {
 
     public function RequestAction(Request $request, Parameter $parameter) {
         $order_id = $parameter->tough('order_id');
@@ -23,10 +23,8 @@ abstract class PayController extends Controller {
             throw new ApiException(ApiException::Remind, '订单状态不正确');
         }
 
-        $is_f = $order->vid < 100; // 小于100的应用是内部应用，只能充F币
+        $is_f = $order->is_f(); // 小于100的应用是内部应用，只能充F币
         $fee = $order->fee * 100;
-        $order->paymentMethod = static::PayTypeText;
-        $order->save();
 
         // 使用储值卡或卡券
         do {
@@ -38,7 +36,7 @@ abstract class PayController extends Controller {
             $id = $vcinfo['id'];
             $vc_fee = $vcinfo['fee'];
 
-            if($vcinfo['order_id'] != $order->id) break;
+            if($vcinfo['oid'] != $order->id) break;
 
             // 储值卡
             if(static::EnableStoreCard && $vcinfo['type'] == 1) {
@@ -47,7 +45,7 @@ abstract class PayController extends Controller {
                 $ordersExt = new OrdersExt;
                 $ordersExt->oid = $order->id;
                 $ordersExt->vcid = $vcid;
-                $ordersExt->fee = $use_fee;
+                $ordersExt->fee = $use_fee / 100;
                 $ordersExt->save();
 
                 $fee = $fee - $use_fee;
@@ -58,7 +56,7 @@ abstract class PayController extends Controller {
                 $ordersExt = new OrdersExt;
                 $ordersExt->oid = $order->id;
                 $ordersExt->vcid = intval($vcid) + 10000000;
-                $ordersExt->fee = $use_fee;
+                $ordersExt->fee = $use_fee / 100;
                 $ordersExt->save();
 
                 $fee = $fee - $use_fee;
@@ -72,11 +70,14 @@ abstract class PayController extends Controller {
             $ordersExt = new OrdersExt;
             $ordersExt->oid = $order->id;
             $ordersExt->vcid = 0;
-            $ordersExt->fee = $use_fee;
+            $ordersExt->fee = $use_fee / 100;
             $ordersExt->save();
 
             $fee = $fee - $use_fee;
         }
+
+        $order->paymentMethod = static::PayTypeText;
+        $order->save();
 
         // 实际支付
         $data = [];
@@ -84,10 +85,10 @@ abstract class PayController extends Controller {
             $ordersExt = new OrdersExt;
             $ordersExt->oid = $order->id;
             $ordersExt->vcid = static::PayType;
-            $ordersExt->fee = $fee;
+            $ordersExt->fee = $fee / 100;
             $ordersExt->save();
 
-            $data = $this->handle($request, $parameter, $order, $fee);
+            $data = $this->pay_handle($request, $parameter, $order, $fee);
         } else {
             //order_success($order->id); // 不用支付，直接发货
         }
@@ -105,5 +106,5 @@ abstract class PayController extends Controller {
      * @param  int       $real_fee  实际支付金额，单位：分
      * @return [type]               [description]
      */
-    abstract public function handle(Request $request, Parameter $parameter, Orders $order, $real_fee);
+    abstract protected function pay_handle(Request $request, Parameter $parameter, Orders $order, $real_fee);
 }

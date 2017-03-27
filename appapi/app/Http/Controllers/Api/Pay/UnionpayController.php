@@ -6,7 +6,9 @@ use App\Exceptions\ApiException;
 use App\Parameter;
 use App\Model\Orders;
 
-class UnionpayController extends PayController {
+class UnionpayController extends Controller {
+
+    use Pay;
 
     const PayType = '-2';
     const PayTypeText = '银联';
@@ -14,7 +16,7 @@ class UnionpayController extends PayController {
     const EnableCoupon = true;
     const EnableBalance = true;
 
-    public function handle(Request $request, Parameter $parameter, Orders $order, $real_fee) {
+    public function pay_handle(Request $request, Parameter $parameter, Orders $order, $real_fee) {
         $config = config('common.payconfig.unionpay');
 
         openssl_pkcs12_read(base64_decode($config['pfx']), $cert, $config['pfx_pwd']);
