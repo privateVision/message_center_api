@@ -297,6 +297,9 @@ def get_stored_value_card_list(ucid, start_index, end_index):
 def sdk_api_request_check(func):
     @wraps(func)
     def wraper(*args, **kwargs):
+        # 数据库连接状态检测
+        from run import mysql_session
+        mysql_session.execute('select count(*) from admins limit 1').scalar()
         from Utils.EncryptUtils import sdk_api_params_check, sdk_api_check_sign
         is_params_checked = sdk_api_params_check(request)
         if is_params_checked is False:
