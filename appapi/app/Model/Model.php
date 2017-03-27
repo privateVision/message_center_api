@@ -79,12 +79,12 @@ abstract class Model extends Eloquent
         parent::boot();
     
         static::updated(function($entry) {
-            $rediskey_2 = $entry->table . $entry->getKey();
+            $rediskey_2 = $entry->table .'_'. $entry->getKey();
             Redis::set($rediskey_2, json_encode($entry), 'XX');
         });
 
         static::deleted(function($entry) {
-            $rediskey_2 = $entry->table . $entry->getKey();
+            $rediskey_2 = $entry->table .'_'. $entry->getKey();
             Redis::del($rediskey_2);
         });
     }
@@ -107,6 +107,13 @@ abstract class Model extends Eloquent
     public function asyncSave() {
         async_query($this);
         return $this;
+    }
+
+    public function saveAndCache() {
+        $result = parent::save();
+        $rediskey_2 = $this->table .'_'. $this->getKey();
+        Redis::set($rediskey_2, json_encode($this), 'EX', cache_expire_second());
+        return $result;
     }
 
     public function save(array $options = []) {
