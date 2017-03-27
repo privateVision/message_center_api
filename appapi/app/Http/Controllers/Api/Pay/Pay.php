@@ -6,6 +6,7 @@ use App\Exceptions\ApiException;
 use App\Parameter;
 use App\Model\Orders;
 use App\Model\OrdersExt;
+use App\Model\OrderExtend;
 
 trait Pay {
 
@@ -22,6 +23,8 @@ trait Pay {
         if($order->status != Orders::Status_WaitPay) {
             throw new ApiException(ApiException::Remind, '订单状态不正确');
         }
+
+        $order->getConnection()->beginTransaction();
 
         $is_f = $order->is_f(); // 小于100的应用是内部应用，只能充F币
         $fee = $order->fee * 100;
@@ -76,9 +79,6 @@ trait Pay {
             $fee = $fee - $use_fee;
         }
 
-        $order->paymentMethod = static::PayTypeText;
-        $order->save();
-
         // 实际支付
         $data = [];
         if($fee > 0) {
@@ -88,10 +88,18 @@ trait Pay {
             $ordersExt->fee = $fee / 100;
             $ordersExt->save();
 
+            $order_extend = OrderExtend::find($order->id);
+            $order_extend->real_fee = $fee;
+            $order_extend->saveAndCache();
+
             $data = $this->pay_handle($request, $parameter, $order, $fee);
         } else {
             //order_success($order->id); // 不用支付，直接发货
         }
+
+        $order->paymentMethod = static::PayTypeText;
+        $order->save();
+        $order->getConnection()->commit();
 
         $data['real_fee'] = $fee;
 

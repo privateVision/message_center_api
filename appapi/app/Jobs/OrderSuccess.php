@@ -68,18 +68,20 @@ class OrderSuccess extends Job
                     $user->save();
                 }
 
+                $order_extend = OrderExtend::from_cache($order->id);
+
                 $ucuser_total_pay = UcuserTotalPay::from_cache($user->ucid);
                 if(!$ucuser_total_pay) {
                     $ucuser_total_pay = new UcuserTotalPay();
                     $ucuser_total_pay->ucid = $user->ucid;
                     $ucuser_total_pay->pay_count = 1;
                     $ucuser_total_pay->pay_total = $order->fee;
-                    $ucuser_total_pay->pay_fee = $real_fee / 100;
+                    $ucuser_total_pay->pay_fee = $order_extend->real_fee / 100;
                     $ucuser_total_pay->save();
                 } else {
                     $ucuser_total_pay->increment('pay_count', 1);
                     $ucuser_total_pay->increment('pay_total', $order->fee);
-                    $ucuser_total_pay->increment('pay_fee', $real_fee / 100;
+                    $ucuser_total_pay->increment('pay_fee', $order_extend->real_fee / 100;
                     $ucuser_total_pay->save();
                 }
             } while(false);
