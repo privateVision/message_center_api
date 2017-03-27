@@ -9,7 +9,6 @@ namespace App\Http\Controllers\Api\Pay ;
 
 use App\Exceptions\ApiException;
 
-use App\Http\Controllers\Api\Controller;
 use App\Model\IosOrderExt;
 use App\Model\Orders;
 use App\Parameter;
@@ -142,7 +141,7 @@ class  AppleController extends Controller{
         $ord = Orders::where("ucid",$ucid)->where('vorderid',$vorderid)->get();
         if(count($ord)) return "had exists"; //限制关闭
         try {
-            $sql = "select p.fee,p.product_name,con.notify_url from ios_products as p LEFT JOIN ios_application_config as con ON p.app_id = con.app_id WHERE p.product_id = '{$product_id}' AND p.app_id = {$appid}";
+            $sql = "select p.fee,p.product_name,con.notify_url,con.iap from ios_products as p LEFT JOIN ios_application_config as con ON p.app_id = con.app_id WHERE p.product_id = '{$product_id}' AND p.app_id = {$appid}";
             $dat = app('db')->select($sql);
 
             $order = new Orders;
@@ -168,10 +167,12 @@ class  AppleController extends Controller{
             $ext->role_name = $role_name;
             $oext = $ext->save();
 
+            $pay_type = $dat[0]->iap;
             return [
                 'order_id' => $order->sn,
                 'id'      =>$ord->id,//返回当前的订单
-                'fee' => $dat[0]->fee
+                'fee' => $dat[0]->fee,
+                "iap" =>$pay_type //支付的方式0 ios 1为第三方支付
             ];
         }catch(\Exception $e){
             echo  $e->getMessage();
