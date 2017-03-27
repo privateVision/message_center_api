@@ -5,7 +5,6 @@ use Illuminate\Http\Request;
 use App\Exceptions\ApiException;
 use App\Parameter;
 use App\Model\Orders;
-use App\Model\OrdersExt;
 use App\Model\OrderExtend;
 
 trait CreateOrder {
@@ -21,7 +20,7 @@ trait CreateOrder {
         $order->createIP = $request->ip();
         $order->status = Orders::Status_WaitPay;
         $order->paymentMethod = '';
-        $this->create_order($order, $request, $parameter);
+        $this->create_order_before($order, $request, $parameter);
         $order->save();
 
         $order_extend = new OrderExtend;
@@ -30,16 +29,42 @@ trait CreateOrder {
         $order_extend->cp_uid = $this->session->cp_uid;
         $order_extend->save();
 
+        $result = $this->create_order_after($order, $request, $parameter);
         $order->getConnection()->commit();
 
-        return [
+        $response = [
             'order_id' => $order->sn,
             'way' => [1, 2, 3],
             'vip' => $this->user->vip,
             'balance' => $this->user->balance,
             'coupons' => $this->coupons($order),
         ];
+
+        
+        if(is_array($result)) {
+            $response = array_merge($result, $response);
+        }
+
+        return $response;
     }
 
-    abstract protected function create_order(Orders $order, Request $request, Parameter $parameter);
+    /**
+     * 在订单保存之前（对订单进行一些字段赋值等）
+     * @param  Orders    $order     [description]
+     * @param  Request   $request   [description]
+     * @param  Parameter $parameter [description]
+     * @return [type]               [description]
+     */
+    abstract protected function create_order_before(Orders $order, Request $request, Parameter $parameter);
+
+    /**
+     * 在订单保存之后，如果返回数组则合并返回给客户端
+     * @param  Orders    $order     [description]
+     * @param  Request   $request   [description]
+     * @param  Parameter $parameter [description]
+     * @return [type]               [description]
+     */
+    protected function create_order_after(Orders $order, Request $request, Parameter $parameter) {
+
+    }
 }

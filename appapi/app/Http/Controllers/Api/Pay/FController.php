@@ -26,7 +26,7 @@ class FController extends Controller {
         return ['result' => true];
     }
 
-    protected function create_order(Orders $order, Request $request, Parameter $parameter) {
+    protected function create_order_before(Orders $order, Request $request, Parameter $parameter) {
         $fee = $parameter->tough('fee');
         $body = $parameter->tough('body');
         $subject = $parameter->tough('subject');
