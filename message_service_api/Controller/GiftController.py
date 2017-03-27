@@ -182,12 +182,12 @@ def v4_sdk_user_get_recommend_game_list():
     start_index = (int(page) - 1) * int(count)
     end_index = start_index + int(count)
     service_logger.info("用户：%s 获取推荐游戏列表，数据从%s到%s" % (ucid, start_index, end_index))
-    from run import zhuayou_sdk_mysql_session
-    find_game_count_sql = "select count(*) from af_game_recom where status = 'normal' "
-    game_count = zhuayou_sdk_mysql_session.execute(find_game_count_sql).scalar()
-    find_game_info_sql = "select * from af_game_recom where status = 'normal' order by sort asc " \
+    from run import mysql_session
+    find_game_count_sql = "select count(*) from zy_gameRecom where status = 'normal' "
+    game_count = mysql_session.execute(find_game_count_sql).scalar()
+    find_game_info_sql = "select * from zy_gameRecom where status = 'normal' order by sort asc " \
                          "limit %s, %s" % (start_index, end_index)
-    game_info_list = zhuayou_sdk_mysql_session.execute(find_game_info_sql).fetchall()
+    game_info_list = mysql_session.execute(find_game_info_sql).fetchall()
     game_list = []
     for game in game_info_list:
         game = {
