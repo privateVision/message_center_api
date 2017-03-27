@@ -263,8 +263,8 @@ def get_stored_value_card_list(ucid, start_index, end_index):
                                           (ucid, time_now, time_now, start_index, end_index)
     find_user_store_value_card_count_sql = "select count(*) from ucusersVC as uvc, virtualCurrencies as vc where " \
                                            "uvc.vcid = vc.vcid and uvc.balance > 0 and uvc.ucid = %s and " \
-                                           "((untimed = 0) or ((untimed = 1) and startTime <= %s and endTime >= %s) " % \
-                                           (ucid, time_now, time_now)
+                                           "((untimed = 0) or ((untimed = 1) and startTime <= '%s' and endTime >= " \
+                                           "'%s') " % (ucid, time_now, time_now)
     try:
         total_count = mysql_session.execute(find_user_store_value_card_count_sql).scalar()
         card_list = mysql_session.execute(find_user_store_value_card_list_sql).fetchall()
