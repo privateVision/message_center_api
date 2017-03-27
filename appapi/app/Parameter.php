@@ -72,4 +72,14 @@ class Parameter
 		
 		return $smscode;
 	}
+
+	protected function url($url) {
+		$url = trim($url);
+
+		if(!preg_match('/^https*:\/\/.*$/', $url)) {
+			throw new Exception ("\"{$mobile}\" url错误", 0);
+		}
+		
+		return $url;
+	}
 }
