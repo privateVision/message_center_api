@@ -39,7 +39,6 @@ trait CreateOrder {
             'balance' => $this->user->balance,
             'coupons' => $this->coupons($order),
         ];
-
         
         if(is_array($result)) {
             $response = array_merge($result, $response);
