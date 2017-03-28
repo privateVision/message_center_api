@@ -7,8 +7,8 @@
 count=$(ps -ef|grep uwsgi|grep -v grep|wc -l)
 if [ 1 == $count ];then
     echo 'stop process ...'
-    ps -ef|grep uwsgi|grep -v grep|awk '{print $2}'|xargs kill -9
     ps -ef|grep consume_run|grep -v grep|awk '{print $2}'|xargs kill -9
+    ps -ef|grep uwsgi|grep -v grep|awk '{print $2}'|xargs kill -9
     if [ 0 == $? ];then
         echo "stop process success!"
         rm -f nohup.out
