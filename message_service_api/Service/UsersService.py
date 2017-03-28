@@ -315,8 +315,10 @@ def sdk_api_request_check(func):
     def wraper(*args, **kwargs):
         # 数据库连接状态检测
         from run import mysql_session
-        if not mysql_session.is_active:
+        try:
             mysql_session.execute('select count(*) from admins limit 1').scalar()
+        except Exception, err:
+            service_logger.error(err.message)
         from Utils.EncryptUtils import sdk_api_params_check, sdk_api_check_sign
         is_params_checked = sdk_api_params_check(request)
         if is_params_checked is False:
