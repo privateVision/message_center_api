@@ -5,7 +5,7 @@ from flask import request
 
 from Controller.BaseController import response_data
 from MiddleWare import service_logger
-from Service.UsersService import get_ucid_by_access_token, sdk_api_request_check
+from Service.UsersService import get_ucid_by_access_token, sdk_api_request_check, get_username_by_ucid
 from Utils.SystemUtils import log_exception
 
 gift_controller = Blueprint('GiftController', __name__)
@@ -94,7 +94,7 @@ def v4_sdk_user_get_gift():
     ucid = get_ucid_by_access_token(request.form['_token'])
     game_id = int(request.form['_appid'])  # 游戏id
     gift_id = request.form['gift_id']
-    username = request.form['username']
+    username = get_username_by_ucid(ucid)
     ip = request.remote_addr  # 请求源ip
     mac = request.form['_device_id']  # 通用参数中的device_id
     end_for_time = int(time.time()) - 3600 * 24  # 限制24小时的时间间隔
