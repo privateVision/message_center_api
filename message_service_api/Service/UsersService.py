@@ -148,6 +148,22 @@ def get_ucid_by_access_token(access_token=None):
     return None
 
 
+def get_username_by_ucid(ucid=None):
+    find_ucid_sql = "select nickname from user where ucid = %s" % (ucid,)
+    from run import mysql_session
+    try:
+        user_info = mysql_session.execute(find_ucid_sql).first()
+        if user_info:
+            if user_info['nickname']:
+                return user_info['nickname']
+    except Exception, err:
+        service_logger.error(err.message)
+        mysql_session.rollback()
+    finally:
+        mysql_session.close()
+    return ''
+
+
 def is_session_expired_by_access_token(access_token=None):
     expired_ts = RedisHandle.get_expired_ts_from_redis_by_token(access_token)
     now = int(time.time())
@@ -298,8 +314,12 @@ def sdk_api_request_check(func):
     @wraps(func)
     def wraper(*args, **kwargs):
         # 数据库连接状态检测
-        # from run import mysql_session
-        # mysql_session.execute('select count(*) from admins limit 1').scalar()
+        from run import mysql_session
+        try:
+            mysql_session.execute('select count(*) from admins limit 1').scalar()
+        except Exception, err:
+            mysql_session.rollback()
+            service_logger.error(err.message)
         from Utils.EncryptUtils import sdk_api_params_check, sdk_api_check_sign
         is_params_checked = sdk_api_params_check(request)
         if is_params_checked is False:

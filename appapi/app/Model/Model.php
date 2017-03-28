@@ -123,14 +123,9 @@ abstract class Model extends Eloquent
         return $this;
     }
 
-    /**
-     * 保存数据的同时将数据写入缓存
-     * @return [type] [description]
-     */
     public function saveAndCache() {
         $this->is_cache_save = true;
-        $result = parent::save();
-        return $result;
+        return $this->save();
     }
 
     public function save(array $options = []) {

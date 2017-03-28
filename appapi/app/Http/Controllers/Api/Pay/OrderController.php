@@ -12,7 +12,7 @@ class OrderController extends Controller {
 
     use CreateOrder;
 
-    protected function create_order_before(Orders $order, Request $request, Parameter $parameter) {
+    protected function createOrderBefore(Orders $order, Request $request, Parameter $parameter) {
         $fee = $parameter->tough('fee');
         $body = $parameter->tough('body');
         $subject = $parameter->tough('subject');

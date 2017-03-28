@@ -5,7 +5,7 @@ from flask import request
 
 from Controller.BaseController import response_data
 from MiddleWare import service_logger
-from Service.UsersService import get_ucid_by_access_token, sdk_api_request_check
+from Service.UsersService import get_ucid_by_access_token, sdk_api_request_check, get_username_by_ucid
 from Utils.SystemUtils import log_exception
 
 gift_controller = Blueprint('GiftController', __name__)
@@ -24,12 +24,14 @@ def v4_sdk_get_gifts_list():
     service_logger.info("用户：%s 获取礼包列表，数据从%s到%s" % (ucid, start_index, end_index))
     # 查询游戏信息
     from run import mysql_session
-    find_game_info_sql = "select pname as name, pid as id from procedures as game where game.pid= %s limit 1" % (game_id,)
+    find_game_info_sql = "select p.pid as id, game.name, game.cover from procedures as p, zy_game as game " \
+                         "where p.gameCenterId = game.id and p.pid= %s limit 1" % (game_id,)
     game_info = mysql_session.execute(find_game_info_sql).fetchone()
     game = {}
     if game_info:
         game['id'] = game_info['id']
         game['name'] = game_info['name']
+        game['cover'] = game_info['cover']
     else:
         return response_data(200, 0, '游戏未找到')
     now = int(time.time())
@@ -90,9 +92,9 @@ def v4_sdk_get_gifts_list():
 @sdk_api_request_check
 def v4_sdk_user_get_gift():
     ucid = get_ucid_by_access_token(request.form['_token'])
-    game_id = request.form['_appid']  # 游戏id
+    game_id = int(request.form['_appid'])  # 游戏id
     gift_id = request.form['gift_id']
-    username = request.form['username']
+    username = get_username_by_ucid(ucid)
     ip = request.remote_addr  # 请求源ip
     mac = request.form['_device_id']  # 通用参数中的device_id
     end_for_time = int(time.time()) - 3600 * 24  # 限制24小时的时间间隔
@@ -100,7 +102,7 @@ def v4_sdk_user_get_gift():
         log_exception(request, '客户端请求错误-gameid或giftid或ip\mac为空')
         return response_data(200, 0, '客户端参数错误')
     from run import mysql_session
-    find_game_gift_info_sql = "select * from zy_game_gift where id= %s " % (gift_id,)
+    find_game_gift_info_sql = "select * from zy_game_gift where id= %s limit 1" % (gift_id,)
     game_gift_info = mysql_session.execute(find_game_gift_info_sql).fetchone()
     if game_gift_info:
         if game_gift_info['game_id'] != game_id or game_gift_info['status'] != 'normal':
@@ -111,8 +113,8 @@ def v4_sdk_user_get_gift():
             return response_data(200, 0, '礼包已经过期了')
         # 检查领取记录
         find_game_gift_log_count_sql = "select count(*) from zy_game_gift_log where game_id = %s " \
-                                       "and gift_id = %s and fortype = 2 and for_time >= %s and for_ip = %s " \
-                                       "and for_mac = %s " % (game_id, gift_id, end_for_time, ip, mac)
+                                       "and gift_id = %s and fortype = 2 and for_time >= %s and for_ip = '%s' " \
+                                       "and for_mac = '%s' " % (game_id, gift_id, end_for_time, ip, mac)
         game_gift_log_count = mysql_session.execute(find_game_gift_log_count_sql).scalar()
         if game_gift_log_count > 3:
             return response_data(200, 0, '已经领取过了')
@@ -124,35 +126,44 @@ def v4_sdk_user_get_gift():
         if user_game_gift_log_count == 0:
             # 检查礼包剩余个数
             find_game_gift_fortype_info_sql = "select num from zy_game_gift_fortype where fortype =2 and" \
-                                              " id= %s " % (gift_id,)
+                                              " gift_id= %s " % (gift_id,)
             game_gift_fortype_info = mysql_session.execute(find_game_gift_fortype_info_sql).fetchone()
             if game_gift_fortype_info:
-                if game_gift_info['sum'] >= 1 and game_gift_fortype_info['sum'] >= 1:
+                if game_gift_info['num'] >= 1 and game_gift_fortype_info['num'] >= 1:
                     # 抽取礼包代码
                     find_game_gift_code_sql = "select id, code from zy_game_gift_code where status = 0 and" \
-                                                      " game_id= %s and gift_id = %s limit 1 order by id asc" \
+                                                      " game_id= %s and gift_id = %s order by id asc limit 1" \
                                               % (game_id, gift_id)
                     game_gift_code = mysql_session.execute(find_game_gift_code_sql).fetchone()
                     if game_gift_code:
                         if game_gift_code['code'] is not None and game_gift_code['code'] != '':
-                            update_gift_code_sql = "update zy_game_gift_code set status=1, uid=%s, username=%s," \
-                                                   " for_time=%s, fortype=2 where id=%s "\
-                                                   % (ucid, username, int(time.time()), game_gift_code['id'])
-                            result = mysql_session.execute(update_gift_code_sql)
-                            if result:
-                                insert_get_gift_log = "insert into zy_game_gift_log values(%s, %s, %s, %s, %s, %s," \
-                                                      "%s, %s, %s)" % (game_id, gift_id, 2, game_gift_code['code'],
-                                                                       ucid, username, int(time.time()), ip, mac)
-                                mysql_session.execute(insert_get_gift_log)
-                                # 礼包个数减一
-                                update_gift_count_sql = "update zy_game_gift set num = num-1 where id=%s " \
-                                                       % (gift_id)
-                                update_gift_fortype_count_sql = "update zy_game_gift_fortype set num = num-1 " \
-                                                                "where fortype=2 and gift_id=%s " % (gift_id,)
-                                mysql_session.execute(update_gift_count_sql)
-                                mysql_session.execute(update_gift_fortype_count_sql)
-                                data = {'code': game_gift_code['code']}
-                                return response_data(200, 1, '领取成功', data)
+                            try:
+                                update_gift_code_sql = "update zy_game_gift_code set status=1, uid=%s, username='%s'," \
+                                                       " for_time=%s, fortype=2 where id=%s "\
+                                                       % (ucid, username, int(time.time()), game_gift_code['id'])
+                                result = mysql_session.execute(update_gift_code_sql)
+                                if result:
+                                    insert_get_gift_log = "insert into zy_game_gift_log(game_id, gift_id, fortype, code, " \
+                                                          "uid, username, for_time, for_ip, for_mac) " \
+                                                          "values(%s, %s, %s, '%s', %s, '%s'," \
+                                                          "%s, '%s', '%s')" % (game_id, gift_id, 2, game_gift_code['code'],
+                                                                           ucid, username, int(time.time()), ip, mac)
+                                    mysql_session.execute(insert_get_gift_log)
+                                    # 礼包个数减一
+                                    update_gift_count_sql = "update zy_game_gift set num = num-1 where id=%s " \
+                                                           % (gift_id)
+                                    update_gift_fortype_count_sql = "update zy_game_gift_fortype set num = num-1 " \
+                                                                    "where fortype=2 and gift_id=%s " % (gift_id,)
+                                    mysql_session.execute(update_gift_count_sql)
+                                    mysql_session.execute(update_gift_fortype_count_sql)
+                                    mysql_session.commit()
+                                    data = {'code': game_gift_code['code']}
+                                    return response_data(200, 1, '领取成功', data)
+                            except Exception, err:
+                                service_logger.error(err.message)
+                                mysql_session.rollback()
+                            finally:
+                                mysql_session.close()
             return response_data(200, 0, '礼包被领取完了')
         else:
             return response_data(200, 0, '已经领取过了')

@@ -1,7 +1,6 @@
 <?php
 namespace App\Controller\External;
 
-use App\Exceptions\PayCallbackException;
 use Illuminate\Http\Request;
 use App\Model\Orders;
 
@@ -12,49 +11,47 @@ abstract class Controller extends \App\Controller
         try {
             $data = $this->getData($request);
 
+            log_info('callback_request', ['route' => $request->path(), 'data' => $data]);
+
             $sn = $this->getOrderNo($data); 
             $order = null;
         
             if($sn) {
-                $order = Orders::where('sn', $sn)->first();
+                $order = Orders::from_cache_sn($sn);
             }
 
             if(!$order) {
-                throw new PayCallbackException(PayCallbackException::OrderNotExists, "订单不存在");
+                log_error('callback_order_not_exists', $data);
+                return $this->onComplete($data, null, true);
             }
             
-            if($order->status == Orders::Status_Success) {
-                throw new PayCallbackException(PayCallbackException::OrderStatusError, '订单状态不正确');
+            if($order->status != Orders::Status_WaitPay) {
+                log_error('callback_order_status_error', ['sn' => $sn]);
+                return $this->onComplete($data, null, true);
             }
             
             if(!$this->verifySign($data, $order)) {
-                throw new PayCallbackException(PayCallbackException::SignError, "签名错误");
+                log_error('callback_order_verify_sign_fail', ['route' => $request->path(), 'data' => $data]);
+                return $this->onComplete($data, null, false);
             }
 
-            $outer_order_no = $this->getOuterOrderNo($data, $order);
+            $outer_order_no = $this->getTradeOrderNo($data, $order);
 
             if(!$this->handler($data, $order)) {
-                throw new PayCallbackException(PayCallbackException::HandleError, "订单处理失败");
+                return $this->onComplete($data, null, false);
             }
 
             // 订单状态改变等等全部在这里做
             order_success($order->id);
-
-            $code = PayCallbackException::Success;
-        } catch(PayCallbackException $e) {
-            $code = $e->getCode();
+            return $this->onComplete($data, $order, true);
         } catch(\Exception $e) {
-            $code = PayCallbackException::SystemError;
+            return $this->onComplete($data, null, false);
         }
-
-        $isSuccess = in_array($code, [PayCallbackException::Success, PayCallbackException::OrderNotExists, PayCallbackException::OrderStatusError]);
-        
-        return $this->onComplete($data, $order, $isSuccess);
     }
 
     abstract protected function getData(Request $request);
     abstract protected function getOrderNo($data);
-    abstract protected function getOuterOrderNo($data, Orders $order);
+    abstract protected function getTradeOrderNo($data, Orders $order);
     abstract protected function verifySign($data, Orders $order);
     abstract protected function handler($data, Orders  $order);
     abstract protected function onComplete($data, Orders $order, $isSuccess, $code);

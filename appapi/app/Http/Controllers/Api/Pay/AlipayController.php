@@ -16,7 +16,7 @@ class AlipayController extends Controller {
     const EnableCoupon = true;
     const EnableBalance = true;
 
-    public function pay_handle(Request $request, Parameter $parameter, Orders $order, $real_fee) {
+    public function payHandle(Request $request, Parameter $parameter, Orders $order, $real_fee) {
         $config = config('common.payconfig.alipay');
 
         $data = sprintf('partner="%s"', $config['AppID']);
@@ -24,7 +24,7 @@ class AlipayController extends Controller {
         $data.= sprintf('&subject="%s"', $order->subject);
         $data.= sprintf('&body="%s"', $order->body);
         $data.= sprintf('&total_fee="%.2f"', env('APP_DEBUG', true) ? 0.01 : $real_fee / 100);
-        $data.= sprintf('&notify_url="%s"', urlencode(url('pay_callback/nowpay_alipay')));
+        $data.= sprintf('&notify_url="%s"', urlencode(url('pay_callback/alipay')));
         $data.= '&service="mobile.securitypay.pay"';
         $data.= '&_input_charset="UTF-8"';
         $data.= '&payment_type="1"';
