@@ -87,6 +87,7 @@ def v4_sdk_get_broadcast_list():
     start_index = (int(page) - 1) * int(count)
     end_index = start_index + int(count)
     service_logger.info("用户：%s 获取卡券列表，数据从%s到%s" % (ucid, start_index, end_index))
+    data_list = []
     # 获取用户的储值卡数据列表
     value_card_total_count, value_card_list = get_stored_value_card_list(ucid, start_index, end_index)
     # 储值卡数据足够一页数据
@@ -94,13 +95,13 @@ def v4_sdk_get_broadcast_list():
         return response_data(http_code=200, data=value_card_list)
     # 储值卡数据不够一页，用卡券数据补充
     else:
-        left_count = need_total_count - value_card_total_count  # 还缺少的数据量
+        left_count = int(need_total_count) - int(value_card_total_count)  # 还缺少的数据量
         left_page = int(left_count/int(count))
         if left_page == 0:
             coupon_start_index = 0
             coupone_end_index = left_count
         else:
-            head_count = ((int(value_card_total_count/10) + 1) * count) - value_card_total_count
+            head_count = ((int(value_card_total_count/10) + 1) * int(count)) - int(value_card_total_count)
             if left_page == 0:
                 coupon_start_index = int(left_page)*head_count
             else:
@@ -114,7 +115,7 @@ def v4_sdk_get_broadcast_list():
             (Q(type='coupon') & Q(closed=0) & Q(is_read=0) & Q(is_time=1) & Q(ucid=ucid)
              & Q(start_time__lte=current_timestamp) & Q(end_time__gte=current_timestamp))) \
                            .order_by('-start_time')[coupon_start_index:coupone_end_index]
-        data_list = []
+        new_coupon_list = []
         for message in message_list:
             message_info = get_coupon_message_detail_info(message['mysql_id'])
             unlimited_time = True
@@ -127,6 +128,7 @@ def v4_sdk_get_broadcast_list():
             message_resp = {
                 'id': message_info['mysql_id'],
                 'name': message_info['name'],
+                'type': 2,
                 'start_time': message_info['start_time'],
                 'end_time': message_info['end_time'],
                 'desc': message_info['info'],
@@ -136,5 +138,9 @@ def v4_sdk_get_broadcast_list():
                 'unlimited_time': unlimited_time,
                 'time_out': time_out
             }
-            data_list.append(message_resp)
+            new_coupon_list.append(message_resp)
+        if left_page == 0:
+            data_list.extend(value_card_list).extend(new_coupon_list)
+        else:
+            data_list.extend(new_coupon_list)
         return response_data(http_code=200, data=data_list)

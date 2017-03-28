@@ -119,7 +119,7 @@ def sdk_api_check_sign(request):
             pri_key = "%s%s" % (md5_key[0:16], md5_key[0:8])
             m = hashlib.md5()
             m.update(data_str + "key=" + pri_key)
-            service_logger.error(data_str + "key=" + pri_key)
+            service_logger.info(data_str + "key=" + pri_key)
             md5_sign = m.hexdigest()
             service_logger.info("客户端sign为：%s" % (request.form['_sign'],))
             service_logger.info("服务器运算生成sign为：%s" % (md5_sign,))
