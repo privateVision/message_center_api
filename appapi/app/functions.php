@@ -254,11 +254,12 @@ function send_mail($subject, $to, $content) {
     Queue::push(new \App\Jobs\SendMail($subject, $to, $content));
 }
 
-function log_debug ($keyword, $content) {
+function log_debug ($keyword, $content, $desc = '') {
     global $app;
 
     Queue::push(new \App\Jobs\Log([
         'keyword' => $keyword,
+        'desc' => $desc,
         'mode' => PHP_SAPI,
         'level' => 'DEBUG', 
         'ip' => $app->request->ip(),
@@ -268,11 +269,12 @@ function log_debug ($keyword, $content) {
     ]));
 }
 
-function log_info ($keyword, $content) {
+function log_info ($keyword, $content, $desc = '') {
     global $app;
 
     Queue::push(new \App\Jobs\Log([
         'keyword' => $keyword,
+        'desc' => $desc,
         'mode' => PHP_SAPI,
         'level' => 'INFO', 
         'ip' => $app->request->ip(),
@@ -282,11 +284,12 @@ function log_info ($keyword, $content) {
     ]));
 }
 
-function log_warning ($keyword, $content) {
+function log_warning ($keyword, $content, $desc = '') {
     global $app;
 
     Queue::push(new \App\Jobs\Log([
         'keyword' => $keyword,
+        'desc' => $desc,
         'mode' => PHP_SAPI,
         'level' => 'WARNING', 
         'ip' => $app->request->ip(),
@@ -296,11 +299,12 @@ function log_warning ($keyword, $content) {
     ]));
 }
 
-function log_error ($keyword, $content) {
+function log_error ($keyword, $content, $desc = '') {
     global $app;
 
     Queue::push(new \App\Jobs\Log([
         'keyword' => $keyword,
+        'desc' => $desc,
         'mode' => PHP_SAPI,
         'level' => 'ERROR', 
         'ip' => $app->request->ip(),
@@ -329,6 +333,7 @@ function http_request($url, $data, $is_post = true) {
 
     return $res;
 }
+
 //监测当前的格式
 function check_name($username,$len = 32){
     if(!preg_match("/^[\w\_\-\.\@\:]+$/",$username) || strlen($username) > $len ) return false;
@@ -352,4 +357,3 @@ function check_money($money,$del=4){
     if(!preg_match("/^(\d{0,8}).?(?=\d+)(.\d{0,$del})?$/",$money)) return false;
     return true;
 }
-

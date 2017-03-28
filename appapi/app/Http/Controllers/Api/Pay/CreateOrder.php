@@ -20,7 +20,7 @@ trait CreateOrder {
         $order->createIP = $request->ip();
         $order->status = Orders::Status_WaitPay;
         $order->paymentMethod = '';
-        $this->create_order_before($order, $request, $parameter);
+        $this->createOrderBefore($order, $request, $parameter);
         $order->save();
 
         $order_extend = new OrderExtend;
@@ -29,7 +29,7 @@ trait CreateOrder {
         $order_extend->cp_uid = $this->session->cp_uid;
         $order_extend->save();
 
-        $result = $this->create_order_after($order, $request, $parameter);
+        $result = $this->createOrderAfter($order, $request, $parameter);
         $order->getConnection()->commit();
 
         $response = [
@@ -55,7 +55,7 @@ trait CreateOrder {
      * @param  Parameter $parameter [description]
      * @return [type]               [description]
      */
-    abstract protected function create_order_before(Orders $order, Request $request, Parameter $parameter);
+    abstract protected function createOrderBefore(Orders $order, Request $request, Parameter $parameter);
 
     /**
      * 在订单保存之后，如果返回数组则合并返回给客户端
@@ -64,7 +64,7 @@ trait CreateOrder {
      * @param  Parameter $parameter [description]
      * @return [type]               [description]
      */
-    protected function create_order_after(Orders $order, Request $request, Parameter $parameter) {
+    protected function createOrderAfter(Orders $order, Request $request, Parameter $parameter) {
 
     }
 }

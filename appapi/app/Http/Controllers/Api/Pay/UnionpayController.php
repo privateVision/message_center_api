@@ -1,4 +1,4 @@
-<?php
+<?php // 银联技术文档地址：https://open.unionpay.com/ajweb/product/detail?id=3
 namespace App\Http\Controllers\Api\Pay;
 
 use Illuminate\Http\Request;
@@ -16,7 +16,7 @@ class UnionpayController extends Controller {
     const EnableCoupon = true;
     const EnableBalance = true;
 
-    public function pay_handle(Request $request, Parameter $parameter, Orders $order, $real_fee) {
+    public function payHandle(Request $request, Parameter $parameter, Orders $order, $real_fee) {
         $config = config('common.payconfig.unionpay');
 
         openssl_pkcs12_read(base64_decode($config['pfx']), $cert, $config['pfx_pwd']);
@@ -27,7 +27,7 @@ class UnionpayController extends Controller {
 
         $data['version'] = '5.0.0';
         $data['encoding'] = 'utf-8';
-        $data['backUrl'] = url('pay_callback/nowpay_unionpay');
+        $data['backUrl'] = url('pay_callback/unionpay');
         $data['accessType'] = '0';
         $data['merId'] = $config['merid'];
         $data['currencyCode'] = '156';
