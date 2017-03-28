@@ -36,7 +36,7 @@ class Controller extends \App\Controller
 				throw new ApiException(ApiException::Error, "签名验证失败");
 			}
 
-			log_debug('request', ['route' => $request->path(), 'data' => $data]);
+			log_info('request', $data, $request->path());
 
 			$this->before($request, $parameter);
 			$response = $this->$action($request, $parameter);
@@ -46,14 +46,14 @@ class Controller extends \App\Controller
 
 			return array('code' => ApiException::Success, 'msg' => null, 'data' => $response);
 		} catch (ApiException $e) {
-			log_warning('ApiException', ['message' => $e->getMessage(), 'code' => $e->getCode()]);
+			log_warning('ApiException', ['code' => $e->getCode()], $e->getMessage());
 			return array('code' => $e->getCode(), 'msg' => $e->getMessage(), 'data' => null);
 		} catch (\App\Exceptions\Exception $e) {
-			log_warning('Exception', ['message' => $e->getMessage(), 'code' => $e->getCode()]);
+			log_warning('Exception', ['code' => $e->getCode()], $e->getMessage());
 			return array('code' => ApiException::Error, 'msg' => $e->getMessage(), 'data' => null);
 		} catch(\Exception $e) {
 			log_error('error', ['message' => $e->getMessage(), 'code' => $e->getCode(), 'file' => $e->getFile(), 'line' => $e->getLine()]);
-			return array('code' => ApiException::Error, 'msg' => $e->getMessage(), 'data' => null);
+			return array('code' => ApiException::Error, 'msg' => 'system error', 'data' => null);
 		}
 /*
 		$type = $parameter->tough('_type');

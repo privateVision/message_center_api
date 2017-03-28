@@ -15,7 +15,7 @@ trait Pay {
         $balance = $parameter->get('balance');
         $vcid = $parameter->get('vcid');
 
-        $order = Orders::where('sn', $order_id)->first();
+        $order = Orders::from_cache_sn($order_id);
         if(!$order) {
             throw new ApiException(ApiException::Remind, '订单不存在');
         }
@@ -92,15 +92,15 @@ trait Pay {
 
             $order_extend = OrderExtend::find($order->id);
             $order_extend->real_fee = $fee;
-            $order_extend->saveAndCache();
+            $order_extend->save();
 
-            $data = $this->pay_handle($request, $parameter, $order, $fee);
+            $data = $this->payHandle($request, $parameter, $order, $fee);
         } else {
             //order_success($order->id); // 不用支付，直接发货
         }
 
         $order->paymentMethod = static::PayTypeText;
-        $order->saveAndCache();
+        $order->save();
         $order->getConnection()->commit();
 
         $data['real_fee'] = $fee;
@@ -116,5 +116,5 @@ trait Pay {
      * @param  int       $real_fee  实际支付金额，单位：分
      * @return [type]               [description]
      */
-    abstract protected function pay_handle(Request $request, Parameter $parameter, Orders $order, $real_fee);
+    abstract protected function payHandle(Request $request, Parameter $parameter, Orders $order, $real_fee);
 }

@@ -25,6 +25,19 @@ class Log extends Job
             send_mail('SDK接口调用错误', explode('|', env('ALARM_MAILS')), json_encode($this->content, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT));
         }
 
-        AppApiLog::insert($this->content);
+        $logfile = env('LOG_PATH') . str_replace('-', '', substr($this->content['datetime'], 0, 10)) . '.log';
+
+        $text = sprintf("%s %s.%d[%s] %s [%s]%s %s\n", 
+            $this->content['datetime'], 
+            $this->content['ip'], 
+            $this->content['pid'], 
+            $this->content['mode'], 
+            $this->content['level'], 
+            $this->content['keyword'], 
+            $this->content['desc'], 
+            json_encode($this->content['content'], JSON_UNESCAPED_UNICODE)
+        );
+
+        error_log($text, 3, $logfile);
     }
 }

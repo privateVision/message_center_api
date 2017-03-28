@@ -22,7 +22,7 @@ class UserSubController extends AuthController
                 'openid' => $v->cp_uid,
                 'name' => $v->name,
                 'is_freeze' => $v->is_freeze,
-                'is_unused' => $v->last_login_at ? true : false,
+                'is_unused' => $v->last_login_at ? false : true,
                 'is_default' => $v->id === $this->session->user_sub_id,
                 'last_login_at' => strval($v->last_login_at),
             ];
