@@ -5,6 +5,7 @@ class Orders extends Model
 {
 	const Status_WaitPay = 0;
 	const Status_Success = 1;
+	const Status_NotifySuccess = 2;
 
 	const Way_Unknow = 0;
 	const Way_Wechat = 1;
@@ -45,12 +46,16 @@ class Orders extends Model
 		return $this->belongsTo(IosOrderExt::class,'oid','id');
 	}
 
-	public function real_fee() {
-		$fee = OrdersExt::where('oid', $this->id)->sum('fee');
-		return bcsub($this->fee, $fee, 2);
+	public function is_first() {
+		// todo: 单独字段标识，这太Low了
+		return static::where('ucid', $this->ucid)->where('status', '!=', 0)->count() > 0;
 	}
 
-	public function is_first() {
-		return static::where('ucid', $this->ucid)->where('status', '!=', 0)->count() > 0;
+	/**
+	 * 该订单是否是购买F币
+	 * @return boolean [description]
+	 */
+	public function is_f() {
+		return $this->vid < 100;
 	}
 }

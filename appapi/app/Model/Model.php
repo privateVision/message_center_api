@@ -15,6 +15,8 @@ abstract class Model extends Eloquent
 
     protected $is_delay_save = false;
 
+    protected $is_cache_save = false;
+
     public function __call($method, $parameters) {
         if($method === 'tableSlice') {
             $this->slice = $parameters[0];
@@ -37,6 +39,7 @@ abstract class Model extends Eloquent
                         $this->forceFill($data);
                         $this->original = $data;
                         $this->exists = true;
+                        $this->is_cache_save = true;
                         return $this;
                     }
                 }
@@ -49,6 +52,7 @@ abstract class Model extends Eloquent
                         Redis::set($rediskey_1, $rediskey_2, 'EX', cache_expire_second());
                     }
 
+                    $data->is_cache_save = true;
                     return $data;
                 }
             } else {
@@ -59,12 +63,14 @@ abstract class Model extends Eloquent
                     $this->forceFill($data);
                     $this->original = $data;
                     $this->exists = true;
+                    $this->is_cache_save = true;
                     return $this;
                 }
 
                 $data = $this->find(...$parameters);
                 if($data) {
                     Redis::set($rediskey_2, json_encode($data), 'EX', cache_expire_second());
+                    $data->is_cache_save = true;
                     return $data;
                 }
             }
@@ -77,15 +83,19 @@ abstract class Model extends Eloquent
 
     public static function boot() {
         parent::boot();
+
+        static::created(function($entry) {
+            if($entry->is_cache_save) {
+                $rediskey_2 = $entry->table .'_'. $entry->getKey();
+                Redis::set($rediskey_2, json_encode($entry), 'EX', cache_expire_second());
+            }
+        });
     
         static::updated(function($entry) {
-            $rediskey_2 = $entry->table . $entry->getKey();
-            Redis::set($rediskey_2, json_encode($entry), 'XX');
-        });
-
-        static::deleted(function($entry) {
-            $rediskey_2 = $entry->table . $entry->getKey();
-            Redis::del($rediskey_2);
+            if($entry->is_cache_save) {
+                $rediskey_2 = $entry->table .'_'. $entry->getKey();
+                Redis::set($rediskey_2, json_encode($entry), 'EX', cache_expire_second());
+            }
         });
     }
 
@@ -104,9 +114,23 @@ abstract class Model extends Eloquent
         return $this;
     }
 
+    /**
+     * 异步执行save
+     * @return [type] [description]
+     */
     public function asyncSave() {
         async_query($this);
         return $this;
+    }
+
+    /**
+     * 保存数据的同时将数据写入缓存
+     * @return [type] [description]
+     */
+    public function saveAndCache() {
+        $this->is_cache_save = true;
+        $result = parent::save();
+        return $result;
     }
 
     public function save(array $options = []) {

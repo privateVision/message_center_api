@@ -216,6 +216,8 @@ class AccountController extends Controller {
             throw new ApiException(ApiException::Remind, '会话已结束，请重新登录');
         }
 
+        // todo: 验证token失效
+
         if(!$session->ucid) {
             throw new ApiException(ApiException::Remind, '会话失效，请重新登录');
         }
@@ -238,7 +240,7 @@ class AccountController extends Controller {
 
         $user = User::where('uid', $username)->orWhere('mobile', $username)->first();
 
-        if(!$user) {
+        if(!$user || !$user->checkPassword($password)) {
             throw new ApiException(ApiException::Remind, "登录失败，用户名或者密码不正确");
         }
 

@@ -52,10 +52,11 @@ class Event
         $session = new Session;
         $session->ucid = $user->ucid;
         $session->user_sub_id = $user_sub->id;
+        $session->cp_uid = $user_sub->cp_uid;
         $session->token = uuid();
         $session->expired_ts = time() + 2592000; // 1个月有效期
         $session->date = date('Ymd');
-        $session->save();
+        $session->saveAndCache();
         
         $user->uuid = $session->token; // todo: 兼容旧的自动登陆
         $user->last_login_at = datetime();
@@ -70,7 +71,7 @@ class Event
             'avatar' => $user->avatar ? $user->avatar : env('AVATAR'),
             'is_real' => $user->isReal(),
             'is_adult' => $user->isAdult(),
-            'vip' => $user->vip(),
+            'vip' => $user->vip,
             'token' => $session->token,
             'balance' => $user->balance,
         ];

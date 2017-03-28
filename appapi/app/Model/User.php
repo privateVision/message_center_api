@@ -1,8 +1,6 @@
 <?php
 namespace App\Model;
 
-use App\Model\MongoDB\AppVipRules;
-
 class User extends Model
 {
     protected $table = 'user';
@@ -36,12 +34,17 @@ class User extends Model
         return $this->attributes['is_freeze'] == 1;
     }
 
+    public function getVipAttribute() {
+        return intval(@$this->attributes['vip']);
+    }
+
     public function setIsFreezeAttribute($value) {
         $this->attributes['is_freeze'] = $value ? 1 : 0;
     }
 
-    public function getBalanceAttribute($value) {
-        return number_format($value, 2);
+    public function getBalanceAttribute() {
+        $value = @$this->attributes['balance'];
+        return sprintf('%.2f', $value ? $value : 0);
     }
 
     public function setPasswordAttribute($value) {
@@ -84,40 +87,5 @@ class User extends Model
         }
 
         return false;
-    }
-
-    /**
-     * 用户VIP等级
-     * @return int
-     */
-    public function vip() {
-        $ucuser_total_pay = $this->ucuser_total_pay;
-
-        $level = 0;
-
-        if($ucuser_total_pay) {
-            $pay_fee = $ucuser_total_pay->pay_fee;
-           
-
-            $rules = AppVipRules::orderBy('fee', 1)->get();
-
-            foreach($rules as $k => $v) {
-                if($pay_fee >= $v->fee) {
-                    $level = $k;
-                } else {
-                    break;
-                }
-            }
-        }
-
-        return $level;
-    }
-
-    /**
-     * 用户卡券列表
-     * @return array
-     */
-    public function coupon() {
-        return [];
     }
 }
