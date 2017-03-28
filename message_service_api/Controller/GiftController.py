@@ -24,12 +24,14 @@ def v4_sdk_get_gifts_list():
     service_logger.info("用户：%s 获取礼包列表，数据从%s到%s" % (ucid, start_index, end_index))
     # 查询游戏信息
     from run import mysql_session
-    find_game_info_sql = "select pname as name, pid as id from procedures as game where game.pid= %s limit 1" % (game_id,)
+    find_game_info_sql = "select game.id, game.name, game.cover from procedures as p, zy_game as game " \
+                         "where p.gameCenterId = game.id and p.pid= %s limit 1" % (game_id,)
     game_info = mysql_session.execute(find_game_info_sql).fetchone()
     game = {}
     if game_info:
         game['id'] = game_info['id']
         game['name'] = game_info['name']
+        game['cover'] = game_info['cover']
     else:
         return response_data(200, 0, '游戏未找到')
     now = int(time.time())
