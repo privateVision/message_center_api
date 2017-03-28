@@ -70,7 +70,7 @@ def add_to_every_related_users_message_list(users_message):
                                                          users_message.vip, users_message.users,
                                                          users_message.type, users_message.mysql_id,
                                                          users_message.start_time, users_message.end_time,
-                                                         users_message.is_time, users_message.distribute))
+                                                         users_message.is_time))
         add_user_message_thread.setDaemon(True)
         add_user_message_thread.start()
     else:
