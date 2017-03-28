@@ -283,7 +283,7 @@ def get_stored_value_card_list(ucid, start_index, end_index):
                                            "uvc.vcid = vc.vcid and uvc.balance > 0 and uvc.ucid = %s and " \
                                            "((vc.untimed = 1) or ((vc.untimed = 0) " \
                                            "and unix_timestamp(vc.startTime) <= unix_timestamp('%s')" \
-                                           " and unix_timestamp(vc.endTime) >= unix_timestamp('%s'))) "\
+                                           " and unix_timestamp(vc.endTime) >= unix_timestamp('%s'))) " \
                                            % (ucid, time_now, time_now)
     try:
         total_count = mysql_session.execute(find_user_store_value_card_count_sql).scalar()
@@ -317,6 +317,43 @@ def get_stored_value_card_list(ucid, start_index, end_index):
     finally:
         mysql_session.close()
     return total_count, value_card_list
+
+
+def get_user_coupons_by_game(ucid, appid, start_index, end_index):
+    from run import mysql_session
+    now = int(time.time())
+    get_user_coupon_sql = "select coupon_id from zy_coupon_log where ucid=%s and pid=%s and " \
+                          "((is_time = 0) or ((is_time = 1) " \
+                          "and start_time <= %s " \
+                          " and end_time >= %s)) order by id desc limit %s, %s" \
+                          % (ucid, appid, now, now, start_index, end_index)
+    coupon_list = mysql_session.execute(get_user_coupon_sql).fetchall()
+    new_coupon_list = []
+    for coupon in coupon_list:
+        get_user_coupon_sql = "select * from zy_coupon where id=%s limit 1" % (coupon['coupon_id'])
+        coupon_info = mysql_session.execute(get_user_coupon_sql).fetchone()
+        if coupon_info is not None:
+            info = {
+                'id': coupon_info['id'],
+                'name': coupon_info['name'],
+                'type': 2,
+                'start_time': coupon_info['start_time'],
+                'end_time': coupon_info['end_time'],
+                'desc': coupon_info['info'],
+                'fee': coupon_info['money'],
+                'method': coupon_info['method'],
+                'use_condition': "满%s可用" % (coupon_info['full'],)
+            }
+            unlimited_time = True
+            if coupon_info['is_time'] == 0:
+                unlimited_time = False
+            time_out = False
+            if coupon_info['end_time'] < now:
+                time_out = True
+            info['unlimited_time'] = unlimited_time
+            info['time_out'] = time_out
+            new_coupon_list.append(info)
+    return new_coupon_list
 
 
 # sdk api 请求通用装饰器
