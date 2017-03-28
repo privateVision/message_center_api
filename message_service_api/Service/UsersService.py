@@ -272,7 +272,7 @@ def get_stored_value_card_list(ucid, start_index, end_index):
     total_count = 0
     value_card_list = []
     time_now = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-    find_user_store_value_card_list_sql = "select vc.* from ucusersVC as uvc, virtualCurrencies as vc where " \
+    find_user_store_value_card_list_sql = "select vc.*, uvc.balance from ucusersVC as uvc, virtualCurrencies as vc where " \
                                           "uvc.vcid = vc.vcid and uvc.balance > 0 and uvc.ucid = %s and " \
                                           "((vc.untimed = 1) or ((vc.untimed = 0) and " \
                                           "unix_timestamp(vc.startTime) <= unix_timestamp('%s') " \
@@ -290,17 +290,26 @@ def get_stored_value_card_list(ucid, start_index, end_index):
         card_list = mysql_session.execute(find_user_store_value_card_list_sql).fetchall()
         if total_count > 0:
             for card in card_list:
+                find_game_name_sql = 'select pname from procedures where pid = %s limit 1' % (card['lockApp'],)
+                game_info = mysql_session.execute(find_game_name_sql).fetchone()
                 item = {
-                    'vcid': card['vcid'],
-                    'vcname': card['vcname'],
+                    'id': card['vcid'],
+                    'name': card['vcname'],
                     'supportDivide': card['supportDivide'],
-                    'untimed': card['untimed'],
-                    'startTime': card['startTime'],
-                    'endTime': card['endTime'],
-                    'lockApp': card['lockApp'],
-                    'descript': card['descript'],
-                    'type': 1
+                    'start_time': card['startTime'],
+                    'end_time': card['endTime'],
+                    'lock_app': card['lockApp'],
+                    'desc': card['descript'],
+                    'type': 1,
+                    'fee': card['balance'],
+                    'unlimited_time': False,
+                    'user_condition': '',
+                    'time_out': False
                 }
+                if card['untimed'] == 1:
+                    item['unlimited_time'] = True
+                if game_info:
+                    item['lock_app'] = game_info['pname']
                 value_card_list.append(item)
     except Exception, err:
         service_logger.error(err.message)
