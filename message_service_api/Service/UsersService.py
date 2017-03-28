@@ -96,20 +96,16 @@ def get_vip_users(vips):
     if vips is not None:
         from run import mysql_session
         for vip in vips:
-            vip_rule_info = AppVipRules.objects(level=vip).first()
-            if vip_rule_info is not None:
-                fee = vip_rule_info['fee']
-                find_users_by_vip_sql = "select distinct(ucid) from ucuser_total_pay as u where u.pay_fee >= %s " % (
-                    fee,)
-                try:
-                    origin_list = mysql_session.execute(find_users_by_vip_sql).fetchall()
-                    for item in origin_list:
-                        users_list.append(item['ucid'])
-                except Exception, err:
-                    service_logger.error(err.message)
-                    mysql_session.rollback()
-                finally:
-                    mysql_session.close()
+            find_users_by_vip_sql = "select distinct(ucid) from user as u where u.vip >= %s " % (vip,)
+            try:
+                origin_list = mysql_session.execute(find_users_by_vip_sql).fetchall()
+                for item in origin_list:
+                    users_list.append(item['ucid'])
+            except Exception, err:
+                service_logger.error(err.message)
+                mysql_session.rollback()
+            finally:
+                mysql_session.close()
     return users_list
 
 

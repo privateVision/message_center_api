@@ -7,7 +7,7 @@
 count=$(ps -ef|grep uwsgi|grep -v grep|wc -l)
 if [ 1 == $count ];then
     echo 'stop process ...'
-    ps -ef|grep consume_run|grep -v grep|awk '{print $2}'|xargs kill -9
+    ps -ef|grep consume|grep -v grep|awk '{print $2}'|xargs kill -9
     ps -ef|grep uwsgi|grep -v grep|awk '{print $2}'|xargs kill -9
     if [ 0 == $? ];then
         echo "stop process success!"
@@ -19,7 +19,7 @@ if [ 1 == $count ];then
     echo 'start process ...'
     echo "当前启动地址： $1"
     nohup uwsgi --socket $1 --wsgi-file run.py --callable app --enable-threads &
-    nohup python consume_run &
+    nohup python consume &
     if [ 0 == $? ];then
         echo "start process success!"
     else
@@ -27,9 +27,9 @@ if [ 1 == $count ];then
     fi
 else
     echo "当前启动地址： $1"
-    ps -ef|grep consume_run|grep -v grep|awk '{print $2}'|xargs kill -9
+    ps -ef|grep consume|grep -v grep|awk '{print $2}'|xargs kill -9
     nohup uwsgi --socket $1 --wsgi-file run.py --callable app --enable-threads &
-    nohup python consume_run &
+    nohup python consume &
     if [ 0 == $? ];then
         echo "start process success!"
     else
