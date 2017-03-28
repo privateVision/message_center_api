@@ -274,14 +274,14 @@ def get_stored_value_card_list(ucid, start_index, end_index):
     time_now = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
     find_user_store_value_card_list_sql = "select vc.* from ucusersVC as uvc, virtualCurrencies as vc where " \
                                           "uvc.vcid = vc.vcid and uvc.balance > 0 and uvc.ucid = %s and " \
-                                          "((vc.untimed = 0) or ((vc.untimed = 1) and " \
+                                          "((vc.untimed = 1) or ((vc.untimed = 0) and " \
                                           "unix_timestamp(vc.startTime) <= unix_timestamp('%s') " \
                                           "and unix_timestamp(vc.endTime) >= unix_timestamp('%s'))) " \
                                           "limit %s, %s " % \
                                           (ucid, time_now, time_now, start_index, end_index)
     find_user_store_value_card_count_sql = "select count(*) from ucusersVC as uvc, virtualCurrencies as vc where " \
                                            "uvc.vcid = vc.vcid and uvc.balance > 0 and uvc.ucid = %s and " \
-                                           "((vc.untimed = 0) or ((vc.untimed = 1) " \
+                                           "((vc.untimed = 1) or ((vc.untimed = 0) " \
                                            "and unix_timestamp(vc.startTime) <= unix_timestamp('%s')" \
                                            " and unix_timestamp(vc.endTime) >= unix_timestamp('%s'))) "\
                                            % (ucid, time_now, time_now)
@@ -298,7 +298,8 @@ def get_stored_value_card_list(ucid, start_index, end_index):
                     'startTime': card['startTime'],
                     'endTime': card['endTime'],
                     'lockApp': card['lockApp'],
-                    'descript': card['descript']
+                    'descript': card['descript'],
+                    'type': 1
                 }
                 value_card_list.append(item)
     except Exception, err:

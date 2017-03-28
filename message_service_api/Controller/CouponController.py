@@ -87,7 +87,6 @@ def v4_sdk_get_broadcast_list():
     start_index = (int(page) - 1) * int(count)
     end_index = start_index + int(count)
     service_logger.info("用户：%s 获取卡券列表，数据从%s到%s" % (ucid, start_index, end_index))
-    data_list = []
     # 获取用户的储值卡数据列表
     value_card_total_count, value_card_list = get_stored_value_card_list(ucid, start_index, end_index)
     # 储值卡数据足够一页数据
@@ -140,7 +139,7 @@ def v4_sdk_get_broadcast_list():
             }
             new_coupon_list.append(message_resp)
         if left_page == 0:
-            data_list.extend(value_card_list).extend(new_coupon_list)
+            value_card_list.extend(new_coupon_list)
+            return response_data(http_code=200, data=value_card_list)
         else:
-            data_list.extend(new_coupon_list)
-        return response_data(http_code=200, data=data_list)
+            return response_data(http_code=200, data=new_coupon_list)
