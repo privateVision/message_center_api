@@ -9,26 +9,25 @@ def send_mail(to_list, sub, content):
     mail_user = "yangchujie1@163.com"
     mail_pass = "ycj19910421"
     mail_postfix = "163.com"
-    me = "hello" + "<" + mail_user + "@" + mail_postfix + ">"
-    msg = MIMEText(content, _subtype='plain')
+    me = "<" + mail_user + ">"
+    msg = MIMEText(content, _subtype='plain', _charset='utf8')
     msg['Subject'] = sub
     msg['From'] = me
-    msg['To'] = ";".join(to_list)  # 将收件人列表以‘；’分隔
+    msg['To'] = ";".join(to_list)
     try:
         server = smtplib.SMTP()
-        server.connect(mail_host)  # 连接服务器
-        server.login(mail_user, mail_pass)  # 登录操作
+        server.connect(mail_host)
+        server.login(mail_user, mail_pass)
         server.sendmail(me, to_list, msg.as_string())
         server.close()
         return True
     except Exception, e:
-        print str(e)
         return False
+
+def send_notify(content):
+    mailto_list = ['14a1152bf3963d126735637d5e745ae5@mail.bearychat.com']
+    send_mail(mailto_list, "sdk-api-message-service-exception", content)
 
 
 if __name__ == '__main__':
-    mailto_list = ['14a1152bf3963d126735637d5e745ae5@mail.bearychat.com']
-    if send_mail(mailto_list, "消息服务反馈", "消息服务出现一场悉尼下"):
-        print "done!"
-    else:
-        print "failed!"
+    send_notify('测试异常通知')

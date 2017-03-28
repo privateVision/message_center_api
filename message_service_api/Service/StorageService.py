@@ -33,6 +33,7 @@ def add_message_to_user_message_list(game, users_type, vip_user, specify_user, t
             user_message.save()
             add_mark_to_user_redis(user, type)
     except Exception, err:
+        send_notify("添加消息到每个用户的消息列表发生异常：%s" % (err.message,))
         service_logger.error("添加消息到每个用户的消息列表发生异常：%s" % (err.message,))
 
 
@@ -89,6 +90,7 @@ def add_to_every_related_users_message_list(users_message):
                 mysql_session.execute(insert_user_coupon_sql)
             mysql_session.commit()
         except Exception, err:
+            send_notify("添加卡券到每个用户的mysql列表发生异常：%s" % (err.message,))
             service_logger.error("添加卡券到每个用户的mysql列表发生异常：%s" % (err.message,))
             mysql_session.rollback()
         finally:
