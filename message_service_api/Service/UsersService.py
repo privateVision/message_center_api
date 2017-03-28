@@ -318,6 +318,7 @@ def sdk_api_request_check(func):
         try:
             mysql_session.execute('select count(*) from admins limit 1').scalar()
         except Exception, err:
+            mysql_session.rollback()
             service_logger.error(err.message)
         from Utils.EncryptUtils import sdk_api_params_check, sdk_api_check_sign
         is_params_checked = sdk_api_params_check(request)
