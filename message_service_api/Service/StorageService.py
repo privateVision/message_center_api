@@ -152,8 +152,8 @@ def send_message_to_spcify_users(specify_user, game, type, msg_id, is_time, star
 
 
 def add_user_messsage(ucid, type, msg_id, is_time, start_time, end_time, game):
-    service_logger.info("添加用户消息：%s-%s-%s" % (ucid, type, msg_id))
     if type != 'coupon':
+        service_logger.info("mongo添加用户消息：%s-%s-%s" % (ucid, type, msg_id))
         user_message = UserMessage()
         user_message.id = "%s%s%s" % (ucid, type, msg_id)
         user_message.ucid = ucid
@@ -166,6 +166,7 @@ def add_user_messsage(ucid, type, msg_id, is_time, start_time, end_time, game):
         user_message.save()
         add_mark_to_user_redis(ucid, type)
     else:
+        service_logger.info("mysql添加用户消息：%s-%s-%s" % (ucid, type, msg_id))
         from run import mysql_session
         pid = 0
         if game[0]['apk_id'] != 'all':
