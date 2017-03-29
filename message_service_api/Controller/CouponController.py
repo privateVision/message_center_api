@@ -109,37 +109,6 @@ def v4_sdk_get_broadcast_list():
             coupon_end_index = left_count
         # 查询用户相关的卡券列表
         new_coupon_list = get_user_coupons_by_game(ucid, game_id, coupon_start_index, coupon_end_index)
-        # current_timestamp = get_current_timestamp()
-        # message_list = UserMessage.objects(
-        #     (Q(type='coupon') & Q(closed=0) & Q(is_read=0) & Q(is_time=0) & Q(ucid=ucid))
-        #     |
-        #     (Q(type='coupon') & Q(closed=0) & Q(is_read=0) & Q(is_time=1) & Q(ucid=ucid)
-        #      & Q(start_time__lte=current_timestamp) & Q(end_time__gte=current_timestamp))) \
-        #                    .order_by('-start_time')[coupon_start_index:coupone_end_index]
-        # new_coupon_list = []
-        # for message in message_list:
-        #     message_info = get_coupon_message_detail_info(message['mysql_id'])
-        #     unlimited_time = True
-        #     if message_info['is_time'] == 0:
-        #         unlimited_time = False
-        #     time_out = False
-        #     now = int(time.time())
-        #     if message_info['end_time'] < now:
-        #         time_out = True
-        #     message_resp = {
-        #         'id': message_info['mysql_id'],
-        #         'name': message_info['name'],
-        #         'type': 2,
-        #         'start_time': message_info['start_time'],
-        #         'end_time': message_info['end_time'],
-        #         'desc': message_info['info'],
-        #         'fee': message_info['money'],
-        #         'method': message_info['method'],
-        #         'use_condition': "满%s可用" % (message_info['full'],),
-        #         'unlimited_time': unlimited_time,
-        #         'time_out': time_out
-        #     }
-        #     new_coupon_list.append(message_resp)
         if left_page == 0:
             value_card_list.extend(new_coupon_list)
             return response_data(http_code=200, data=value_card_list)

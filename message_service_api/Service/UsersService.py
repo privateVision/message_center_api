@@ -292,16 +292,21 @@ def get_stored_value_card_list(ucid, start_index, end_index):
                     'id': card['vcid'],
                     'name': card['vcname'],
                     'supportDivide': card['supportDivide'],
-                    'start_time': card['startTime'],
-                    'end_time': card['endTime'],
+                    'start_time': 0,
+                    'end_time': 0,
                     'lock_app': card['lockApp'],
                     'desc': card['descript'],
                     'type': 1,
                     'fee': card['balance'],
                     'unlimited_time': False,
                     'user_condition': '',
-                    'time_out': False
+                    'time_out': False,
+                    'method': ''
                 }
+                if card['startTime']:
+                    item['start_time'] = card['startTime']
+                if card['endTime']:
+                    item['end_time'] = card['endTime']
                 if card['untimed'] == 1:
                     item['unlimited_time'] = True
                 if game_info:
@@ -338,7 +343,9 @@ def get_user_coupons_by_game(ucid, appid, start_index, end_index):
                 'desc': coupon_info['info'],
                 'fee': coupon_info['money'],
                 'method': coupon_info['method'],
-                'use_condition': "满%s可用" % (coupon_info['full'],)
+                'use_condition': "满%s可用" % (coupon_info['full'],),
+                'lock_app': '',
+                'supportDivide': 0
             }
             unlimited_time = True
             if coupon_info['is_time'] == 0:
