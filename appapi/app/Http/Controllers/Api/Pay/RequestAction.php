@@ -39,29 +39,26 @@ trait RequestAction {
             $vcinfo = json_decode(decrypt3des($vcid), true);
             if(!$vcinfo)  break;
 
-            $id = $vcinfo['id'];
-            $vc_fee = $vcinfo['fee'];
-
             if($vcinfo['oid'] != $order->id) break;
 
             // 储值卡
             if(static::EnableStoreCard && $vcinfo['type'] == 1) {
-                $use_fee = min($fee, $vc_fee);
+                $use_fee = min($fee, $vcinfo['fee']);
 
                 $ordersExt = new OrdersExt;
                 $ordersExt->oid = $order->id;
-                $ordersExt->vcid = $vcid;
+                $ordersExt->vcid = $vcinfo['id'];
                 $ordersExt->fee = $use_fee / 100;
                 $ordersExt->save();
 
                 $fee = $fee - $use_fee;
             // 优惠券
             } elseif(static::EnableCoupon && $vcinfo['type'] == 2) {
-                $use_fee = min($fee, $vc_fee);
+                $use_fee = min($fee, $vcinfo['fee']);
 
                 $ordersExt = new OrdersExt;
                 $ordersExt->oid = $order->id;
-                $ordersExt->vcid = intval($vcid) + 10000000;
+                $ordersExt->vcid = $vcinfo['id'];
                 $ordersExt->fee = $use_fee / 100;
                 $ordersExt->save();
 
@@ -93,7 +90,7 @@ trait RequestAction {
 
             $order_extend = OrderExtend::find($order->id);
             $order_extend->real_fee = $fee;
-            $order_extend->save();
+            $order_extend->saveAndCache();
 
             $data = $this->payHandle($request, $parameter, $order, $fee);
         } else {

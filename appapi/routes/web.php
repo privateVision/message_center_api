@@ -10,7 +10,47 @@
 |
 */
 
-$app->get('/', function (Illuminate\Http\Request $request) use ($app) { echo resource_path('aaa');
+$app->get('/', function (Illuminate\Http\Request $request) use ($app) {
+    $pid = 2;
+    $order_is_first = 0;
+    // ----
+    $list = [];
+    $result = \App\Model\UcusersVC::where('ucid', 100001940)->get();
+    foreach($result as $v) {
+        $fee = $v->balance;
+        if(!$fee) continue;
+
+        $rule = \App\Model\VirtualCurrencies::from_cache($v->vcid);
+        if(!$rule) continue;
+
+        if(!$rule->is_valid($pid)) continue;
+
+        $list[] = [
+            'id' => encrypt3des(json_encode(['oid' => 1, 'type' => 1, 'fee' => $fee, 'id' => $v->vcid])),
+            'fee' => $fee,
+            'name' => $rule->vcname,
+        ];
+    }
+
+    $result = \App\Model\ZyCouponLog::where('ucid', 100001940)->whereIn('pid', [0, $pid])->get();
+    foreach($result as $v) {
+        $rule = \App\Model\ZyCoupon::from_cache($v->coupon_id);
+        if(!$rule) continue;
+
+        $fee = $rule->money;
+        if(!$fee) continue;
+
+        if(!$rule->is_valid($pid, 100, $order_is_first)) continue;
+
+        $list[] = [
+            'id' => encrypt3des(json_encode(['oid' => 1, 'type' => 2, 'fee' => $fee, 'id' => $v->id])),
+            'fee' => $fee,
+            'name' => $rule->name,
+        ];
+    }
+
+
+return $list;
     $mobile = $request->input('m');
 
     if($mobile) {
@@ -58,7 +98,6 @@ $app->group(['prefix' => 'api'], function () use ($app) {
     $app->post('account/mobile/sms_login', 'Api\\Account\\MobileController@SMSLoginAction');                // 手机验证码登陆（发送短信）
     $app->post('account/mobile/login', 'Api\\Account\\MobileController@LoginAction');                       // 手机验证码登陆
     $app->post('account/guest/login', 'Api\\Account\\GuestController@LoginAction');                         // 游客登陆
-
     $app->post('account/oauth/sms_bind', 'Api\\Account\\OauthController@SMSBindAction');                    // 平台注册绑定手机时发送验证码
     $app->post('account/oauth/register', 'Api\\Account\\OauthController@RegisterAction');                   // 平台注册
     $app->post('account/oauth/login', 'Api\\Account\\OauthController@LoginAction');                         // 平台登陆
@@ -91,6 +130,8 @@ $app->group(['prefix' => 'api'], function () use ($app) {
     $app->post('pay/f/request', 'Api\\Pay\\FController@RequestAction');                                     // 安锋支付，（帐户余额支付）
     $app->post('ios/order/receipt/verify','Api\\Pay\\AppleController@validateReceiptAction');               // 验证苹果支付的信息
     $app->post('ios/order/create','Api\\Pay\\AppleController@OrderCreateAction');                           // 验证苹果支付的信息
+
+    $app->post('tool/user/reset_password_page','Api\\Tool\\UserController@ResetPasswordPageAction');        // 获取重设密码页面
 
 });
 

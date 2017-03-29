@@ -10,6 +10,8 @@ use App\Model\UcuserTotalPay;
 use App\Model\User;
 use App\Model\UcusersVC;
 use App\Model\VirtualCurrencies;
+use App\Model\ZyCouponLog;
+use App\Model\ZyCoupon;
 
 class OrderSuccess extends Job
 {
@@ -43,8 +45,16 @@ class OrderSuccess extends Job
                     $fee = intval($v->fee * 100);
                     if($fee <= 0) continue;
 
-                    if($v->vcid > 1490587069) { // vcid > 1490587069：优惠券
+                    if($v->vcid > 100000000) { // vcid > 100000000：优惠券
+                        $coupon = ZyCouponLog::find($v->vcid);
+                        if($coupon && !$coupon->is_used) {
+                            $coupon->is_used = true;
+                            $coupon->save();
+                            continue;
+                        }
 
+                        log_error("orderFail", ['text' => '优惠券无效', 'order_id' => $this->order_id, 'fee' => $fee, 'ucid' => $user->ucid, 'vcid' => $v->vcid]);
+                        $is_s = false;
                     } elseif($v->vcid > 0) { // vcid > 0：储值卡
                         $ucusersvc = UcusersVC::where('ucid', $order->ucid)->where('vcid', $v->vcid)->first(); // todo: 联合主键，ORM不支持
                         if(!$ucusersvc || intval($ucusersvc->balance * 100) < $fee) {

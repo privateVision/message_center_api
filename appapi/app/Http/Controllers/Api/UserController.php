@@ -4,7 +4,6 @@ namespace App\Http\Controllers\Api;
 use App\Exceptions\ApiException;
 use Illuminate\Http\Request;
 use App\Parameter;
-use App\Event;
 use App\Model\User;
 use App\Model\Orders;
 use App\Model\UserRole;
@@ -72,7 +71,6 @@ class UserController extends AuthController
         }
 
         $old_password = $this->user->password;
-        Event::onResetPassword($this->user, $new_password);
         user_log($this->user, $this->procedure, 'reset_password', '【重置用户密码】通过旧密码，旧密码[%s]，新密码[%s]', $old_password, $this->user->password);
 
         return ['result' => true];
@@ -210,7 +208,6 @@ class UserController extends AuthController
         }
 
         $old_password = $this->user->password;
-        Event::onResetPassword($this->user, $password);
         user_log($this->user, $this->procedure, 'reset_password', '【重置用户密码】通过手机验证码，手机号码{%s}，新密码[%s]，旧密码[%s]', $mobile, $this->user->password, $old_password);
 
         return ['result' => true];

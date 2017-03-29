@@ -5,7 +5,6 @@ use App\Exceptions\ApiException;
 use Illuminate\Http\Request;
 use App\Parameter;
 use App\Redis;
-use App\Event;
 use App\Model\ProceduresExtend;
 use App\Model\UserSub;
 
@@ -77,18 +76,4 @@ class UserSubController extends AuthController
             'last_login_at' => "",
         ];
     }
-/*
-    public function SwitchAction(Request $request, Parameter $parameter) {
-        $id = $parameter->tough('id');
-        $pid = $parameter->tough('_appid');
-        $rid = $parameter->tough('_rid');
-
-        $user_sub = UserSub::tableSlice($this->user->ucid)->where('ucid', $this->user->ucid)->where('id', $id)->first();
-        if(!$user_sub) {
-            throw new ApiException(ApiException::Remind, "切换失败，小号不存在");
-        }
-
-        return Event::onLoginAfter($this->user, $pid, $rid, $user_sub);
-    }
-*/
 }

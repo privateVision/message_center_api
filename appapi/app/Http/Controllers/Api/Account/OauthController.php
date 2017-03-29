@@ -48,7 +48,7 @@ class OauthController extends Controller {
         }
 
         $uuid = md5($type . $openid);
-        $user_oauth = UserOauth::where('uuid', $uuid)->first();
+        $user_oauth = UserOauth::from_cache_uuid('uuid', $uuid);
         $mobile_user = User::where('uid', $mobile)->orWhere('mobile', $mobile)->first();
 
         // ------------ oauth存在 --> 绑定mobile
@@ -144,6 +144,7 @@ class OauthController extends Controller {
         $user_oauth->type = $type;
         $user_oauth->openid = $openid;
         $user_oauth->uuid = $uuid;
+        $user_oauth->saveAndCache();
 
         return $mobile_user;
     }

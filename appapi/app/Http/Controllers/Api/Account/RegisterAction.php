@@ -59,7 +59,7 @@ trait RegisterAction {
                 $user_sub->name = '小号01';
                 $user_sub->priority = time();
                 $user_sub->last_login_at = datetime();
-                $user_sub->delaySave();
+                $user_sub->save();
             }
         }
 
