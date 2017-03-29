@@ -169,7 +169,7 @@ def add_user_messsage(ucid, type, msg_id, is_time, start_time, end_time):
 def check_user_type_and_vip(ucid=None, user_type=None, vip=None):
     from run import mysql_session
     find_users_by_user_type_sql = "select count(*) from ucusers as u, retailers as r where u.rid = r.rid " \
-                                  "and r.rtype in %s and u.ucid = %s " % (user_type, ucid)
+                                  "and r.rtype in %s and u.ucid = %s " % (tuple(user_type), ucid)
     find_users_by_vip_sql = "select count(*) from user as u where u.ucid = %s and u.vip >= %s " % (ucid, vip)
     try:
         is_exist = mysql_session.execute(find_users_by_user_type_sql).scalar()
