@@ -77,7 +77,7 @@ class UserSubController extends AuthController
             'last_login_at' => "",
         ];
     }
-
+/*
     public function SwitchAction(Request $request, Parameter $parameter) {
         $id = $parameter->tough('id');
         $pid = $parameter->tough('_appid');
@@ -90,4 +90,5 @@ class UserSubController extends AuthController
 
         return Event::onLoginAfter($this->user, $pid, $rid, $user_sub);
     }
+*/
 }

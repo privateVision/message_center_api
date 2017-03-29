@@ -17,6 +17,10 @@ trait LoginAction {
         $rid = $parameter->tough('_rid');
         
         $user = $this->getLoginUser($request, $parameter);
+        if($user->is_freeze) {
+            throw new ApiException(ApiException::Remind, '账号已被冻结，无法登陆');
+        }
+        
         $user_sub_id = $this->getDefaultUserSubId($user, $request, $parameter);
 
         $user_sub = null;
@@ -24,6 +28,10 @@ trait LoginAction {
             $user_sub = UserSub::tableSlice($user->ucid)->from_cache($user_sub_id);
             if(!$user_sub || $user_sub->ucid != $user->ucid || $user_sub->pid != $pid) {
                 throw new ApiException(ApiException::Remind, "角色不存在，无法登陆");
+            }
+            
+            if($user_sub->is_freeze) {
+                throw new ApiException(ApiException::Remind, '子账号已被冻结，无法登陆');
             }
         }
         
@@ -33,10 +41,12 @@ trait LoginAction {
             if($user_sub_service) {
                 $user_sub = UserSub::tableSlice($user_sub_service->src_ucid)->from_cache($user_sub_service->user_sub_id);
             }
+
             // 查找最近一次登陆的小号
             if(!$user_sub) {
                 $user_sub = UserSub::tableSlice($user->ucid)->where('ucid', $user->ucid)->where('pid', $pid)->where('is_freeze', false)->orderBy('priority', 'desc')->first();
             }
+
             // 用户没有可用的小号，创建
             if(!$user_sub) {
                 $user_sub = UserSub::tableSlice($user->ucid);
@@ -58,6 +68,8 @@ trait LoginAction {
         $user_sub->save();
 
         $session = new Session;
+        $session->pid = $pid;
+        $session->rid = $rid;
         $session->ucid = $user->ucid;
         $session->user_sub_id = $user_sub->id;
         $session->cp_uid = $user_sub->cp_uid;

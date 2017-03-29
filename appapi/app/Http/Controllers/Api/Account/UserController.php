@@ -9,7 +9,7 @@ use App\Model\User;
 
 class UserController extends Controller {
 
-    use LoginAction;
+    use LoginAction, RegisterAction;
 
     public function getLoginUser(Request $request, Parameter $parameter) {
         $username = $parameter->tough('username');
@@ -21,6 +21,33 @@ class UserController extends Controller {
             throw new ApiException(ApiException::Remind, "登录失败，用户名或者密码不正确");
         }
 
+        return $user;
+    }
+    
+    public function getRegisterUser(Request $request, Parameter $parameter){
+        $username = $parameter->tough('username', 'username');
+        $password = $parameter->tough('password');
+
+        $isRegister  = User::where("mobile", $username)->orWhere('uid', $username)->count();
+
+        if($isRegister) {
+            throw new  ApiException(ApiException::Remind, "用户已注册，请直接登录");
+        }
+
+        $user = new User;
+        $user->uid = $username;
+        $user->email = $username . "@anfan.com";
+        $user->nickname = $username;
+        $user->password = $password;
+        $user->regip = $request->ip();
+        $user->rid = $parameter->tough('_rid');
+        $user->pid = $parameter->tough('_appid');
+        $user->regdate = date('Ymd');
+        $user->date = date('Ymd');
+        $user->save();
+
+        user_log($user, $this->procedure, 'register', '【注册】通过“用户名”注册，用户名(%s), 密码[%s]', $username, $user->password);
+        
         return $user;
     }
     
@@ -67,31 +94,6 @@ class UserController extends Controller {
         user_log($user, $this->procedure, 'reset_password', '【重置密码】通过手机验证码重置，手机号码{%s}，旧密码[%s]，新密码[%s]', $mobile, $old_password, $user->password);
 
         return ['result' => true];
-    }
-    
-    public function RegisterAction(Request $request, Parameter $parameter){
-        $username = $parameter->tough('username', 'username');
-        $password = $parameter->tough('password');
-
-        $isRegister  = User::where("mobile", $username)->orWhere('uid', $username)->count();
-
-        if($isRegister) {
-            throw new  ApiException(ApiException::Remind, "用户已注册，请直接登录");
-        }
-
-        $user = new User;
-        $user->uid = $username;
-        $user->email = $username . "@anfan.com";
-        $user->nickname = $username;
-        $user->password = $password;
-        $user->regip = $request->ip();
-        $user->rid = $parameter->tough('_rid');
-        $user->pid = $parameter->tough('_appid');
-        $user->regdate = date('Ymd');
-        $user->date = date('Ymd');
-        $user->save();
-
-        user_log($user, $this->procedure, 'register', '【注册】通过“用户名”注册，用户名(%s), 密码[%s]', $username, $user->password);
     }
 
     public function UsernameAction(Request $request, Parameter $parameter) {

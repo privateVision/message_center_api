@@ -31,7 +31,7 @@ class User extends Model
     }
 
     public function getIsFreezeAttribute() {
-        return $this->attributes['is_freeze'] == 1;
+        return @$this->attributes['is_freeze'] == 1;
     }
 
     public function getVipAttribute() {
