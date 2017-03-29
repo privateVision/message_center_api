@@ -316,6 +316,7 @@ def system_notices_persist(data_json=None):
         users_message.open_type = data_json['open_type']
         users_message.img = data_json['img']
         users_message.url = data_json['url']
+        users_message.is_time = 1
         users_message.users = None
         if 'specify_user' in data_json and data_json['specify_user'] is not None:
             users_message.users = data_json['specify_user'].split(",")
@@ -326,8 +327,10 @@ def system_notices_persist(data_json=None):
         users_message.vip = None
         if 'vip_user' in data_json and data_json['vip_user'] is not None:
             users_message.vip = data_json['vip_user'].split(",")
-        users_message.is_time = 1
-        users_message.expireAt = datetime.datetime.utcfromtimestamp(users_message.end_time)
+        if 'is_time' in data_json:
+            users_message.is_time = int(data_json['is_time'])
+            if users_message.is_time == 1:
+                users_message.expireAt = datetime.datetime.utcfromtimestamp(users_message.end_time)
         try:
             users_message.save()
         except Exception, err:
@@ -358,6 +361,7 @@ def system_notices_update(data_json=None):
         users_message.open_type = data_json['open_type']
         users_message.img = data_json['img']
         users_message.url = data_json['url']
+        users_message.is_time = 1
         users_message.users = None
         if 'specify_user' in data_json and data_json['specify_user'] is not None:
             users_message.users = data_json['specify_user'].split(",")
@@ -368,8 +372,10 @@ def system_notices_update(data_json=None):
         users_message.vip = None
         if 'vip_user' in data_json and data_json['vip_user'] is not None:
             users_message.vip = data_json['vip_user'].split(",")
-        users_message.is_time = 1
-        users_message.expireAt = datetime.datetime.utcfromtimestamp(users_message.end_time)
+        if 'is_time' in data_json:
+            users_message.is_time = int(data_json['is_time'])
+            if users_message.is_time == 1:
+                users_message.expireAt = datetime.datetime.utcfromtimestamp(users_message.end_time)
         try:
             users_message.save()
             UserMessage.objects(Q(type=users_message.type) & Q(mysql_id=users_message.mysql_id)).update(
@@ -391,6 +397,7 @@ def system_broadcast_persist(data_json=None):
         users_message.start_time = data_json['stime']
         users_message.end_time = int(data_json['stime']) + 30
         users_message.close_time = data_json['close_time']
+        users_message.is_time = 1
         users_message.users = None
         if 'specify_user' in data_json and data_json['specify_user'] is not None:
             users_message.users = data_json['specify_user'].split(",")
@@ -401,8 +408,10 @@ def system_broadcast_persist(data_json=None):
         users_message.vip = None
         if 'vip_user' in data_json and data_json['vip_user'] is not None:
             users_message.vip = data_json['vip_user'].split(",")
-        users_message.is_time = 1
-        users_message.expireAt = datetime.datetime.utcfromtimestamp(users_message.end_time)
+        if 'is_time' in data_json:
+            users_message.is_time = int(data_json['is_time'])
+            if users_message.is_time == 1:
+                users_message.expireAt = datetime.datetime.utcfromtimestamp(users_message.end_time)
         try:
             users_message.save()
         except Exception, err:
@@ -422,6 +431,7 @@ def system_broadcast_update(data_json=None, update_user_message=True):
         users_message.start_time = data_json['stime']
         users_message.end_time = int(data_json['stime']) + 30
         users_message.close_time = data_json['close_time']
+        users_message.is_time = 1
         users_message.users = None
         if 'specify_user' in data_json and data_json['specify_user'] is not None:
             users_message.users = data_json['specify_user'].split(",")
@@ -432,8 +442,10 @@ def system_broadcast_update(data_json=None, update_user_message=True):
         users_message.vip = None
         if 'vip_user' in data_json and data_json['vip_user'] is not None:
             users_message.vip = data_json['vip_user'].split(",")
-        users_message.is_time = 1
-        users_message.expireAt = datetime.datetime.utcfromtimestamp(users_message.end_time)
+        if 'is_time' in data_json:
+            users_message.is_time = int(data_json['is_time'])
+            if users_message.is_time == 1:
+                users_message.expireAt = datetime.datetime.utcfromtimestamp(users_message.end_time)
         try:
             users_message.save()
             UserMessage.objects(Q(type=users_message.type) & Q(mysql_id=users_message.mysql_id)).update(
@@ -462,6 +474,7 @@ def system_message_persist(data_json=None, update_user_message=True):
         users_message.content = data_json['content']
         users_message.img = data_json['img']
         users_message.url = data_json['url']
+        users_message.is_time = 1
         if data_json['send_time'] == 0:
             users_message.start_time = int(time.time())
         else:
@@ -477,8 +490,10 @@ def system_message_persist(data_json=None, update_user_message=True):
         users_message.vip = None
         if 'vip_user' in data_json and data_json['vip_user'] is not None:
             users_message.vip = data_json['vip_user'].split(",")
-        users_message.is_time = 1
-        users_message.expireAt = datetime.datetime.utcfromtimestamp(users_message.end_time)
+        if 'is_time' in data_json:
+            users_message.is_time = int(data_json['is_time'])
+            if users_message.is_time == 1:
+                users_message.expireAt = datetime.datetime.utcfromtimestamp(users_message.end_time)
         try:
             users_message.save()
         except Exception, err:
@@ -496,7 +511,6 @@ def system_coupon_persist(data_json=None):
         users_message.mysql_id = data_json['id']
         users_message.type = 'coupon'
         users_message.name = data_json['name']
-        users_message.is_time = data_json['is_time']
         users_message.start_time = data_json['start_time']
         users_message.end_time = data_json['end_time']
         users_message.is_first = data_json['is_first']
@@ -505,6 +519,7 @@ def system_coupon_persist(data_json=None):
         users_message.full = data_json['full']
         users_message.money = data_json['money']
         users_message.method = data_json['method']
+        users_message.is_time = 1
         users_message.users = None
         if 'specify_user' in data_json and data_json['specify_user'] is not None:
             users_message.users = data_json['specify_user'].split(",")
@@ -515,7 +530,10 @@ def system_coupon_persist(data_json=None):
         users_message.vip = None
         if 'vip_user' in data_json and data_json['vip_user'] is not None:
             users_message.vip = data_json['vip_user'].split(",")
-        users_message.expireAt = datetime.datetime.utcfromtimestamp(users_message.end_time)
+        if 'is_time' in data_json:
+            users_message.is_time = int(data_json['is_time'])
+            if users_message.is_time == 1:
+                users_message.expireAt = datetime.datetime.utcfromtimestamp(users_message.end_time)
         try:
             users_message.save()
         except Exception, err:
@@ -540,6 +558,7 @@ def system_coupon_update(data_json=None):
         users_message.full = data_json['full']
         users_message.money = data_json['money']
         users_message.method = data_json['method']
+        users_message.is_time = 1
         users_message.users = None
         if 'specify_user' in data_json and data_json['specify_user'] is not None:
             users_message.users = data_json['specify_user'].split(",")
@@ -550,7 +569,10 @@ def system_coupon_update(data_json=None):
         users_message.vip = None
         if 'vip_user' in data_json and data_json['vip_user'] is not None:
             users_message.vip = data_json['vip_user'].split(",")
-        users_message.expireAt = datetime.datetime.utcfromtimestamp(users_message.end_time)
+        if 'is_time' in data_json:
+            users_message.is_time = int(data_json['is_time'])
+            if users_message.is_time == 1:
+                users_message.expireAt = datetime.datetime.utcfromtimestamp(users_message.end_time)
         try:
             users_message.save()
             UserMessage.objects(Q(type=users_message.type) & Q(mysql_id=users_message.mysql_id)).update(
@@ -579,9 +601,12 @@ def system_rebate_persist(data_json=None, update_user_message=True):
         if 'users_type' in data_json and data_json['users_type'] is not None:
             users_message.rtype = data_json['users_type'].split(",")
         users_message.vip = None
-        users_message.expire_at = users_message.end_time
         users_message.app = None
         users_message.is_time = 1
+        if 'is_time' in data_json:
+            users_message.is_time = int(data_json['is_time'])
+            if users_message.is_time == 1:
+                users_message.expireAt = datetime.datetime.utcfromtimestamp(users_message.end_time)
         try:
             users_message.save()
         except Exception, err:
