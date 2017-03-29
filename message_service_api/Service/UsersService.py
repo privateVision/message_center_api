@@ -76,7 +76,7 @@ def get_user_type_users(user_type):
     if user_type is not None:
         from run import mysql_session
         for type in user_type:
-            find_users_by_user_type_sql = "select distinct(ucid) from ucusers as u, retailers as r where u.rid = r.rid " \
+            find_users_by_user_type_sql = "select distinct(ucid) from user as u, retailers as r where u.rid = r.rid " \
                                           "and r.rtype = %s" % (type,)
             try:
                 origin_list = mysql_session.execute(find_users_by_user_type_sql).fetchall()
