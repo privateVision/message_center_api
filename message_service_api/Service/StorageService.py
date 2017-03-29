@@ -57,11 +57,11 @@ def send_message_to_game_area_and_user_type_and_vip_users(game, users_type, vip_
                 if game_info.has_key('zone_id_list'):
                     for zone in game_info['zone_id_list']:
                         find_user_count_in_game_area_sql = "select count(distinct(ucid)) from roleDatas where vid = %s " \
-                                                      "and zoneName = '%s'" \
-                                                      % (game_info['apk_id'], zone)
+                                                           "and zoneName = '%s'" \
+                                                           % (game_info['apk_id'], zone)
                         try:
                             total_count = mysql_session.execute(find_user_count_in_game_area_sql).scalar()
-                            total_page = int(total_count/100)
+                            total_page = int(total_count / 100)
                             for i in range(total_page):
                                 start_index = i * 100
                                 end_index = start_index + 100
@@ -73,7 +73,7 @@ def send_message_to_game_area_and_user_type_and_vip_users(game, users_type, vip_
                                     ucid = item['ucid']
                                     is_right = check_user_type_and_vip(ucid, users_type, vip_user[0])
                                     if is_right:
-                                        add_user_messsage(ucid, type, msg_id, is_time, start_time, end_time)
+                                        add_user_messsage(ucid, type, msg_id, is_time, start_time, end_time, game)
                         except Exception, err:
                             service_logger.error(err.message)
                             mysql_session.rollback()
@@ -96,7 +96,7 @@ def send_message_to_game_area_and_user_type_and_vip_users(game, users_type, vip_
                                 ucid = item['ucid']
                                 is_right = check_user_type_and_vip(ucid, users_type, vip_user[0])
                                 if is_right:
-                                    add_user_messsage(ucid, type, msg_id, is_time, start_time, end_time)
+                                    add_user_messsage(ucid, type, msg_id, is_time, start_time, end_time, game)
                     except Exception, err:
                         service_logger.error(err.message)
                         mysql_session.rollback()
@@ -118,7 +118,7 @@ def send_message_to_game_area_and_user_type_and_vip_users(game, users_type, vip_
                         ucid = item['ucid']
                         is_right = check_user_type_and_vip(ucid, users_type, vip_user[0])
                         if is_right:
-                            add_user_messsage(ucid, type, msg_id, is_time, start_time, end_time)
+                            add_user_messsage(ucid, type, msg_id, is_time, start_time, end_time, game)
             except Exception, err:
                 service_logger.error(err.message)
                 mysql_session.rollback()
@@ -126,7 +126,7 @@ def send_message_to_game_area_and_user_type_and_vip_users(game, users_type, vip_
                 mysql_session.close()
 
 
-#  指定的用户就一起发送算了
+# 指定的用户就一起发送算了
 def send_message_to_spcify_users(specify_user, game, type, msg_id, is_time, start_time, end_time):
     specify_user_list = get_ucid_list_by_user_uid_name_list(specify_user)
     if game is not None:
@@ -138,34 +138,52 @@ def send_message_to_spcify_users(specify_user, game, type, msg_id, is_time, star
                             for user in specify_user_list:
                                 is_right = check_user_is_in_game(user, game_info['apk_id'], zone)
                                 if is_right:
-                                    add_user_messsage(user, type, msg_id, is_time, start_time, end_time)
+                                    add_user_messsage(user, type, msg_id, is_time, start_time, end_time, game)
                         except Exception, err:
                             send_notify("添加消息到每个用户的消息列表发生异常：%s" % (err.message,))
                             service_logger.error("添加消息到每个用户的消息列表发生异常：%s" % (err.message,))
         else:
             try:
                 for user in specify_user_list:
-                    add_user_messsage(user, type, msg_id, is_time, start_time, end_time)
+                    add_user_messsage(user, type, msg_id, is_time, start_time, end_time, game)
             except Exception, err:
                 send_notify("添加消息到每个用户的消息列表发生异常：%s" % (err.message,))
                 service_logger.error("添加消息到每个用户的消息列表发生异常：%s" % (err.message,))
 
 
-def add_user_messsage(ucid, type, msg_id, is_time, start_time, end_time):
-    user_message = UserMessage()
-    user_message.id = "%s%s%s" % (ucid, type, msg_id)
-    user_message.ucid = ucid
-    user_message.type = type
-    user_message.mysql_id = msg_id
-    user_message.start_time = start_time
-    user_message.end_time = end_time
-    user_message.is_time = is_time
-    user_message.expireAt = datetime.datetime.utcfromtimestamp(user_message.end_time)
-    user_message.save()
-    add_mark_to_user_redis(ucid, type)
+def add_user_messsage(ucid, type, msg_id, is_time, start_time, end_time, game):
+    service_logger.info("添加用户消息：%s-%s-%s" % (ucid, type, msg_id))
+    if type != 'coupon':
+        user_message = UserMessage()
+        user_message.id = "%s%s%s" % (ucid, type, msg_id)
+        user_message.ucid = ucid
+        user_message.type = type
+        user_message.mysql_id = msg_id
+        user_message.start_time = start_time
+        user_message.end_time = end_time
+        user_message.is_time = is_time
+        user_message.expireAt = datetime.datetime.utcfromtimestamp(user_message.end_time)
+        user_message.save()
+        add_mark_to_user_redis(ucid, type)
+    else:
+        from run import mysql_session
+        pid = 0
+        if game[0]['apk_id'] != 'all':
+            pid = game[0]['apk_id']
+        try:
+            insert_user_coupon_sql = "insert into zy_coupon_log values(%s, %s, %s, %s, %s, %s)" \
+                                     % (ucid, msg_id, pid, is_time, start_time, end_time)
+            mysql_session.execute(insert_user_coupon_sql)
+            mysql_session.commit()
+        except Exception, err:
+            send_notify("添加卡券到每个用户的mysql列表发生异常：%s" % (err.message,))
+            service_logger.error("添加卡券到每个用户的mysql列表发生异常：%s" % (err.message,))
+            mysql_session.rollback()
+        finally:
+            mysql_session.close()
 
 
-#  检查用户的类型和vip是否符合
+# 检查用户的类型和vip是否符合
 def check_user_type_and_vip(ucid=None, user_type=None, vip=None):
     from run import mysql_session
     user_type_str = ",".join(user_type)
@@ -187,11 +205,11 @@ def check_user_type_and_vip(ucid=None, user_type=None, vip=None):
         mysql_session.close()
 
 
-#  检查用户是否在某个游戏下
+# 检查用户是否在某个游戏下
 def check_user_is_in_game(ucid=None, game_id=None, zone=None):
     from run import mysql_session
     if zone is None:
-        find_users_by_game_sql = "select count(*) from roleDatas as u where u.ucid = %s and u.vid = %s "\
+        find_users_by_game_sql = "select count(*) from roleDatas as u where u.ucid = %s and u.vid = %s " \
                                  % (ucid, game_id)
     else:
         find_users_by_game_sql = "select count(*) from roleDatas as u where u.ucid = %s and u.vid = %s " \
@@ -208,7 +226,7 @@ def check_user_is_in_game(ucid=None, game_id=None, zone=None):
         mysql_session.close()
 
 
-#  根据用户名获取用户ucid
+# 根据用户名获取用户ucid
 def get_ucid_list_by_user_uid_name_list(specify_user):
     ucid_list = []
     from run import mysql_session
@@ -236,37 +254,45 @@ def add_mark_to_user_redis(ucid, message_type):
 def add_to_every_related_users_message_list(users_message):
     if 'distribute' not in users_message:
         users_message.distribute = None
-    if users_message.type != 'coupon':
-        add_user_message_thread = threading.Thread(target=add_message_to_user_message_list,
-                                                   args=(users_message.app, users_message.rtype,
-                                                         users_message.vip, users_message.users,
-                                                         users_message.type, users_message.mysql_id,
-                                                         users_message.start_time, users_message.end_time,
-                                                         users_message.is_time))
-        add_user_message_thread.setDaemon(True)
-        add_user_message_thread.start()
-    else:
-        #  卡券的数据存放到mysql
-        from run import mysql_session
-        pid = 0
-        if users_message.app[0]['apk_id'] != 'all':
-            pid = users_message.app[0]['apk_id']
-        users_list = get_game_and_area_and_user_type_and_vip_users(users_message.app, users_message.rtype, users_message.vip)
-        specify_user_list = get_ucid_list_by_user_uid_name_list(users_message.users)
-        users_list.extend(specify_user_list)
-        try:
-            for user in users_list:
-                insert_user_coupon_sql = "insert into zy_coupon_log values(%s, %s, %s, %s, %s, %s)" \
-                                         % (user, users_message.mysql_id, pid, users_message.is_time,
-                                            users_message.start_time, users_message.end_time)
-                mysql_session.execute(insert_user_coupon_sql)
-            mysql_session.commit()
-        except Exception, err:
-            send_notify("添加卡券到每个用户的mysql列表发生异常：%s" % (err.message,))
-            service_logger.error("添加卡券到每个用户的mysql列表发生异常：%s" % (err.message,))
-            mysql_session.rollback()
-        finally:
-            mysql_session.close()
+    add_user_message_thread = threading.Thread(target=add_message_to_user_message_list,
+                                               args=(users_message.app, users_message.rtype,
+                                                     users_message.vip, users_message.users,
+                                                     users_message.type, users_message.mysql_id,
+                                                     users_message.start_time, users_message.end_time,
+                                                     users_message.is_time))
+    add_user_message_thread.setDaemon(True)
+    add_user_message_thread.start()
+    # if users_message.type != 'coupon':
+    #     add_user_message_thread = threading.Thread(target=add_message_to_user_message_list,
+    #                                                args=(users_message.app, users_message.rtype,
+    #                                                      users_message.vip, users_message.users,
+    #                                                      users_message.type, users_message.mysql_id,
+    #                                                      users_message.start_time, users_message.end_time,
+    #                                                      users_message.is_time))
+    #     add_user_message_thread.setDaemon(True)
+    #     add_user_message_thread.start()
+    # else:
+    #     #  卡券的数据存放到mysql
+    #     from run import mysql_session
+    #     pid = 0
+    #     if users_message.app[0]['apk_id'] != 'all':
+    #         pid = users_message.app[0]['apk_id']
+    #     users_list = get_game_and_area_and_user_type_and_vip_users(users_message.app, users_message.rtype, users_message.vip)
+    #     specify_user_list = get_ucid_list_by_user_uid_name_list(users_message.users)
+    #     users_list.extend(specify_user_list)
+    #     try:
+    #         for user in users_list:
+    #             insert_user_coupon_sql = "insert into zy_coupon_log values(%s, %s, %s, %s, %s, %s)" \
+    #                                      % (user, users_message.mysql_id, pid, users_message.is_time,
+    #                                         users_message.start_time, users_message.end_time)
+    #             mysql_session.execute(insert_user_coupon_sql)
+    #         mysql_session.commit()
+    #     except Exception, err:
+    #         send_notify("添加卡券到每个用户的mysql列表发生异常：%s" % (err.message,))
+    #         service_logger.error("添加卡券到每个用户的mysql列表发生异常：%s" % (err.message,))
+    #         mysql_session.rollback()
+    #     finally:
+    #         mysql_session.close()
 
 
 # 添加公告信息，并完成用户分发
