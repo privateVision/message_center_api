@@ -43,7 +43,7 @@ def add_message_to_user_message_list(game, users_type, vip_user, specify_user, t
                                      start_time, end_time, is_time):
     send_message_to_game_area_and_user_type_and_vip_users(game, users_type, vip_user, type, msg_id,
                                                           is_time, start_time, end_time)
-    send_message_to_spcify_users(game, specify_user, type, msg_id, is_time, start_time, end_time)
+    send_message_to_spcify_users(specify_user, game, type, msg_id, is_time, start_time, end_time)
 
 
 #  分批向指定游戏区服的各种用户类型及等级发送消息
@@ -168,8 +168,9 @@ def add_user_messsage(ucid, type, msg_id, is_time, start_time, end_time):
 #  检查用户的类型和vip是否符合
 def check_user_type_and_vip(ucid=None, user_type=None, vip=None):
     from run import mysql_session
+    user_type_str = ",".join(user_type)
     find_users_by_user_type_sql = "select count(*) from ucusers as u, retailers as r where u.rid = r.rid " \
-                                  "and r.rtype in %s and u.ucid = %s " % (tuple(user_type), ucid)
+                                  "and r.rtype in (%s) and u.ucid = %s " % (user_type_str, ucid)
     find_users_by_vip_sql = "select count(*) from user as u where u.ucid = %s and u.vip >= %s " % (ucid, vip)
     try:
         is_exist = mysql_session.execute(find_users_by_user_type_sql).scalar()
