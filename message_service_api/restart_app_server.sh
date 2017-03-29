@@ -15,7 +15,6 @@ if [ 1 == $count ];then
         echo "stop main process failed!"
         exit
     fi
-
     echo 'start process ...'
     echo "当前启动地址： $1"
     nohup uwsgi --socket $1 --wsgi-file run.py --callable app --enable-threads &
@@ -24,13 +23,18 @@ if [ 1 == $count ];then
     else
         echo "start process failed"
     fi
-    nohup python consume.py &
-    if [ 0 == $? ];then
-        echo "kafka consume process start success!"
+    count=$(ps -ef|grep consume|grep -v grep|wc -l)
+    if [ 1 == $count ];then
+        ps -ef|grep consume|grep -v grep|awk '{print $2}'|xargs kill -9
+        nohup python consume.py &
+        if [ 0 == $? ];then
+            echo "kafka consume process start success!"
+        else
+            echo "kafka consume process start failed"
+        fi
     else
-        echo "kafka consume process start failed"
+        echo 'kafka consume not start'
     fi
-    echo '........'
 else
     echo "当前启动地址： $1"
     ps -ef|grep consume|grep -v grep|awk '{print $2}'|xargs kill -9
