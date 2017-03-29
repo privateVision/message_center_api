@@ -17,17 +17,6 @@ class UserController extends AuthController
         return ;
     }
 
-    public function LogoutAction(Request $request, Parameter $parameter) {
-        $procedures_extend = ProceduresExtend::from_cache($this->procedure->pid);
-        Event::onLogoutAfter($this->user);
-        return [
-            'img' => $procedures_extend->logout_img,
-            'type' => $procedures_extend->logout_type,
-            'redirect' => $procedures_extend->logout_redirect,
-            'inside' => $procedures_extend->logout_inside,
-        ];
-    }
-
     public function RechargeAction(Request $request, Parameter $parameter) {
         $order = $this->user->orders()->where('vid', env('APP_SELF_ID'))->where('status', Orders::Status_Success)->where('hide', 0)->get();
 

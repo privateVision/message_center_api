@@ -11,6 +11,10 @@ class Parameter
 		$this->_data = $data;
 	}
 
+	public function set($key, $value) {
+		$this->_data[$key] = $value;
+	}
+
 	public function get($key, $default = null) {
 		$data = @$this->_data[$key];
 		if($data === null) {
@@ -22,7 +26,7 @@ class Parameter
 
 	public function tough($key, $type_fun_regex = null) {
 		$data = @$this->_data[$key];
-		if($data === null) {
+		if($data === null || $data === '') {
 			throw new Exception ('param is missing:"'.$key.'"', 0);
 		}
 

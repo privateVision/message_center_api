@@ -80,6 +80,16 @@ class AppController extends Controller
         ];
     }
 
+    public function LogoutAction(Request $request, Parameter $parameter) {
+        $procedures_extend = ProceduresExtend::from_cache($this->procedure->pid);
+        return [
+            'img' => $procedures_extend->logout_img,
+            'type' => $procedures_extend->logout_type,
+            'redirect' => $procedures_extend->logout_redirect,
+            'inside' => $procedures_extend->logout_inside,
+        ];
+    }
+
     public function VerifySMSAction(Request $request, Parameter $parameter) {
         $mobile = $parameter->tough('mobile', 'mobile');
         $code = $parameter->tough('code', 'smscode');
