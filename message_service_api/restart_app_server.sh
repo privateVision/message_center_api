@@ -31,7 +31,6 @@ if [ 1 == $count ];then
     else
         echo "start process failed"
     fi
-    wait
     (nohup python consume) &
     if [ 0 == $? ];then
         echo "kafka consume process start success!"
@@ -47,7 +46,6 @@ else
     else
         echo "start process failed"
     fi
-    wait
     (nohup python consume) &
     if [ 0 == $? ];then
         echo "kafka consume process start success!"
