@@ -171,7 +171,8 @@ def add_user_messsage(ucid, type, msg_id, is_time, start_time, end_time, game):
         if game[0]['apk_id'] != 'all':
             pid = game[0]['apk_id']
         try:
-            insert_user_coupon_sql = "insert into zy_coupon_log values(%s, %s, %s, %s, %s, %s)" \
+            insert_user_coupon_sql = "insert into zy_coupon_log(ucid, coupon_id, pid, is_time, start_time, end_time)" \
+                                     " values(%s, %s, %s, %s, %s, %s)" \
                                      % (ucid, msg_id, pid, is_time, start_time, end_time)
             mysql_session.execute(insert_user_coupon_sql)
             mysql_session.commit()
