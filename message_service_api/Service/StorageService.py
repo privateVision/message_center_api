@@ -81,8 +81,7 @@ def send_message_to_game_area_and_user_type_and_vip_users(game, users_type, vip_
                             mysql_session.close()
                 else:  # 没传区服信息，那就所有区服咯
                     find_user_count_in_game_area_sql = "select count(distinct(ucid)) from roleDatas where vid = %s " \
-                                                       "and zoneName = '%s'" \
-                                                       % (game_info['apk_id'], zone)
+                                                       % (game_info['apk_id'])
                     try:
                         total_count = mysql_session.execute(find_user_count_in_game_area_sql).scalar()
                         total_page = int(total_count / 100)

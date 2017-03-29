@@ -5,6 +5,7 @@ from mongoengine import Q
 
 from MiddleWare import service_logger
 from MongoModel.MessageRevocationModel import MessageRevocation
+from Service.NotifyEmail import send_notify
 from Service.StorageService import system_notices_persist, system_broadcast_persist, system_message_persist, \
     system_coupon_persist, system_rebate_persist
 
