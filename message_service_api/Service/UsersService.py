@@ -343,7 +343,7 @@ def get_user_coupons_by_game(ucid, appid, start_index, end_index):
                 'desc': coupon_info['info'],
                 'fee': coupon_info['money'],
                 'method': coupon_info['method'],
-                'use_condition': "满%s可用" % (coupon_info['full'],),
+                'user_condition': "满%s可用" % (coupon_info['full'],),
                 'lock_app': '',
                 'supportDivide': 0
             }
