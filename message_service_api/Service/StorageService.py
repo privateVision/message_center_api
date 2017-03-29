@@ -61,7 +61,7 @@ def send_message_to_game_area_and_user_type_and_vip_users(game, users_type, vip_
                                                            % (game_info['apk_id'], zone)
                         try:
                             total_count = mysql_session.execute(find_user_count_in_game_area_sql).scalar()
-                            total_page = int(total_count / 100)
+                            total_page = int(total_count / 100) + 1
                             for i in range(total_page):
                                 start_index = i * 100
                                 end_index = start_index + 100
@@ -84,7 +84,7 @@ def send_message_to_game_area_and_user_type_and_vip_users(game, users_type, vip_
                                                        % (game_info['apk_id'])
                     try:
                         total_count = mysql_session.execute(find_user_count_in_game_area_sql).scalar()
-                        total_page = int(total_count / 100)
+                        total_page = int(total_count / 100) + 1
                         for i in range(total_page):
                             start_index = i * 100
                             end_index = start_index + 100
@@ -106,7 +106,7 @@ def send_message_to_game_area_and_user_type_and_vip_users(game, users_type, vip_
 
             try:
                 total_count = mysql_session.execute(find_user_count_in_game_area_sql).scalar()
-                total_page = int(total_count / 100)
+                total_page = int(total_count / 100) + 1
                 for i in range(total_page):
                     start_index = i * 100
                     end_index = start_index + 100
