@@ -7,13 +7,5 @@ use App\Parameter;
 use App\Http\Controllers\Api\Controller as BaseController;
 
 abstract class Controller extends BaseController {
-    
-    public function onLogin(User $user, UserSub $user_sub) {
-        
-    }
-    
-    public function onResetPassword() {
 
-    }
-    
 }

@@ -11,6 +11,7 @@ class AppController extends Controller
     public function InitializeAction(Request $request, Parameter $parameter) {
         $pid = $parameter->tough('_appid');
         $rid = $parameter->tough('_rid');
+        $device_id = $parameter->tough('_device_id');
         $app_version = $parameter->tough('app_version');
 
         // config
@@ -35,7 +36,7 @@ class AppController extends Controller
             );
         }
 
-        $oauth_params = sprintf('pid=%d&rid=%d', $pid, $rid);
+        $oauth_params = sprintf('appid=%d&rid=%d&device_id=%s', $pid, $rid, $device_id);
         $oauth_qq = env('oauth_url_qq');
         $oauth_qq .= (strpos($oauth_qq, '?') === false ? '?' : '&') . $oauth_params;
         $oauth_weixin = env('oauth_url_weixin');
