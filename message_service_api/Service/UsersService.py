@@ -76,7 +76,7 @@ def get_user_type_users(user_type):
     if user_type is not None:
         from run import mysql_session
         for type in user_type:
-            find_users_by_user_type_sql = "select distinct(ucid) from ucusers as u, retailers as r where u.rid = r.rid " \
+            find_users_by_user_type_sql = "select distinct(ucid) from user as u, retailers as r where u.rid = r.rid " \
                                           "and r.rtype = %s" % (type,)
             try:
                 origin_list = mysql_session.execute(find_users_by_user_type_sql).fetchall()
@@ -323,7 +323,7 @@ def get_stored_value_card_list(ucid, start_index, end_index):
 def get_user_coupons_by_game(ucid, appid, start_index, end_index):
     from run import mysql_session
     now = int(time.time())
-    get_user_coupon_sql = "select coupon_id from zy_coupon_log where ucid=%s and pid=%s and " \
+    get_user_coupon_sql = "select coupon_id from zy_coupon_log where is_used = 0 and ucid=%s and pid=%s and " \
                           "((is_time = 0) or ((is_time = 1) " \
                           "and start_time <= %s " \
                           " and end_time >= %s)) order by id desc limit %s, %s" \
@@ -343,7 +343,7 @@ def get_user_coupons_by_game(ucid, appid, start_index, end_index):
                 'desc': coupon_info['info'],
                 'fee': coupon_info['money'],
                 'method': coupon_info['method'],
-                'use_condition': "满%s可用" % (coupon_info['full'],),
+                'user_condition': "满%s可用" % (coupon_info['full'],),
                 'lock_app': '',
                 'supportDivide': 0
             }
@@ -400,13 +400,6 @@ def sdk_api_request_check(func):
 def cms_api_request_check(func):
     @wraps(func)
     def wraper(*args, **kwargs):
-        # 数据库连接状态检测
-        from run import mysql_session
-        try:
-            mysql_session.execute('select count(*) from admins limit 1').scalar()
-        except Exception, err:
-            mysql_session.rollback()
-            service_logger.error(err.message)
         from Utils.EncryptUtils import generate_checksum
         check_result, check_exception = generate_checksum(request)
         if not check_result:
