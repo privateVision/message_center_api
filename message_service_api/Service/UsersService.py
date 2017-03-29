@@ -393,6 +393,13 @@ def sdk_api_request_check(func):
 def cms_api_request_check(func):
     @wraps(func)
     def wraper(*args, **kwargs):
+        # 数据库连接状态检测
+        from run import mysql_session
+        try:
+            mysql_session.execute('select count(*) from admins limit 1').scalar()
+        except Exception, err:
+            mysql_session.rollback()
+            service_logger.error(err.message)
         from Utils.EncryptUtils import generate_checksum
         check_result, check_exception = generate_checksum(request)
         if not check_result:
