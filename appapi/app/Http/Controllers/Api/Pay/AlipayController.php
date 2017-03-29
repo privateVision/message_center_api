@@ -8,7 +8,7 @@ use App\Model\Orders;
 
 class AlipayController extends Controller {
 
-    use Pay;
+    use RequestAction;
 
     const PayType = '-1';
     const PayTypeText = '支付宝';

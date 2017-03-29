@@ -75,7 +75,7 @@ return [
 
     'apps' => [
         1000 => (object) [
-            'id' => 1001,
+            'id' => 1000,
             'appkey' => '7dbdac062e6bb98d809f988f68b42e57',
             'sms_receiver' => '10690204000237',
             'sms_apikey' => '0dbc5a50c034a8396b50f3a80609497d',

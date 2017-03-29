@@ -8,7 +8,7 @@ use App\Model\Orders;
 
 class NowpayWechatController extends Controller {
 
-    use Pay;
+    use RequestAction;
 
     const PayType = '-5';
     const PayTypeText = '微信';

@@ -10,6 +10,7 @@ class AppController extends Controller
 {
     public function InitializeAction(Request $request, Parameter $parameter) {
         $pid = $parameter->tough('_appid');
+        $rid = $parameter->tough('_rid');
         $app_version = $parameter->tough('app_version');
 
         // config
@@ -34,17 +35,25 @@ class AppController extends Controller
             );
         }
 
+        $oauth_params = sprintf('pid=%d&rid=%d', $pid, $rid);
+        $oauth_qq = env('oauth_url_qq');
+        $oauth_qq .= (strpos($oauth_qq, '?') === false ? '?' : '&') . $oauth_params;
+        $oauth_weixin = env('oauth_url_weixin');
+        $oauth_weixin .= (strpos($oauth_weixin, '?') === false ? '?' : '&') . $oauth_params;
+        $oauth_weibo = env('oauth_url_weibo');
+        $oauth_weibo .= (strpos($oauth_weibo, '?') === false ? '?' : '&') . $oauth_params;
+
         return [
             'allow_sub_num' => $config->allow_num,
             'oauth_login' => [
                 'qq' => [
-                    'url' => env('oauth_url_qq'),
+                    'url' => $oauth_qq,
                 ],
                 'weixin' => [
-                    'url' => env('oauth_url_weixin'),
+                    'url' => $oauth_weixin,
                 ],
                 'weibo' => [
-                    'url' => env('oauth_url_weibo'),
+                    'url' => $oauth_weibo,
                 ]
             ],
             'protocol' => [
@@ -71,6 +80,16 @@ class AppController extends Controller
         ];
     }
 
+    public function LogoutAction(Request $request, Parameter $parameter) {
+        $procedures_extend = ProceduresExtend::from_cache($this->procedure->pid);
+        return [
+            'img' => $procedures_extend->logout_img,
+            'type' => $procedures_extend->logout_type,
+            'redirect' => $procedures_extend->logout_redirect,
+            'inside' => $procedures_extend->logout_inside,
+        ];
+    }
+
     public function VerifySMSAction(Request $request, Parameter $parameter) {
         $mobile = $parameter->tough('mobile', 'mobile');
         $code = $parameter->tough('code', 'smscode');
@@ -84,9 +103,5 @@ class AppController extends Controller
 
     public function UuidAction(Request $request, Parameter $parameter) {
         return ['uuid' => uuid()];
-    }
-
-    public function UseProtocolAction(Request $request, Parameter $parameter) {
-        
     }
 }

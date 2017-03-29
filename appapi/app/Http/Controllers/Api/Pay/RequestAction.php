@@ -8,7 +8,7 @@ use App\Model\Orders;
 use App\Model\OrdersExt;
 use App\Model\OrderExtend;
 
-trait Pay {
+trait RequestAction {
 
     public function RequestAction(Request $request, Parameter $parameter) {
         $order_id = $parameter->tough('order_id');
@@ -24,9 +24,10 @@ trait Pay {
             throw new ApiException(ApiException::Remind, '订单状态不正确');
         }
 
-        // todo: 同一笔订单被多次支付利用的问题
-
         $order->getConnection()->beginTransaction();
+
+        // todo: 同一笔订单被多次支付利用(清除旧数据)
+        OrdersExt::where('oid', $order->id)->delete();
 
         $is_f = $order->is_f(); // 小于100的应用是内部应用，只能充F币
         $fee = $order->fee * 100;

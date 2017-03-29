@@ -10,7 +10,7 @@ use App\Model\OrderExtend;
 
 class OrderController extends Controller {
 
-    use CreateOrder;
+    use CreateOrderAction;
 
     protected function createOrderBefore(Orders $order, Request $request, Parameter $parameter) {
         $fee = $parameter->tough('fee');

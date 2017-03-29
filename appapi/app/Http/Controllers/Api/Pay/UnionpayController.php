@@ -8,7 +8,7 @@ use App\Model\Orders;
 
 class UnionpayController extends Controller {
 
-    use Pay;
+    use RequestAction;
 
     const PayType = '-2';
     const PayTypeText = '银联';
