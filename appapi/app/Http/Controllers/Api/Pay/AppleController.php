@@ -8,11 +8,9 @@
 namespace App\Http\Controllers\Api\Pay ;
 
 use App\Exceptions\ApiException;
-
 use App\Model\IosOrderExt;
 use App\Model\Orders;
 use App\Parameter;
-
 use Illuminate\Http\Request;
 
 
@@ -170,11 +168,22 @@ class  AppleController extends Controller{
             $oext = $ext->save();
 
             $pay_type = $dat[0]->iap;
+            //查看当前的充值总金额
+            if($pay_type == 1){
+                $sum = Orders::where("ucid",$ucid)->where("status",1)->sum('fee');
+                //获取限额
+                $sl = "select id,appids,fee from force_close_iaps where closed=0 AND appids = {$appid}";
+                $d = app('db')->select($sl);
+                if(count($d)){
+                    $pay_type =  ($sum > $d[0]->fee)?0:1;
+                }
+            }
+
             return [
                 'order_id' => $order->sn,
                 'id'      =>$order->id,//返回当前的订单
                 'fee' => $dat[0]->fee,
-                "iap" =>$pay_type //支付的方式0 ios 1为第三方支付
+                "iap" =>$pay_type //支付的方式1 ios 0为第三方支付
             ];
         }catch(\Exception $e){
             echo  $e->getMessage();
