@@ -20,7 +20,7 @@ def v4_sdk_get_gifts_list():
     page = request.form['page'] if request.form.has_key('page') and request.form['page'] else 1
     count = request.form['count'] if request.form.has_key('count') and request.form['count'] else 10
     start_index = (int(page) - 1) * int(count)
-    end_index = start_index + int(count)
+    end_index = int(count)
     service_logger.info("用户：%s 获取礼包列表，数据从%s到%s" % (ucid, start_index, end_index))
     # 查询游戏信息
     from run import mysql_session
@@ -209,7 +209,7 @@ def v4_sdk_user_get_recommend_game_list():
     page = request.form['page'] if request.form.has_key('page') and request.form['page'] else 1
     count = request.form['count'] if request.form.has_key('count') and request.form['count'] else 10
     start_index = (int(page) - 1) * int(count)
-    end_index = start_index + int(count)
+    end_index = int(count)
     service_logger.info("用户：%s 获取推荐游戏列表，数据从%s到%s" % (ucid, start_index, end_index))
     from run import mysql_session
     find_game_count_sql = "select count(*) from zy_gameRecom where status = 'normal' "

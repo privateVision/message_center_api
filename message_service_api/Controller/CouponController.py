@@ -86,7 +86,7 @@ def v4_sdk_get_broadcast_list():
     count = request.form['count'] if request.form.has_key('count') and request.form['count'] else 10
     need_total_count = (int(page) * int(count))  # 需要的数据总数
     start_index = (int(page) - 1) * int(count)
-    end_index = start_index + int(count)
+    end_index = int(count)
     service_logger.info("用户：%s 获取卡券列表，数据从%s到%s" % (ucid, start_index, end_index))
     # 获取用户的储值卡数据列表
     value_card_total_count, value_card_list = get_stored_value_card_list(ucid, start_index, end_index)
@@ -106,7 +106,7 @@ def v4_sdk_get_broadcast_list():
                 coupon_start_index = int(left_page)*head_count
             else:
                 coupon_start_index = int(left_page) * head_count + (int(left_page) - 1) * int(count)
-            coupon_end_index = left_count
+            coupon_end_index = int(count)
         # 查询用户相关的卡券列表
         new_coupon_list = get_user_coupons_by_game(ucid, game_id, coupon_start_index, coupon_end_index)
         if left_page == 0:

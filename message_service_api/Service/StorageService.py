@@ -64,10 +64,9 @@ def send_message_to_game_area_and_user_type_and_vip_users(game, users_type, vip_
                             total_page = int(total_count / 100) + 1
                             for i in range(total_page):
                                 start_index = i * 100
-                                end_index = start_index + 100
                                 find_users_in_game_area_sql = "select distinct(ucid) from roleDatas where vid = %s " \
-                                                              "and zoneName = '%s' limit %s, %s " \
-                                                              % (game_info['apk_id'], zone, start_index, end_index)
+                                                              "and zoneName = '%s' limit %s, 100 " \
+                                                              % (game_info['apk_id'], zone, start_index)
                                 tmp_user_list = mysql_session.execute(find_users_in_game_area_sql).fetchall()
                                 for item in tmp_user_list:
                                     ucid = item['ucid']
@@ -87,9 +86,8 @@ def send_message_to_game_area_and_user_type_and_vip_users(game, users_type, vip_
                         total_page = int(total_count / 100) + 1
                         for i in range(total_page):
                             start_index = i * 100
-                            end_index = start_index + 100
                             find_users_in_game_area_sql = "select distinct(ucid) from roleDatas where vid = %s " \
-                                                          "limit %s, %s" % (game_info['apk_id'], start_index, end_index)
+                                                          "limit %s, 100" % (game_info['apk_id'], start_index)
                             tmp_user_list = mysql_session.execute(find_users_in_game_area_sql).fetchall()
                             for item in tmp_user_list:
                                 ucid = item['ucid']
@@ -109,9 +107,8 @@ def send_message_to_game_area_and_user_type_and_vip_users(game, users_type, vip_
                 total_page = int(total_count / 100) + 1
                 for i in range(total_page):
                     start_index = i * 100
-                    end_index = start_index + 100
-                    find_all_game_users_sql = "select distinct(ucid) from roleDatas limit %s, %s " \
-                                              % (start_index, end_index)
+                    find_all_game_users_sql = "select distinct(ucid) from roleDatas limit %s, 100 " \
+                                              % (start_index)
                     tmp_user_list = mysql_session.execute(find_all_game_users_sql).fetchall()
                     for item in tmp_user_list:
                         ucid = item['ucid']
