@@ -10,33 +10,204 @@ from mongoengine import Q
 from MiddleWare import service_logger
 from MongoModel.MessageModel import UsersMessage
 from MongoModel.UserMessageModel import UserMessage
+from Service.NotifyEmail import send_notify
 from Service.UsersService import get_game_and_area_and_user_type_and_vip_users
 from Utils.RedisUtil import RedisHandle
 
 
+# def add_message_to_user_message_list(game, users_type, vip_user, specify_user, type, msg_id,
+#                                      start_time, end_time, is_time):
+#     users_list = get_game_and_area_and_user_type_and_vip_users(game, users_type, vip_user)
+#     specify_user_list = get_ucid_list_by_user_uid_name_list(specify_user)
+#     users_list.extend(specify_user_list)
+#     try:
+#         for user in users_list:
+#             user_message = UserMessage()
+#             user_message.id = "%s%s%s" % (user, type, msg_id)
+#             user_message.ucid = user
+#             user_message.type = type
+#             user_message.mysql_id = msg_id
+#             user_message.start_time = start_time
+#             user_message.end_time = end_time
+#             user_message.is_time = is_time
+#             user_message.expireAt = datetime.datetime.utcfromtimestamp(user_message.end_time)
+#             user_message.save()
+#             add_mark_to_user_redis(user, type)
+#     except Exception, err:
+#         send_notify("添加消息到每个用户的消息列表发生异常：%s" % (err.message,))
+#         service_logger.error("添加消息到每个用户的消息列表发生异常：%s" % (err.message,))
+
+
+#  目标用户太多，改成分批发送
 def add_message_to_user_message_list(game, users_type, vip_user, specify_user, type, msg_id,
                                      start_time, end_time, is_time):
-    users_list = get_game_and_area_and_user_type_and_vip_users(game, users_type, vip_user)
+    send_message_to_game_area_and_user_type_and_vip_users(game, users_type, vip_user, type, msg_id,
+                                                          is_time, start_time, end_time)
+    send_message_to_spcify_users(game, specify_user, type, msg_id, is_time, start_time, end_time)
+
+
+#  分批向指定游戏区服的各种用户类型及等级发送消息
+def send_message_to_game_area_and_user_type_and_vip_users(game, users_type, vip_user, type, msg_id,
+                                                          is_time, start_time, end_time):
+    if game is not None:
+        from run import mysql_session
+        # 不是所有游戏区服
+        if game[0]['apk_id'] != 'all':
+            for game_info in game:
+                if game_info.has_key('zone_id_list'):
+                    for zone in game_info['zone_id_list']:
+                        find_user_count_in_game_area_sql = "select count(distinct(ucid)) from roleDatas where vid = %s " \
+                                                      "and zoneName = '%s'" \
+                                                      % (game_info['apk_id'], zone)
+                        try:
+                            total_count = mysql_session.execute(find_user_count_in_game_area_sql).scalar()
+                            total_page = int(total_count/100)
+                            for i in range(total_page):
+                                start_index = i * 100
+                                end_index = start_index + 100
+                                find_users_in_game_area_sql = "select distinct(ucid) from roleDatas where vid = %s " \
+                                                              "and zoneName = '%s' limit %s, %s " \
+                                                              % (game_info['apk_id'], zone, start_index, end_index)
+                                tmp_user_list = mysql_session.execute(find_users_in_game_area_sql).fetchall()
+                                for item in tmp_user_list:
+                                    ucid = item['ucid']
+                                    is_right = check_user_type_and_vip(ucid, users_type, vip_user[0])
+                                    if is_right:
+                                        add_user_messsage(ucid, type, msg_id, is_time, start_time, end_time)
+                        except Exception, err:
+                            service_logger.error(err.message)
+                            mysql_session.rollback()
+                        finally:
+                            mysql_session.close()
+                else:  # 没传区服信息，那就所有区服咯
+                    find_user_count_in_game_area_sql = "select count(distinct(ucid)) from roleDatas where vid = %s " \
+                                                       "and zoneName = '%s'" \
+                                                       % (game_info['apk_id'], zone)
+                    try:
+                        total_count = mysql_session.execute(find_user_count_in_game_area_sql).scalar()
+                        total_page = int(total_count / 100)
+                        for i in range(total_page):
+                            start_index = i * 100
+                            end_index = start_index + 100
+                            find_users_in_game_area_sql = "select distinct(ucid) from roleDatas where vid = %s " \
+                                                          "limit %s, %s" % (game_info['apk_id'], start_index, end_index)
+                            tmp_user_list = mysql_session.execute(find_users_in_game_area_sql).fetchall()
+                            for item in tmp_user_list:
+                                ucid = item['ucid']
+                                is_right = check_user_type_and_vip(ucid, users_type, vip_user[0])
+                                if is_right:
+                                    add_user_messsage(ucid, type, msg_id, is_time, start_time, end_time)
+                    except Exception, err:
+                        service_logger.error(err.message)
+                        mysql_session.rollback()
+                    finally:
+                        mysql_session.close()
+        else:  # 所有游戏，太可怕了
+            find_user_count_in_game_area_sql = "select count(distinct(ucid)) from roleDatas"
+
+            try:
+                total_count = mysql_session.execute(find_user_count_in_game_area_sql).scalar()
+                total_page = int(total_count / 100)
+                for i in range(total_page):
+                    start_index = i * 100
+                    end_index = start_index + 100
+                    find_all_game_users_sql = "select distinct(ucid) from roleDatas limit %s, %s " \
+                                              % (start_index, end_index)
+                    tmp_user_list = mysql_session.execute(find_all_game_users_sql).fetchall()
+                    for item in tmp_user_list:
+                        ucid = item['ucid']
+                        is_right = check_user_type_and_vip(ucid, users_type, vip_user[0])
+                        if is_right:
+                            add_user_messsage(ucid, type, msg_id, is_time, start_time, end_time)
+            except Exception, err:
+                service_logger.error(err.message)
+                mysql_session.rollback()
+            finally:
+                mysql_session.close()
+
+
+#  指定的用户就一起发送算了
+def send_message_to_spcify_users(specify_user, game, type, msg_id, is_time, start_time, end_time):
     specify_user_list = get_ucid_list_by_user_uid_name_list(specify_user)
-    users_list.extend(specify_user_list)
+    if game is not None:
+        if game[0]['apk_id'] != 'all':
+            for game_info in game:
+                if game_info.has_key('zone_id_list'):
+                    for zone in game_info['zone_id_list']:
+                        try:
+                            for user in specify_user_list:
+                                is_right = check_user_is_in_game(user, game_info['apk_id'], zone)
+                                if is_right:
+                                    add_user_messsage(user, type, msg_id, is_time, start_time, end_time)
+                        except Exception, err:
+                            send_notify("添加消息到每个用户的消息列表发生异常：%s" % (err.message,))
+                            service_logger.error("添加消息到每个用户的消息列表发生异常：%s" % (err.message,))
+        else:
+            try:
+                for user in specify_user_list:
+                    add_user_messsage(user, type, msg_id, is_time, start_time, end_time)
+            except Exception, err:
+                send_notify("添加消息到每个用户的消息列表发生异常：%s" % (err.message,))
+                service_logger.error("添加消息到每个用户的消息列表发生异常：%s" % (err.message,))
+
+
+def add_user_messsage(ucid, type, msg_id, is_time, start_time, end_time):
+    user_message = UserMessage()
+    user_message.id = "%s%s%s" % (ucid, type, msg_id)
+    user_message.ucid = ucid
+    user_message.type = type
+    user_message.mysql_id = msg_id
+    user_message.start_time = start_time
+    user_message.end_time = end_time
+    user_message.is_time = is_time
+    user_message.expireAt = datetime.datetime.utcfromtimestamp(user_message.end_time)
+    user_message.save()
+    add_mark_to_user_redis(ucid, type)
+
+
+#  检查用户的类型和vip是否符合
+def check_user_type_and_vip(ucid=None, user_type=None, vip=None):
+    from run import mysql_session
+    find_users_by_user_type_sql = "select count(*) from ucusers as u, retailers as r where u.rid = r.rid " \
+                                  "and r.rtype in %s and u.ucid = %s " % (user_type, ucid)
+    find_users_by_vip_sql = "select count(*) from user as u where u.ucid = %s and u.vip >= %s " % (ucid, vip)
     try:
-        for user in users_list:
-            user_message = UserMessage()
-            user_message.id = "%s%s%s" % (user, type, msg_id)
-            user_message.ucid = user
-            user_message.type = type
-            user_message.mysql_id = msg_id
-            user_message.start_time = start_time
-            user_message.end_time = end_time
-            user_message.is_time = is_time
-            user_message.expireAt = datetime.datetime.utcfromtimestamp(user_message.end_time)
-            user_message.save()
-            add_mark_to_user_redis(user, type)
+        is_exist = mysql_session.execute(find_users_by_user_type_sql).scalar()
+        if is_exist is None or is_exist == 0:
+            return False
+        is_exist = mysql_session.execute(find_users_by_vip_sql).scalar()
+        if is_exist is None or is_exist == 0:
+            return False
+        return True
     except Exception, err:
-        send_notify("添加消息到每个用户的消息列表发生异常：%s" % (err.message,))
-        service_logger.error("添加消息到每个用户的消息列表发生异常：%s" % (err.message,))
+        service_logger.error(err.message)
+        mysql_session.rollback()
+    finally:
+        mysql_session.close()
 
 
+#  检查用户是否在某个游戏下
+def check_user_is_in_game(ucid=None, game_id=None, zone=None):
+    from run import mysql_session
+    if zone is None:
+        find_users_by_game_sql = "select count(*) from roleDatas as u where u.ucid = %s and u.vid = %s "\
+                                 % (ucid, game_id)
+    else:
+        find_users_by_game_sql = "select count(*) from roleDatas as u where u.ucid = %s and u.vid = %s " \
+                                 "and u.zoneName = '%s' " % (ucid, game_id, zone)
+    try:
+        is_exist = mysql_session.execute(find_users_by_game_sql).scalar()
+        if is_exist is None or is_exist == 0:
+            return False
+        return True
+    except Exception, err:
+        service_logger.error(err.message)
+        mysql_session.rollback()
+    finally:
+        mysql_session.close()
+
+
+#  根据用户名获取用户ucid
 def get_ucid_list_by_user_uid_name_list(specify_user):
     ucid_list = []
     from run import mysql_session
