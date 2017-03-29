@@ -96,20 +96,16 @@ def get_vip_users(vips):
     if vips is not None:
         from run import mysql_session
         for vip in vips:
-            vip_rule_info = AppVipRules.objects(level=vip).first()
-            if vip_rule_info is not None:
-                fee = vip_rule_info['fee']
-                find_users_by_vip_sql = "select distinct(ucid) from ucuser_total_pay as u where u.pay_fee >= %s " % (
-                    fee,)
-                try:
-                    origin_list = mysql_session.execute(find_users_by_vip_sql).fetchall()
-                    for item in origin_list:
-                        users_list.append(item['ucid'])
-                except Exception, err:
-                    service_logger.error(err.message)
-                    mysql_session.rollback()
-                finally:
-                    mysql_session.close()
+            find_users_by_vip_sql = "select distinct(ucid) from user as u where u.vip >= %s " % (vip,)
+            try:
+                origin_list = mysql_session.execute(find_users_by_vip_sql).fetchall()
+                for item in origin_list:
+                    users_list.append(item['ucid'])
+            except Exception, err:
+                service_logger.error(err.message)
+                mysql_session.rollback()
+            finally:
+                mysql_session.close()
     return users_list
 
 
@@ -272,34 +268,49 @@ def get_stored_value_card_list(ucid, start_index, end_index):
     total_count = 0
     value_card_list = []
     time_now = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-    find_user_store_value_card_list_sql = "select vc.* from ucusersVC as uvc, virtualCurrencies as vc where " \
+    find_user_store_value_card_list_sql = "select vc.*, uvc.balance from ucusersVC as uvc, virtualCurrencies as vc where " \
                                           "uvc.vcid = vc.vcid and uvc.balance > 0 and uvc.ucid = %s and " \
-                                          "((vc.untimed = 0) or ((vc.untimed = 1) and " \
+                                          "((vc.untimed = 1) or ((vc.untimed = 0) and " \
                                           "unix_timestamp(vc.startTime) <= unix_timestamp('%s') " \
                                           "and unix_timestamp(vc.endTime) >= unix_timestamp('%s'))) " \
                                           "limit %s, %s " % \
                                           (ucid, time_now, time_now, start_index, end_index)
     find_user_store_value_card_count_sql = "select count(*) from ucusersVC as uvc, virtualCurrencies as vc where " \
                                            "uvc.vcid = vc.vcid and uvc.balance > 0 and uvc.ucid = %s and " \
-                                           "((vc.untimed = 0) or ((vc.untimed = 1) " \
+                                           "((vc.untimed = 1) or ((vc.untimed = 0) " \
                                            "and unix_timestamp(vc.startTime) <= unix_timestamp('%s')" \
-                                           " and unix_timestamp(vc.endTime) >= unix_timestamp('%s'))) "\
+                                           " and unix_timestamp(vc.endTime) >= unix_timestamp('%s'))) " \
                                            % (ucid, time_now, time_now)
     try:
         total_count = mysql_session.execute(find_user_store_value_card_count_sql).scalar()
         card_list = mysql_session.execute(find_user_store_value_card_list_sql).fetchall()
         if total_count > 0:
             for card in card_list:
+                find_game_name_sql = 'select pname from procedures where pid = %s limit 1' % (card['lockApp'],)
+                game_info = mysql_session.execute(find_game_name_sql).fetchone()
                 item = {
-                    'vcid': card['vcid'],
-                    'vcname': card['vcname'],
+                    'id': card['vcid'],
+                    'name': card['vcname'],
                     'supportDivide': card['supportDivide'],
-                    'untimed': card['untimed'],
-                    'startTime': card['startTime'],
-                    'endTime': card['endTime'],
-                    'lockApp': card['lockApp'],
-                    'descript': card['descript']
+                    'start_time': 0,
+                    'end_time': 0,
+                    'lock_app': card['lockApp'],
+                    'desc': card['descript'],
+                    'type': 1,
+                    'fee': card['balance'],
+                    'unlimited_time': False,
+                    'user_condition': '',
+                    'time_out': False,
+                    'method': ''
                 }
+                if card['startTime']:
+                    item['start_time'] = card['startTime']
+                if card['endTime']:
+                    item['end_time'] = card['endTime']
+                if card['untimed'] == 1:
+                    item['unlimited_time'] = True
+                if game_info:
+                    item['lock_app'] = game_info['pname']
                 value_card_list.append(item)
     except Exception, err:
         service_logger.error(err.message)
@@ -307,6 +318,45 @@ def get_stored_value_card_list(ucid, start_index, end_index):
     finally:
         mysql_session.close()
     return total_count, value_card_list
+
+
+def get_user_coupons_by_game(ucid, appid, start_index, end_index):
+    from run import mysql_session
+    now = int(time.time())
+    get_user_coupon_sql = "select coupon_id from zy_coupon_log where ucid=%s and pid=%s and " \
+                          "((is_time = 0) or ((is_time = 1) " \
+                          "and start_time <= %s " \
+                          " and end_time >= %s)) order by id desc limit %s, %s" \
+                          % (ucid, appid, now, now, start_index, end_index)
+    coupon_list = mysql_session.execute(get_user_coupon_sql).fetchall()
+    new_coupon_list = []
+    for coupon in coupon_list:
+        get_user_coupon_sql = "select * from zy_coupon where id=%s limit 1" % (coupon['coupon_id'])
+        coupon_info = mysql_session.execute(get_user_coupon_sql).fetchone()
+        if coupon_info is not None:
+            info = {
+                'id': coupon_info['id'],
+                'name': coupon_info['name'],
+                'type': 2,
+                'start_time': coupon_info['start_time'],
+                'end_time': coupon_info['end_time'],
+                'desc': coupon_info['info'],
+                'fee': coupon_info['money'],
+                'method': coupon_info['method'],
+                'use_condition': "满%s可用" % (coupon_info['full'],),
+                'lock_app': '',
+                'supportDivide': 0
+            }
+            unlimited_time = True
+            if coupon_info['is_time'] == 0:
+                unlimited_time = False
+            time_out = False
+            if coupon_info['end_time'] < now:
+                time_out = True
+            info['unlimited_time'] = unlimited_time
+            info['time_out'] = time_out
+            new_coupon_list.append(info)
+    return new_coupon_list
 
 
 # sdk api 请求通用装饰器
@@ -350,6 +400,13 @@ def sdk_api_request_check(func):
 def cms_api_request_check(func):
     @wraps(func)
     def wraper(*args, **kwargs):
+        # 数据库连接状态检测
+        from run import mysql_session
+        try:
+            mysql_session.execute('select count(*) from admins limit 1').scalar()
+        except Exception, err:
+            mysql_session.rollback()
+            service_logger.error(err.message)
         from Utils.EncryptUtils import generate_checksum
         check_result, check_exception = generate_checksum(request)
         if not check_result:

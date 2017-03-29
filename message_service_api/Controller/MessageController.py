@@ -70,14 +70,6 @@ def v4_sdk_get_message_list():
     service_logger.info("用户：%s 获取消息列表，数据从%s到%s" % (ucid, start_index, end_index))
     # 查询用户相关的公告列表
     current_timestamp = get_current_timestamp()
-    # message_list_total_count = UserMessage.objects(
-    #     Q(type='message')
-    #     & Q(closed=0)
-    #     # & Q(is_read=0)
-    #     & Q(start_time__lte=current_timestamp)
-    #     & Q(end_time__gte=current_timestamp)
-    #     & Q(ucid=ucid)) \
-    #     .count()
     message_list = UserMessage.objects(
         Q(type='message')
         & Q(closed=0)
@@ -88,22 +80,6 @@ def v4_sdk_get_message_list():
     data_list = []
     for message in message_list:
         message_info = get_message_detail_info(message['mysql_id'])
-        # message_resp = {
-        #     "meta_info": {},
-        #     "head": {},
-        #     "body": {}
-        # }
-        # message_resp['meta_info']['app'] = message_info['app']
-        # message_resp['meta_info']['rtype'] = message_info['rtype']
-        # message_resp['meta_info']['vip'] = message_info['vip']
-        # message_resp['head']['title'] = message_info['title']
-        # message_resp['head']['description'] = message_info['description']
-        # message_resp['head']['type'] = message_info['type']
-        # message_resp['head']['mysql_id'] = message_info['mysql_id']
-        # message_resp['body']['content'] = message_info['content']
-        # message_resp['body']['img'] = message_info['img']
-        # message_resp['body']['url'] = message_info['url']
-        # message_resp['body']['start_time'] = message_info['start_time']
         if int(message['is_read']) == 1:
             message['is_read'] = True
         else:
@@ -125,8 +101,4 @@ def v4_sdk_get_message_list():
         if 'url' in message_info:
             message_resp['url'] = message_info['url']
         data_list.append(message_resp)
-    # data = {
-    #     "total_count": message_list_total_count,
-    #     "data": data_list
-    # }
     return response_data(http_code=200, data=data_list)

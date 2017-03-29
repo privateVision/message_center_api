@@ -6,33 +6,50 @@
 
 count=$(ps -ef|grep uwsgi|grep -v grep|wc -l)
 if [ 1 == $count ];then
-    echo 'stop process ...'
-    ps -ef|grep consume_run|grep -v grep|awk '{print $2}'|xargs kill -9
+    echo 'stop main process ...'
     ps -ef|grep uwsgi|grep -v grep|awk '{print $2}'|xargs kill -9
     if [ 0 == $? ];then
-        echo "stop process success!"
+        echo "stop main process success!"
         rm -f nohup.out
     else
-        echo "stop process failed!"
+        echo "stop main process failed!"
+        exit
+    fi
+    ps -ef|grep consume|grep -v grep|awk '{print $2}'|xargs kill -9
+    if [ 0 == $? ];then
+        echo "stop kafka consume process success!"
+        rm -f nohup.out
+    else
+        echo "stop kafka consume process failed!"
         exit
     fi
     echo 'start process ...'
     echo "当前启动地址： $1"
     nohup uwsgi --socket $1 --wsgi-file run.py --callable app --enable-threads &
-    nohup python consume_run &
     if [ 0 == $? ];then
         echo "start process success!"
     else
         echo "start process failed"
     fi
+    nohup python consume.py &
+    if [ 0 == $? ];then
+        echo "kafka consume process start success!"
+    else
+        echo "kafka consume process start failed"
+    fi
 else
     echo "当前启动地址： $1"
-    ps -ef|grep consume_run|grep -v grep|awk '{print $2}'|xargs kill -9
+    ps -ef|grep consume|grep -v grep|awk '{print $2}'|xargs kill -9
     nohup uwsgi --socket $1 --wsgi-file run.py --callable app --enable-threads &
-    nohup python consume_run &
     if [ 0 == $? ];then
         echo "start process success!"
     else
         echo "start process failed"
+    fi
+    nohup python consume.py &
+    if [ 0 == $? ];then
+        echo "kafka consume process start success!"
+    else
+        echo "kafka consume process start failed"
     fi
 fi

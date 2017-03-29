@@ -110,8 +110,8 @@ def v4_cms_open_closed_user_account():
 @app_controller.route('/msa/v4/app/message_revocation', methods=['POST'])
 @cms_api_request_check
 def v4_cms_message_revocation():
-    message_type = request.form['type']
-    msg_id = request.form['mysql_id']
+    message_type = request.json.get('type')
+    msg_id = request.json.get('mysql_id')
     if type is None or type == '' or msg_id is None or msg_id == '':
         log_exception(request, '客户端请求错误-消息类型或消息id为空')
         return response_data(200, 0, '客户端请求错误')

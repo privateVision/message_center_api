@@ -17,26 +17,45 @@ class Controller extends \App\Controller
 			$data = $request->all();
 
 			$parameter = new Parameter($data);
-			$appid = $parameter->tough('_appid');
-			$sign = $parameter->tough('_sign');
+			$_appid = $parameter->tough('_appid');
+			$_sign = $parameter->tough('_sign');
 
-			$procedure = Procedures::from_cache($appid);
+			$procedure = Procedures::from_cache($_appid);
 			if (!$procedure) {
-				throw new ApiException(ApiException::Error, "appid不正确:{$appid}");
+				throw new ApiException(ApiException::Error, "appid不正确:{$_appid}");
 			}
 
-			$this->procedure = $procedure;
+			//$this->procedure = $procedure;
 			$appkey = $procedure->appkey();
 			
 			unset($data['_sign']);
 			ksort($data);
-			$_sign = md5(http_build_query($data) . '&key=' . $appkey);
+			$sign = md5(http_build_query($data) . '&key=' . $appkey);
 
-			if($sign !== $_sign) {
+			if($_sign !== $sign) {
 				throw new ApiException(ApiException::Error, "签名验证失败");
 			}
 
 			log_info('request', $data, $request->path());
+
+			// todo: 第三方登陆通过_appid作签名验证，实际算__appid的
+			$__appid = $parameter->get('__appid');
+			if($__appid) {
+				$procedure = Procedures::from_cache($__appid);
+				if (!$procedure) {
+					throw new ApiException(ApiException::Error, "appid不正确:{$_appid}");
+				}
+
+				$parameter->set('_appid', $__appid);
+			}
+
+			$__rid = $parameter->get('__rid');
+			if($__rid) {
+				$parameter->set('_rid', $__rid);
+			}
+
+			$this->procedure = $procedure;
+			// ---------------- end --------------
 
 			$this->before($request, $parameter);
 			$response = $this->$action($request, $parameter);
