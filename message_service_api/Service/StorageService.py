@@ -250,6 +250,12 @@ def add_mark_to_user_redis(ucid, message_type):
 
 
 def add_to_every_related_users_message_list(users_message):
+    from run import mysql_session
+    try:
+        mysql_session.execute('select count(*) from admins limit 1').scalar()
+    except Exception, err:
+        mysql_session.rollback()
+        service_logger.error(err.message)
     if 'distribute' not in users_message:
         users_message.distribute = None
     add_user_message_thread = threading.Thread(target=add_message_to_user_message_list,
@@ -260,37 +266,6 @@ def add_to_every_related_users_message_list(users_message):
                                                      users_message.is_time))
     add_user_message_thread.setDaemon(True)
     add_user_message_thread.start()
-    # if users_message.type != 'coupon':
-    #     add_user_message_thread = threading.Thread(target=add_message_to_user_message_list,
-    #                                                args=(users_message.app, users_message.rtype,
-    #                                                      users_message.vip, users_message.users,
-    #                                                      users_message.type, users_message.mysql_id,
-    #                                                      users_message.start_time, users_message.end_time,
-    #                                                      users_message.is_time))
-    #     add_user_message_thread.setDaemon(True)
-    #     add_user_message_thread.start()
-    # else:
-    #     #  卡券的数据存放到mysql
-    #     from run import mysql_session
-    #     pid = 0
-    #     if users_message.app[0]['apk_id'] != 'all':
-    #         pid = users_message.app[0]['apk_id']
-    #     users_list = get_game_and_area_and_user_type_and_vip_users(users_message.app, users_message.rtype, users_message.vip)
-    #     specify_user_list = get_ucid_list_by_user_uid_name_list(users_message.users)
-    #     users_list.extend(specify_user_list)
-    #     try:
-    #         for user in users_list:
-    #             insert_user_coupon_sql = "insert into zy_coupon_log values(%s, %s, %s, %s, %s, %s)" \
-    #                                      % (user, users_message.mysql_id, pid, users_message.is_time,
-    #                                         users_message.start_time, users_message.end_time)
-    #             mysql_session.execute(insert_user_coupon_sql)
-    #         mysql_session.commit()
-    #     except Exception, err:
-    #         send_notify("添加卡券到每个用户的mysql列表发生异常：%s" % (err.message,))
-    #         service_logger.error("添加卡券到每个用户的mysql列表发生异常：%s" % (err.message,))
-    #         mysql_session.rollback()
-    #     finally:
-    #         mysql_session.close()
 
 
 # 添加公告信息，并完成用户分发
