@@ -45,7 +45,19 @@ $app->group(['prefix' => 'api'], function () use ($app) {
     $app->post('app/initialize', 'Api\\AppController@InitializeAction');                                // 初始化
     $app->post('app/verify_sms', 'Api\\AppController@VerifySMSAction');                                 // 验证手机验证码是否正确
     $app->post('app/uuid', 'Api\\AppController@UuidAction');                                            // 初始化
-
+/*
+    $app->post('account/token/login', 'Api\\Account\\TokenController@LoginAction');                     // 自动登录
+    $app->post('account/login', 'Api\\Account\\UserController@LoginAction');                            // 用户名或手机号码登陆
+    $app->post('account/register', 'Api\\Account\\UserController@RegisterAction');                      // 用户名注册
+    $app->post('account/username', 'Api\\Account\\UserController@UsernameAction');                      // 生成随机用户名
+    $app->post('account/onekey/sms_token', 'Api\\Account\\OnekeyController@SMSTokenAction');            // 手机号码一键登陆(获取发送短信的token)
+    $app->post('account/onekey/login', 'Api\\Account\\OnekeyController@LoginAction');                   // 手机号码一键登陆
+    $app->post('account/user/sms_reset_password', 'Api\\Account\\UserController@SMSResetPasswordAction');// 发送重设密码的验证码
+    $app->post('account/user/reset_password', 'Api\\Account\\UserController@ResetPasswordAction');      // 重设密码
+    $app->post('account/mobile/sms_login', 'Api\\Account\\MobileController@SMSLoginAction');            // 手机验证码登陆（发送短信）
+    $app->post('account/mobile/login', 'Api\\Account\\MobileController@LoginAction');                   // 手机验证码登陆
+    $app->post('account/guest/login', 'Api\\Account\\GuestController@LoginAction');                     // 游客登陆
+*/
     $app->post('account/login_token', 'Api\\AccountController@LoginTokenAction');                       // 自动登录
     $app->post('account/login', 'Api\\AccountController@LoginAction');                                  // 用户名或手机号码登陆
     $app->post('account/register', 'Api\\AccountController@RegisterAction');                            // 用户名注册

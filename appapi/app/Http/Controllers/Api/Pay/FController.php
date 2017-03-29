@@ -8,7 +8,7 @@ use App\Model\Orders;
 
 class FController extends Controller {
 
-    use Pay, CreateOrder;
+    use RequestAction, CreateOrderAction;
 
     const PayType = '-1';
     const PayTypeText = 'F币或卡券直接支付';
