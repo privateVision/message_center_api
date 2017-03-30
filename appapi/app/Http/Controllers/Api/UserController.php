@@ -15,7 +15,7 @@ class UserController extends AuthController
     public function InfoAction(Request $request, Parameter $parameter) {
         return [
             'ucid' => $this->user->ucid,
-            'uid' => $this->user->uid,
+            'username' => $this->user->uid,
             'nickname' => $this->user->nickname,
             'mobile' => $this->user->mobile,
             'email' => $this->user->email,
