@@ -12,8 +12,24 @@ use App\Model\ProceduresExtend;
 
 class UserController extends AuthController
 {
-    public function MessageAction(Request $request, Parameter $parameter) {
-        return ;
+    public function InfoAction(Request $request, Parameter $parameter) {
+        return [
+            'ucid' => $this->user->ucid,
+            'uid' => $this->user->uid,
+            'nickname' => $this->user->nickname,
+            'mobile' => $this->user->mobile,
+            'email' => $this->user->email,
+            'gender' => $this->user->gender,
+            'balance' => $this->user->balance,
+            'birthday' => $this->user->birthday,
+            'address' => $this->user->address,
+            'avatar' => $this->user->avatar,
+            'real_name' => $this->user->real_name,
+            'card_id' => $this->user->card_id,
+            'exp' => $this->user->exp,
+            'vip' => $this->user->vip,
+            'score' => $this->user->score,
+        ];
     }
 
     public function RechargeAction(Request $request, Parameter $parameter) {

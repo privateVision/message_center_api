@@ -77,6 +77,7 @@ $app->group(['prefix' => 'api'], function () use ($app) {
     $app->post('user/by_oldpassword_reset', 'Api\\UserController@ByOldPasswordResetAction');                // 通过旧的密码重置密码
     $app->post('user/report_role', 'Api\\UserController@ReportRoleAction');                                 // 上报玩家角色信息
     $app->post('user/attest', 'Api\\UserController@AttestAction');                                          // 实名认证
+    $app->post('user/info', 'Api\\UserController@InfoAction');                                              // 用户详细信息
 
     $app->post('user_sub/list', 'Api\\UserSubController@ListAction');                                       // 小号列表
     $app->post('user_sub/new', 'Api\\UserSubController@NewAction');                                         // 添加小号

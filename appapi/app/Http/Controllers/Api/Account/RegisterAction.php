@@ -95,6 +95,7 @@ trait RegisterAction {
             'sub_nickname' => strval($user_sub->name),
             'uid' => $user->ucid,
             'username' => $user->uid,
+            'nickname' => $user->nickname,
             'mobile' => strval($user->mobile),
             'avatar' => $user->avatar ? $user->avatar : env('AVATAR'),
             'is_real' => $user->isReal(),
