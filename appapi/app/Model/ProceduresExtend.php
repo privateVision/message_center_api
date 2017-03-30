@@ -50,14 +50,14 @@ class ProceduresExtend extends Model
 		return $value ?: env('SERVICE_SHARE');
 	}
 
-	public function getServiceIntervalAttribute() {
-		$value = $this->attributes['service_interval'];
-		return ($value === null || $value === "") ? 300 : $value == 1;
+	public function getHeartbeatIntervalAttribute() {
+		$value = $this->attributes['heartbeat_interval'];
+		return ($value === null || $value === "") ? intval(env('default_heartbeat_interval')) : intval($value);
 	}
 
 	public function getBindPhoneIntervalAttribute() {
 		$value = $this->attributes['bind_phone_interval'];
-		return ($value === null || $value === "") ? 86400 : $value == 1;
+		return ($value === null || $value === "") ? 86400 : $value;
 	}
 
 	public function getAllowNumAttribute() {
