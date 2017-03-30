@@ -22,10 +22,10 @@ class Log extends Job
     public function handle()
     {
         if($this->content['level'] === 'ERROR') {
-            send_mail('SDK接口调用错误', explode('|', env('ALARM_MAILS')), json_encode($this->content, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT));
+            send_mail('SDK接口调用错误', explode('|', env('alarm_emails')), json_encode($this->content, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT));
         }
 
-        $logfile = env('LOG_PATH') . str_replace('-', '', substr($this->content['datetime'], 0, 10)) . '.log';
+        $logfile = env('log_path') . str_replace('-', '', substr($this->content['datetime'], 0, 10)) . '.log';
 
         $text = sprintf("%s %s.%d[%s] %s [%s]%s %s\n", 
             $this->content['datetime'], 

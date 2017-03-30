@@ -23,7 +23,6 @@ class User extends Model
         'exp' => 'integer',
         'vip' => 'integer',
         'score' => 'integer',
-
     ];
 
     const CREATED_AT = 'createTime';
@@ -47,6 +46,11 @@ class User extends Model
 
     public function user_oauth() {
         return $this->hasOne(UserOauth::class, 'ucid', 'ucid');
+    }
+
+    public function getAvatarAttribute() {
+        $avatar = @$this->attributes['avatar'];
+        return $avatar ?: env('default_avatar');
     }
 
     public function getIsFreezeAttribute() {

@@ -25,7 +25,7 @@ class UserController extends AuthController
             'balance' => $this->user->balance,
             'birthday' => (string)$this->user->birthday,
             'address' => (string)$this->user->address,
-            'avatar' => (string)$this->user->avatar,
+            'avatar' => $this->user->avatar,
             'real_name' => (string)$this->user->real_name,
             'card_id' => (string)$this->user->card_id,
             'exp' => $this->user->exp,

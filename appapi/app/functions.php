@@ -252,6 +252,8 @@ function send_mail($subject, $to, $content) {
 function log_debug ($keyword, $content, $desc = '') {
     global $app;
 
+    if(env('log_level') > 0) return;
+
     Queue::push(new \App\Jobs\Log([
         'keyword' => $keyword,
         'desc' => $desc,
@@ -267,6 +269,8 @@ function log_debug ($keyword, $content, $desc = '') {
 function log_info ($keyword, $content, $desc = '') {
     global $app;
 
+    if(env('log_level') > 1) return;
+
     Queue::push(new \App\Jobs\Log([
         'keyword' => $keyword,
         'desc' => $desc,
@@ -281,6 +285,8 @@ function log_info ($keyword, $content, $desc = '') {
 
 function log_warning ($keyword, $content, $desc = '') {
     global $app;
+
+    if(env('log_level') > 2) return;
 
     Queue::push(new \App\Jobs\Log([
         'keyword' => $keyword,

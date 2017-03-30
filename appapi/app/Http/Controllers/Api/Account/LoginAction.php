@@ -101,7 +101,7 @@ trait LoginAction {
             'uid' => $user->ucid,
             'username' => $user->uid,
             'mobile' => strval($user->mobile),
-            'avatar' => $user->avatar ? $user->avatar : env('AVATAR'),
+            'avatar' => $user->avatar,
             'is_real' => $user->isReal(),
             'is_adult' => $user->isAdult(),
             'vip' => $user->vip,
