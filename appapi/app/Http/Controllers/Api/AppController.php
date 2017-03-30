@@ -72,7 +72,7 @@ class AppController extends Controller
             'bind_phone' => [
                 'need' => $config->bind_phone_need,
                 'enforce' => $config->bind_phone_enforce,
-                'interval' => $config->time_interval,
+                'interval' => $config->bind_phone_interval,
             ],
             'real_name' => [
                 'need' => $config->real_name_need,
