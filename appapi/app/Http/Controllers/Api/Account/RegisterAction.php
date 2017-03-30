@@ -22,9 +22,7 @@ trait RegisterAction {
         }
 
         // 查找最近一次登陆的小号
-        if(!$user_sub) {
-            $user_sub = UserSub::tableSlice($user->ucid)->where('ucid', $user->ucid)->where('pid', $pid)->where('is_freeze', false)->orderBy('priority', 'desc')->first();
-        }
+        $user_sub = UserSub::tableSlice($user->ucid)->where('ucid', $user->ucid)->where('pid', $pid)->where('is_freeze', false)->orderBy('priority', 'desc')->first();
 
         // 用户没有可用的小号，创建
         if(!$user_sub) {
