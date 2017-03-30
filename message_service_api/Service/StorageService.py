@@ -44,6 +44,7 @@ def add_message_to_user_message_list(game, users_type, vip_user, specify_user, t
     if users_type is not None:
         send_message_to_game_area_and_user_type_and_vip_users(game, users_type, vip_user, type, msg_id,
                                                               is_time, start_time, end_time)
+        send_message_to_spcify_users(specify_user, game, type, msg_id, is_time, start_time, end_time)
     else:
         send_message_to_spcify_users(specify_user, game, type, msg_id, is_time, start_time, end_time)
 
