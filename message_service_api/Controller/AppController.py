@@ -152,3 +152,9 @@ def v4_sdk_heartbeat_ack():
     ucid = get_ucid_by_access_token(request.form['_token'])
     RedisHandle.clear_user_data_mark_in_redis(ucid, request.form['type'])
     return response_ok()
+
+
+#  用于监控程序判断该进程是否存在
+@app_controller.route('/msa/v4/is_process_ok')
+def v4_process_ok():
+    return response_ok()
