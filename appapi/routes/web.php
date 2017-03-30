@@ -20,9 +20,9 @@ $app->get('/', function (Illuminate\Http\Request $request) use ($app) {
     }
 
     foreach($data as $v) {
-        if($v->code) {
-            echo $v->mobile ."&nbsp;&nbsp;&nbsp;". $v->created_at ."&nbsp;&nbsp;&nbsp;". $v->content . "<br/>";
-        }
+        //if($v->code) {
+        echo $v->mobile ."&nbsp;&nbsp;&nbsp;". $v->created_at ."&nbsp;&nbsp;&nbsp;". $v->content . "<br/>";
+        //}
     }
 });
 
