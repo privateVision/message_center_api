@@ -11,7 +11,7 @@ use App\Model\UserOauth;
 class OauthController extends Controller {
 
     use LoginAction, RegisterAction;
-
+/*
     public function SMSBindAction(Request $request, Parameter $parameter) {
         $mobile = $parameter->tough('mobile', 'mobile');
 
@@ -32,6 +32,7 @@ class OauthController extends Controller {
         $mobile = $parameter->tough('mobile', 'mobile');
         $code = $parameter->tough('code', 'smscode');
         $openid = $parameter->tough('openid');
+        $unionid = $parameter->get('unionid');
         $type = $parameter->tough('type');
         $nickname = $parameter->get('nickname');
         $avatar = $parameter->get('avatar');
@@ -47,10 +48,21 @@ class OauthController extends Controller {
             throw new ApiException(ApiException::Remind, "验证码不正确，或已过期");
         }
 
-        $uuid = md5($type . $openid);
-        $user_oauth = UserOauth::from_cache_uuid('uuid', $uuid);
-        $mobile_user = User::where('uid', $mobile)->orWhere('mobile', $mobile)->first();
+        // ----------- 获取用户
+        $openid = md5($type .'_'. $openid);
+        $unionid = $unionid ? md5($type .'_'. $unionid) : '';
 
+        $user_oauth = null;
+
+        if($unionid) {
+            $user_oauth = UserOauth::from_cache_unionid($unionid);
+        }
+
+        if(!$user_oauth) {
+            $user_oauth = UserOauth::from_cache_openid($openid);
+        }
+
+        $mobile_user = User::where('uid', $mobile)->orWhere('mobile', $mobile)->first();
         // ------------ oauth存在 --> 绑定mobile
         if($user_oauth) {
             $user = User::from_cache($user_oauth->ucid);
@@ -148,18 +160,86 @@ class OauthController extends Controller {
 
         return $mobile_user;
     }
+*/
+    protected $types = ['weixin' => '微信', 'qq' => 'QQ', 'weibo' => '微博'];
+
+    public function getRegisterUser(Request $request, Parameter $parameter) {
+        $openid = $parameter->tough('openid');
+        $type = $parameter->tough('type');
+        $unionid = $parameter->get('unionid');
+
+        $openid = md5($type .'_'. $openid);
+        $unionid = $unionid ? md5($type .'_'. $unionid) : '';
+
+        $user_oauth = null;
+
+        if($unionid) {
+            $user_oauth = UserOauth::from_cache_unionid($unionid);
+        }
+
+        if(!$user_oauth) {
+            $user_oauth = UserOauth::from_cache_openid($openid);
+        }
+
+        if($user_oauth) {
+            $user = User::from_cache($user_oauth->ucid);
+            return $user;
+        }
+
+        // 注册
+        $username = username();
+        $password = rand(100000, 999999);
+        
+        $user = new User;
+        $user->uid = $username;
+        $user->email = $username . "@anfan.com";
+        $user->mobile = '';
+        $user->nickname = $nickname;
+        $user->avatar = $avatar;
+        $user->password = $password;
+        $user->regip = $request->ip();
+        $user->rid = $parameter->tough('_rid');
+        $user->pid = $parameter->tough('_appid');
+        $user->regdate = date('Ymd');
+        $user->date = date('Ymd');
+        $user->save();
+
+        $user_oauth = new UserOauth;
+        $user_oauth->ucid = $user->ucid;
+        $user_oauth->type = $type;
+        $user_oauth->openid = $openid;
+        $user_oauth->unionid = $unionid;
+        $user_oauth->uuid = $uuid;
+        $user_oauth->saveAndCache();
+
+        user_log($user, $this->procedure, 'register', '【注册】通过%s注册，密码[%s]', @$this->types[$type], $user->password);
+        
+        return $user;
+    }
 
     public function getLoginUser(Request $request, Parameter $parameter) {
         $openid = $parameter->tough('openid');
         $type = $parameter->tough('type');
+        $unionid = $parameter->get('unionid');
 
-        $user_oauth = UserOauth::where('type', $type)->where('openid', $openid)->first();
+        $openid = md5($type .'_'. $openid);
+        $unionid = $unionid ? md5($type .'_'. $unionid) : '';
+
+        $user_oauth = null;
+
+        if($unionid) {
+            $user_oauth = UserOauth::from_cache_unionid($unionid);
+        }
+
         if(!$user_oauth) {
-            throw new ApiException(ApiException::OauthNotRegister, '用户尚未注册');
+            $user_oauth = UserOauth::from_cache_openid($openid);
+        }
+        
+        if(!$user_oauth) {
+            throw new ApiException(ApiException::OauthNotRegister, "尚未注册");
         }
 
         $user = User::from_cache($user_oauth->ucid);
-
         return $user;
     }
 }

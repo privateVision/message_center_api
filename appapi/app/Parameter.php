@@ -60,8 +60,8 @@ class Parameter
 	protected function username($username) {
 		$username = trim($username);
 
-		if(!preg_match('/^[a-zA-Z].*$/', $username)) {
-			throw new Exception ("用户名错误，必须以字母开头", 0);
+		if(preg_match('/^\d+$/', $username)) {
+			throw new Exception ("用户名错误，不能为纯数字", 0);
 		}
 		
 		return $username;
