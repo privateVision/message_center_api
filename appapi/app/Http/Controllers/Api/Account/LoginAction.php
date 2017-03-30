@@ -18,7 +18,7 @@ trait LoginAction {
         
         $user = $this->getLoginUser($request, $parameter);
         if($user->is_freeze) {
-            throw new ApiException(ApiException::Remind, '账号已被冻结，无法登陆');
+            throw new ApiException(ApiException::AccountFreeze, '账号已被冻结，无法登陆');
         }
         
         $user_sub_id = $this->getDefaultUserSubId($user, $request, $parameter);
@@ -31,7 +31,7 @@ trait LoginAction {
             }
             
             if($user_sub->is_freeze) {
-                throw new ApiException(ApiException::Remind, '子账号已被冻结，无法登陆');
+                throw new ApiException(ApiException::UserSubFreeze, '子账号已被冻结，无法登陆');
             }
         }
 

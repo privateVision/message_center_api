@@ -59,20 +59,6 @@ return [
             'strict'    => env('DB_ANFANAPI_STRICT_MODE', false),
         ],
 
-        '56gamebbs' => [
-            'driver'    => 'mysql',
-            'host'      => env('DB_56GAMEBBS_HOST'),
-            'port'      => env('DB_56GAMEBBS_PORT'),
-            'database'  => env('DB_56GAMEBBS_DATABASE'),
-            'username'  => env('DB_56GAMEBBS_USERNAME'),
-            'password'  => env('DB_56GAMEBBS_PASSWORD'),
-            'charset'   => env('DB_56GAMEBBS_CHARSET', 'utf8'),
-            'collation' => env('DB_56GAMEBBS_COLLATION', 'utf8_unicode_ci'),
-            'prefix'    => env('DB_56GAMEBBS_PREFIX'),
-            'timezone'  => env('DB_56GAMEBBS_TIMEZONE', '+00:00'),
-            'strict'    => env('DB_56GAMEBBS_STRICT_MODE', false),
-        ],
-
         'mongodb' => [
             'driver'   => 'mongodb',
             'host'     => env('MONGODB_HOST'),

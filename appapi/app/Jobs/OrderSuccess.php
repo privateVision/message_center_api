@@ -27,7 +27,7 @@ class OrderSuccess extends Job
         $order = Orders::from_cache($this->order_id);
         if(!$order || $order->status != Orders::Status_WaitPay) return;
 
-        $rediskey = sprintf('ol_%s', $this->order_id);
+        $rediskey = sprintf('order_lock_%s', $this->order_id);
         $is_mutex = Redis::mutex_lock($rediskey, function() use($order) { // 互斥锁， 防止多次操作
             $order->getConnection()->beginTransaction();
 

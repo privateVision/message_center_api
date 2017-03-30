@@ -18,7 +18,7 @@ class OauthController extends Controller {
         $code = smscode();
 
         try {
-            send_sms($mobile, env('APP_ID'), 'oauth_login_bind', ['#code#' => $code], $code);
+            send_sms($mobile, 0, 'oauth_login_bind', ['#code#' => $code], $code);
         } catch (\App\Exceptions\Exception $e) {
             throw new ApiException(ApiException::Remind, $e->getMessage());
         }
@@ -132,7 +132,7 @@ class OauthController extends Controller {
             user_log($mobile_user, $this->procedure, 'register', '【注册】通过%s注册，绑定手机{%s}，密码[%s]，openid:<%s>', $types[$type], $mobile, $mobile_user->password, $openid);
 
             try {
-                send_sms($mobile, env('APP_ID'), 'oauth_register', ['#type#' => $types[$type], '#username#' => $username, '#password#' => $password]);
+                send_sms($mobile, 0, 'oauth_register', ['#type#' => $types[$type], '#username#' => $username, '#password#' => $password]);
             } catch (\App\Exceptions\Exception $e) {
                 // throw new ApiException(ApiException::Remind, $e->getMessage());
             }

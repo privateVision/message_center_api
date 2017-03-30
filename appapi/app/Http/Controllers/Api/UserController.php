@@ -35,7 +35,7 @@ class UserController extends AuthController
     }
 
     public function RechargeAction(Request $request, Parameter $parameter) {
-        $order = $this->user->orders()->where('vid', env('APP_SELF_ID'))->where('status', Orders::Status_Success)->where('hide', 0)->get();
+        $order = $this->user->orders()->where('vid', '>=', 100)->where('status', Orders::Status_Success)->where('hide', 0)->get();
 
         $data = [];
         foreach($order as $v) {
@@ -53,7 +53,7 @@ class UserController extends AuthController
     }
 
     public function ConsumeAction(Request $request, Parameter $parameter) {
-        $order = $this->user->orders()->where('vid', '!=', env('APP_SELF_ID'))->where('status', Orders::Status_Success)->where('hide', 0)->get();
+        $order = $this->user->orders()->where('vid', '<', 100)->where('status', Orders::Status_Success)->where('hide', 0)->get();
 
         $data = [];
         foreach($order as $v) {
@@ -109,7 +109,7 @@ class UserController extends AuthController
         $code = smscode();
 
         try {
-            send_sms($mobile, env('APP_ID'), 'bind_phone', ['#code#' => $code], $code);
+            send_sms($mobile, 0, 'bind_phone', ['#code#' => $code], $code);
         } catch (\App\Exceptions\Exception $e) {
             throw new ApiException(ApiException::Remind, $e->getMessage());
         }
@@ -156,7 +156,7 @@ class UserController extends AuthController
         $code = smscode();
 
         try {
-            send_sms($mobile, env('APP_ID'), 'unbind_phone', ['#code#' => $code], $code);
+            send_sms($mobile, 0, 'unbind_phone', ['#code#' => $code], $code);
         } catch (\App\Exceptions\Exception $e) {
             throw new ApiException(ApiException::Remind, $e->getMessage());
         }
@@ -201,7 +201,7 @@ class UserController extends AuthController
         $code = smscode();
 
         try {
-            send_sms($mobile, env('APP_ID'), 'reset_password', ['#code#' => $code], $code);
+            send_sms($mobile, 0, 'reset_password', ['#code#' => $code], $code);
         } catch (\App\Exceptions\Exception $e) {
             throw new ApiException(ApiException::Remind, $e->getMessage());
         }

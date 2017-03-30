@@ -38,7 +38,7 @@ class UserSubController extends AuthController
         $allow_num = $config->allow_num ?: 1;
 
         $redisfield = $this->user->ucid .'_'. $pid;
-        $user_sub_num = Redis::hget(Redis::KH_USERSUB_NUM, $redisfield);
+        $user_sub_num = Redis::hget('user_sub_num', $redisfield);
         if(!$user_sub_num) {
             $reset = true;
             $user_sub_num = UserSub::tableSlice($this->user->ucid)->where('ucid', $this->user->ucid)->where('pid', $pid)->count();
@@ -61,9 +61,9 @@ class UserSubController extends AuthController
         $user_sub->save();
 
         if(isset($reset)) {
-            Redis::hset(Redis::KH_USERSUB_NUM, $redisfield, $user_sub_num + 1);
+            Redis::hset('user_sub_num', $redisfield, $user_sub_num + 1);
         } else {
-            Redis::hincrby(Redis::KH_USERSUB_NUM, $redisfield, 1);
+            Redis::hincrby('user_sub_num', $redisfield, 1);
         }
 
         return [

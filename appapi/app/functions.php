@@ -200,18 +200,13 @@ function order_success($order_id) {
  * @param  [int] $code                  [短信验证码]
  * @return [null]                       []
  */
-function send_sms($mobile, $app, $template_id, $repalce, $code = '') {
-    if(!is_object($app)) {
-        $app = config('common.apps.'.$app);
-        if(!$app) {
-            throw new \App\Exceptions\Exception('应用未授权');
-        }
-    }
+function send_sms($mobile, $pid, $template_id, $repalce, $code = '') {
+    $smsconfig = config('common.smsconfig');
 
     $SMSRecord = \App\Model\SMSRecord::where('mobile', $mobile)->where('date', date('Ymd'))->where('hour', date('G'))->orderBy('created_at', 'desc')->get();
 
     if(!env('APP_DEBUG')) {
-        if(count($SMSRecord) >= $app->sms_hour_limit) {
+        if(count($SMSRecord) >= $smsconfig['hour_limit']) {
             throw new \App\Exceptions\Exception(sprintf('短信发送次数超过限制，请%d分钟后再试', 60 - intval(date('i'))));
         }
 
@@ -223,17 +218,17 @@ function send_sms($mobile, $app, $template_id, $repalce, $code = '') {
         }
     }
 
-    if(!isset($app->sms_template[$template_id])) {
+    if(!isset($smsconfig['template'][$template_id])) {
         throw new \App\Exceptions\Exception('短信模板不存在');
     }
 
     if(is_array($repalce) && count($repalce)) {
-        $content = str_replace(array_keys($repalce), array_values($repalce), $app->sms_template[$template_id]);
+        $content = str_replace(array_keys($repalce), array_values($repalce), $smsconfig['template'][$template_id]);
     } else {
-        $content = $app->sms_template[$template_id];
+        $content = $smsconfig['template'][$template_id];
     }
 
-    Queue::push(new \App\Jobs\SendSMS($app, $mobile, $content, $code));
+    Queue::push(new \App\Jobs\SendSMS($smsconfig, $mobile, $content, $code));
 
     return $content;
 }

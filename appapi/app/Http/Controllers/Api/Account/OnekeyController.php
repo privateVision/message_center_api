@@ -51,7 +51,7 @@ class OnekeyController extends Controller {
         user_log($user, $this->procedure, 'register', '【注册】通过“手机号码一键登录”注册，手机号码{%s}, 密码[%s]', $mobile, $user->password);
 
         try {
-            send_sms($mobile, env('APP_ID'), 'mobile_register', ['#username#' => $username, '#password#' => $password]);
+            send_sms($mobile, 0, 'mobile_register', ['#username#' => $username, '#password#' => $password]);
         } catch (\App\Exceptions\Exception $e) {
             // throw new ApiException(ApiException::Remind, $e->getMessage());
         }
@@ -60,11 +60,10 @@ class OnekeyController extends Controller {
     }
     
     public function SMSTokenAction(Request $request, Parameter $parameter) {
-        $config = config('common.apps.'.env('APP_ID'));
-        if(!$config) {
-            throw new ApiException(ApiException::Error, '短信接口未配置');
-        }
-
-        return ['sms_token' => uuid(), 'send_to' => $config->sms_receiver];
+        $config = config('common.smsconfig');
+        return [
+            'sms_token' => uuid(), 
+            'send_to' => $config['receiver']
+        ];
     }
 }

@@ -5,14 +5,14 @@ use App\Redis;
 
 class SendSMS extends Job
 {
-    protected $app;
+    protected $smsconfig;
     protected $mobile;
     protected $content;
     protected $code;
 
-    public function __construct($app, $mobile, $content, $code = 0)
+    public function __construct($smsconfig, $mobile, $content, $code = 0)
     {
-        $this->app = $app;
+        $this->smsconfig = $smsconfig;
         $this->mobile = $mobile;
         $this->content = $content;
         $this->code = $code;
@@ -30,7 +30,7 @@ class SendSMS extends Job
             $SMSRecord->save();
 
             if($this->code) {
-                Redis::setex(sprintf(Redis::KSTR_SMS, $this->mobile, $this->code), 1800, 1);
+                Redis::setex(sprintf('sms_%s_%s', $this->mobile, $this->code), 1800, 1);
             }
 
             return ;
@@ -39,12 +39,12 @@ class SendSMS extends Job
         if($this->attempts() >= 10) return;
 
         $data = [
-            'apikey' => $this->app->sms_apikey,
+            'apikey' => $this->smsconfig['apikey'],
             'mobile' => $this->mobile,
             'text' => $this->content,
         ];
 
-        $res = http_request($this->app->sms_sender, $data);
+        $res = http_request($this->smsconfig['sender'], $data);
 
         log_info('sendsms', ['req' => $data, 'res' => $res]);
 
@@ -67,7 +67,7 @@ class SendSMS extends Job
             $SMSRecord->save();
 
             if($this->code) {
-                Redis::setex(sprintf(Redis::KSTR_SMS, $this->mobile, $this->code), 1800, 1);
+                Redis::setex(sprintf('sms_%s_%s', $this->mobile, $this->code), 1800, 1);
             }
         } else {
             return $this->release(5);

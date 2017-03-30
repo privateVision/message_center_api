@@ -22,7 +22,7 @@ class YunpianController extends \App\Controller
         ksort($sms_reply);
 
         // todo: 这里要改...
-        $str = implode(',', $sms_reply) .','. config('common.yunpian.apikey');
+        $str = implode(',', $sms_reply) .','. config('common.smsconfig.apikey');
         if($sign !== md5($str)) {
             return 'FAILURE';
         }

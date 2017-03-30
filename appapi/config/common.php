@@ -1,26 +1,28 @@
 <?php
 return [
-    'yunpian' => [
+    'smsconfig' => [
         'receiver' => '10690204000237',
         'apikey' => '0dbc5a50c034a8396b50f3a80609497d',
         'sender' => 'http://yunpian.com/v1/sms/send.json',
+        'hour_limit' => 3, // 每小时短信发送次数限制
         'template' => [
-
-        ],
-    ],
-/*
-    'sms' => [
-        1000 =>
-            'receiver' => '10690204000237',
-            'apikey' => '0dbc5a50c034a8396b50f3a80609497d',
-            'sender' => 'http://yunpian.com/v1/sms/send.json',
-            'template' => [
-                1 => 'template1',
-                2 => 'template2'
-            ],
+            // 手机注册成功  一键登录  主动短信验证码登录
+            'mobile_register' => '【安锋游戏】恭喜您注册成功，用户名：#username#  密码：#password#，您也可以使用手机号码作为账号登录。',
+            // 重置密码时发送手机验证码 
+            'reset_password' => '【安锋游戏】您正在使用该手机号码重置登录密码，验证码为：#code#，请勿向任何人泄露您的验证码。',
+            // 平台登录时绑定手机发送短信验证码
+            'oauth_login_bind' => '【安锋游戏】您正在通过该手机号码绑定安锋账号，验证码为：#code#，请勿向任何人泄露您的验证码。',
+            // 平台注册成功后向用户发送账号密码
+            'oauth_register' => '【安锋游戏】恭喜您注册成功，您可以使用#type#直接登录，也可以使用手机号码或用户名登录，用户名：#username#  密码：#password#',
+            // 在用户中心绑定手机
+            'bind_phone' => '【安锋游戏】您正在通过手机号码绑定安锋账号，验证码为：#code#，请勿向任何人泄露您的验证码。',
+            // 解除绑定手机号码
+            'unbind_phone' => '【安锋游戏】您正在通过该手机号码解绑安锋账号，验证码为：#code#，请勿向任何人泄露您的验证码。',
+            // 手机号码+验证码登录
+            'login_phone' => '【安锋游戏】您正在使用该手机号码登录安锋游戏，验证码为：#code#，请勿向任何人泄露您的验证码。',
         ]
     ],
-*/
+
     'payconfig' => [
         'alipay' => [
             'AppID' => "2088411293741002",
@@ -71,44 +73,5 @@ return [
             'payChannelType' => '13',
             'mhtSignType' => 'MD5',
         ],
-    ],
-
-    'apps' => [
-        1000 => (object) [
-            'id' => 1000,
-            'appkey' => '7dbdac062e6bb98d809f988f68b42e57',
-            'sms_receiver' => '10690204000237',
-            'sms_apikey' => '0dbc5a50c034a8396b50f3a80609497d',
-            'sms_sender' => 'http://yunpian.com/v1/sms/send.json',
-            'sms_hour_limit' => 3, // 每小时短信发送次数限制
-            'sms_template' => [
-                // 手机注册成功  一键登录  主动短信验证码登录
-                'mobile_register' => '【安锋游戏】恭喜您注册成功，用户名：#username#  密码：#password#，您也可以使用手机号码作为账号登录。',
-                // 重置密码时发送手机验证码 
-                'reset_password' => '【安锋游戏】您正在使用该手机号码重置登录密码，验证码为：#code#，请勿向任何人泄露您的验证码。',
-                // 平台登录时绑定手机发送短信验证码
-                'oauth_login_bind' => '【安锋游戏】您正在通过该手机号码绑定安锋账号，验证码为：#code#，请勿向任何人泄露您的验证码。',
-                // 平台注册成功后向用户发送账号密码
-                'oauth_register' => '【安锋游戏】恭喜您注册成功，您可以使用#type#直接登录，也可以使用手机号码或用户名登录，用户名：#username#  密码：#password#',
-                // 在用户中心绑定手机
-                'bind_phone' => '【安锋游戏】您正在通过手机号码绑定安锋账号，验证码为：#code#，请勿向任何人泄露您的验证码。',
-                // 解除绑定手机号码
-                'unbind_phone' => '【安锋游戏】您正在通过该手机号码解绑安锋账号，验证码为：#code#，请勿向任何人泄露您的验证码。',
-                // 手机号码+验证码登录
-                'login_phone' => '【安锋游戏】您正在使用该手机号码登录安锋游戏，验证码为：#code#，请勿向任何人泄露您的验证码。',
-            ]
-        ],
-
-        1001 => (object) [
-            'id' => 1001,
-            'appkey' => '7dbdac062e6bb98d809f988f68b42e57',
-            'sms_receiver' => '10690204000237',
-            'sms_apikey' => '0dbc5a50c034a8396b50f3a80609497d',
-            'sms_sender' => 'http://yunpian.com/v1/sms/send.json',
-            'sms_hour_limit' => 3, // 每小时短信发送次数限制
-            'sms_template' => [
-            
-            ]
-        ]
     ],
 ];

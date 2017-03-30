@@ -46,7 +46,7 @@ class MobileController extends Controller {
 
         // 将密码发给用户，通过队列异步发送
         try {
-            send_sms($mobile, env('APP_ID'), 'mobile_register', ['#username#' => $username, '#password#' => $password]);
+            send_sms($mobile, 0, 'mobile_register', ['#username#' => $username, '#password#' => $password]);
         } catch (\App\Exceptions\Exception $e) {
             // throw new ApiException(ApiException::Remind, $e->getMessage());
         }
@@ -60,7 +60,7 @@ class MobileController extends Controller {
         $code = smscode();
 
         try {
-            send_sms($mobile, env('APP_ID'), 'login_phone', ['#code#' => $code], $code);
+            send_sms($mobile, 0, 'login_phone', ['#code#' => $code], $code);
         } catch (\App\Exceptions\Exception $e) {
             throw new ApiException(ApiException::Remind, $e->getMessage());
         }

@@ -62,7 +62,7 @@ class UserController extends Controller {
         $code = smscode();
 
         try {
-            send_sms($mobile, env('APP_ID'), 'reset_password', ['#code#' => $code], $code);
+            send_sms($mobile, 0, 'reset_password', ['#code#' => $code], $code);
         } catch (\App\Exceptions\Exception $e) {
             throw new ApiException(ApiException::Remind, $e->getMessage());
         }
