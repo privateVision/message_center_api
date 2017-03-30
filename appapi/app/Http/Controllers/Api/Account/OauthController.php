@@ -167,6 +167,8 @@ class OauthController extends Controller {
         $openid = $parameter->tough('openid');
         $type = $parameter->tough('type');
         $unionid = $parameter->get('unionid');
+        $nickname = $parameter->get('nickname');
+        $avatar = $parameter->get('avatar');
 
         $openid = md5($type .'_'. $openid);
         $unionid = $unionid ? md5($type .'_'. $unionid) : '';
@@ -194,7 +196,7 @@ class OauthController extends Controller {
         $user->uid = $username;
         $user->email = $username . "@anfan.com";
         $user->mobile = '';
-        $user->nickname = $nickname;
+        $user->nickname = $nickname ?: $username;
         $user->avatar = $avatar;
         $user->password = $password;
         $user->regip = $request->ip();
@@ -209,10 +211,9 @@ class OauthController extends Controller {
         $user_oauth->type = $type;
         $user_oauth->openid = $openid;
         $user_oauth->unionid = $unionid;
-        $user_oauth->uuid = $uuid;
         $user_oauth->saveAndCache();
 
-        user_log($user, $this->procedure, 'register', '【注册】通过%s注册，密码[%s]', @$this->types[$type], $user->password);
+        user_log($user, $this->procedure, 'register', '【注册】通过%s注册，密码[%s]', config("common.oauth.{$type}.text", '第三方'), $user->password);
         
         return $user;
     }

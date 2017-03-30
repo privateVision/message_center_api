@@ -10,6 +10,7 @@ use App\Model\UserRole;
 use App\Model\ProceduresZone;
 use App\Model\ProceduresExtend;
 use App\Model\UserSub;
+use App\Model\UserOauth;
 
 class UserController extends AuthController
 {
@@ -25,7 +26,7 @@ class UserController extends AuthController
             'balance' => $this->user->balance,
             'birthday' => (string)$this->user->birthday,
             'address' => (string)$this->user->address,
-            'avatar' => $this->user->avatar,
+            'avatar' => $this->user->avatar ?: env('default_avatar'),
             'real_name' => (string)$this->user->real_name,
             'card_id' => (string)$this->user->card_id,
             'exp' => $this->user->exp,
@@ -261,6 +262,47 @@ class UserController extends AuthController
         $this->user->asyncSave();
 
         user_log($this->user, $this->procedure, 'real_name_attest', '【实名认证】通过手机验证码，姓名:%s，身份证号码:%s', $name, $card_id);
+
+        return ['result' => true];
+    }
+
+    public function BindOauthAction(Request $request, Parameter $parameter) {
+        $openid = $parameter->tough('openid');
+        $type = $parameter->tough('type');
+        $unionid = $parameter->get('unionid');
+        $nickname = $parameter->get('nickname');
+        $avatar = $parameter->get('avatar');
+
+        $openid = md5($type .'_'. $openid);
+        $unionid = $unionid ? md5($type .'_'. $unionid) : '';
+
+        $user_oauth = null;
+
+        if($unionid) {
+            $user_oauth = UserOauth::from_cache_unionid($unionid);
+        }
+
+        if(!$user_oauth) {
+            $user_oauth = UserOauth::from_cache_openid($openid);
+        }
+        
+        if($user_oauth) {
+            if($user_oauth->ucid != $this->user->ucid) {
+                throw new ApiException(ApiException::Remind, config("common.oauth.{$type}.text", '第三方') . "已经绑定了其它账号");
+            }
+        } else {
+            $user_oauth = new UserOauth;
+            $user_oauth->ucid = $this->user->ucid;
+            $user_oauth->type = $type;
+            $user_oauth->openid = $openid;
+            $user_oauth->unionid = $unionid;
+            $user_oauth->saveAndCache();
+
+            if(!$this->user->avatar && $avatar) {
+                $this->user->avatar = $avatar;
+                $this->user->asyncSave();
+            }
+        }
 
         return ['result' => true];
     }

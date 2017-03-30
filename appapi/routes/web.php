@@ -58,16 +58,13 @@ $app->group(['prefix' => 'api'], function () use ($app) {
     $app->post('account/mobile/sms_login', 'Api\\Account\\MobileController@SMSLoginAction');                // 手机验证码登陆（发送短信）
     $app->post('account/mobile/login', 'Api\\Account\\MobileController@LoginAction');                       // 手机验证码登陆
     $app->post('account/guest/login', 'Api\\Account\\GuestController@LoginAction');                         // 游客登陆
-    $app->post('account/oauth/sms_bind', 'Api\\Account\\OauthController@SMSBindAction');                    // 平台注册绑定手机时发送验证码
     $app->post('account/oauth/register', 'Api\\Account\\OauthController@RegisterAction');                   // 平台注册
     $app->post('account/oauth/login', 'Api\\Account\\OauthController@LoginAction');                         // 平台登陆
 
-    $app->post('user/message', 'Api\\UserController@MessageAction');                                        // 消息轮循
     $app->post('user/recharge', 'Api\\UserController@RechargeAction');                                      // 充值记录（充F币）
     $app->post('user/consume', 'Api\\UserController@ConsumeAction');                                        // 消费记录
     $app->post('user/hide_order', 'Api\\UserController@HideOrderAction');                                   // 隐藏订单
     $app->post('user/balance', 'Api\\UserController@BalanceAction');                                        // 用户余额
-    
     $app->post('user/sms_bind_phone', 'Api\\UserController@SMSBindPhoneAction');                            // 发送绑定手机的短信
     $app->post('user/bind_phone', 'Api\\UserController@BindPhoneAction');                                   // 绑定手机号码
     $app->post('user/sms_unbind_phone', 'Api\\UserController@SMSUnbindPhoneAction');                        // 发送解绑手机的短信
@@ -78,6 +75,8 @@ $app->group(['prefix' => 'api'], function () use ($app) {
     $app->post('user/report_role', 'Api\\UserController@ReportRoleAction');                                 // 上报玩家角色信息
     $app->post('user/attest', 'Api\\UserController@AttestAction');                                          // 实名认证
     $app->post('user/info', 'Api\\UserController@InfoAction');                                              // 用户详细信息
+    $app->post('user/bind_oauth', 'Api\\UserController@BindOauthAction');                                   // 用户详细信息
+
 
     $app->post('user_sub/list', 'Api\\UserSubController@ListAction');                                       // 小号列表
     $app->post('user_sub/new', 'Api\\UserSubController@NewAction');                                         // 添加小号

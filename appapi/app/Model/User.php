@@ -48,10 +48,10 @@ class User extends Model
         return $this->hasOne(UserOauth::class, 'ucid', 'ucid');
     }
 
-    public function getAvatarAttribute() {
-        $avatar = @$this->attributes['avatar'];
-        return $avatar ?: env('default_avatar');
-    }
+    //public function getAvatarAttribute() {
+    //    $avatar = @$this->attributes['avatar'];
+    //    return $avatar ?: env('default_avatar');
+    //}
 
     public function getIsFreezeAttribute() {
         return @$this->attributes['is_freeze'] == 1;
