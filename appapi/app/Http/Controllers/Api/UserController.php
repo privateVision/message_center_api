@@ -9,12 +9,14 @@ use App\Model\Orders;
 use App\Model\UserRole;
 use App\Model\ProceduresZone;
 use App\Model\ProceduresExtend;
+use App\Model\UserSub;
 
 class UserController extends AuthController
 {
     public function InfoAction(Request $request, Parameter $parameter) {
         return [
-            'ucid' => $this->user->ucid,
+            'uid' => $this->user->ucid,
+            'sub_nickname' => 
             'username' => $this->user->uid,
             'nickname' => $this->user->nickname,
             'mobile' => $this->user->mobile,

@@ -18,7 +18,7 @@ trait RegisterAction {
         
         $user = $this->getRegisterUser($request, $parameter);
         if($user->is_freeze) {
-            throw new ApiException(ApiException::Remind, '账号已被冻结，无法登陆');
+            throw new ApiException(ApiException::Remind, '账号被冻结，无法登陆');
         }
         
         $user_sub_id = $this->getDefaultUserSubId($user, $request, $parameter);
@@ -31,15 +31,18 @@ trait RegisterAction {
             }
             
             if($user_sub->is_freeze) {
-                throw new ApiException(ApiException::Remind, '子账号已被冻结，无法登陆');
+                throw new ApiException(ApiException::Remind, '角色被冻结，无法登陆');
             }
         }
-        
+
+        $is_service = false;
+
         if(!$user_sub) {
             // 客服登陆用户的小号
             $user_sub_service = UserSubService::where('ucid', $user->ucid)->where('pid', $pid)->where('status', UserSubService::Status_Normal)->orderBy('id', 'desc')->first();
             if($user_sub_service) {
                 $user_sub = UserSub::tableSlice($user_sub_service->src_ucid)->from_cache($user_sub_service->user_sub_id);
+                $is_service = true;
             }
 
             // 查找最近一次登陆的小号
@@ -63,9 +66,11 @@ trait RegisterAction {
             }
         }
 
-        $user_sub->priority = time();
-        $user_sub->last_login_at = datetime();
-        $user_sub->save();
+        if(!$is_service) {
+            $user_sub->priority = time();
+            $user_sub->last_login_at = datetime();
+            $user_sub->save();
+        }
 
         $session = new Session;
         $session->pid = $pid;

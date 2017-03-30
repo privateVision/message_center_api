@@ -34,6 +34,8 @@ trait LoginAction {
                 throw new ApiException(ApiException::Remind, '子账号已被冻结，无法登陆');
             }
         }
+
+        $is_service = false;
         
         if(!$user_sub) {
             // 客服登陆用户的小号
@@ -45,6 +47,7 @@ trait LoginAction {
             // 查找最近一次登陆的小号
             if(!$user_sub) {
                 $user_sub = UserSub::tableSlice($user->ucid)->where('ucid', $user->ucid)->where('pid', $pid)->where('is_freeze', false)->orderBy('priority', 'desc')->first();
+                $is_service = true;
             }
 
             // 用户没有可用的小号，创建
@@ -63,9 +66,11 @@ trait LoginAction {
             }
         }
 
-        $user_sub->priority = time();
-        $user_sub->last_login_at = datetime();
-        $user_sub->save();
+        if(!$is_service) {
+            $user_sub->priority = time();
+            $user_sub->last_login_at = datetime();
+            $user_sub->save();
+        }
 
         $session = new Session;
         $session->pid = $pid;
@@ -95,7 +100,6 @@ trait LoginAction {
             'sub_nickname' => strval($user_sub->name),
             'uid' => $user->ucid,
             'username' => $user->uid,
-            'nickname' => $user->nickname,
             'mobile' => strval($user->mobile),
             'avatar' => $user->avatar ? $user->avatar : env('AVATAR'),
             'is_real' => $user->isReal(),
