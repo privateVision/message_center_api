@@ -5,7 +5,7 @@
 ##################################################
 
 count=$(ps -ef|grep uwsgi|grep -v grep|wc -l)
-if [ 1 == $count ];then
+if [ $count -gt 0 ];then
     echo 'stop main process ...'
     ps -ef|grep uwsgi|grep -v grep|awk '{print $2}'|xargs kill -9
     if [ 0 == $? ];then
@@ -24,7 +24,7 @@ if [ 1 == $count ];then
         echo "start process failed"
     fi
     count=$(ps -ef|grep consume|grep -v grep|wc -l)
-    if [ 1 == $count ];then
+    if [ $count -gt 0 ];then
         ps -ef|grep consume|grep -v grep|awk '{print $2}'|xargs kill -9
         nohup python consume.py &
         if [ 0 == $? ];then
