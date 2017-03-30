@@ -156,5 +156,5 @@ def v4_sdk_heartbeat_ack():
 
 #  用于监控程序判断该进程是否存在
 @app_controller.route('/msa/v4/is_process_ok')
-def v4_sdk_heartbeat_ack():
+def v4_process_ok():
     return response_ok()
