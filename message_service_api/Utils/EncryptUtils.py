@@ -36,6 +36,14 @@ def check_cms_api_data_sign(data, sign):
     return False
 
 
+def get_cms_md5_sign(data):
+    m = hashlib.md5()
+    str = "%s%s" % (data, app.config.get('MD5_SIGN_KEY'))
+    service_logger.info("用于生成MD5的数据为：%s" % (str,))
+    m.update(str)
+    return m.hexdigest()
+
+
 def get_md5_sign(data):
     m = hashlib.md5()
     data = json.dumps(data, sort_keys=True)
