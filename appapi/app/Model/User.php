@@ -6,6 +6,25 @@ class User extends Model
     protected $table = 'user';
     protected $primaryKey = 'ucid';
     protected $hidden = ['password', 'salt'];
+    protected $casts = [
+        'ucid' => 'integer',
+        'uid' => 'string',
+        'nickname' => 'string',
+        'mobile' => 'string',
+        'email' => 'string',
+        'gender' => 'integer',
+        'balance' => 'float',
+        'birthday' => 'string',
+        'address' => 'string',
+        'avatar' => 'string',
+        'real_name' => 'string',
+        'card_id' => 'string',
+        'is_freeze' => 'boolean',
+        'exp' => 'integer',
+        'vip' => 'integer',
+        'score' => 'integer',
+
+    ];
 
     const CREATED_AT = 'createTime';
     const UPDATED_AT = 'updated_at';
