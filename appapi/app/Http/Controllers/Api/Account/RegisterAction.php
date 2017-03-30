@@ -20,57 +20,30 @@ trait RegisterAction {
         if($user->is_freeze) {
             throw new ApiException(ApiException::AccountFreeze, '账号被冻结，无法登陆');
         }
-        
-        $user_sub_id = $this->getDefaultUserSubId($user, $request, $parameter);
 
-        $user_sub = null;
-        if($user_sub_id) {
-            $user_sub = UserSub::tableSlice($user->ucid)->from_cache($user_sub_id);
-            if(!$user_sub || $user_sub->ucid != $user->ucid || $user_sub->pid != $pid) {
-                throw new ApiException(ApiException::Remind, "角色不存在，无法登陆");
-            }
-            
-            if($user_sub->is_freeze) {
-                throw new ApiException(ApiException::UserSubFreeze, '角色被冻结，无法登陆');
-            }
-        }
-
-        $is_service = false;
-
+        // 查找最近一次登陆的小号
         if(!$user_sub) {
-            // 客服登陆用户的小号
-            $user_sub_service = UserSubService::where('ucid', $user->ucid)->where('pid', $pid)->where('status', UserSubService::Status_Normal)->orderBy('id', 'desc')->first();
-            if($user_sub_service) {
-                $user_sub = UserSub::tableSlice($user_sub_service->src_ucid)->from_cache($user_sub_service->user_sub_id);
-                $is_service = true;
-            }
-
-            // 查找最近一次登陆的小号
-            if(!$user_sub) {
-                $user_sub = UserSub::tableSlice($user->ucid)->where('ucid', $user->ucid)->where('pid', $pid)->where('is_freeze', false)->orderBy('priority', 'desc')->first();
-            }
-
-            // 用户没有可用的小号，创建
-            if(!$user_sub) {
-                $user_sub = UserSub::tableSlice($user->ucid);
-                $user_sub->id = uuid($user->ucid);
-                $user_sub->ucid = $user->ucid;
-                $user_sub->pid = $pid;
-                $user_sub->rid = $rid;
-                $user_sub->old_rid = $rid;
-                $user_sub->cp_uid = $user->ucid;
-                $user_sub->name = '小号01';
-                $user_sub->priority = time();
-                $user_sub->last_login_at = datetime();
-                $user_sub->save();
-            }
+            $user_sub = UserSub::tableSlice($user->ucid)->where('ucid', $user->ucid)->where('pid', $pid)->where('is_freeze', false)->orderBy('priority', 'desc')->first();
         }
 
-        if(!$is_service) {
+        // 用户没有可用的小号，创建
+        if(!$user_sub) {
+            $user_sub = UserSub::tableSlice($user->ucid);
+            $user_sub->id = uuid($user->ucid);
+            $user_sub->ucid = $user->ucid;
+            $user_sub->pid = $pid;
+            $user_sub->rid = $rid;
+            $user_sub->old_rid = $rid;
+            $user_sub->cp_uid = $user->ucid;
+            $user_sub->name = '小号01';
             $user_sub->priority = time();
             $user_sub->last_login_at = datetime();
             $user_sub->save();
         }
+
+        $user_sub->priority = time();
+        $user_sub->last_login_at = datetime();
+        $user_sub->save();
 
         $session = new Session;
         $session->pid = $pid;
