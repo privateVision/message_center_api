@@ -1,5 +1,11 @@
 <?php
 return [
+    'oauth' => [
+        'weixin' => ['text' => '微信'],
+        'qq' => ['text' => 'QQ'],
+        'weibo' => ['text' => '微博'],
+    ],
+
     'smsconfig' => [
         'receiver' => '10690204000237',
         'apikey' => '0dbc5a50c034a8396b50f3a80609497d',
