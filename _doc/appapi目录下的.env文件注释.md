@@ -16,14 +16,14 @@
 系统运行时区
 #### 3DES_KEY=4c6e0a99384aff934c6e0a99
 用于3des加密的默认KEY *无需更改*
-#### ALARM_MAILS=sss60@qq.com
+#### alarm_emails=sss60@qq.com
 当系统产生错误时发出邮件通知，多个邮件地址使用竖线分隔
 
 # 客服设置
 
 ---
 
-#### AVATAR=http://api5.zhuayou.com/avatar.png
+#### default_avatar=http://api5.zhuayou.com/avatar.png
 默认用户头像
 #### SERVICE_SHARE=http://www.anfeng.cn/app
 默认客服页面
