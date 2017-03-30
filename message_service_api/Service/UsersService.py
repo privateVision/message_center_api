@@ -382,10 +382,13 @@ def sdk_api_request_check(func):
         is_sign_true = sdk_api_check_sign(request)
         if is_sign_true is True:
             ucid = get_ucid_by_access_token(request.form['_token'])
+            interval = 2
+            if 'interval' in request.form:
+                interval = request.form['interval']
             if ucid:
                 if find_user_account_is_freeze(ucid):
                     return response_data(200, 101, '账号被冻结')
-                hdfs_logger.info("ucid-%s-uri-%s" % (ucid, request.url))
+                hdfs_logger.info("ucid-%s-uri-%s-interval-%s" % (ucid, request.url, interval))
             else:
                 log_exception(request, "根据token: %s 获取ucid失败" % (request.form['_token'],))
                 return response_data(200, 0, '根据token获取ucid失败')
