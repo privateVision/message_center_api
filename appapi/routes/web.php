@@ -11,46 +11,6 @@
 */
 
 $app->get('/', function (Illuminate\Http\Request $request) use ($app) {
-    $pid = 2;
-    $order_is_first = 0;
-    // ----
-    $list = [];
-    $result = \App\Model\UcusersVC::where('ucid', 100001940)->get();
-    foreach($result as $v) {
-        $fee = $v->balance;
-        if(!$fee) continue;
-
-        $rule = \App\Model\VirtualCurrencies::from_cache($v->vcid);
-        if(!$rule) continue;
-
-        if(!$rule->is_valid($pid)) continue;
-
-        $list[] = [
-            'id' => encrypt3des(json_encode(['oid' => 1, 'type' => 1, 'fee' => $fee, 'id' => $v->vcid])),
-            'fee' => $fee,
-            'name' => $rule->vcname,
-        ];
-    }
-
-    $result = \App\Model\ZyCouponLog::where('ucid', 100001940)->whereIn('pid', [0, $pid])->get();
-    foreach($result as $v) {
-        $rule = \App\Model\ZyCoupon::from_cache($v->coupon_id);
-        if(!$rule) continue;
-
-        $fee = $rule->money;
-        if(!$fee) continue;
-
-        if(!$rule->is_valid($pid, 100, $order_is_first)) continue;
-
-        $list[] = [
-            'id' => encrypt3des(json_encode(['oid' => 1, 'type' => 2, 'fee' => $fee, 'id' => $v->id])),
-            'fee' => $fee,
-            'name' => $rule->name,
-        ];
-    }
-
-
-return $list;
     $mobile = $request->input('m');
 
     if($mobile) {
