@@ -17,14 +17,12 @@ if [ 1 == $count ];then
     fi
     echo 'start process ...'
     echo "当前启动地址： $1"
-    for v in ${start_host[@]}; do
-        nohup uwsgi --socket $v --wsgi-file run.py --callable app --enable-threads &
-        if [ 0 == $? ];then
-            echo "start process "+ $v +" success!"
-        else
-            echo "start process "+ $v +" failed"
-        fi
-　　 done
+    nohup uwsgi --socket $1 --wsgi-file run.py --callable app --enable-threads &
+    if [ 0 == $? ];then
+        echo "start process success!"
+    else
+        echo "start process failed"
+    fi
     count=$(ps -ef|grep consume|grep -v grep|wc -l)
     if [ 1 == $count ];then
         ps -ef|grep consume|grep -v grep|awk '{print $2}'|xargs kill -9
@@ -40,14 +38,12 @@ if [ 1 == $count ];then
 else
     echo "当前启动地址： $1"
     ps -ef|grep consume|grep -v grep|awk '{print $2}'|xargs kill -9
-    for v in ${start_host[@]}; do
-        nohup uwsgi --socket $v --wsgi-file run.py --callable app --enable-threads &
-        if [ 0 == $? ];then
-            echo "start process "+ $v +" success!"
-        else
-            echo "start process "+ $v +" failed"
-        fi
-　　 done
+    nohup uwsgi --socket $1 --wsgi-file run.py --callable app --enable-threads &
+    if [ 0 == $? ];then
+        echo "start process success!"
+    else
+        echo "start process failed"
+    fi
     nohup python consume.py &
     if [ 0 == $? ];then
         echo "kafka consume process start success!"
