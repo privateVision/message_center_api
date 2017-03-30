@@ -67,7 +67,7 @@ class AppController extends Controller
                 'page' => $config->service_page,
                 'phone' => $config->service_phone,
                 'share' => $config->service_share,
-                'interval' => $config->service_interval,
+                'interval' => $config->heartbeat_interval,
             ],
             'bind_phone' => [
                 'need' => $config->bind_phone_need,
