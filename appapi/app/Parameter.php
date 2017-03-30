@@ -60,7 +60,7 @@ class Parameter
 	protected function username($username) {
 		$username = trim($username);
 
-		if(!preg_match('/^\d+$/', $username)) {
+		if(preg_match('/^\d+$/', $username)) {
 			throw new Exception ("用户名错误，不能为纯数字", 0);
 		}
 		
