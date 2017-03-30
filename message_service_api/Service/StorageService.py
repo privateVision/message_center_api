@@ -41,9 +41,11 @@ from Utils.RedisUtil import RedisHandle
 #  目标用户太多，改成分批发送
 def add_message_to_user_message_list(game, users_type, vip_user, specify_user, type, msg_id,
                                      start_time, end_time, is_time):
-    send_message_to_game_area_and_user_type_and_vip_users(game, users_type, vip_user, type, msg_id,
-                                                          is_time, start_time, end_time)
-    send_message_to_spcify_users(specify_user, game, type, msg_id, is_time, start_time, end_time)
+    if users_type is not None:
+        send_message_to_game_area_and_user_type_and_vip_users(game, users_type, vip_user, type, msg_id,
+                                                              is_time, start_time, end_time)
+    else:
+        send_message_to_spcify_users(specify_user, game, type, msg_id, is_time, start_time, end_time)
 
 
 #  分批向指定游戏区服的各种用户类型及等级发送消息
@@ -183,23 +185,26 @@ def add_user_messsage(ucid, type, msg_id, is_time, start_time, end_time, game):
 # 检查用户的类型和vip是否符合
 def check_user_type_and_vip(ucid=None, user_type=None, vip=None):
     from run import mysql_session
-    user_type_str = ",".join(user_type)
-    find_users_by_user_type_sql = "select count(*) from user as u, retailers as r where u.rid = r.rid " \
-                                  "and r.rtype in (%s) and u.ucid = %s " % (user_type_str, ucid)
-    find_users_by_vip_sql = "select count(*) from user as u where u.ucid = %s and u.vip >= %s " % (ucid, vip)
-    try:
-        is_exist = mysql_session.execute(find_users_by_user_type_sql).scalar()
-        if is_exist is None or is_exist == 0:
-            return False
-        is_exist = mysql_session.execute(find_users_by_vip_sql).scalar()
-        if is_exist is None or is_exist == 0:
-            return False
+    if user_type is not None:
+        user_type_str = ",".join(user_type)
+        find_users_by_user_type_sql = "select count(*) from user as u, retailers as r where u.rid = r.rid " \
+                                      "and r.rtype in (%s) and u.ucid = %s " % (user_type_str, ucid)
+        find_users_by_vip_sql = "select count(*) from user as u where u.ucid = %s and u.vip >= %s " % (ucid, vip)
+        try:
+            is_exist = mysql_session.execute(find_users_by_user_type_sql).scalar()
+            if is_exist is None or is_exist == 0:
+                return False
+            is_exist = mysql_session.execute(find_users_by_vip_sql).scalar()
+            if is_exist is None or is_exist == 0:
+                return False
+            return True
+        except Exception, err:
+            service_logger.error(err.message)
+            mysql_session.rollback()
+        finally:
+            mysql_session.close()
+    else:
         return True
-    except Exception, err:
-        service_logger.error(err.message)
-        mysql_session.rollback()
-    finally:
-        mysql_session.close()
 
 
 # 检查用户是否在某个游戏下
