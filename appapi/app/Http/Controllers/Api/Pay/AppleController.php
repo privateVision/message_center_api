@@ -126,6 +126,8 @@ class  AppleController extends Controller{
      * */
 
     public function OrderCreateAction(Request $request,Parameter $parameter){
+        $pid = $this->procedure->pid;
+
         //上层添加API 时间请求次数限制
         $uid = $this->user->uid;
         $ucid = $this->user->ucid;
@@ -179,14 +181,60 @@ class  AppleController extends Controller{
                 }
             }
 
+            // 储值卡，优惠券
+            $list = [];
+            $result = UcusersVC::where('ucid', $this->user->ucid)->get();
+            foreach($result as $v) {
+                $fee = $v->balance;
+                if(!$fee) continue;
+
+                $rule = VirtualCurrencies::from_cache($v->vcid);
+                if(!$rule) continue;
+
+                if(!$rule->is_valid($pid)) continue;
+
+                $list[] = [
+                    'id' => encrypt3des(json_encode(['oid' => $order->id, 'type' => 1, 'fee' => $fee, 'id' => $v->vcid])),
+                    'fee' => $fee,
+                    'name' => $rule->vcname,
+                ];
+            }
+
+            $result = ZyCouponLog::where('ucid', $this->user->ucid)->where('is_used', false)->whereIn('pid', [0, $pid])->get();
+            foreach($result as $v) {
+                $rule = ZyCoupon::from_cache($v->coupon_id);
+                if(!$rule) continue;
+
+                $fee = $rule->money;
+                if(!$fee) continue;
+
+                if(!$rule->is_valid($pid, $order->fee, $order_is_first)) continue;
+
+                $list[] = [
+                    'id' => encrypt3des(json_encode(['oid' => $order->id, 'type' => 2, 'fee' => $fee, 'id' => $v->id])),
+                    'fee' => $fee,
+                    'name' => $rule->name,
+                ];
+            }
+
+            $user_info = UcuserInfo::from_cache($this->user->ucid);
+
             return [
                 'order_id' => $order->sn,
                 'id'      =>$order->id,//返回当前的订单
                 'fee' => $dat[0]->fee,
                 "iap" =>$pay_type //支付的方式1 ios 0为第三方支付
             ];
+
+            return [
+                'order_id' => $order->sn,
+                'way' => [1, 2, 3],
+                'vip' => $user_info && $user_info->vip ? (int)$user_info->vip : 0,
+                'balance' => $this->user->balance,
+                'coupons' => $list,
+            ];
         }catch(\Exception $e){
-            echo  $e->getMessage();
+
         }
 
     }
