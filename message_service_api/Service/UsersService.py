@@ -379,18 +379,18 @@ def sdk_api_request_check(func):
     @wraps(func)
     def wraper(*args, **kwargs):
         # 数据库连接状态检测
-        from run import mysql_session
-        from run import mysql_cms_session
-        try:
-            mysql_session.execute('select 1=1').scalar()
-            mysql_cms_session.execute('select 1=1').scalar()
-        except Exception, err:
-            mysql_session.rollback()
-            mysql_cms_session.rollback()
-            service_logger.error(err.message)
-        finally:
-            mysql_session.close()
-            mysql_cms_session.close()
+        # from run import mysql_session
+        # from run import mysql_cms_session
+        # try:
+        #     mysql_session.execute('select 1=1').scalar()
+        #     mysql_cms_session.execute('select 1=1').scalar()
+        # except Exception, err:
+        #     mysql_session.rollback()
+        #     mysql_cms_session.rollback()
+        #     service_logger.error(err.message)
+        # finally:
+        #     mysql_session.close()
+        #     mysql_cms_session.close()
         from Utils.EncryptUtils import sdk_api_params_check, sdk_api_check_sign
         is_params_checked = sdk_api_params_check(request)
         if is_params_checked is False:
