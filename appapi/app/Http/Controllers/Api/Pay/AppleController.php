@@ -1,7 +1,7 @@
 <?php
 /**
  * Created by PhpStorm.
- * User: Administrator
+ * Ucuser: Administrator
  * Date: 2017/3/21
  * Time: 14:40
  */
@@ -172,7 +172,7 @@ class  AppleController extends Controller{
             if($pay_type == 1){
                 $sum = Orders::where("ucid",$ucid)->where("status",1)->sum('fee');
                 //获取限额
-                $sl = "select id,appids,fee from force_close_iaps where closed=0 AND appids = {$appid}";
+                $sl = "select id,appids,fee from force_close_iaps where closed=0 AND {$appid} IN (appids)";
                 $d = app('db')->select($sl);
                 if(count($d)){
                     $pay_type =  ($sum > $d[0]->fee)?0:1;

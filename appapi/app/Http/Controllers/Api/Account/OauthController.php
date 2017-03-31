@@ -5,8 +5,9 @@ use App\Exceptions\ApiException;
 use Illuminate\Http\Request;
 use App\Parameter;
 
-use App\Model\User;
-use App\Model\UserOauth;
+use App\Model\Ucuser;
+use App\Model\UcuserOauth;
+use App\Model\UcuserInfo;
 
 class OauthController extends Controller {
 
@@ -55,17 +56,17 @@ class OauthController extends Controller {
         $user_oauth = null;
 
         if($unionid) {
-            $user_oauth = UserOauth::from_cache_unionid($unionid);
+            $user_oauth = UcuserOauth::from_cache_unionid($unionid);
         }
 
         if(!$user_oauth) {
-            $user_oauth = UserOauth::from_cache_openid($openid);
+            $user_oauth = UcuserOauth::from_cache_openid($openid);
         }
 
-        $mobile_user = User::where('uid', $mobile)->orWhere('mobile', $mobile)->first();
+        $mobile_user = Ucuser::where('uid', $mobile)->orWhere('mobile', $mobile)->first();
         // ------------ oauth存在 --> 绑定mobile
         if($user_oauth) {
-            $user = User::from_cache($user_oauth->ucid);
+            $user = Ucuser::from_cache($user_oauth->ucid);
 
             if($user->mobile && $user->mobile != $mobile) {
                 throw new ApiException(ApiException::AlreadyBindMobile, '账号已经绑定了手机号码');
@@ -99,7 +100,7 @@ class OauthController extends Controller {
         // ------------ mobile存在 --> 绑定oauth
         if($mobile_user) {
             // 验证是否绑定过平台账号
-            $count = UserOauth::where('type', $type)->where('ucid', $mobile_user->ucid)->count();
+            $count = UcuserOauth::where('type', $type)->where('ucid', $mobile_user->ucid)->count();
             if($count > 0) {
                 throw new ApiException(ApiException::AlreadyBindOauth, '账号已经绑定了其它'.$types[$type]);
             }
@@ -127,7 +128,7 @@ class OauthController extends Controller {
             $username = username();
             $password = rand(100000, 999999);
             
-            $mobile_user = new User;
+            $mobile_user = new Ucuser;
             $mobile_user->uid = $username;
             $mobile_user->email = $username . "@anfan.com";
             $mobile_user->mobile = $mobile;
@@ -151,7 +152,7 @@ class OauthController extends Controller {
         }
         
         // ------------ 绑定平台账号
-        $user_oauth = new UserOauth;
+        $user_oauth = new UcuserOauth;
         $user_oauth->ucid = $mobile_user->ucid;
         $user_oauth->type = $type;
         $user_oauth->openid = $openid;
@@ -161,7 +162,6 @@ class OauthController extends Controller {
         return $mobile_user;
     }
 */
-    protected $types = ['weixin' => '微信', 'qq' => 'QQ', 'weibo' => '微博'];
 
     public function getRegisterUser(Request $request, Parameter $parameter) {
         $openid = $parameter->tough('openid');
@@ -176,15 +176,15 @@ class OauthController extends Controller {
         $user_oauth = null;
 
         if($unionid) {
-            $user_oauth = UserOauth::from_cache_unionid($unionid);
+            $user_oauth = UcuserOauth::from_cache_unionid($unionid);
         }
 
         if(!$user_oauth) {
-            $user_oauth = UserOauth::from_cache_openid($openid);
+            $user_oauth = UcuserOauth::from_cache_openid($openid);
         }
 
         if($user_oauth) {
-            $user = User::from_cache($user_oauth->ucid);
+            $user = Ucuser::from_cache($user_oauth->ucid);
             return $user;
         }
 
@@ -192,26 +192,32 @@ class OauthController extends Controller {
         $username = username();
         $password = rand(100000, 999999);
         
-        $user = new User;
+        $user = new Ucuser;
         $user->uid = $username;
         $user->email = $username . "@anfan.com";
         $user->mobile = '';
         $user->nickname = $nickname ?: $username;
-        $user->avatar = $avatar;
         $user->password = $password;
         $user->regip = $request->ip();
         $user->rid = $parameter->tough('_rid');
         $user->pid = $parameter->tough('_appid');
-        $user->regdate = date('Ymd');
-        $user->date = date('Ymd');
+        $user->regdate = time();
         $user->save();
 
-        $user_oauth = new UserOauth;
+        $user_oauth = new UcuserOauth;
         $user_oauth->ucid = $user->ucid;
         $user_oauth->type = $type;
         $user_oauth->openid = $openid;
         $user_oauth->unionid = $unionid;
         $user_oauth->saveAndCache();
+
+        $user_info = UcuserInfo::from_cache($user->ucid);
+        if(!$user_info) {
+            $user_info = new UcuserInfo;
+            $user_info->ucid = $user->ucid;
+            $user_info->avatar = $avatar;
+            $user_info->saveAndCache();
+        }
 
         user_log($user, $this->procedure, 'register', '【注册】通过%s注册，密码[%s]', config("common.oauth.{$type}.text", '第三方'), $user->password);
         
@@ -229,18 +235,18 @@ class OauthController extends Controller {
         $user_oauth = null;
 
         if($unionid) {
-            $user_oauth = UserOauth::from_cache_unionid($unionid);
+            $user_oauth = UcuserOauth::from_cache_unionid($unionid);
         }
 
         if(!$user_oauth) {
-            $user_oauth = UserOauth::from_cache_openid($openid);
+            $user_oauth = UcuserOauth::from_cache_openid($openid);
         }
         
         if(!$user_oauth) {
             throw new ApiException(ApiException::OauthNotRegister, "尚未注册");
         }
 
-        $user = User::from_cache($user_oauth->ucid);
+        $user = Ucuser::from_cache($user_oauth->ucid);
         return $user;
     }
 }

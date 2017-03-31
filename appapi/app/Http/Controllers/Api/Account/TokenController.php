@@ -5,7 +5,7 @@ use App\Exceptions\ApiException;
 use Illuminate\Http\Request;
 use App\Parameter;
 
-use App\Model\User;
+use App\Model\Ucuser;
 use App\Model\Session;
 
 class TokenController extends Controller {
@@ -26,7 +26,7 @@ class TokenController extends Controller {
             throw new ApiException(ApiException::Remind, '会话失效，请重新登录');
         }
 
-        $user = User::from_cache($session->ucid);
+        $user = Ucuser::from_cache($session->ucid);
         if(!$user) {
             throw new ApiException(ApiException::Remind, '会话失效，请重新登录');
         }
@@ -34,7 +34,7 @@ class TokenController extends Controller {
         return $user;
     }
     
-    public function getDefaultUserSubId(User $user, Request $request, Parameter $parameter) {
+    public function getDefaultUserSubId(Ucuser $user, Request $request, Parameter $parameter) {
         $user_sub_id = $parameter->get('user_sub_id');
         return $user_sub_id ?: null;
     }

@@ -5,11 +5,13 @@ use Illuminate\Http\Request;
 use App\Exceptions\ApiException;
 use App\Parameter;
 use App\Model\Session;
-use App\Model\User;
+use App\Model\Ucuser;
+use App\Model\UcuserInfo;
 
 class AuthController extends Controller {
 
 	protected $user = null;
+	protected $ucuser_info = null;
 	protected $session = null;
 
 	public function before(Request $request, Parameter $parameter) {
@@ -33,7 +35,7 @@ class AuthController extends Controller {
 			throw new ApiException(ApiException::Remind, '请先登陆');
 		}
 
-		$user = User::find($ucid);
+		$user = Ucuser::from_cache($ucid);
 		if(!$user) {
 			throw new ApiException(ApiException::Error, '玩家未找到');
 		}

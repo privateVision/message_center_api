@@ -1,13 +1,13 @@
 <?php
 /**
  * Created by PhpStorm.
- * User: Administrator
+ * Ucuser: Administrator
  * Date: 2017/3/16
  * Time: 13:50
  */
 namespace App\Http\Controllers\Web;
 use App\Exceptions\ToolException;
-use App\Model\User;
+use App\Model\Ucuser;
 use App\Parameter;
 use Illuminate\Http\Request;
 
@@ -47,7 +47,7 @@ class AccountController extends Controller{
 
         if(!check_name($username)) return trans("messages.user_type_error");
         if(!preg_match("/^[01]$/",$freezeType)) return trans("messages.param_type_error");
-        $user = User::where("uid",$username)->frist();
+        $user = Ucuser::where("uid",$username)->frist();
         if(empty($user)) return trans("messages.user_not_found");
 
         $user ->setIsFreezeAttribute(1);

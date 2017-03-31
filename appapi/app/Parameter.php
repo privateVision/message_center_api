@@ -86,4 +86,11 @@ class Parameter
 		
 		return $url;
 	}
+
+	protected function password($password) {
+		$password = trim($password);
+		if($password == "") throw new Exception ("密码不能为空", 0);
+
+		return $password;
+	}
 }

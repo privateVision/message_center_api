@@ -5,7 +5,7 @@ use App\Exceptions\ApiException;
 use Illuminate\Http\Request;
 use App\Parameter;
 
-use App\Model\User;
+use App\Model\Ucuser;
 
 class MobileController extends Controller {
 
@@ -20,7 +20,7 @@ class MobileController extends Controller {
         }
 
         // 登录
-        $user = User::where('uid', $mobile)->orWhere('mobile', $mobile)->first();
+        $user = Ucuser::where('uid', $mobile)->orWhere('mobile', $mobile)->first();
         if($user) {
             return $user;
         }
@@ -29,7 +29,7 @@ class MobileController extends Controller {
         $username = username();
         $password = rand(100000, 999999);
 
-        $user = new User;
+        $user = new Ucuser;
         $user->uid = $username;
         $user->email = $username . "@anfan.com";
         $user->mobile = $mobile;
@@ -38,8 +38,7 @@ class MobileController extends Controller {
         $user->regip = $request->ip();
         $user->rid = $parameter->tough('_rid');
         $user->pid = $parameter->tough('_appid');
-        $user->regdate = date('Ymd');
-        $user->date = date('Ymd');
+        $user->regdate = time();
         $user->save();
 
         user_log($user, $this->procedure, 'register', '【手机号码登录】检测到尚未注册，手机号码{%s}，密码[%s]', $mobile, $user->password);

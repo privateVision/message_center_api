@@ -1,9 +1,9 @@
 <?php
 namespace App\Model;
 
-class UserRole extends Model
+class UcuserRole extends Model
 {
-    protected $table = 'user_role';
+    protected $table = 'ucuser_role';
     public $incrementing = false;
 
     const CREATED_AT = 'created_at';

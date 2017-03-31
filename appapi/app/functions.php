@@ -99,7 +99,7 @@ function username() {
     do {
         $username = $chars[rand(0, 21)] . rand(10000, 99999999);
 
-        $count = \App\Model\User::where('uid', $username)->count();
+        $count = \App\Model\Ucuser::where('uid', $username)->count();
         if($count == 0) {
             return $username;
         }
@@ -167,7 +167,7 @@ function async_execute($method) {
 
 function user_log($user, $procedure, $type, $text_format) {
     if(is_numeric($user)) {
-        $user = \App\Model\User::from_cache($user);
+        $user = \App\Model\Ucuser::from_cache($user);
         if(!$user) return;
     }
 
@@ -177,7 +177,7 @@ function user_log($user, $procedure, $type, $text_format) {
 
     $format_arguments = array_slice(func_get_args(), 4);
 
-    $user_log = new \App\Model\UserLog;
+    $user_log = new \App\Model\UcuserLog;
     $user_log->type = $type;
     $user_log->ucid = $user->ucid;
     $user_log->mobile = $user->mobile;
