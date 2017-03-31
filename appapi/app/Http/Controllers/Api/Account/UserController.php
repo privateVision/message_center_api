@@ -11,9 +11,9 @@ class UserController extends Controller {
 
     use LoginAction, RegisterAction;
 
-    public function getLoginUser(Request $request, Parameter $parameter) {
-        $username = $parameter->tough('username');
-        $password = $parameter->tough('password');
+    public function getLoginUser() {
+        $username = $this->parameter->tough('username');
+        $password = $this->parameter->tough('password');
 
         $user = Ucuser::where('uid', $username)->orWhere('mobile', $username)->first();
 
@@ -24,9 +24,9 @@ class UserController extends Controller {
         return $user;
     }
     
-    public function getRegisterUser(Request $request, Parameter $parameter){
-        $username = $parameter->tough('username', 'username');
-        $password = $parameter->tough('password', 'password');
+    public function getRegisterUser(){
+        $username = $this->parameter->tough('username', 'username');
+        $password = $this->parameter->tough('password', 'password');
 
         $isRegister  = Ucuser::where("mobile", $username)->orWhere('uid', $username)->count();
 
@@ -39,9 +39,9 @@ class UserController extends Controller {
         $user->email = $username . "@anfan.com";
         $user->nickname = $username;
         $user->password = $password;
-        $user->regip = $request->ip();
-        $user->rid = $parameter->tough('_rid');
-        $user->pid = $parameter->tough('_appid');
+        $user->regip = $this->request->ip();
+        $user->rid = $this->parameter->tough('_rid');
+        $user->pid = $this->parameter->tough('_appid');
         $user->regdate = time();
         $user->save();
 
@@ -50,8 +50,8 @@ class UserController extends Controller {
         return $user;
     }
     
-    public function SMSResetPasswordAction(Request $request, Parameter $parameter) {
-        $mobile = $parameter->tough('mobile', 'mobile');
+    public function SMSResetPasswordAction() {
+        $mobile = $this->parameter->tough('mobile', 'mobile');
 
         $user = Ucuser::where('uid', $mobile)->orWhere('mobile', $mobile)->first();
         if(!$user) {
@@ -71,10 +71,10 @@ class UserController extends Controller {
         ];
     }
 
-    public function ResetPasswordAction(Request $request, Parameter $parameter) {
-        $mobile = $parameter->tough('mobile', 'mobile');
-        $code = $parameter->tough('code', 'smscode');
-        $new_password = $parameter->tough('password', 'password');
+    public function ResetPasswordAction() {
+        $mobile = $this->parameter->tough('mobile', 'mobile');
+        $code = $this->parameter->tough('code', 'smscode');
+        $new_password = $this->parameter->tough('password', 'password');
 
         if(!verify_sms($mobile, $code)) {
             throw new ApiException(ApiException::Remind, "验证码不正确，或已过期");
@@ -95,7 +95,7 @@ class UserController extends Controller {
         return ['result' => true];
     }
 
-    public function UsernameAction(Request $request, Parameter $parameter) {
+    public function UsernameAction() {
         return ['username' => username()];
     }
 }

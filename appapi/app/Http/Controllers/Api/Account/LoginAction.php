@@ -13,16 +13,16 @@ use App\Model\UcuserInfo;
 
 trait LoginAction {
 
-    public function LoginAction(Request $request, Parameter $parameter) {
-        $pid = $parameter->tough('_appid');
-        $rid = $parameter->tough('_rid');
+    public function LoginAction() {
+        $pid = $this->parameter->tough('_appid');
+        $rid = $this->parameter->tough('_rid');
         
-        $user = $this->getLoginUser($request, $parameter);
+        $user = $this->getLoginUser();
         if($user->is_freeze) {
             throw new ApiException(ApiException::AccountFreeze, '账号已被冻结，无法登陆');
         }
         
-        $user_sub_id = $this->getDefaultUserSubId($user, $request, $parameter);
+        $user_sub_id = $this->getDefaultUserSubId($user);
 
         $user_sub = null;
         if($user_sub_id) {
@@ -93,7 +93,7 @@ trait LoginAction {
         $login_log->pid = $pid;
         $login_log->loginDate = intval(time() / 86400);
         $login_log->loginTime = time() % 86400;
-        $login_log->loginIP = ip2long($request->ip());
+        $login_log->loginIP = ip2long($this->request->ip());
         $login_log->asyncSave();
 
         $user_info = UcuserInfo::from_cache($user->ucid);
@@ -116,19 +116,16 @@ trait LoginAction {
 
     /**
      * 获取登陆的用户
-     * @param  Request   $request   [description]
-     * @param  Parameter $parameter [description]
      * @return [type]               [description]
      */
-    abstract public function getLoginUser(Request $request, Parameter $parameter);
+    abstract public function getLoginUser();
 
     /**
-     * 获取默认进入游戏的小号，如果为空则系统自行判断
-     * @param  Request   $request   [description]
-     * @param  Parameter $parameter [description]
-     * @return [type]               [description]
+     * [getDefaultUserSubId description]
+     * @param  Ucuser $user [description]
+     * @return [type]       [description]
      */
-    public function getDefaultUserSubId(Ucuser $user, Request $request, Parameter $parameter) {
+    public function getDefaultUserSubId(Ucuser $user) {
         return null;
     }
 }

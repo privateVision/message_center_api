@@ -15,7 +15,7 @@ use App\Model\UcuserInfo;
 
 class UserController extends AuthController
 {
-    public function InfoAction(Request $request, Parameter $parameter) {
+    public function InfoAction() {
         $user_info = UcuserInfo::from_cache($this->user->ucid);
 
         return [
@@ -39,7 +39,7 @@ class UserController extends AuthController
         ];
     }
 
-    public function RechargeAction(Request $request, Parameter $parameter) {
+    public function RechargeAction() {
         $order = $this->user->orders()->where('vid', '>=', 100)->where('status', Orders::Status_Success)->where('hide', 0)->get();
 
         $data = [];
@@ -57,7 +57,7 @@ class UserController extends AuthController
         return $data;
     }
 
-    public function ConsumeAction(Request $request, Parameter $parameter) {
+    public function ConsumeAction() {
         $order = $this->user->orders()->where('vid', '<', 100)->where('status', Orders::Status_Success)->where('hide', 0)->get();
 
         $data = [];
@@ -75,19 +75,19 @@ class UserController extends AuthController
         return $data;
     }
 
-    public function HideOrderAction(Request $request, Parameter $parameter) {
-        $sn = $parameter->tough('order_id');
+    public function HideOrderAction() {
+        $sn = $this->parameter->tough('order_id');
         Orders::where('sn', $sn)->update(['hide' => true]);
         return ['result' => true];
     }
 
-    public function BalanceAction(Request $request, Parameter $parameter) {
+    public function BalanceAction() {
         return ['balance' => $this->user->balance];
     }
 
-    public function ByOldPasswordResetAction(Request $request, Parameter $parameter) {
-        $old_password = $parameter->tough('old_password', 'password');
-        $new_password = $parameter->tough('new_password', 'password');
+    public function ByOldPasswordResetAction() {
+        $old_password = $this->parameter->tough('old_password', 'password');
+        $new_password = $this->parameter->tough('new_password', 'password');
 
         if(!$this->user->checkPassword($old_password)) {
             throw new ApiException(ApiException::Remind, "旧的密码不正确");
@@ -99,8 +99,8 @@ class UserController extends AuthController
         return ['result' => true];
     }
 
-    public function SMSBindPhoneAction(Request $request, Parameter $parameter) {
-        $mobile = $parameter->tough('mobile', 'mobile');
+    public function SMSBindPhoneAction() {
+        $mobile = $this->parameter->tough('mobile', 'mobile');
 
         $user = Ucuser::where('uid', $mobile)->orWhere('mobile', $mobile)->first();
         if($user) {
@@ -124,9 +124,9 @@ class UserController extends AuthController
         ];
     }
 
-    public function BindPhoneAction(Request $request, Parameter $parameter) {
-        $mobile = $parameter->tough('mobile', 'mobile');
-        $code = $parameter->tough('code', 'smscode');
+    public function BindPhoneAction() {
+        $mobile = $this->parameter->tough('mobile', 'mobile');
+        $code = $this->parameter->tough('code', 'smscode');
 
         if(!verify_sms($mobile, $code)) {
             throw new ApiException(ApiException::Remind, "绑定失败，验证码不正确，或已过期");
@@ -151,7 +151,7 @@ class UserController extends AuthController
         return ['result' => true];
     }
 
-    public function SMSUnbindPhoneAction(Request $request, Parameter $parameter) {
+    public function SMSUnbindPhoneAction() {
         if(!$this->user->mobile) {
             throw new ApiException(ApiException::Remind, "还未绑定手机号码，无法解绑");
         }
@@ -171,8 +171,8 @@ class UserController extends AuthController
         ];
     }
 
-    public function UnbindPhoneAction(Request $request, Parameter $parameter) {
-        $code = $parameter->tough('code', 'smscode');
+    public function UnbindPhoneAction() {
+        $code = $this->parameter->tough('code', 'smscode');
 
         if(!$this->user->mobile) {
             throw new ApiException(ApiException::Remind, "还未绑定手机号码，无法解绑");
@@ -196,7 +196,7 @@ class UserController extends AuthController
         ];
     }
 
-    public function SMSPhoneResetPasswordAction(Request $request, Parameter $parameter) {
+    public function SMSPhoneResetPasswordAction() {
         if(!$this->user->mobile) {
             throw new ApiException(ApiException::Remind, "还未绑定手机号码，无法使用该方式重置密码");
         }
@@ -216,9 +216,9 @@ class UserController extends AuthController
         ];
     }
 
-    public function PhoneResetPasswordAction(Request $request, Parameter $parameter) {
-        $code = $parameter->tough('code', 'smscode');
-        $password = $parameter->tough('password', 'password');
+    public function PhoneResetPasswordAction() {
+        $code = $this->parameter->tough('code', 'smscode');
+        $password = $this->parameter->tough('password', 'password');
 
         if(!$this->user->mobile) {
             throw new ApiException(ApiException::Remind, "还未绑定手机号码，无法使用该方式重置密码");
@@ -236,23 +236,23 @@ class UserController extends AuthController
         return ['result' => true];
     }
 
-    public function ReportRoleAction(Request $request, Parameter $parameter) {
-        $zone_id = $parameter->tough('zone_id');
-        $zone_name = $parameter->tough('zone_name');
-        $role_id = $parameter->tough('role_id');
-        $role_level = $parameter->tough('role_level');
-        $role_name = $parameter->tough('role_name');
+    public function ReportRoleAction() {
+        $zone_id = $this->parameter->tough('zone_id');
+        $zone_name = $this->parameter->tough('zone_name');
+        $role_id = $this->parameter->tough('role_id');
+        $role_level = $this->parameter->tough('role_level');
+        $role_name = $this->parameter->tough('role_name');
 
-        $pid = $parameter->tough('_appid');
+        $pid = $this->parameter->tough('_appid');
 
         async_execute('report_role', $this->user->ucid, $pid, $this->session->user_sub_id, $zone_id, $zone_name, $role_id, $role_name, $role_level);
 
         return ['result' => true];
     }
 
-    public function AttestAction(Request $request, Parameter $parameter) {
-        $name = $parameter->tough('name');
-        $card_no = $parameter->tough('card_id');
+    public function AttestAction() {
+        $name = $this->parameter->tough('name');
+        $card_no = $this->parameter->tough('card_id');
 
         $card_info = parse_card_id($card_no);
         if(!$card_info) {
@@ -276,12 +276,12 @@ class UserController extends AuthController
         return ['result' => true];
     }
 
-    public function BindOauthAction(Request $request, Parameter $parameter) {
-        $openid = $parameter->tough('openid');
-        $type = $parameter->tough('type');
-        $unionid = $parameter->get('unionid');
-        $nickname = $parameter->get('nickname');
-        $avatar = $parameter->get('avatar');
+    public function BindOauthAction() {
+        $openid = $this->parameter->tough('openid');
+        $type = $this->parameter->tough('type');
+        $unionid = $this->parameter->get('unionid');
+        $nickname = $this->parameter->get('nickname');
+        $avatar = $this->parameter->get('avatar');
 
         $openid = md5($type .'_'. $openid);
         $unionid = $unionid ? md5($type .'_'. $unionid) : '';

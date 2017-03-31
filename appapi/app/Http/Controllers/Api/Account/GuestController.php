@@ -11,8 +11,8 @@ class GuestController extends Controller {
 
     use LoginAction;
 
-    public function getLoginUser(Request $request, Parameter $parameter) {
-        $uuid = $parameter->tough('_device_id');
+    public function getLoginUser() {
+        $uuid = $this->parameter->tough('_device_id');
 
         $user = Ucuser::from_cache_device_uuid($uuid);
         if($user) {
@@ -27,9 +27,9 @@ class GuestController extends Controller {
         $user->email = $username . "@anfan.com";
         $user->nickname = $username;
         $user->password = $password;
-        $user->regip = $request->ip();
-        $user->rid = $parameter->tough('_rid');
-        $user->pid = $parameter->tough('_appid');
+        $user->regip = $this->request->ip();
+        $user->rid = $this->parameter->tough('_rid');
+        $user->pid = $this->parameter->tough('_appid');
         $user->regdate = time();
         $user->device_uuid = $uuid;
         $user->save();

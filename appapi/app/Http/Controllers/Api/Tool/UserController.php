@@ -10,8 +10,8 @@ class UserController extends Controller
 {
     protected $user = null;
 
-    public function ResetPasswordPageAction(Request $request, Parameter $parameter) {
-        $ucid = $parameter->tough('ucid');
+    public function ResetPasswordPageAction() {
+        $ucid = $this->parameter->tough('ucid');
 
         $token = encrypt3des(json_encode(['ucid' => $ucid, 't' => time() + 900]));
 
@@ -22,12 +22,12 @@ class UserController extends Controller
         return ['url' => $url];
     }
 
-    public function FreezeAction(Request $request, Parameter $parameter) {
-        $ucid = $parameter->tough('ucid');
+    public function FreezeAction() {
+        $ucid = $this->parameter->tough('ucid');
     }
 
-    public function before(Request $request, Parameter $parameter) {
-        $ucid = $parameter->tough('ucid');
+    public function before() {
+        $ucid = $this->parameter->tough('ucid');
         
         $user = Ucuser::from_cache($ucid);
         if(!$user) {

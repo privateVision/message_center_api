@@ -11,9 +11,9 @@ class MobileController extends Controller {
 
     use LoginAction;
 
-    public function getLoginUser(Request $request, Parameter $parameter) {
-        $mobile = $parameter->tough('mobile', 'mobile');
-        $code = $parameter->tough('code', 'smscode');
+    public function getLoginUser() {
+        $mobile = $this->parameter->tough('mobile', 'mobile');
+        $code = $this->parameter->tough('code', 'smscode');
 
         if(!verify_sms($mobile, $code)) {
             throw new ApiException(ApiException::Remind, "验证码不正确，或已过期");
@@ -35,9 +35,9 @@ class MobileController extends Controller {
         $user->mobile = $mobile;
         $user->nickname = $mobile;
         $user->password = $password;
-        $user->regip = $request->ip();
-        $user->rid = $parameter->tough('_rid');
-        $user->pid = $parameter->tough('_appid');
+        $user->regip = $this->request->ip();
+        $user->rid = $this->parameter->tough('_rid');
+        $user->pid = $this->parameter->tough('_appid');
         $user->regdate = time();
         $user->save();
 
@@ -53,8 +53,8 @@ class MobileController extends Controller {
         return $user;
     }
     
-    public function SMSLoginAction(Request $request, Parameter $parameter) {
-        $mobile = $parameter->tough('mobile', 'mobile');
+    public function SMSLoginAction() {
+        $mobile = $this->parameter->tough('mobile', 'mobile');
 
         $code = smscode();
 

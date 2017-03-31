@@ -13,8 +13,8 @@ class OauthController extends Controller {
 
     use LoginAction, RegisterAction;
 /*
-    public function SMSBindAction(Request $request, Parameter $parameter) {
-        $mobile = $parameter->tough('mobile', 'mobile');
+    public function SMSBindAction() {
+        $mobile = $this->parameter->tough('mobile', 'mobile');
 
         $code = smscode();
 
@@ -29,14 +29,14 @@ class OauthController extends Controller {
         ];
     }
 
-    public function getRegisterUser(Request $request, Parameter $parameter) {
-        $mobile = $parameter->tough('mobile', 'mobile');
-        $code = $parameter->tough('code', 'smscode');
-        $openid = $parameter->tough('openid');
-        $unionid = $parameter->get('unionid');
-        $type = $parameter->tough('type');
-        $nickname = $parameter->get('nickname');
-        $avatar = $parameter->get('avatar');
+    public function getRegisterUser() {
+        $mobile = $this->parameter->tough('mobile', 'mobile');
+        $code = $this->parameter->tough('code', 'smscode');
+        $openid = $this->parameter->tough('openid');
+        $unionid = $this->parameter->get('unionid');
+        $type = $this->parameter->tough('type');
+        $nickname = $this->parameter->get('nickname');
+        $avatar = $this->parameter->get('avatar');
 
         $types = ['weixin' => '微信', 'qq' => 'QQ', 'weibo' => '微博'];
 
@@ -135,9 +135,9 @@ class OauthController extends Controller {
             $mobile_user->nickname = $nickname;
             $mobile_user->avatar = $avatar;
             $mobile_user->password = $password;
-            $mobile_user->regip = $request->ip();
-            $mobile_user->rid = $parameter->tough('_rid');
-            $mobile_user->pid = $parameter->tough('_appid');
+            $mobile_user->regip = $this->request->ip();
+            $mobile_user->rid = $this->parameter->tough('_rid');
+            $mobile_user->pid = $this->parameter->tough('_appid');
             $mobile_user->regdate = date('Ymd');
             $mobile_user->date = date('Ymd');
             $mobile_user->save();
@@ -163,12 +163,12 @@ class OauthController extends Controller {
     }
 */
 
-    public function getRegisterUser(Request $request, Parameter $parameter) {
-        $openid = $parameter->tough('openid');
-        $type = $parameter->tough('type');
-        $unionid = $parameter->get('unionid');
-        $nickname = $parameter->get('nickname');
-        $avatar = $parameter->get('avatar');
+    public function getRegisterUser() {
+        $openid = $this->parameter->tough('openid');
+        $type = $this->parameter->tough('type');
+        $unionid = $this->parameter->get('unionid');
+        $nickname = $this->parameter->get('nickname');
+        $avatar = $this->parameter->get('avatar');
 
         $openid = md5($type .'_'. $openid);
         $unionid = $unionid ? md5($type .'_'. $unionid) : '';
@@ -198,9 +198,9 @@ class OauthController extends Controller {
         $user->mobile = '';
         $user->nickname = $nickname ?: $username;
         $user->password = $password;
-        $user->regip = $request->ip();
-        $user->rid = $parameter->tough('_rid');
-        $user->pid = $parameter->tough('_appid');
+        $user->regip = $this->request->ip();
+        $user->rid = $this->parameter->tough('_rid');
+        $user->pid = $this->parameter->tough('_appid');
         $user->regdate = time();
         $user->save();
 
@@ -224,10 +224,10 @@ class OauthController extends Controller {
         return $user;
     }
 
-    public function getLoginUser(Request $request, Parameter $parameter) {
-        $openid = $parameter->tough('openid');
-        $type = $parameter->tough('type');
-        $unionid = $parameter->get('unionid');
+    public function getLoginUser() {
+        $openid = $this->parameter->tough('openid');
+        $type = $this->parameter->tough('type');
+        $unionid = $this->parameter->get('unionid');
 
         $openid = md5($type .'_'. $openid);
         $unionid = $unionid ? md5($type .'_'. $unionid) : '';
