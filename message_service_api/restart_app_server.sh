@@ -17,7 +17,7 @@ if [ $count -gt 0 ];then
     fi
     echo 'start process ...'
     echo "当前启动地址： $1"
-    nohup uwsgi --socket $1 --wsgi-file run.py --callable app --enable-threads --processes 4 --threads 2 &
+    nohup uwsgi --socket $1 --wsgi-file run.py --callable app --enable-threads --lazy-apps --processes 4 --threads 2 &
     if [ 0 == $? ];then
         echo "start process success!"
     else
@@ -38,7 +38,7 @@ if [ $count -gt 0 ];then
 else
     echo "当前启动地址： $1"
     ps -ef|grep consume|grep -v grep|awk '{print $2}'|xargs kill -9
-    nohup uwsgi --socket $1 --wsgi-file run.py --callable app --enable-threads --processes 4 --threads 2 &
+    nohup uwsgi --socket $1 --wsgi-file run.py --callable app --enable-threads --lazy-apps --processes 4 --threads 2 &
     if [ 0 == $? ];then
         echo "start process success!"
     else
