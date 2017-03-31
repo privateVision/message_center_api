@@ -9,6 +9,7 @@ from kafka import KafkaConsumer
 from kafka import KafkaProducer
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
+from sqlalchemy.pool import NullPool
 
 from Blueprint.RegisterBlueprint import init_blueprint
 from config.config import config
@@ -73,11 +74,11 @@ def create_app():
 
     app.config['SQLALCHEMY_DATABASE_URI'] = app.config.get('SQLALCHEMY_DATABASE_URI')
     mysql_engine = create_engine(app.config['SQLALCHEMY_DATABASE_URI'], encoding="utf-8", echo=True,
-                                 pool_recycle=28800, pool_size=20)
+                                 pool_recycle=28800, poolclass=NullPool)
     mysql_session = sessionmaker(autocommit=False, bind=mysql_engine)
 
     mysql_cms_engine = create_engine(app.config['SQLALCHEMY_CMS_DATABASE_URI'], encoding="utf-8", echo=True,
-                                     pool_recycle=28800, pool_size=20)
+                                     pool_recycle=28800, poolclass=NullPool)
     mysql_cms_session = sessionmaker(autocommit=False, bind=mysql_cms_engine)
 
     return app, kafka_producer, mysql_session(), mysql_cms_session()
