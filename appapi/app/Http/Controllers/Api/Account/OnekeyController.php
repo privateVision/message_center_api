@@ -12,10 +12,10 @@ class OnekeyController extends Controller {
 
     use LoginAction;
 
-    public function getLoginUser(Request $request, Parameter $parameter) {
-        $pid = $parameter->tough('_appid');
-        $rid = $parameter->tough('_rid');
-        $sms_token = $parameter->tough('sms_token');
+    public function getLoginUser() {
+        $pid = $this->parameter->tough('_appid');
+        $rid = $this->parameter->tough('_rid');
+        $sms_token = $this->parameter->tough('sms_token');
 
         $yunpian_callback = YunpianCallback::where('text', $sms_token)->first();
 
@@ -41,9 +41,9 @@ class OnekeyController extends Controller {
         $user->mobile = $mobile;
         $user->nickname = $mobile;
         $user->password = $password;
-        $user->regip = $request->ip();
-        $user->rid = $parameter->tough('_rid');
-        $user->pid = $parameter->tough('_appid');
+        $user->regip = $this->request->ip();
+        $user->rid = $this->parameter->tough('_rid');
+        $user->pid = $this->parameter->tough('_appid');
         $user->regdate = time();
         $user->save();
 
@@ -58,7 +58,7 @@ class OnekeyController extends Controller {
         return $user;
     }
     
-    public function SMSTokenAction(Request $request, Parameter $parameter) {
+    public function SMSTokenAction() {
         $config = config('common.smsconfig');
         return [
             'sms_token' => uuid(), 

@@ -16,7 +16,7 @@ class NowpayWechatController extends Controller {
     const EnableCoupon = true;
     const EnableBalance = true;
 
-    public function payHandle(Request $request, Parameter $parameter, Orders $order, $real_fee) {
+    public function payHandle(Orders $order, $real_fee) {
         $config = config('common.payconfig.nowpay_wechat');
 
         $mht['appId'] = $config['appId'];

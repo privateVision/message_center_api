@@ -5,7 +5,7 @@ class Ucuser extends Model
 {
     protected $table = 'ucusers';
     protected $primaryKey = 'ucid';
-    protected $hidden = ['password', 'salt'];
+    //protected $hidden = ['password', 'salt'];
 
     const CREATED_AT = 'createTime';
     const UPDATED_AT = 'updated_at';

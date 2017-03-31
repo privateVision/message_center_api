@@ -8,11 +8,11 @@ use App\Model\ProceduresExtend;
 
 class AppController extends Controller
 {
-    public function InitializeAction(Request $request, Parameter $parameter) {
-        $pid = $parameter->tough('_appid');
-        $rid = $parameter->tough('_rid');
-        $device_id = $parameter->tough('_device_id');
-        $app_version = $parameter->tough('app_version');
+    public function InitializeAction() {
+        $pid = $this->parameter->tough('_appid');
+        $rid = $this->parameter->tough('_rid');
+        $device_id = $this->parameter->tough('_device_id');
+        $app_version = $this->parameter->tough('app_version');
 
         // config
         $config = ProceduresExtend::from_cache($pid);
@@ -81,7 +81,7 @@ class AppController extends Controller
         ];
     }
 
-    public function LogoutAction(Request $request, Parameter $parameter) {
+    public function LogoutAction() {
         $procedures_extend = ProceduresExtend::from_cache($this->procedure->pid);
         return [
             'img' => $procedures_extend->logout_img,
@@ -91,9 +91,9 @@ class AppController extends Controller
         ];
     }
 
-    public function VerifySMSAction(Request $request, Parameter $parameter) {
-        $mobile = $parameter->tough('mobile', 'mobile');
-        $code = $parameter->tough('code', 'smscode');
+    public function VerifySMSAction() {
+        $mobile = $this->parameter->tough('mobile', 'mobile');
+        $code = $this->parameter->tough('code', 'smscode');
 
         if(!verify_sms($mobile, $code)) {
             throw new ApiException(ApiException::Remind, "验证码不正确，或已过期");
@@ -102,7 +102,7 @@ class AppController extends Controller
         return ['result' => true];
     }
 
-    public function UuidAction(Request $request, Parameter $parameter) {
+    public function UuidAction() {
         return ['uuid' => uuid()];
     }
 }

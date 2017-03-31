@@ -12,8 +12,8 @@ class TokenController extends Controller {
 
     use LoginAction;
 
-    public function getLoginUser(Request $request, Parameter $parameter) {
-        $token = $parameter->tough('_token');
+    public function getLoginUser() {
+        $token = $this->parameter->tough('_token');
 
         $session = Session::where('token', $token)->first();
         if(!$session) {
@@ -34,8 +34,8 @@ class TokenController extends Controller {
         return $user;
     }
     
-    public function getDefaultUserSubId(Ucuser $user, Request $request, Parameter $parameter) {
-        $user_sub_id = $parameter->get('user_sub_id');
+    public function getDefaultUserSubId(Ucuser $user) {
+        $user_sub_id = $this->parameter->get('user_sub_id');
         return $user_sub_id ?: null;
     }
 }
