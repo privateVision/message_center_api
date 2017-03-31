@@ -85,8 +85,8 @@ def sdk_api_gen_key(appid, data):
             pri_key = app_info['priKey']
             m = hashlib.md5()
             m.update(pri_key)
-            md5_key = m.hexdigest()
-            sign_str = "%s%s" % (md5_key[0:16], md5_key[0:8])
+            sign_str = m.hexdigest()
+            # sign_str = "%s%s" % (md5_key[0:16], md5_key[0:8])
             service_logger.info("运算生成加密key为：%s" % (sign_str,))
             return encrypt_des(data, sign_str)
         service_logger.error("根据appid未找到相关的应用信息pri_key")
@@ -123,8 +123,8 @@ def sdk_api_check_sign(request):
             pri_key = app_info['priKey']
             m = hashlib.md5()
             m.update(pri_key)
-            md5_key = m.hexdigest()
-            pri_key = "%s%s" % (md5_key[0:16], md5_key[0:8])
+            pri_key = m.hexdigest()
+            # pri_key = "%s%s" % (md5_key[0:16], md5_key[0:8])
             m = hashlib.md5()
             m.update(data_str + "key=" + pri_key)
             service_logger.info(data_str + "key=" + pri_key)
