@@ -42,7 +42,7 @@ $app->group(['prefix' => 'pub'], function () use ($app) {
 
 // API接口
 $app->group(['prefix' => 'api'], function () use ($app) {
-    $app->post('app/initialize/{ver}/{date}', 'Api\\AppController@InitializeAction');                                    // 初始化
+    $app->post('app/initialize', 'Api\\AppController@InitializeAction');                                    // 初始化
     $app->post('app/verify_sms', 'Api\\AppController@VerifySMSAction');                                     // 验证手机验证码是否正确
     $app->post('app/uuid', 'Api\\AppController@UuidAction');                                                // 获取一个UUID，用户无法获取设备UUID时
     $app->post('app/logout', 'Api\\AppController@LogoutAction');                                            // 退出客户端
