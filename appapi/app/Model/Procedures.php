@@ -15,9 +15,6 @@ class Procedures extends Model
 	}
 
 	public function appkey() {
-		$md5 = md5($this->priKey);
-		$a = substr($md5, 0, 16);
-		$b = substr($md5, 0, 8);
-		return $a . $b;
+		return md5($this->priKey);
 	}
 }

@@ -4,7 +4,7 @@ namespace App\Http\Controllers\Api\Pay;
 use Illuminate\Http\Request;
 use App\Exceptions\ApiException;
 use App\Parameter;
-use Closure;
+use App\Model\UcuserInfo;
 use App\Model\Orders;
 use App\Model\OrderExtend;
 use App\Model\UcusersVC;
@@ -76,10 +76,12 @@ trait CreateOrderAction {
             ];
         }
 
+        $user_info = UcuserInfo::from_cache($this->user->ucid);
+
         return [
             'order_id' => $order->sn,
             'way' => [1, 2, 3],
-            'vip' => $this->user->vip,
+            'vip' => $user_info && $user_info->vip ? (int)$user_info->vip : 0,
             'balance' => $this->user->balance,
             'coupons' => $list,
         ];

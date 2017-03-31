@@ -84,5 +84,5 @@ trait RegisterAction {
         ];
     }
 
-    abstract public function getRegisterUser(Request $request, Parameter $parameter);
+    abstract public function getRegisterUser(Ucuser $user, Request $request, Parameter $parameter);
 }
