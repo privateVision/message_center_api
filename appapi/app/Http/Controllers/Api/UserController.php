@@ -4,34 +4,38 @@ namespace App\Http\Controllers\Api;
 use App\Exceptions\ApiException;
 use Illuminate\Http\Request;
 use App\Parameter;
-use App\Model\User;
+use App\Model\Ucuser;
 use App\Model\Orders;
-use App\Model\UserRole;
+use App\Model\UcuserRole;
 use App\Model\ProceduresZone;
 use App\Model\ProceduresExtend;
-use App\Model\UserSub;
-use App\Model\UserOauth;
+use App\Model\UcuserSub;
+use App\Model\UcuserOauth;
+use App\Model\UcuserInfo;
 
 class UserController extends AuthController
 {
     public function InfoAction(Request $request, Parameter $parameter) {
+        $user_info = UcuserInfo::from_cache($this->user->ucid);
+
         return [
             'uid' => $this->user->ucid,
-            //'sub_nickname' => 
             'username' => $this->user->uid,
             'nickname' => $this->user->nickname,
             'mobile' => $this->user->mobile,
             'email' => $this->user->email,
-            'gender' => $this->user->gender,
             'balance' => $this->user->balance,
-            'birthday' => (string)$this->user->birthday,
-            'address' => (string)$this->user->address,
-            'avatar' => $this->user->avatar ?: env('default_avatar'),
-            'real_name' => (string)$this->user->real_name,
-            'card_id' => (string)$this->user->card_id,
-            'exp' => $this->user->exp,
-            'vip' => $this->user->vip,
-            'score' => $this->user->score,
+            'gender' => $user_info && $user_info->gender ? (int)$user_info->gender : 0,
+            'birthday' => $user_info && $user_info->birthday ? (string)$user_info->birthday : "",
+            'address' => $user_info && $user_info->address ? (string)$user_info->address : "",
+            'avatar' => $user_info && $user_info->avatar ? (string)$user_info->avatar : env('default_avatar'),
+            'real_name' => $user_info && $user_info->real_name ? (string)$user_info->real_name : "",
+            'card_no' => $user_info && $user_info->card_no ? (string)$user_info->card_no : "",
+            'exp' => $user_info && $user_info->exp ? (int)$user_info->exp : 0,
+            'vip' => $user_info && $user_info->vip ? (int)$user_info->vip : 0,
+            'score' => $user_info && $user_info->score ? (int)$user_info->score : 0,
+            'is_real' => $user_info && $user_info->isReal(),
+            'is_adult' => $user_info && $user_info->isAdult(),
         ];
     }
 
@@ -82,8 +86,8 @@ class UserController extends AuthController
     }
 
     public function ByOldPasswordResetAction(Request $request, Parameter $parameter) {
-        $old_password = $parameter->tough('old_password');
-        $new_password = $parameter->tough('new_password');
+        $old_password = $parameter->tough('old_password', 'password');
+        $new_password = $parameter->tough('new_password', 'password');
 
         if(!$this->user->checkPassword($old_password)) {
             throw new ApiException(ApiException::Remind, "旧的密码不正确");
@@ -98,7 +102,7 @@ class UserController extends AuthController
     public function SMSBindPhoneAction(Request $request, Parameter $parameter) {
         $mobile = $parameter->tough('mobile', 'mobile');
 
-        $user = User::where('uid', $mobile)->orWhere('mobile', $mobile)->first();
+        $user = Ucuser::where('uid', $mobile)->orWhere('mobile', $mobile)->first();
         if($user) {
             if($user->ucid != $this->user->ucid) {
                 throw new ApiException(ApiException::Remind, "手机号码已经绑定了其它账号");
@@ -132,7 +136,7 @@ class UserController extends AuthController
             throw new ApiException(ApiException::Remind, "该账号已经绑定了手机号码");
         }
         
-        $user = User::where('uid', $mobile)->orWhere('mobile', $mobile)->first();
+        $user = Ucuser::where('uid', $mobile)->orWhere('mobile', $mobile)->first();
         if($user) {
             if($user->ucid != $this->user->ucid) {
                 throw new ApiException(ApiException::Remind, "手机号码已经绑定了其它账号");
@@ -214,7 +218,7 @@ class UserController extends AuthController
 
     public function PhoneResetPasswordAction(Request $request, Parameter $parameter) {
         $code = $parameter->tough('code', 'smscode');
-        $password = $parameter->tough('password');
+        $password = $parameter->tough('password', 'password');
 
         if(!$this->user->mobile) {
             throw new ApiException(ApiException::Remind, "还未绑定手机号码，无法使用该方式重置密码");
@@ -248,20 +252,26 @@ class UserController extends AuthController
 
     public function AttestAction(Request $request, Parameter $parameter) {
         $name = $parameter->tough('name');
-        $card_id = $parameter->tough('card_id');
+        $card_no = $parameter->tough('card_id');
 
-        $card_info = parse_card_id($card_id);
+        $card_info = parse_card_id($card_no);
         if(!$card_info) {
             throw new ApiException(ApiException::Remind, "身份证号码不正确");
         }
 
-        $this->user->real_name = $name;
-        $this->user->card_id = $card_id;
-        $this->user->birthday = $card_info['birthday'];
-        $this->user->gender = $card_info['gender'];
-        $this->user->asyncSave();
+        $user_info = UcuserInfo::from_cache($this->user->ucid);
+        if(!$user_info) {
+            $user_info = new UcuserInfo;
+            $user_info->ucid = $this->user->ucid;
+        }
 
-        user_log($this->user, $this->procedure, 'real_name_attest', '【实名认证】通过手机验证码，姓名:%s，身份证号码:%s', $name, $card_id);
+        $user_info->real_name = $name;
+        $user_info->card_no = $card_no;
+        $user_info->birthday = $card_info['birthday'];
+        $user_info->gender = $card_info['gender'];
+        $user_info->asyncSave();
+
+        user_log($this->user, $this->procedure, 'real_name_attest', '【实名认证】通过手机验证码，姓名:%s，身份证号码:%s', $name, $card_no);
 
         return ['result' => true];
     }
@@ -279,29 +289,35 @@ class UserController extends AuthController
         $user_oauth = null;
 
         if($unionid) {
-            $user_oauth = UserOauth::from_cache_unionid($unionid);
+            $user_oauth = UcuserOauth::from_cache_unionid($unionid);
         }
 
         if(!$user_oauth) {
-            $user_oauth = UserOauth::from_cache_openid($openid);
+            $user_oauth = UcuserOauth::from_cache_openid($openid);
         }
-        
-        if($user_oauth) {
-            if($user_oauth->ucid != $this->user->ucid) {
-                throw new ApiException(ApiException::Remind, config("common.oauth.{$type}.text", '第三方') . "已经绑定了其它账号");
-            }
-        } else {
-            $user_oauth = new UserOauth;
+
+        if(!$user_oauth) {
+            $user_oauth = new UcuserOauth;
             $user_oauth->ucid = $this->user->ucid;
             $user_oauth->type = $type;
             $user_oauth->openid = $openid;
             $user_oauth->unionid = $unionid;
             $user_oauth->saveAndCache();
 
-            if(!$this->user->avatar && $avatar) {
-                $this->user->avatar = $avatar;
-                $this->user->asyncSave();
+            if($avatar) {
+                $user_info = UcuserInfo::from_cache($this->user->ucid);
+                if(!$user_info) {
+                    $user_info = new UcuserInfo;
+                    $user_info->ucid = $this->user->ucid;
+                }
+
+                if(!$user_info->avatar) {
+                    $user_info->avatar = $avatar;
+                    $user_info->saveAndCache();
+                }
             }
+        } elseif($user_oauth->ucid != $this->user->ucid) {
+            throw new ApiException(ApiException::Remind, config("common.oauth.{$type}.text", '第三方') . "已经绑定了其它账号");
         }
 
         return ['result' => true];

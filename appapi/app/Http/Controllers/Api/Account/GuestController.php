@@ -5,7 +5,7 @@ use App\Exceptions\ApiException;
 use Illuminate\Http\Request;
 use App\Parameter;
 
-use App\Model\User;
+use App\Model\Ucuser;
 
 class GuestController extends Controller {
 
@@ -14,7 +14,7 @@ class GuestController extends Controller {
     public function getLoginUser(Request $request, Parameter $parameter) {
         $uuid = $parameter->tough('_device_id');
 
-        $user = User::from_cache_device_uuid($uuid);
+        $user = Ucuser::from_cache_device_uuid($uuid);
         if($user) {
             return $user;
         }
@@ -22,7 +22,7 @@ class GuestController extends Controller {
         $username = username();
         $password = rand(100000, 999999);
         
-        $user = new User;
+        $user = new Ucuser;
         $user->uid = $username;
         $user->email = $username . "@anfan.com";
         $user->nickname = $username;
@@ -30,8 +30,7 @@ class GuestController extends Controller {
         $user->regip = $request->ip();
         $user->rid = $parameter->tough('_rid');
         $user->pid = $parameter->tough('_appid');
-        $user->regdate = date('Ymd');
-        $user->date = date('Ymd');
+        $user->regdate = time();
         $user->device_uuid = $uuid;
         $user->save();
 

@@ -7,7 +7,7 @@ use App\Model\Orders;
 use App\Model\OrdersExt;
 use App\Model\OrderExtend;
 use App\Model\UcuserTotalPay;
-use App\Model\User;
+use App\Model\Ucuser;
 use App\Model\UcusersVC;
 use App\Model\VirtualCurrencies;
 use App\Model\ZyCouponLog;
@@ -31,7 +31,7 @@ class OrderSuccess extends Job
         $is_mutex = Redis::mutex_lock($rediskey, function() use($order) { // 互斥锁， 防止多次操作
             $order->getConnection()->beginTransaction();
 
-            $user = User::from_cache($order->ucid);
+            $user = Ucuser::from_cache($order->ucid);
 
             do {
                 if(!$user) break;

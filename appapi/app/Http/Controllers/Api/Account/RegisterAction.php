@@ -4,11 +4,11 @@ namespace App\Http\Controllers\Api\Account;
 use App\Exceptions\ApiException;
 use Illuminate\Http\Request;
 use App\Parameter;
-use App\Model\User;
-use App\Model\UserSubService;
-use App\Model\UserSub;
+use App\Model\Ucuser;
+use App\Model\UcuserSub;
 use App\Model\Session;
 use App\Model\LoginLog;
+use App\Model\UcuserInfo;
 
 trait RegisterAction {
     
@@ -22,11 +22,11 @@ trait RegisterAction {
         }
 
         // 查找最近一次登陆的小号
-        $user_sub = UserSub::tableSlice($user->ucid)->where('ucid', $user->ucid)->where('pid', $pid)->where('is_freeze', false)->orderBy('priority', 'desc')->first();
+        $user_sub = UcuserSub::tableSlice($user->ucid)->where('ucid', $user->ucid)->where('pid', $pid)->where('is_freeze', false)->orderBy('priority', 'desc')->first();
 
         // 用户没有可用的小号，创建
         if(!$user_sub) {
-            $user_sub = UserSub::tableSlice($user->ucid);
+            $user_sub = UcuserSub::tableSlice($user->ucid);
             $user_sub->id = uuid($user->ucid);
             $user_sub->ucid = $user->ucid;
             $user_sub->pid = $pid;
@@ -66,6 +66,8 @@ trait RegisterAction {
         $login_log->loginIP = ip2long($request->ip());
         $login_log->asyncSave();
 
+        $user_info = UcuserInfo::from_cache($user->ucid);
+
         return [
             'openid' => strval($user_sub->cp_uid),
             'sub_nickname' => strval($user_sub->name),
@@ -73,15 +75,14 @@ trait RegisterAction {
             'username' => $user->uid,
             'nickname' => $user->nickname,
             'mobile' => strval($user->mobile),
-            'avatar' => $user->avatar ?: env('default_avatar'),
-            'is_real' => $user->isReal(),
-            'is_adult' => $user->isAdult(),
-            'vip' => $user->vip,
+            'avatar' => $user_info && $user_info->avatar ? (string)$user_info->avatar : env('default_avatar'),
+            'is_real' => $user_info && $user_info->isReal(),
+            'is_adult' => $user_info && $user_info->isAdult(),
+            'vip' => $user_info && $user_info->vip ? (int)$user_info->vip : 0,
             'token' => $session->token,
             'balance' => $user->balance,
         ];
     }
 
     abstract public function getRegisterUser(Request $request, Parameter $parameter);
-
 }

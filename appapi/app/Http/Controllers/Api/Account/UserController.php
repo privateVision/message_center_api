@@ -5,7 +5,7 @@ use App\Exceptions\ApiException;
 use Illuminate\Http\Request;
 use App\Parameter;
 
-use App\Model\User;
+use App\Model\Ucuser;
 
 class UserController extends Controller {
 
@@ -15,7 +15,7 @@ class UserController extends Controller {
         $username = $parameter->tough('username');
         $password = $parameter->tough('password');
 
-        $user = User::where('uid', $username)->orWhere('mobile', $username)->first();
+        $user = Ucuser::where('uid', $username)->orWhere('mobile', $username)->first();
 
         if(!$user || !$user->checkPassword($password)) {
             throw new ApiException(ApiException::Remind, "登录失败，用户名或者密码不正确");
@@ -26,15 +26,15 @@ class UserController extends Controller {
     
     public function getRegisterUser(Request $request, Parameter $parameter){
         $username = $parameter->tough('username', 'username');
-        $password = $parameter->tough('password');
+        $password = $parameter->tough('password', 'password');
 
-        $isRegister  = User::where("mobile", $username)->orWhere('uid', $username)->count();
+        $isRegister  = Ucuser::where("mobile", $username)->orWhere('uid', $username)->count();
 
         if($isRegister) {
             throw new  ApiException(ApiException::Remind, "用户已注册，请直接登录");
         }
 
-        $user = new User;
+        $user = new Ucuser;
         $user->uid = $username;
         $user->email = $username . "@anfan.com";
         $user->nickname = $username;
@@ -42,8 +42,7 @@ class UserController extends Controller {
         $user->regip = $request->ip();
         $user->rid = $parameter->tough('_rid');
         $user->pid = $parameter->tough('_appid');
-        $user->regdate = date('Ymd');
-        $user->date = date('Ymd');
+        $user->regdate = time();
         $user->save();
 
         user_log($user, $this->procedure, 'register', '【注册】通过“用户名”注册，用户名(%s), 密码[%s]', $username, $user->password);
@@ -54,7 +53,7 @@ class UserController extends Controller {
     public function SMSResetPasswordAction(Request $request, Parameter $parameter) {
         $mobile = $parameter->tough('mobile', 'mobile');
 
-        $user = User::where('uid', $mobile)->orWhere('mobile', $mobile)->first();
+        $user = Ucuser::where('uid', $mobile)->orWhere('mobile', $mobile)->first();
         if(!$user) {
             throw new ApiException(ApiException::Remind, '手机号码尚未注册');
         }
@@ -75,13 +74,13 @@ class UserController extends Controller {
     public function ResetPasswordAction(Request $request, Parameter $parameter) {
         $mobile = $parameter->tough('mobile', 'mobile');
         $code = $parameter->tough('code', 'smscode');
-        $new_password = $parameter->tough('password');
+        $new_password = $parameter->tough('password', 'password');
 
         if(!verify_sms($mobile, $code)) {
             throw new ApiException(ApiException::Remind, "验证码不正确，或已过期");
         }
 
-        $user = User::where('uid', $mobile)->orWhere('mobile', $mobile)->first();
+        $user = Ucuser::where('uid', $mobile)->orWhere('mobile', $mobile)->first();
         if(!$user) {
             throw new ApiException(ApiException::Remind, '手机号码尚未绑定');
         }

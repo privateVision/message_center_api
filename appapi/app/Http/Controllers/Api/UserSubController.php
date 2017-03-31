@@ -6,7 +6,7 @@ use Illuminate\Http\Request;
 use App\Parameter;
 use App\Redis;
 use App\Model\ProceduresExtend;
-use App\Model\UserSub;
+use App\Model\UcuserSub;
 
 class UserSubController extends AuthController
 {
@@ -14,15 +14,14 @@ class UserSubController extends AuthController
         $pid = $parameter->tough('_appid');
 
         $data = [];
-        $user_sub = UserSub::tableSlice($this->user->ucid)->where('ucid', $this->user->ucid)->where('pid', $pid)->orderBy('name', 'asc')->get();
+        $user_sub = UcuserSub::tableSlice($this->user->ucid)->where('ucid', $this->user->ucid)->where('pid', $pid)->orderBy('name', 'asc')->get();
         foreach($user_sub as $v) {
             $data[] = [
                 'id' => $v->id,
                 'openid' => $v->cp_uid,
                 'name' => $v->name,
-                'is_freeze' => $v->is_freeze,
-                'is_unused' => $v->last_login_at ? false : true,
                 'is_default' => $v->id === $this->session->user_sub_id,
+                'status' => $v->is_freeze ? 1 : (!$v->last_login_at ? 2 : 0),
                 'last_login_at' => strval($v->last_login_at),
             ];
         }
@@ -41,14 +40,14 @@ class UserSubController extends AuthController
         $user_sub_num = Redis::hget('user_sub_num', $redisfield);
         if(!$user_sub_num) {
             $reset = true;
-            $user_sub_num = UserSub::tableSlice($this->user->ucid)->where('ucid', $this->user->ucid)->where('pid', $pid)->count();
+            $user_sub_num = UcuserSub::tableSlice($this->user->ucid)->where('ucid', $this->user->ucid)->where('pid', $pid)->count();
         }
 
         if($allow_num <= $user_sub_num) {
             throw new ApiException(ApiException::Remind, "小号创建数量已达上限");
         }
 
-        $user_sub = UserSub::tableSlice($this->user->ucid);
+        $user_sub = UcuserSub::tableSlice($this->user->ucid);
         $user_sub->id = uuid($this->user->ucid);
         $user_sub->ucid = $this->user->ucid;
         $user_sub->pid = $pid;
@@ -70,8 +69,9 @@ class UserSubController extends AuthController
             'id' => $user_sub->id,
             'openid' => $user_sub->cp_uid,
             'name' => $user_sub->name,
-            'is_freeze' => false,
-            'is_unused' => true,
+            'status' => 0,
+            //'is_freeze' => false,
+            //'is_unused' => true,
             'is_default' => false,
             'last_login_at' => "",
         ];

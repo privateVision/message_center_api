@@ -4,7 +4,7 @@ namespace App\Http\Controllers\Api\Tool;
 use App\Exceptions\ApiException;
 use Illuminate\Http\Request;
 use App\Parameter;
-use App\Model\User;
+use App\Model\Ucuser;
 
 class UserController extends Controller
 {
@@ -29,7 +29,7 @@ class UserController extends Controller
     public function before(Request $request, Parameter $parameter) {
         $ucid = $parameter->tough('ucid');
         
-        $user = User::from_cache($ucid);
+        $user = Ucuser::from_cache($ucid);
         if(!$user) {
             throw new ApiException(ApiException::Remind, '用户不存在');
         }

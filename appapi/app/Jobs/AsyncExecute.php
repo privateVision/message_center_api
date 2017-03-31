@@ -2,7 +2,7 @@
 namespace App\Jobs;
 
 use App\Redis;
-use App\Model\UserRole;
+use App\Model\UcuserRole;
 use App\Model\ProceduresZone;
 
 class AsyncExecute extends Job
@@ -27,9 +27,9 @@ class AsyncExecute extends Job
     public function report_role($ucid, $pid, $user_sub_id, $zone_id, $zone_name, $role_id, $role_name, $role_level) {
         // todo: 非线程安全，无法保证顺序执行
         $user_role_uuid = joinkey($pid, $ucid, $user_sub_id, $zone_id, $role_id);
-        $user_role = UserRole::tableSlice($pid)->from_cache($user_role_uuid);
+        $user_role = UcuserRole::tableSlice($pid)->from_cache($user_role_uuid);
         if(!$user_role) {
-            $user_role = UserRole::tableSlice($pid);
+            $user_role = UcuserRole::tableSlice($pid);
             $user_role->id = $user_role_uuid;
             $user_role->ucid = $ucid;
             $user_role->pid = $pid;

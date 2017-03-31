@@ -1,9 +1,9 @@
 <?php
 namespace App\Model;
 
-class UserSub extends Model
+class UcuserSub extends Model
 {
-    protected $table = 'user_sub';
+    protected $table = 'ucuser_sub';
     public $incrementing = false;
     
     const CREATED_AT = 'created_at';
