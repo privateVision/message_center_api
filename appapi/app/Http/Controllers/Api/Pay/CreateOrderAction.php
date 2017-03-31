@@ -14,7 +14,7 @@ use App\Model\ZyCoupon;
 
 trait CreateOrderAction {
 
-    public function NewAction(Request $request, Parameter $parameter) {
+    public function NewAction() {
         $pid = $this->procedure->pid;
 
         $order = new Orders;
@@ -24,10 +24,10 @@ trait CreateOrderAction {
         $order->uid = $this->user->uid;
         $order->sn = date('ymdHis') . substr(microtime(), 2, 6) . str_pad(rand(0, 999999), 6, '0', STR_PAD_LEFT);
         $order->vid = $this->procedure->pid;
-        $order->createIP = $request->ip();
+        $order->createIP = $this->request->ip();
         $order->status = Orders::Status_WaitPay;
         $order->paymentMethod = '';
-        $this->onCreateOrder($order, $request, $parameter);
+        $this->onCreateOrder($order);
         $order->save();
 
         $order_extend = new OrderExtend;
@@ -90,9 +90,7 @@ trait CreateOrderAction {
     /**
      * 在订单保存之前（对订单进行一些字段赋值等）
      * @param  Orders    $order     [description]
-     * @param  Request   $request   [description]
-     * @param  Parameter $parameter [description]
      * @return [type]               [description]
      */
-    abstract protected function onCreateOrder(Request $request, Parameter $parameter);
+    abstract protected function onCreateOrder(Orders $order);
 }

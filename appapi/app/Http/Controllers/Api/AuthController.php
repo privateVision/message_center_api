@@ -14,16 +14,16 @@ class AuthController extends Controller {
 	protected $ucuser_info = null;
 	protected $session = null;
 
-	public function before(Request $request, Parameter $parameter) {
-		parent::before($request, $parameter);
+	public function before() {
+		parent::before();
 
-		$token = $parameter->tough('_token');
+		$token = $this->parameter->tough('_token');
 		$session = Session::from_cache_token($token);
 		if(!$session) {
 			throw new ApiException(ApiException::Remind, '会话未找到，或已过期');
 		}
 
-		$pid = $parameter->tough('_appid');
+		$pid = $this->parameter->tough('_appid');
 		if($session->pid != $pid) {
 			throw new ApiException(ApiException::Remind, '会话未找到，或已过期');
 		}

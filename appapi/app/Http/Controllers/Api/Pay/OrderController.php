@@ -12,12 +12,12 @@ class OrderController extends Controller {
 
     use CreateOrderAction;
 
-    protected function onCreateOrder(Orders $order, Request $request, Parameter $parameter) {
-        $fee = $parameter->tough('fee');
-        $body = $parameter->tough('body');
-        $subject = $parameter->tough('subject');
-        $vorderid = $parameter->tough('vorderid');
-        $notify_url = $parameter->tough('notify_url');
+    protected function onCreateOrder(Orders $order) {
+        $fee = $this->parameter->tough('fee');
+        $body = $this->parameter->tough('body');
+        $subject = $this->parameter->tough('subject');
+        $vorderid = $this->parameter->tough('vorderid');
+        $notify_url = $this->parameter->tough('notify_url');
 
         $order->notify_url = $notify_url;
         $order->vorderid = $vorderid;

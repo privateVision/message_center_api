@@ -10,8 +10,8 @@ use App\Model\UcuserSub;
 
 class UserSubController extends AuthController
 {
-    public function ListAction(Request $request, Parameter $parameter) {
-        $pid = $parameter->tough('_appid');
+    public function ListAction() {
+        $pid = $this->parameter->tough('_appid');
 
         $data = [];
         $user_sub = UcuserSub::tableSlice($this->user->ucid)->where('ucid', $this->user->ucid)->where('pid', $pid)->orderBy('name', 'asc')->get();
@@ -29,9 +29,9 @@ class UserSubController extends AuthController
         return $data;
     }
 
-    public function NewAction(Request $request, Parameter $parameter) {
-        $pid = $parameter->tough('_appid');
-        $rid = $parameter->tough('_rid');
+    public function NewAction() {
+        $pid = $this->parameter->tough('_appid');
+        $rid = $this->parameter->tough('_rid');
 
         $config = ProceduresExtend::from_cache($pid);
         $allow_num = $config->allow_num ?: 1;

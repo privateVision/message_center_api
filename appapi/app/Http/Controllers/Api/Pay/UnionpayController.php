@@ -16,7 +16,7 @@ class UnionpayController extends Controller {
     const EnableCoupon = true;
     const EnableBalance = true;
 
-    public function payHandle(Request $request, Parameter $parameter, Orders $order, $real_fee) {
+    public function payHandle(Orders $order, $real_fee) {
         $config = config('common.payconfig.unionpay');
 
         openssl_pkcs12_read(base64_decode($config['pfx']), $cert, $config['pfx_pwd']);

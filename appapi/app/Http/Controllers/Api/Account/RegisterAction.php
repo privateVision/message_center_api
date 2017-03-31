@@ -12,11 +12,11 @@ use App\Model\UcuserInfo;
 
 trait RegisterAction {
     
-    public function RegisterAction(Request $request, Parameter $parameter){
-        $pid = $parameter->tough('_appid');
-        $rid = $parameter->tough('_rid');
+    public function RegisterAction(){
+        $pid = $this->parameter->tough('_appid');
+        $rid = $this->parameter->tough('_rid');
         
-        $user = $this->getRegisterUser($request, $parameter);
+        $user = $this->getRegisterUser();
         if($user->is_freeze) {
             throw new ApiException(ApiException::AccountFreeze, '账号被冻结，无法登陆');
         }
@@ -63,7 +63,7 @@ trait RegisterAction {
         $login_log->pid = $pid;
         $login_log->loginDate = intval(time() / 86400);
         $login_log->loginTime = time() % 86400;
-        $login_log->loginIP = ip2long($request->ip());
+        $login_log->loginIP = ip2long($this->request->ip());
         $login_log->asyncSave();
 
         $user_info = UcuserInfo::from_cache($user->ucid);
@@ -84,5 +84,5 @@ trait RegisterAction {
         ];
     }
 
-    abstract public function getRegisterUser(Ucuser $user, Request $request, Parameter $parameter);
+    abstract public function getRegisterUser(Ucuser $user);
 }

@@ -10,10 +10,10 @@ use App\Model\OrderExtend;
 
 trait RequestAction {
 
-    public function RequestAction(Request $request, Parameter $parameter) {
-        $order_id = $parameter->tough('order_id');
-        $balance = $parameter->get('balance');
-        $vcid = $parameter->get('vcid');
+    public function RequestAction() {
+        $order_id = $this->parameter->tough('order_id');
+        $balance = $this->parameter->get('balance');
+        $vcid = $this->parameter->get('vcid');
 
         $order = Orders::from_cache_sn($order_id);
         if(!$order) {
@@ -92,7 +92,7 @@ trait RequestAction {
             $order_extend->real_fee = $fee;
             $order_extend->saveAndCache();
 
-            $data = $this->payHandle($request, $parameter, $order, $fee);
+            $data = $this->payHandle($order, $fee);
         } else {
             //order_success($order->id); // 不用支付，直接发货
         }
@@ -108,11 +108,9 @@ trait RequestAction {
 
     /**
      * 订单处理函数，重写该函数实现不同的支付方式
-     * @param  Request   $request   [description]
-     * @param  Parameter $parameter [description]
      * @param  Orders    $order     [description]
      * @param  int       $real_fee  实际支付金额，单位：分
      * @return [type]               [description]
      */
-    abstract protected function payHandle(Request $request, Parameter $parameter, Orders $order, $real_fee);
+    abstract protected function payHandle(Orders $order, $real_fee);
 }

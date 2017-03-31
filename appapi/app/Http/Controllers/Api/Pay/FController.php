@@ -16,7 +16,7 @@ class FController extends Controller {
     const EnableCoupon = true;
     const EnableBalance = true;
 
-    public function payHandle(Request $request, Parameter $parameter, Orders $order, $real_fee) {
+    public function payHandle(Orders $order, $real_fee) {
         if($real_fee > 0) {
             throw new ApiException(ApiException::Remind, '不能使用余额直接抵扣');
         }
@@ -26,10 +26,10 @@ class FController extends Controller {
         return ['result' => true];
     }
 
-    protected function onCreateOrder(Orders $order, Request $request, Parameter $parameter) {
-        $fee = $parameter->tough('fee');
-        $body = $parameter->tough('body');
-        $subject = $parameter->tough('subject');
+    protected function onCreateOrder(Orders $order) {
+        $fee = $this->parameter->tough('fee');
+        $body = $this->parameter->tough('body');
+        $subject = $this->parameter->tough('subject');
 
         $order->fee = $fee;
         $order->subject = $subject;

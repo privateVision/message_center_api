@@ -20,11 +20,11 @@ class  AppleController extends Controller{
      * 验证苹果信息
      * */
 
-    public function validateReceiptAction (Request $request ,Parameter $parameter)
+    public function validateReceiptAction ()
     {
         //匹配当前的操作的实现
-        $receipt = $request->input('receipt');
-        $transaction = $parameter->tough("transaction_id");
+        $receipt = $this->request->input('receipt');
+        $transaction = $this->parameter->tough("transaction_id");
         $receipt = urldecode($receipt);
 
         $logsql = "select id from ios_receipt_log WHERE receipt_md5 = ".md5($receipt);
@@ -37,11 +37,11 @@ class  AppleController extends Controller{
         app('db')->select($sql);
 
         //订单号
-        $sn  = $request->input("order_id"); //生成订单的时候返回的订单号
+        $sn  = $this->request->input("order_id"); //生成订单的时候返回的订单号
 
         $dat = $this->getReceiptData($receipt, true); //开启黑盒测试
         //获取当前的订单的ID
-        $oid = $request->input("id"); //处理当前的操作
+        $oid = $this->request->input("id"); //处理当前的操作
 
         if(!preg_match("/^\d{1,10}$/",$oid)) return trans("messages.app_param_type_error");
 
@@ -125,15 +125,15 @@ class  AppleController extends Controller{
      * 苹果订单的创建
      * */
 
-    public function OrderCreateAction(Request $request,Parameter $parameter){
+    public function OrderCreateAction(){
         //上层添加API 时间请求次数限制
         $uid = $this->user->uid;
         $ucid = $this->user->ucid;
-        $vorderid = $parameter->tough('vorderid'); //厂家订单id
-        $zone_name = $parameter->tough("zone_name");
-        $role_name = $parameter->tough('role_name');
-        $product_id = $parameter->tough('product_id');
-        $appid  = $request->input("_appid");
+        $vorderid = $this->parameter->tough('vorderid'); //厂家订单id
+        $zone_name = $this->parameter->tough("zone_name");
+        $role_name = $this->parameter->tough('role_name');
+        $product_id = $this->parameter->tough('product_id');
+        $appid  = $this->request->input("_appid");
 
         $ord = Orders::where("ucid",$ucid)->where('vorderid',$vorderid)->get();
 
@@ -153,7 +153,7 @@ class  AppleController extends Controller{
             $order->fee = $dat[0]->fee;
             $order->subject = $dat[0]->product_name;
             $order->body = "role_name: " . $role_name . "zone_name: " . $zone_name;
-            $order->createIP = $request->ip();
+            $order->createIP = $this->request->ip();
             $order->status = Orders::Status_WaitPay;
             $order->paymentMethod = Orders::Way_Unknow;
             $order->hide = false;
@@ -194,14 +194,14 @@ class  AppleController extends Controller{
     /*
      * 重写 注册方法
      * */
-    protected function create_order(Orders $order, Request $request, Parameter $parameter) {
-        $uid = $parameter->tough('uid');
-        $ucid = $parameter->tough("ucid");
-        $vorderid = $parameter->tough('vorderid'); //厂家订单id
-        $zone_name = $parameter->tough("zone_name");
-        $role_name = $parameter->tough('role_name');
-        $product_id = $parameter->tough('product_id');
-        $appid  = $request->input("_appid");
+    protected function create_order(Orders $order, ) {
+        $uid = $this->parameter->tough('uid');
+        $ucid = $this->parameter->tough("ucid");
+        $vorderid = $this->parameter->tough('vorderid'); //厂家订单id
+        $zone_name = $this->parameter->tough("zone_name");
+        $role_name = $this->parameter->tough('role_name');
+        $product_id = $this->parameter->tough('product_id');
+        $appid  = $this->request->input("_appid");
 
         $ord = Orders::where("ucid",$ucid)->where('vorderid',$vorderid)->get();
         if(count($ord)) return "had exists"; //限制关闭
