@@ -5,7 +5,8 @@ from flask import request
 
 from Controller.BaseController import response_data
 from MiddleWare import service_logger
-from Service.UsersService import get_ucid_by_access_token, sdk_api_request_check, get_username_by_ucid
+from Service.UsersService import get_ucid_by_access_token, sdk_api_request_check, get_username_by_ucid, \
+    get_game_info_by_appid
 from Utils.SystemUtils import log_exception
 
 gift_controller = Blueprint('GiftController', __name__)
@@ -15,66 +16,60 @@ gift_controller = Blueprint('GiftController', __name__)
 @gift_controller.route('/msa/v4/gifts', methods=['POST'])
 @sdk_api_request_check
 def v4_sdk_get_gifts_list():
+    from run import mysql_cms_session
+    from run import SDK_PLATFORM_ID
+    if 'platform_id' in request.form:
+        SDK_PLATFORM_ID = int(request.form['platform_id'])
     ucid = get_ucid_by_access_token(request.form['_token'])
-    game_id = request.form['_appid']  # 游戏id
+    appid = request.form['_appid']  # 要根据appid找游戏id
     page = request.form['page'] if request.form.has_key('page') and request.form['page'] else 1
     count = request.form['count'] if request.form.has_key('count') and request.form['count'] else 10
     start_index = (int(page) - 1) * int(count)
     end_index = int(count)
     service_logger.info("用户：%s 获取礼包列表，数据从%s到%s" % (ucid, start_index, end_index))
     # 查询游戏信息
-    from run import mysql_session
-    find_game_info_sql = "select p.pid as id, game.name, game.cover from procedures as p, zy_game as game " \
-                         "where p.gameCenterId = game.id and p.pid= %s limit 1" % (game_id,)
-    game_info = mysql_session.execute(find_game_info_sql).fetchone()
-    game = {}
-    if game_info:
-        game['id'] = game_info['id']
-        game['name'] = game_info['name']
-        game['cover'] = game_info['cover']
-    else:
+    game = get_game_info_by_appid(appid)
+    if game is None:
         return response_data(200, 0, '游戏未找到')
     now = int(time.time())
     start_timestamp = int(now - (now % 86400) + time.timezone)
     end_timestamp = int(start_timestamp + 86399)
-    find_today_gifts_count_sql = "select count(*) from zy_game_gift where game_id = %s and status = 'normal' " \
-                                 "and publish_time >= %s and publish_time <= %s " % (
-                                     game_id, start_timestamp, end_timestamp)
-    today_gift_count = mysql_session.execute(find_today_gifts_count_sql).scalar()
+    find_today_gifts_count_sql = "select count(*) from cms_gameGift where gameId = %s and status = 'normal' " \
+                                 "and publishTime >= %s and publishTime <= %s " % (
+                                     game['id'], start_timestamp, end_timestamp)
+    today_gift_count = mysql_cms_session.execute(find_today_gifts_count_sql).scalar()
 
-    unget_gifts_count_sql = "select count(*) as num from (select ifnull(c.code,'') as code,b.num from zy_game_gift " \
-                            "as a join zy_game_gift_fortype as b on a.id = b.gift_id left outer join zy_game_gift_log " \
-                            "as c on c.gift_id=a.id and c.uid= %s where a.game_id= %s and a.fail_time > %s " \
-                            "and b.fortype=2 and a.status='normal') as d " \
-                            "where d.code<>'' or (d.num>0 and d.code='')" % (ucid, game_id, now)
-    unget_gifts_count = mysql_session.execute(unget_gifts_count_sql).scalar()
+    unget_gifts_count_sql = "select count(*) as num from (select ifnull(c.code,'') as code,b.num from cms_gameGift " \
+                            "as a join cms_gameGiftAssign as b on a.id = b.giftId left outer join cms_gameGiftLog " \
+                            "as c on c.giftId=a.id and c.uid= %s where a.gameId= %s and a.failTime > %s " \
+                            "and b.platformId=%s and a.status='normal') as d " \
+                            "where d.code<>'' or (d.num>0 and d.code='')" % (ucid, game['id'], now, SDK_PLATFORM_ID)
+    unget_gifts_count = mysql_cms_session.execute(unget_gifts_count_sql).scalar()
 
-    unget_gifts_page_list_sql = "select * from (select a.id,a.afid,a.game_id,a.game_name,a.name,a.gift," \
-                                "a.content,a.type,a.type_data,a.fortype,a.label,a.ios,a.tags,a.uid,a.publish_time," \
-                                "a.fail_time,a.create_time,a.update_time,a.status,a.dig,a.gift_range," \
-                                "a.release_limit,b.num,b.total,ifnull(c.code,'') as code,if(c.code<>'', '1', '0') " \
-                                "as is_get from zy_game_gift as a join zy_game_gift_fortype as b on a.id=b.gift_id " \
-                                "left outer join zy_game_gift_log as c on c.gift_id=a.id and c.uid= %s " \
-                                "where a.game_id=%s and a.fail_time > %s and b.fortype=2 and a.status='normal' " \
-                                "order by is_get asc , c.for_time desc, a.id desc) as d " \
-                                "where d.code<>'' or (d.num>0 and d.code='') limit %s, %s " % (ucid, game_id, now,
-                                                                                               start_index, end_index)
-    unget_gifts_page_list = mysql_session.execute(unget_gifts_page_list_sql).fetchall()
+    unget_gifts_page_list_sql = "select * from (select a.id,a.gameId,a.gameName,a.name,a.gift," \
+                                "a.content,a.label,a.uid,a.publishTime,a.failTime,a.createTime,a.updateTime,a.status," \
+                                "b.num, b.assignNum, ifnull(c.code,'') as code,if(c.code<>'', '1', '0') " \
+                                "as is_get from cms_gameGift as a join cms_gameGiftAssign as b on a.id=b.giftId " \
+                                "left outer join cms_gameGiftLog as c on c.giftId=a.id and c.uid= %s " \
+                                "where a.gameId=%s and a.failTime > %s and b.platformId=%s and a.status='normal' " \
+                                "order by is_get asc , c.forTime desc, a.id desc) as d " \
+                                "where d.code<>'' or (d.num>0 and d.code='') limit %s, %s " \
+                                % (ucid, game['id'], now, SDK_PLATFORM_ID, start_index, end_index)
+    unget_gifts_page_list = mysql_cms_session.execute(unget_gifts_page_list_sql).fetchall()
     data_list = []
     for gift in unget_gifts_page_list:
         info = {
             'id': gift['id'],
             'name': gift['name'],
-            'game_id': gift['game_id'],
-            'game_name': gift['game_name'],
+            'game_id': gift['gameId'],
+            'game_name': gift['gameName'],
             'gift': gift['gift'],
             'content': gift['content'],
-            'publish_time': gift['publish_time'],
-            'fail_time': gift['fail_time'],
+            'publish_time': gift['publishTime'],
+            'fail_time': gift['failTime'],
             'code': gift['code'],
-            'type': gift['type'],
-            'num': gift['num'],
-            'total': gift['total'],
+            'num': gift['assignNum'],
+            'total': int(gift['assignNum'])+int(gift['num']),
             'is_get': gift['is_get']
         }
         data_list.append(info)
@@ -91,80 +86,95 @@ def v4_sdk_get_gifts_list():
 @gift_controller.route('/msa/v4/get_gift', methods=['POST'])
 @sdk_api_request_check
 def v4_sdk_user_get_gift():
+    from run import mysql_cms_session
+    from run import SDK_PLATFORM_ID
     ucid = get_ucid_by_access_token(request.form['_token'])
-    game_id = int(request.form['_appid'])  # 游戏id
+    appid = int(request.form['_appid'])  # 根据appid来获取游戏id
     gift_id = request.form['gift_id']
+    table_num = gift_id % 10  # 获取分表名
     username = get_username_by_ucid(ucid)
     ip = request.remote_addr  # 请求源ip
     mac = request.form['_device_id']  # 通用参数中的device_id
     end_for_time = int(time.time()) - 3600 * 24  # 限制24小时的时间间隔
-    if game_id is None or gift_id is None or ip is None or mac is None:
-        log_exception(request, '客户端请求错误-gameid或giftid或ip\mac为空')
+    if appid is None or gift_id is None or ip is None or mac is None:
+        log_exception(request, '客户端请求错误-appid或giftid或ip\mac为空')
         return response_data(200, 0, '客户端参数错误')
-    from run import mysql_session
-    find_game_gift_info_sql = "select * from zy_game_gift where id= %s limit 1" % (gift_id,)
-    game_gift_info = mysql_session.execute(find_game_gift_info_sql).fetchone()
+    if 'platform_id' in request.form:
+        SDK_PLATFORM_ID = int(request.form['platform_id'])
+    # 查询游戏信息
+    game = get_game_info_by_appid(appid)
+    if game is None:
+        return response_data(200, 0, '游戏未找到')
+    game_id = game['id']
+    find_game_gift_info_sql = "select * from cms_gameGift where id= %s limit 1" % (gift_id,)
+    game_gift_info = mysql_cms_session.execute(find_game_gift_info_sql).fetchone()
     if game_gift_info:
-        if game_gift_info['game_id'] != game_id or game_gift_info['status'] != 'normal':
+        if game_gift_info['gameId'] != game_id or game_gift_info['status'] != 'normal':
             return response_data(200, 0, '礼包不存在或者礼包已经过期')
-        if game_gift_info['num'] < 1:
+        if game_gift_info['assignNum'] < 1:
             return response_data(200, 0, '礼包被领取完了')
-        if game_gift_info['fail_time'] < int(time.time()):
+        if game_gift_info['failTime'] < int(time.time()):
             return response_data(200, 0, '礼包已经过期了')
         # 检查领取记录
-        find_game_gift_log_count_sql = "select count(*) from zy_game_gift_log where game_id = %s " \
-                                       "and gift_id = %s and fortype = 2 and for_time >= %s and for_ip = '%s' " \
-                                       "and for_mac = '%s' " % (game_id, gift_id, end_for_time, ip, mac)
-        game_gift_log_count = mysql_session.execute(find_game_gift_log_count_sql).scalar()
+        find_game_gift_log_count_sql = "select count(*) from cms_gameGiftLog where gameId = %s " \
+                                       "and giftId = %s and platformId = %s and forTime >= %s and forIp = '%s' " \
+                                       "and forMac = '%s' " % (game_id, gift_id, SDK_PLATFORM_ID,
+                                                               end_for_time, ip, mac)
+        game_gift_log_count = mysql_cms_session.execute(find_game_gift_log_count_sql).scalar()
         if game_gift_log_count > 3:
             return response_data(200, 0, '已经领取过了')
         # 检查礼包获取资格
-        find_user_game_gift_log_sql = "select count(*) from zy_game_gift_log where game_id = %s " \
-                                      "and gift_id = %s and fortype = 2 and for_time >= %s " \
-                                      "and uid = %s order by for_time desc " % (game_id, gift_id, end_for_time, ucid)
-        user_game_gift_log_count = mysql_session.execute(find_user_game_gift_log_sql).scalar()
+        find_user_game_gift_log_sql = "select count(*) from cms_gameGiftLog where gameId = %s " \
+                                      "and giftId = %s and platformId = %s and forTime >= %s " \
+                                      "and uid = %s" \
+                                      % (game_id, gift_id, SDK_PLATFORM_ID, end_for_time, ucid)
+        user_game_gift_log_count = mysql_cms_session.execute(find_user_game_gift_log_sql).scalar()
         if user_game_gift_log_count == 0:
-            # 检查礼包剩余个数
-            find_game_gift_fortype_info_sql = "select num from zy_game_gift_fortype where fortype =2 and" \
-                                              " gift_id= %s " % (gift_id,)
-            game_gift_fortype_info = mysql_session.execute(find_game_gift_fortype_info_sql).fetchone()
-            if game_gift_fortype_info:
-                if game_gift_info['num'] >= 1 and game_gift_fortype_info['num'] >= 1:
+            find_game_gift_fortype_info_sql = "select assignNum from cms_gameGiftAssign where platformId = %s and" \
+                                              " giftId= %s " % (SDK_PLATFORM_ID, gift_id)
+            game_gift_assign_info = mysql_cms_session.execute(find_game_gift_fortype_info_sql).fetchone()
+            if game_gift_assign_info:
+                if game_gift_info['assignNum'] >= 1 and game_gift_assign_info['assignNum'] >= 1:
                     # 抽取礼包代码
-                    find_game_gift_code_sql = "select id, code from zy_game_gift_code where status = 0 and" \
-                                                      " game_id= %s and gift_id = %s order by id asc limit 1" \
-                                              % (game_id, gift_id)
-                    game_gift_code = mysql_session.execute(find_game_gift_code_sql).fetchone()
+                    find_game_gift_code_sql = "select id, code from cms_gameGiftCode_%s where status = 0 and" \
+                                              " gameId= %s and giftId = %s order by id asc limit 1" \
+                                              % (table_num, game_id, gift_id)
+                    game_gift_code = mysql_cms_session.execute(find_game_gift_code_sql).fetchone()
                     if game_gift_code:
                         if game_gift_code['code'] is not None and game_gift_code['code'] != '':
                             try:
-                                update_gift_code_sql = "update zy_game_gift_code set status=1, uid=%s, username='%s'," \
-                                                       " for_time=%s, fortype=2 where id=%s "\
-                                                       % (ucid, username, int(time.time()), game_gift_code['id'])
-                                result = mysql_session.execute(update_gift_code_sql)
-                                if result:
-                                    insert_get_gift_log = "insert into zy_game_gift_log(game_id, gift_id, fortype, code, " \
-                                                          "uid, username, for_time, for_ip, for_mac) " \
-                                                          "values(%s, %s, %s, '%s', %s, '%s'," \
-                                                          "%s, '%s', '%s')" % (game_id, gift_id, 2, game_gift_code['code'],
-                                                                           ucid, username, int(time.time()), ip, mac)
-                                    mysql_session.execute(insert_get_gift_log)
+                                update_gift_code_sql = "update cms_gameGiftCode_%s set status=1, uid=%s, username='%s'," \
+                                                       " forTime=%s, platformId=%s where id=%s " \
+                                                       % (table_num, ucid, username, int(time.time()),
+                                                          SDK_PLATFORM_ID, game_gift_code['id'])
+                                update_gift_code_result = mysql_cms_session.execute(update_gift_code_sql)
+                                if update_gift_code_result:
+                                    insert_get_gift_log_sql = "insert into cms_gameGiftLog(gameId, giftId, platformId, " \
+                                                          "code, uid, username, forTime, forIp, forMac) " \
+                                                          "values(%s, %s, %s, '%s', %s, '%s', %s, '%s', '%s')" \
+                                                          % (game_id, gift_id, SDK_PLATFORM_ID, game_gift_code['code'],
+                                                              ucid, username, int(time.time()), ip, mac)
+                                    mysql_cms_session.execute(insert_get_gift_log_sql)
                                     # 礼包个数减一
-                                    update_gift_count_sql = "update zy_game_gift set num = num-1 where id=%s " \
-                                                           % (gift_id)
-                                    update_gift_fortype_count_sql = "update zy_game_gift_fortype set num = num-1 " \
-                                                                    "where fortype=2 and gift_id=%s " % (gift_id,)
-                                    mysql_session.execute(update_gift_count_sql)
-                                    mysql_session.execute(update_gift_fortype_count_sql)
-                                    mysql_session.commit()
+                                    update_gift_count_sql = "update cms_gameGift set num = num+1, " \
+                                                            "assignNum = assignNum-1 where id=%s " \
+                                                            % (gift_id,)
+                                    update_gift_assign_count_sql = "update cms_gameGiftAssign set num = num+1," \
+                                                                   " assignNum = assignNum-1 where platformId = %s" \
+                                                                   " and giftId = %s " % (SDK_PLATFORM_ID, gift_id)
+                                    mysql_cms_session.execute(update_gift_assign_count_sql)
+                                    mysql_cms_session.execute(update_gift_count_sql)
+                                    mysql_cms_session.commit()
                                     data = {'code': game_gift_code['code']}
                                     return response_data(200, 1, '领取成功', data)
                             except Exception, err:
                                 service_logger.error(err.message)
-                                mysql_session.rollback()
+                                mysql_cms_session.rollback()
                             finally:
-                                mysql_session.close()
-            return response_data(200, 0, '礼包被领取完了')
+                                mysql_cms_session.close()
+                return response_data(200, 0, '礼包被领取完了')
+            else:
+                return response_data(200, 0, '该游戏未找到该平台可用的礼包')
         else:
             return response_data(200, 0, '已经领取过了')
     else:
@@ -175,19 +185,27 @@ def v4_sdk_user_get_gift():
 @gift_controller.route('/msa/v4/unget_game_gift', methods=['POST'])
 @sdk_api_request_check
 def v4_sdk_user_unget_gift():
+    from run import mysql_cms_session
+    from run import SDK_PLATFORM_ID
     ucid = get_ucid_by_access_token(request.form['_token'])
-    game_id = request.form['_appid']  # 游戏id
-    if game_id is None:
-        log_exception(request, '客户端请求错误-gameid为空')
+    appid = request.form['_appid']  # 根据appid获取游戏id
+    if appid is None:
+        log_exception(request, '客户端请求错误-appid为空')
         return response_data(200, 0, '客户端参数错误')
+    if 'platform_id' in request.form:
+        SDK_PLATFORM_ID = int(request.form['platform_id'])
+    # 查询游戏信息
+    game = get_game_info_by_appid(appid)
+    if game is None:
+        return response_data(200, 0, '游戏未找到')
+    game_id = game['id']
     now = int(time.time())
-    raw_sql = "select count(*) as num from zy_game_gift as a join zy_game_gift_fortype as b" \
-              " on a.id = b.gift_id where a.id not in(select gift_id from zy_game_gift as gift " \
-              "join zy_game_gift_log as log on gift.id = log.gift_id where log.uid = %s and gift.game_id = %s) " \
-              "and a.game_id = %s and a.fail_time > %s and b.fortype=2 and b.num>0 and a.status='normal'" \
-              % (ucid, game_id, game_id, now)
-    from run import mysql_session
-    gift_num = mysql_session.execute(raw_sql).scalar()
+    raw_sql = "select count(*) as num from cms_gameGift as a join cms_gameGiftAssign as b" \
+              " on a.id = b.giftId where a.id not in(select giftId from cms_gameGift as gift " \
+              "join cms_gameGiftLog as log on gift.id = log.giftId where log.uid = %s and gift.gameId = %s) " \
+              "and a.gameId = %s and a.failTime > %s and b.platformId = %s and b.assignNum>0 and a.status='normal'" \
+              % (ucid, game_id, game_id, now, SDK_PLATFORM_ID)
+    gift_num = mysql_cms_session.execute(raw_sql).scalar()
     if gift_num > 0:
         data = {
             'new_gift': True,

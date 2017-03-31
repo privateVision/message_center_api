@@ -76,7 +76,7 @@ def get_user_type_users(user_type):
     if user_type is not None:
         from run import mysql_session
         for type in user_type:
-            find_users_by_user_type_sql = "select distinct(ucid) from user as u, retailers as r where u.rid = r.rid " \
+            find_users_by_user_type_sql = "select distinct(ucid) from ucusers as u, retailers as r where u.rid = r.rid " \
                                           "and r.rtype = %s" % (type,)
             try:
                 origin_list = mysql_session.execute(find_users_by_user_type_sql).fetchall()
@@ -96,7 +96,7 @@ def get_vip_users(vips):
     if vips is not None:
         from run import mysql_session
         for vip in vips:
-            find_users_by_vip_sql = "select distinct(ucid) from user as u where u.vip >= %s " % (vip,)
+            find_users_by_vip_sql = "select distinct(ucid) from ucuser_info as u where u.vip >= %s " % (vip,)
             try:
                 origin_list = mysql_session.execute(find_users_by_vip_sql).fetchall()
                 for item in origin_list:
@@ -145,7 +145,7 @@ def get_ucid_by_access_token(access_token=None):
 
 
 def get_username_by_ucid(ucid=None):
-    find_ucid_sql = "select nickname from user where ucid = %s" % (ucid,)
+    find_ucid_sql = "select nickname from ucusers where ucid = %s" % (ucid,)
     from run import mysql_session
     try:
         user_info = mysql_session.execute(find_ucid_sql).first()
@@ -228,7 +228,7 @@ def get_user_broadcast_list(ucid=None):
 
 # 检查用户账号是否被冻结
 def find_user_account_is_freeze(ucid=None):
-    find_is_freeze_sql = "select is_freeze from user where ucid = %s" % (ucid,)
+    find_is_freeze_sql = "select is_freeze from ucusers where ucid = %s" % (ucid,)
     from run import mysql_session
     try:
         user_info = mysql_session.execute(find_is_freeze_sql).first()
@@ -246,7 +246,7 @@ def find_user_account_is_freeze(ucid=None):
 # 检查用户子账号是否被冻结
 def find_user_child_account_is_freeze(ucid=None):
     db_num = int(int(ucid) % 30)
-    find_is_freeze_sql = "select id from user_procedure_%s where is_freeze=1 and ucid = %s" % (db_num, ucid)
+    find_is_freeze_sql = "select id from ucuser_sub_%s where is_freeze=1 and ucid = %s" % (db_num, ucid)
     from run import mysql_session
     try:
         user_info_list = mysql_session.execute(find_is_freeze_sql)
@@ -359,17 +359,38 @@ def get_user_coupons_by_game(ucid, appid, start_index, end_index):
     return new_coupon_list
 
 
+# 根据appid获取游戏信息
+def get_game_info_by_appid(appid=None):
+    from run import mysql_session
+    find_game_info_sql = "select p.gameCenterId as id, game.name, game.cover from procedures as p, zy_game as game " \
+                         "where p.gameCenterId = game.id and p.pid= %s limit 1" % (appid,)
+    game_info = mysql_session.execute(find_game_info_sql).fetchone()
+    game = {}
+    if game_info:
+        game['id'] = game_info['id']
+        game['name'] = game_info['name']
+        game['cover'] = game_info['cover']
+        return game
+    return None
+
+
 # sdk api 请求通用装饰器
 def sdk_api_request_check(func):
     @wraps(func)
     def wraper(*args, **kwargs):
         # 数据库连接状态检测
         from run import mysql_session
+        from run import mysql_cms_session
         try:
-            mysql_session.execute('select count(*) from admins limit 1').scalar()
+            mysql_session.execute('select 1=1').scalar()
+            mysql_cms_session.execute('select 1=1').scalar()
         except Exception, err:
             mysql_session.rollback()
+            mysql_cms_session.rollback()
             service_logger.error(err.message)
+        finally:
+            mysql_session.close()
+            mysql_cms_session.close()
         from Utils.EncryptUtils import sdk_api_params_check, sdk_api_check_sign
         is_params_checked = sdk_api_params_check(request)
         if is_params_checked is False:
