@@ -7,10 +7,12 @@ import sys
 reload(sys)
 sys.setdefaultencoding('utf-8')
 
-app, kafka_producer, mysql_session = create_app()
+app, kafka_producer, mysql_session, mysql_cms_session = create_app()
 
 db = MongoEngine()  # 建立MongoDB Engine
 db.init_app(app)
+
+SDK_PLATFORM_ID = app.config.get('SDK_PLATFORM_ID')
 
 
 @app.errorhandler(404)
@@ -30,3 +32,4 @@ def page_not_found(error):
 
 
 #  uwsgi 启动脚本： uwsgi --socket 127.0.0.1:5000 --wsgi-file run.py --callable app --enable-threads
+#                       --lazy-apps --processes 4 --threads 2

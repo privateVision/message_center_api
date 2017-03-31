@@ -188,9 +188,9 @@ def check_user_type_and_vip(ucid=None, user_type=None, vip=None):
     from run import mysql_session
     if user_type is not None:
         user_type_str = ",".join(user_type)
-        find_users_by_user_type_sql = "select count(*) from user as u, retailers as r where u.rid = r.rid " \
+        find_users_by_user_type_sql = "select count(*) from ucuser_info as u, retailers as r where u.rid = r.rid " \
                                       "and r.rtype in (%s) and u.ucid = %s " % (user_type_str, ucid)
-        find_users_by_vip_sql = "select count(*) from user as u where u.ucid = %s and u.vip >= %s " % (ucid, vip)
+        find_users_by_vip_sql = "select count(*) from ucuser_info as u where u.ucid = %s and u.vip >= %s " % (ucid, vip)
         try:
             is_exist = mysql_session.execute(find_users_by_user_type_sql).scalar()
             if is_exist is None or is_exist == 0:
@@ -235,7 +235,7 @@ def get_ucid_list_by_user_uid_name_list(specify_user):
     from run import mysql_session
     if specify_user is not None and specify_user != '':
         for uid in specify_user:
-            find_ucid_sql = "select ucid from user where uid = '%s'" % (uid,)
+            find_ucid_sql = "select ucid from ucusers where uid = '%s'" % (uid,)
             try:
                 user_info = mysql_session.execute(find_ucid_sql).fetchone()
                 if user_info:
@@ -257,10 +257,12 @@ def add_mark_to_user_redis(ucid, message_type):
 def add_to_every_related_users_message_list(users_message):
     from run import mysql_session
     try:
-        mysql_session.execute('select count(*) from admins limit 1').scalar()
+        mysql_session.execute('select 1=1').scalar()
     except Exception, err:
         mysql_session.rollback()
         service_logger.error(err.message)
+    finally:
+        mysql_session.close()
     if 'distribute' not in users_message:
         users_message.distribute = None
     add_user_message_thread = threading.Thread(target=add_message_to_user_message_list,
