@@ -40,7 +40,12 @@ class UserController extends AuthController
     }
 
     public function RechargeAction() {
-        $order = $this->user->orders()->where('vid', '>=', 100)->where('status', Orders::Status_Success)->where('hide', 0)->get();
+        $page = $this->parameter->get('page', 1);
+        $limit = $this->parameter->get('count', 10);
+
+        $offset = max(0, ($page - 1) * $limit);
+
+        $order = $this->user->orders()->where('vid', '>=', 100)->where('status', '!=', Orders::Status_WaitPay)->where('hide', 0)->take($limit)->skip($offset)->get();
 
         $data = [];
         foreach($order as $v) {
@@ -58,7 +63,12 @@ class UserController extends AuthController
     }
 
     public function ConsumeAction() {
-        $order = $this->user->orders()->where('vid', '<', 100)->where('status', Orders::Status_Success)->where('hide', 0)->get();
+        $page = $this->parameter->get('page', 1);
+        $limit = $this->parameter->get('count', 10);
+
+        $offset = max(0, ($page - 1) * $limit);
+
+        $order = $this->user->orders()->where('vid', '<', 100)->where('status', '!=', Orders::Status_WaitPay)->where('hide', 0)->take($limit)->skip($offset)->get();
 
         $data = [];
         foreach($order as $v) {
