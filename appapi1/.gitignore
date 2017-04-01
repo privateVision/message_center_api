@@ -1,5 +1,0 @@
-.env
-listen-queue.sh
-.env.test
-switchenv.sh
-_ab/
