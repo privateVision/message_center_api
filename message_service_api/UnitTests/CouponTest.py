@@ -77,11 +77,11 @@ class CouponFunctionTest(unittest.TestCase):
 
     def test_get_coupon_list(self):
         body_data = {
-            '_sign': 'ba10d1a7263398be73a62dfbcbb38523',
+            '_sign': 'bec733343e9169bb3dba700f6b2371e4',
             '_token': 'bm50pbazciog8w8wcow0gkws8',
             '_appid': 778,
             'page': 1,
-            'count': 3
+            'count': 10
         }
         r = requests.post('http://localhost:5000/msa/v4/coupons', data=body_data)
         print r.text

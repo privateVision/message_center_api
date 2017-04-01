@@ -43,3 +43,5 @@ WTForms==2.1
 WTForms-JSON==0.3.1
 xattr==0.6.4
 zope.interface==4.1.1
+flask-limiter==0.9.3
+limits==1.2.1

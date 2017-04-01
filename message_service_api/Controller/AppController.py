@@ -51,7 +51,8 @@ def v4_get_app_zone_list(app_id=None):
         return response_data(200, 0, 'app_id不能为空')
     zone_list = []
     from run import mysql_session
-    find_users_by_user_type_sql = "select distinct(zoneId), zoneName from roleDatas as r where r.vid = %s " % (app_id,)
+    find_users_by_user_type_sql = "select distinct(zoneId), zoneName from ucuser_role_%s as r where r.pid = %s " \
+                                  % (app_id, app_id)
     try:
         origin_list = mysql_session.execute(find_users_by_user_type_sql)
         for zone in origin_list:

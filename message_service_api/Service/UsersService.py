@@ -29,9 +29,9 @@ def get_game_and_area_and_user_type_and_vip_users(game=None, user_type=None, vip
             for game_info in game:
                 if game_info.has_key('zone_id_list'):
                     for zone in game_info['zone_id_list']:
-                        find_users_in_game_area_sql = "select distinct(ucid) from roleDatas where vid = %s " \
+                        find_users_in_game_area_sql = "select distinct(ucid) from ucuser_role_%s where pid = %s " \
                                                       "and zoneName = '%s'" \
-                                                      % (game_info['apk_id'], zone)
+                                                      % (game_info['apk_id'], game_info['apk_id'], zone)
                         try:
                             tmp_user_list = mysql_session.execute(find_users_in_game_area_sql).fetchall()
                             for item in tmp_user_list:
@@ -42,8 +42,8 @@ def get_game_and_area_and_user_type_and_vip_users(game=None, user_type=None, vip
                         finally:
                             mysql_session.close()
                 else:  # 没传区服信息，那就所有区服咯
-                    find_users_in_game_area_sql = "select distinct(ucid) from roleDatas where vid = %s " \
-                                                  % (game_info['apk_id'],)
+                    find_users_in_game_area_sql = "select distinct(ucid) from ucuser_role_%s where pid = %s " \
+                                                  % (game_info['apk_id'], game_info['apk_id'])
                     try:
                         tmp_user_list = mysql_session.execute(find_users_in_game_area_sql).fetchall()
                         for item in tmp_user_list:
@@ -55,17 +55,21 @@ def get_game_and_area_and_user_type_and_vip_users(game=None, user_type=None, vip
                         mysql_session.close()
             return list(set(user_type_users_list).intersection(set(game_users_list)).intersection(set(vip_users_list)))
         else:  # 所有游戏，太可怕了
-            find_all_game_users_sql = "select distinct(ucid) from roleDatas"
-            try:
-                tmp_user_list = mysql_session.execute(find_all_game_users_sql).fetchall()
-                for item in tmp_user_list:
-                    game_users_list.append(item['ucid'])
-            except Exception, err:
-                service_logger.error(err.message)
-                mysql_session.rollback()
-            finally:
-                mysql_session.close()
-            return list(set(game_users_list).intersection(set(user_type_users_list)).intersection(set(vip_users_list)))
+            find_game_list_sql = "select pid from procedures"
+            game_list = mysql_session.execute(find_game_list_sql).fetchall()
+            for game in game_list:
+                pid = game['pid']
+                find_all_game_users_sql = "select distinct(ucid) from ucuser_role_%s " % (pid,)
+                try:
+                    tmp_user_list = mysql_session.execute(find_all_game_users_sql).fetchall()
+                    for item in tmp_user_list:
+                        game_users_list.append(item['ucid'])
+                except Exception, err:
+                    service_logger.error(err.message)
+                    mysql_session.rollback()
+                finally:
+                    mysql_session.close()
+                return list(set(game_users_list).intersection(set(user_type_users_list)).intersection(set(vip_users_list)))
     # 游戏区服为空
     else:
         return []
@@ -374,6 +378,11 @@ def get_game_info_by_appid(appid=None):
         game['cover'] = game_info['cover']
         return game
     return None
+
+
+# 从mysql中查看是否有用户相关的公告
+def get_user_notice_from_mysql(ucid=None):
+    pass
 
 
 # sdk api 请求通用装饰器
