@@ -380,9 +380,62 @@ def get_game_info_by_appid(appid=None):
     return None
 
 
+def get_user_current_game_and_area_by_ucid(ucid=None):
+    from run import mysql_session
+    find_game_info_sql = "select p.gameCenterId as id, game.name, game.cover from procedures as p, zy_game as game " \
+                         "where p.gameCenterId = game.id and p.pid= %s limit 1" % (appid,)
+    game_info = mysql_session.execute(find_game_info_sql).fetchone()
+    game = {}
+    if game_info:
+        game['id'] = game_info['id']
+        game['name'] = game_info['name']
+        game['cover'] = game_info['cover']
+        return game
+    return None
+
+
 # 从mysql中查看是否有用户相关的公告
-def get_user_notice_from_mysql(ucid=None):
-    UsersMessage.objects(Q(type='notice') & Q(mysql_id=notice_id)).update(set__closed=1)
+def get_user_notice_from_mysql(username=None, rtype=None, vip=None, appid=None, cur_zone=None):
+    now = int(time.time())
+    data_list = UsersMessage.objects(Q(type='notice')
+                         & (
+                             Q(is_time=0) | (Q(is_time=1) & Q(end_time__gte=now))
+                            )
+                        )
+    notice_list = []
+    for data in data_list:
+        # 检查当前游戏
+        app_list = data['app']
+        for app in app_list:
+            if app['apk_id'] == 'all':
+                if rtype in data['rtype']:
+                    if vip >= int(data['vip'][0]):
+                        notice_list.append(data)
+                        continue
+                if username in data['users']:
+                    notice_list.append(data)
+                    continue
+            if 'zone_id_list' in app:
+                zone_id_list = app['zone_id_list']
+                for zone in zone_id_list:
+                    if zone == cur_zone and app['apk_id'] == appid:
+                        if rtype in data['rtype']:
+                            if vip >= int(data['vip'][0]):
+                                notice_list.append(data)
+                                continue
+                        if username in data['users']:
+                            notice_list.append(data)
+                            continue
+            else:
+                if app['apk_id'] == appid:
+                    if rtype in data['rtype']:
+                        if vip >= int(data['vip'][0]):
+                            notice_list.append(data)
+                            continue
+                    if username in data['users']:
+                        notice_list.append(data)
+                        continue
+    return notice_list
 
 
 # sdk api 请求通用装饰器
