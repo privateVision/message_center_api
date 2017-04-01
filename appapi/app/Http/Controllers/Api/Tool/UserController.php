@@ -11,8 +11,6 @@ class UserController extends Controller
     protected $user = null;
 
     public function ResetPasswordPageAction() {
-        $ucid = $this->parameter->tough('ucid');
-
         $token = encrypt3des(json_encode(['ucid' => $ucid, 't' => time() + 900]));
 
         $url = env('reset_password_url');
@@ -23,7 +21,7 @@ class UserController extends Controller
     }
 
     public function FreezeAction() {
-        $ucid = $this->parameter->tough('ucid');
+        $status = $this->parameter->tough('status');
     }
 
     public function before() {
