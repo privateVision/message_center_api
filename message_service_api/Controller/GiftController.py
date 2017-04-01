@@ -46,7 +46,7 @@ def v4_sdk_get_gifts_list():
                             "where d.code<>'' or (d.num>0 and d.code='')" % (ucid, game['id'], now, SDK_PLATFORM_ID)
     unget_gifts_count = mysql_cms_session.execute(unget_gifts_count_sql).scalar()
 
-    unget_gifts_page_list_sql = "select * from (select a.id,a.gameId,a.gameName,a.name,a.gift," \
+    unget_gifts_page_list_sql = "select * from (select a.id,a.gameId,a.gameName,a.name,a.gift,a.isAfReceive," \
                                 "a.content,a.label,a.uid,a.publishTime,a.failTime,a.createTime,a.updateTime,a.status," \
                                 "b.num, b.assignNum, ifnull(c.code,'') as code,if(c.code<>'', '1', '0') " \
                                 "as is_get from cms_gameGift as a join cms_gameGiftAssign as b on a.id=b.giftId " \
@@ -70,7 +70,8 @@ def v4_sdk_get_gifts_list():
             'code': gift['code'],
             'num': gift['assignNum'],
             'total': int(gift['assignNum'])+int(gift['num']),
-            'is_get': gift['is_get']
+            'is_get': gift['is_get'],
+            'is_af_receive': gift['isAfReceive']
         }
         data_list.append(info)
     data = {
@@ -91,7 +92,7 @@ def v4_sdk_user_get_gift():
     ucid = get_ucid_by_access_token(request.form['_token'])
     appid = int(request.form['_appid'])  # 根据appid来获取游戏id
     gift_id = request.form['gift_id']
-    table_num = gift_id % 10  # 获取分表名
+    table_num = int(gift_id) % 10  # 获取分表名
     username = get_username_by_ucid(ucid)
     ip = request.remote_addr  # 请求源ip
     mac = request.form['_device_id']  # 通用参数中的device_id

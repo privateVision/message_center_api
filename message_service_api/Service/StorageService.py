@@ -257,7 +257,7 @@ def add_mark_to_user_redis(ucid, message_type):
 def add_to_every_related_users_message_list(users_message):
     # from run import mysql_session
     # try:
-    #     mysql_session.execute('select 1=1').scalar()
+    #     mysql_session.execute('select 1').scalar()
     # except Exception, err:
     #     mysql_session.rollback()
     #     service_logger.error(err.message)
