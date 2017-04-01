@@ -39,7 +39,7 @@ class UserSubController extends AuthController
         $rid = $this->parameter->tough('_rid');
 
         $config = ProceduresExtend::from_cache($pid);
-        $allow_num = $config && $config['allow_num'] ? (int)$config['allow_num'] : 1
+        $allow_num = $config && $config['allow_num'] ? (int)$config['allow_num'] : 1;
 
         $redisfield = $this->user->ucid .'_'. $pid;
         $user_sub_num = Redis::hget('user_sub_num', $redisfield);
