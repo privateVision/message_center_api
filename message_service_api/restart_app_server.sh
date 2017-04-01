@@ -23,27 +23,28 @@ if [ $count -gt 0 ];then
     else
         echo "start process failed"
     fi
-    count=$(ps -ef|grep consume|grep -v grep|wc -l)
-    if [ $count -gt 0 ];then
-        ps -ef|grep consume|grep -v grep|awk '{print $2}'|xargs kill -9
-        nohup python consume.py &
-        if [ 0 == $? ];then
-            echo "kafka consume process start success!"
-        else
-            echo "kafka consume process start failed"
-        fi
-    else
-        echo 'kafka consume not start'
-    fi
 else
     echo "当前启动地址： $1"
-    ps -ef|grep consume|grep -v grep|awk '{print $2}'|xargs kill -9
     nohup uwsgi --socket $1 --wsgi-file run.py --callable app --enable-threads --lazy-apps --listen 100 --processes 4 --threads 2 &
     if [ 0 == $? ];then
         echo "start process success!"
     else
         echo "start process failed"
     fi
+fi
+
+
+consume_count=$(ps -ef|grep consume|grep -v grep|wc -l)
+if [ $consume_count -gt 0 ];then
+    ps -ef|grep consume|grep -v grep|awk '{print $2}'|xargs kill -9
+    nohup python consume.py &
+    if [ 0 == $? ];then
+        echo "kafka consume process start success!"
+    else
+        echo "kafka consume process start failed"
+    fi
+else
+    echo "start kafka consume "
     nohup python consume.py &
     if [ 0 == $? ];then
         echo "kafka consume process start success!"
