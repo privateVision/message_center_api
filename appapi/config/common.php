@@ -8,7 +8,7 @@ return [
 
     'smsconfig' => [
         'receiver' => '10690204000237',
-        'apikey' => '0dbc5a50c034a8396b50f3a80609497d',
+        'apikey' => '560ff300cabf7b7df7e3c02f892bfd43',
         'sender' => 'http://yunpian.com/v1/sms/send.json',
         'hour_limit' => 3, // 每小时短信发送次数限制
         'template' => [

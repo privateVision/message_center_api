@@ -44,20 +44,20 @@ class SendSMS extends Job
             'text' => $this->content,
         ];
 
-        $res = http_request($this->smsconfig['sender'], $data);
+        $restext = http_request($this->smsconfig['sender'], $data);
 
-        log_info('sendsms', ['req' => $data, 'res' => $res]);
+        log_debug('sendsms', ['req' => $data, 'res' => $restext]);
 
+        if(!$restext) {
+            return $this->release(5);
+        }
+
+        $res = json_decode($restext, true);
         if(!$res) {
             return $this->release(5);
         }
 
-        $res = json_decode($res, true);
-        if(!$res) {
-            return $this->release(5);
-        }
-
-        if($res['code'] == 0) {
+        if(@$res['code'] == 0) {
             $SMSRecord = new SMSRecord;
             $SMSRecord->mobile = $this->mobile;
             $SMSRecord->content = $this->content;
@@ -70,6 +70,7 @@ class SendSMS extends Job
                 Redis::set(sprintf('sms_%s_%s', $this->mobile, $this->code), 1, 'EX', 900);
             }
         } else {
+            log_error('sendsms', ['req' => $data, 'res' => $restext]);
             return $this->release(5);
         }
     }

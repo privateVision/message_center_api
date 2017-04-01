@@ -1,5 +1,5 @@
 <?php
-namespace App\Http\Controllers\Pub;
+namespace App\Http\Controllers\Callback;
 
 use Illuminate\Http\Request;
 use App\Model\YunpianCallback;
@@ -7,7 +7,7 @@ use Illuminate\Support\Facades\Config;
 
 class YunpianController extends \App\Controller
 {
-    public function CallbackAction(Request $request) {
+    public function RequestAction(Request $request) {
         $sms_reply = $request->input('sms_reply');
 
         log_info('YunpianCallback', $request->all());
