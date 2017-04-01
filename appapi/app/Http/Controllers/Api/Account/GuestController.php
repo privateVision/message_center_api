@@ -12,6 +12,7 @@ class GuestController extends Controller {
     use LoginAction;
 
     public function getLoginUser() {
+        $password = $this->parameter->get('password');
         $uuid = $this->parameter->tough('_device_id');
 
         $user = Ucuser::from_cache_device_uuid($uuid);
@@ -20,13 +21,17 @@ class GuestController extends Controller {
         }
 
         $username = username();
-        $password = rand(100000, 999999);
+
+        // todo: 兼容老的客户端是传过来的密码
+        if(!$password) {
+            $password = rand(100000, 999999);
+        }
         
         $user = new Ucuser;
         $user->uid = $username;
         $user->email = $username . "@anfan.com";
         $user->nickname = $username;
-        $user->password = $password;
+        $user->setPassword($password);
         $user->regip = $this->request->ip();
         $user->rid = $this->parameter->tough('_rid');
         $user->pid = $this->parameter->tough('_appid');
