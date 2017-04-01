@@ -15,7 +15,6 @@ def kafka_consume_func(kafka_consumer):
         try:
             consume_handler(msg)
         except Exception, err:
-            send_notify("处理kafak消息异常：%s" % (err.message,))
             service_logger.error("处理kafka消息异常：%s" % (err.message,))
 
 

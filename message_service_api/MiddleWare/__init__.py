@@ -49,7 +49,7 @@ service_logger.addHandler(ch)
 
 # 邮件和消息通知
 ADMINS = ['14a1152bf3963d126735637d5e745ae5@mail.bearychat.com']
-mail_handler = SMTPHandler('127.0.0.1', 'server-error@example.com', ADMINS, 'YourApplication Failed')
+mail_handler = SMTPHandler('127.0.0.1', 'server-error@monitor.com', ADMINS, '系统异常啦！！！！！')
 mail_handler.setFormatter(logging.Formatter('''
 Message type:       %(levelname)s
 Location:           %(pathname)s:%(lineno)d
