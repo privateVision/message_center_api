@@ -15,21 +15,21 @@ if [ $count -gt 0 ];then
         echo "stop main process failed!"
         exit
     fi
-    echo 'start process ...'
+    echo 'starting main process ...'
     echo "当前启动地址： $1"
     nohup uwsgi --socket $1 --wsgi-file run.py --callable app --enable-threads --lazy-apps --listen 100 --processes 4 --threads 2 &
     if [ 0 == $? ];then
-        echo "start process success!"
+        echo "start main process success!"
     else
-        echo "start process failed"
+        echo "start main process failed"
     fi
 else
     echo "当前启动地址： $1"
     nohup uwsgi --socket $1 --wsgi-file run.py --callable app --enable-threads --lazy-apps --listen 100 --processes 4 --threads 2 &
     if [ 0 == $? ];then
-        echo "start process success!"
+        echo "start main process success!"
     else
-        echo "start process failed"
+        echo "start main process failed"
     fi
 fi
 

@@ -14,5 +14,6 @@ class PostBroadcastsRequestForm(Form):
     content = StringField('content', [InputRequired()])
     close_time = IntegerField('close_time')
     stime = IntegerField('stime')
+    is_time = IntegerField('is_time', default=1)
     # etime = IntegerField('etime')
     create_time = IntegerField('create_time')

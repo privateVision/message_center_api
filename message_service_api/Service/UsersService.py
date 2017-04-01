@@ -382,7 +382,7 @@ def get_game_info_by_appid(appid=None):
 
 # 从mysql中查看是否有用户相关的公告
 def get_user_notice_from_mysql(ucid=None):
-    pass
+    UsersMessage.objects(Q(type='notice') & Q(mysql_id=notice_id)).update(set__closed=1)
 
 
 # sdk api 请求通用装饰器

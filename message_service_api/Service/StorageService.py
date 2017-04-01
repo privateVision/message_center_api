@@ -379,7 +379,7 @@ def system_broadcast_persist(data_json=None):
         users_message.title = data_json['title']
         users_message.content = data_json['content']
         users_message.start_time = data_json['stime']
-        users_message.end_time = int(data_json['stime']) + 30
+        users_message.end_time = int(data_json['stime']) + 10
         users_message.close_time = data_json['close_time']
         users_message.is_time = 1
         users_message.users = None
@@ -413,7 +413,7 @@ def system_broadcast_update(data_json=None, update_user_message=True):
         users_message.title = data_json['title']
         users_message.content = data_json['content']
         users_message.start_time = data_json['stime']
-        users_message.end_time = int(data_json['stime']) + 30
+        users_message.end_time = int(data_json['stime']) + 10
         users_message.close_time = data_json['close_time']
         users_message.is_time = 1
         users_message.users = None
