@@ -382,8 +382,8 @@ def sdk_api_request_check(func):
         from run import mysql_session
         from run import mysql_cms_session
         try:
-            mysql_session.execute('select 1=1').scalar()
-            mysql_cms_session.execute('select 1=1').scalar()
+            mysql_session.execute('select 1').scalar()
+            mysql_cms_session.execute('select 1').scalar()
         except Exception, err:
             mysql_session.rollback()
             mysql_cms_session.rollback()
