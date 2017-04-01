@@ -34,7 +34,6 @@ from Utils.RedisUtil import RedisHandle
 #             user_message.save()
 #             add_mark_to_user_redis(user, type)
 #     except Exception, err:
-#         send_notify("添加消息到每个用户的消息列表发生异常：%s" % (err.message,))
 #         service_logger.error("添加消息到每个用户的消息列表发生异常：%s" % (err.message,))
 
 
@@ -138,14 +137,12 @@ def send_message_to_spcify_users(specify_user, game, type, msg_id, is_time, star
                                 if is_right:
                                     add_user_messsage(user, type, msg_id, is_time, start_time, end_time, game)
                         except Exception, err:
-                            send_notify("添加消息到每个用户的消息列表发生异常：%s" % (err.message,))
                             service_logger.error("添加消息到每个用户的消息列表发生异常：%s" % (err.message,))
         else:
             try:
                 for user in specify_user_list:
                     add_user_messsage(user, type, msg_id, is_time, start_time, end_time, game)
             except Exception, err:
-                send_notify("添加消息到每个用户的消息列表发生异常：%s" % (err.message,))
                 service_logger.error("添加消息到每个用户的消息列表发生异常：%s" % (err.message,))
 
 
@@ -176,7 +173,6 @@ def add_user_messsage(ucid, type, msg_id, is_time, start_time, end_time, game):
             mysql_session.execute(insert_user_coupon_sql)
             mysql_session.commit()
         except Exception, err:
-            send_notify("添加卡券到每个用户的mysql列表发生异常：%s" % (err.message,))
             service_logger.error("添加卡券到每个用户的mysql列表发生异常：%s" % (err.message,))
             mysql_session.rollback()
         finally:
@@ -257,7 +253,7 @@ def add_mark_to_user_redis(ucid, message_type):
 def add_to_every_related_users_message_list(users_message):
     # from run import mysql_session
     # try:
-    #     mysql_session.execute('select 1=1').scalar()
+    #     mysql_session.execute('select 1').scalar()
     # except Exception, err:
     #     mysql_session.rollback()
     #     service_logger.error(err.message)

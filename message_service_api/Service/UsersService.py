@@ -323,10 +323,12 @@ def get_stored_value_card_list(ucid, start_index, end_index):
 def get_user_coupons_by_game(ucid, appid, start_index, end_index):
     from run import mysql_session
     now = int(time.time())
-    get_user_coupon_sql = "select coupon_id from zy_coupon_log where is_used = 0 and ucid=%s and pid=%s and " \
-                          "((is_time = 0) or ((is_time = 1) " \
-                          "and start_time <= %s " \
-                          " and end_time >= %s)) order by id desc limit %s, %s" \
+    get_user_coupon_sql = "select log.coupon_id from zy_coupon_log as log join zy_coupon as coupon " \
+                          "on log.coupon_id=coupon.id where coupon.status='normal' and log.is_used = 0 " \
+                          "and log.ucid=%s and log.pid=%s " \
+                          "and ((coupon.is_time = 0) or ((coupon.is_time = 1) " \
+                          "and coupon.start_time <= %s  " \
+                          "and coupon.end_time >= %s)) order by log.id desc limit %s, %s" \
                           % (ucid, appid, now, now, start_index, end_index)
     coupon_list = mysql_session.execute(get_user_coupon_sql).fetchall()
     new_coupon_list = []
@@ -382,8 +384,8 @@ def sdk_api_request_check(func):
         from run import mysql_session
         from run import mysql_cms_session
         try:
-            mysql_session.execute('select 1=1').scalar()
-            mysql_cms_session.execute('select 1=1').scalar()
+            mysql_session.execute('select 1').scalar()
+            mysql_cms_session.execute('select 1').scalar()
         except Exception, err:
             mysql_session.rollback()
             mysql_cms_session.rollback()

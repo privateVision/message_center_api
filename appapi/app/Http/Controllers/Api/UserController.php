@@ -40,7 +40,12 @@ class UserController extends AuthController
     }
 
     public function RechargeAction() {
-        $order = $this->user->orders()->where('vid', '>=', 100)->where('status', Orders::Status_Success)->where('hide', 0)->get();
+        $page = $this->parameter->get('page', 1);
+        $limit = $this->parameter->get('count', 10);
+
+        $offset = max(0, ($page - 1) * $limit);
+
+        $order = $this->user->orders()->where('vid', '>=', 100)->where('status', '!=', Orders::Status_WaitPay)->where('hide', 0)->take($limit)->skip($offset)->get();
 
         $data = [];
         foreach($order as $v) {
@@ -58,7 +63,12 @@ class UserController extends AuthController
     }
 
     public function ConsumeAction() {
-        $order = $this->user->orders()->where('vid', '<', 100)->where('status', Orders::Status_Success)->where('hide', 0)->get();
+        $page = $this->parameter->get('page', 1);
+        $limit = $this->parameter->get('count', 10);
+
+        $offset = max(0, ($page - 1) * $limit);
+
+        $order = $this->user->orders()->where('vid', '<', 100)->where('status', '!=', Orders::Status_WaitPay)->where('hide', 0)->take($limit)->skip($offset)->get();
 
         $data = [];
         foreach($order as $v) {
@@ -94,6 +104,9 @@ class UserController extends AuthController
         }
 
         $old_password = $this->user->password;
+        $this->user->setPassword($new_password);
+        $this->user->save();
+
         user_log($this->user, $this->procedure, 'reset_password', '【重置用户密码】通过旧密码，旧密码[%s]，新密码[%s]', $old_password, $this->user->password);
 
         return ['result' => true];
@@ -174,21 +187,19 @@ class UserController extends AuthController
     public function UnbindPhoneAction() {
         $code = $this->parameter->tough('code', 'smscode');
 
-        if(!$this->user->mobile) {
-            throw new ApiException(ApiException::Remind, "还未绑定手机号码，无法解绑");
-        }
+        if($this->user->mobile) {
+            $mobile = $this->user->mobile;
 
-        $mobile = $this->user->mobile;
+            if(!verify_sms($mobile, $code)) {
+                throw new ApiException(ApiException::Remind, "手机号码解绑失败，验证码不正确，或已过期");
+            }
+            
+            $this->user->mobile = '';
+            $this->user->save();
 
-        if(!verify_sms($mobile, $code)) {
-            throw new ApiException(ApiException::Remind, "手机号码解绑失败，验证码不正确，或已过期");
+            user_log($this->user, $this->procedure, 'unbind_phone', '【解绑手机】手机号码{%s}', $mobile);
         }
         
-        $this->user->mobile = '';
-        $this->user->save();
-
-        user_log($this->user, $this->procedure, 'unbind_phone', '【解绑手机】手机号码{%s}', $mobile);
-
         return [
             'result' => true,
             'username' => $this->user->uid,
@@ -231,6 +242,9 @@ class UserController extends AuthController
         }
 
         $old_password = $this->user->password;
+        $this->user->setPassword($password);
+        $this->user->save();
+
         user_log($this->user, $this->procedure, 'reset_password', '【重置用户密码】通过手机验证码，手机号码{%s}，新密码[%s]，旧密码[%s]', $mobile, $this->user->password, $old_password);
 
         return ['result' => true];

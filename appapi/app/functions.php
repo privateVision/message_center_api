@@ -238,7 +238,14 @@ function verify_sms($mobile, $code) {
         return true;
     }
 
-    return Redis::get(sprintf(Redis::KSTR_SMS, $mobile, $code)) ? true : false;
+    $rediskey = sprintf('sms_%s_%s', $mobile, $code);
+    $result = Redis::get($rediskey);
+    if($result) {
+        Redis::expire($rediskey, 60); // 如果验证码验证成功，将修改有效期
+        return true;
+    }
+
+    return false;
 }
 
 function kafka_producer($topic, $content) {

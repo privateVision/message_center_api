@@ -5,35 +5,36 @@ use App\Exceptions\ApiException;
 use Illuminate\Http\Request;
 use App\Parameter;
 use App\Model\Ucuser;
+use App\Model\Session;
 
-class UserController extends Controller
+class UserController extends AuthController
 {
-    protected $user = null;
-
     public function ResetPasswordPageAction() {
-        $ucid = $this->parameter->tough('ucid');
-
-        $token = encrypt3des(json_encode(['ucid' => $ucid, 't' => time() + 900]));
+        $token = encrypt3des(json_encode(['ucid' => $this->user->ucid, 't' => time() + 900]));
 
         $url = env('reset_password_url');
         $url.= strpos($url, '?') === false ? '?' : '&';
         $url.= 'token=' . $token;
 
-        return ['url' => $url];
+        return ['url' => $url, 'token' => $token];
     }
 
     public function FreezeAction() {
-        $ucid = $this->parameter->tough('ucid');
-    }
+        $status = $this->parameter->tough('status');
 
-    public function before() {
-        $ucid = $this->parameter->tough('ucid');
-        
-        $user = Ucuser::from_cache($ucid);
-        if(!$user) {
-            throw new ApiException(ApiException::Remind, '用户不存在');
+        $is_freeze = $status > 0 ? true : false;
+
+        $this->user->is_freeze = $is_freeze;
+        $this->user->save();
+
+        if($is_freeze) {
+            $session = Session::from_cache_token($this->user->uuid);
+            if($session) {
+                $session->freeze = $is_freeze ? 1 : 0;
+                $session->save();
+            }
         }
 
-        $this->user = $user;
+        return ['result' => true];
     }
 }

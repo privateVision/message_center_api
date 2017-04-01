@@ -97,11 +97,13 @@ def v4_sdk_get_broadcast_list():
     else:
         left_count = int(need_total_count) - int(value_card_total_count)  # 还缺少的数据量
         left_page = int(left_count/int(count))
-        if left_page == 0:
+        if left_page == 0 and value_card_total_count == 0:
             coupon_start_index = 0
             coupon_end_index = left_count
         else:
             head_count = ((int(value_card_total_count/10) + 1) * int(count)) - int(value_card_total_count)
+            if value_card_total_count == 0:
+                head_count = 0
             if left_page == 0:
                 coupon_start_index = int(left_page)*head_count
             else:

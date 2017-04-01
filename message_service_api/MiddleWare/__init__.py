@@ -1,6 +1,6 @@
 # _*_ coding: utf-8 _*_
 import threading
-from logging.handlers import TimedRotatingFileHandler
+from logging.handlers import TimedRotatingFileHandler, SMTPHandler
 
 import wtforms_json
 from flask import Flask
@@ -9,6 +9,7 @@ from kafka import KafkaConsumer
 from kafka import KafkaProducer
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
+from sqlalchemy.pool import NullPool
 
 from Blueprint.RegisterBlueprint import init_blueprint
 from config.config import config
@@ -45,6 +46,25 @@ ch.setFormatter(formatter)
 service_logger.addHandler(fh)
 service_logger.addHandler(ch)
 
+
+# 邮件和消息通知
+ADMINS = ['14a1152bf3963d126735637d5e745ae5@mail.bearychat.com']
+mail_handler = SMTPHandler('127.0.0.1', 'server-error@monitor.com', ADMINS, 'Service Exception Report')
+mail_handler.setFormatter(logging.Formatter('''
+Message type:       %(levelname)s
+Location:           %(pathname)s:%(lineno)d
+Module:             %(module)s
+Function:           %(funcName)s
+Time:               %(asctime)s
+
+Message:
+
+%(message)s
+'''))
+mail_handler.setLevel(logging.ERROR)
+service_logger.addHandler(mail_handler)
+
+
 redis_store = FlaskRedis()
 wtforms_json.init()
 
@@ -73,11 +93,11 @@ def create_app():
 
     app.config['SQLALCHEMY_DATABASE_URI'] = app.config.get('SQLALCHEMY_DATABASE_URI')
     mysql_engine = create_engine(app.config['SQLALCHEMY_DATABASE_URI'], encoding="utf-8", echo=True,
-                                 pool_recycle=28800, pool_size=20)
+                                 pool_recycle=28800, poolclass=NullPool)
     mysql_session = sessionmaker(autocommit=False, bind=mysql_engine)
 
     mysql_cms_engine = create_engine(app.config['SQLALCHEMY_CMS_DATABASE_URI'], encoding="utf-8", echo=True,
-                                     pool_recycle=28800, pool_size=20)
+                                     pool_recycle=28800, poolclass=NullPool)
     mysql_cms_session = sessionmaker(autocommit=False, bind=mysql_cms_engine)
 
     return app, kafka_producer, mysql_session(), mysql_cms_session()

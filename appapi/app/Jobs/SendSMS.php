@@ -30,7 +30,7 @@ class SendSMS extends Job
             $SMSRecord->save();
 
             if($this->code) {
-                Redis::setex(sprintf('sms_%s_%s', $this->mobile, $this->code), 1800, 1);
+                Redis::set(sprintf('sms_%s_%s', $this->mobile, $this->code), 1, 'EX', 900);
             }
 
             return ;
@@ -67,7 +67,7 @@ class SendSMS extends Job
             $SMSRecord->save();
 
             if($this->code) {
-                Redis::setex(sprintf('sms_%s_%s', $this->mobile, $this->code), 1800, 1);
+                Redis::set(sprintf('sms_%s_%s', $this->mobile, $this->code), 1, 'EX', 900);
             }
         } else {
             return $this->release(5);

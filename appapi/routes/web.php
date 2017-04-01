@@ -42,7 +42,7 @@ $app->group(['prefix' => 'pub'], function () use ($app) {
 
 // API接口
 $app->group(['prefix' => 'api'], function () use ($app) {
-    $app->post('app/initialize/{ver}/{date}', 'Api\\AppController@InitializeAction');                                    // 初始化
+    $app->post('app/initialize', 'Api\\AppController@InitializeAction');                                    // 初始化
     $app->post('app/verify_sms', 'Api\\AppController@VerifySMSAction');                                     // 验证手机验证码是否正确
     $app->post('app/uuid', 'Api\\AppController@UuidAction');                                                // 获取一个UUID，用户无法获取设备UUID时
     $app->post('app/logout', 'Api\\AppController@LogoutAction');                                            // 退出客户端
@@ -91,7 +91,9 @@ $app->group(['prefix' => 'api'], function () use ($app) {
     $app->post('ios/order/receipt/verify','Api\\Pay\\AppleController@validateReceiptAction');               // 验证苹果支付的信息
     $app->post('ios/order/create','Api\\Pay\\AppleController@OrderCreateAction');                           // 验证苹果支付的信息
 
+    $app->post('tool/reset_password/request','Api\\Tool\\ResetPasswordController@RequestAction');           // 通过token用户自行修改密码
     $app->post('tool/user/reset_password_page','Api\\Tool\\UserController@ResetPasswordPageAction');        // 获取重设密码页面
+    $app->post('tool/user/freeze','Api\\Tool\\UserController@FreezeAction');                                // 冻结用户
 
 });
 

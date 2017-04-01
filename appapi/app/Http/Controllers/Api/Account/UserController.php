@@ -5,6 +5,7 @@ use App\Exceptions\ApiException;
 use Illuminate\Http\Request;
 use App\Parameter;
 
+use App\Redis;
 use App\Model\Ucuser;
 
 class UserController extends Controller {
@@ -14,12 +15,41 @@ class UserController extends Controller {
     public function getLoginUser() {
         $username = $this->parameter->tough('username');
         $password = $this->parameter->tough('password');
+        $device_id = $this->parameter->get('_device_id');
+
+        // --------- 登陆错误限制
+        $key = $device_id;
+        if(!$key) {
+            $key = $this->request->ip();
+        }
+
+        $key = md5($key .'_'. $username);
+        $rediskey_lock = 'login_lock_' . $key;
+        $rediskey_limit = 'login_limit_' . $key;
+
+        if(Redis::get($rediskey_lock)) {
+            throw new ApiException(ApiException::Remind, "操作太频繁，请稍候重试");
+        }
+        // --------- end
 
         $user = Ucuser::where('uid', $username)->orWhere('mobile', $username)->first();
 
         if(!$user || !$user->checkPassword($password)) {
+            // --------- 错误计数
+            $count = Redis::get($rediskey_limit);
+            if(!$count) {
+                Redis::set($rediskey_limit, 1, 'EX', 300);
+            } elseif($count >= 4) {
+                Redis::set($rediskey_lock, 1, 'EX', 60);
+            } else {
+                Redis::incr($rediskey_limit);
+            }
+            // --------- end
+
             throw new ApiException(ApiException::Remind, "登录失败，用户名或者密码不正确");
         }
+
+        Redis::del($rediskey_limit);
 
         return $user;
     }
@@ -38,7 +68,7 @@ class UserController extends Controller {
         $user->uid = $username;
         $user->email = $username . "@anfan.com";
         $user->nickname = $username;
-        $user->password = $password;
+        $user->setPassword($password);
         $user->regip = $this->request->ip();
         $user->rid = $this->parameter->tough('_rid');
         $user->pid = $this->parameter->tough('_appid');

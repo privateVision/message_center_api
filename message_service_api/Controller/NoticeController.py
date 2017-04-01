@@ -193,7 +193,7 @@ def v4_sdk_get_notice_list():
 def v4_sdk_set_notice_have_read():
     ucid = get_ucid_by_access_token(request.form['_token'])
     message_type = request.form['type']
-    message_id = request.form['message_id']
+    message_id = int(request.form['message_id'])
     if message_type is None or message_id is None:
         log_exception(request, '客户端请求错误-type或message_id为空')
         return response_data(200, 0, '客户端请求错误')
