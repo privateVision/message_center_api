@@ -90,29 +90,24 @@ def v4_sdk_get_broadcast_list():
     service_logger.info("用户：%s 获取卡券列表，数据从%s到%s" % (ucid, start_index, end_index))
     # 获取用户的储值卡数据列表
     value_card_total_count, value_card_list = get_stored_value_card_list(ucid, start_index, end_index)
+    # 储值卡没有数据,直接拿卡券的数据
+    if value_card_total_count == 0:
+        new_coupon_list = get_user_coupons_by_game(ucid, game_id, start_index, end_index)
+        return response_data(http_code=200, data=new_coupon_list)
     # 储值卡数据足够一页数据
     if value_card_total_count >= need_total_count:
         return response_data(http_code=200, data=value_card_list)
-    # 储值卡数据不够一页，用卡券数据补充
+    # 储值卡数据不够，用卡券数据补充
     else:
         left_count = int(need_total_count) - int(value_card_total_count)  # 还缺少的数据量
-        left_page = int(left_count/int(count))
-        if left_page == 0 and value_card_total_count == 0:
+        if int(page) == 1:
             coupon_start_index = 0
             coupon_end_index = left_count
         else:
-            head_count = ((int(value_card_total_count/10) + 1) * int(count)) - int(value_card_total_count)
-            if value_card_total_count == 0:
-                head_count = 0
-            if left_page == 0:
-                coupon_start_index = int(left_page)*head_count
-            else:
-                coupon_start_index = int(left_page) * head_count + (int(left_page) - 1) * int(count)
-            coupon_end_index = int(count)
+            coupon_start_index = (int(page)-1)*int(count) - value_card_total_count
+            coupon_end_index = end_index
         # 查询用户相关的卡券列表
         new_coupon_list = get_user_coupons_by_game(ucid, game_id, coupon_start_index, coupon_end_index)
-        if left_page == 0:
-            value_card_list.extend(new_coupon_list)
-            return response_data(http_code=200, data=value_card_list)
-        else:
-            return response_data(http_code=200, data=new_coupon_list)
+        # 拼接储值卡和卡券列表返回
+        value_card_list.extend(new_coupon_list)
+        return response_data(http_code=200, data=value_card_list)
