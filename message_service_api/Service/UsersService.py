@@ -324,7 +324,7 @@ def get_user_coupons_by_game(ucid, appid, start_index, end_index):
     from run import mysql_session
     now = int(time.time())
     get_user_coupon_sql = "select log.coupon_id from zy_coupon_log as log join zy_coupon as coupon " \
-                          "on log.coupon_id=coupon.id where coupon.status='normal' log.is_used = 0 " \
+                          "on log.coupon_id=coupon.id where coupon.status='normal' and log.is_used = 0 " \
                           "and log.ucid=%s and log.pid=%s " \
                           "and ((coupon.is_time = 0) or ((coupon.is_time = 1) " \
                           "and coupon.start_time <= %s  " \
