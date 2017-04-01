@@ -29,7 +29,7 @@ class UserSubController extends AuthController
          $config = ProceduresExtend::from_cache($pid);
 
         return [
-            'allow_num' => $config && $config['allow_num'] ? (int)$config['allow_num'] : 1
+            'allow_num' => $config && $config['allow_num'] ? (int)$config['allow_num'] : 1,
             'data' => $data
         ];
     }
