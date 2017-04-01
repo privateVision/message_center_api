@@ -10,6 +10,11 @@ namespace App\Http\Controllers\Api\Pay ;
 use App\Exceptions\ApiException;
 use App\Model\IosOrderExt;
 use App\Model\Orders;
+use App\Model\UcuserInfo;
+use App\Model\UcusersVC;
+use App\Model\VirtualCurrencies;
+use App\Model\ZyCoupon;
+use App\Model\ZyCouponLog;
 use App\Parameter;
 use Illuminate\Http\Request;
 
@@ -169,6 +174,8 @@ class  AppleController extends Controller{
             $ext->transaction_id = time();
             $oext = $ext->save();
 
+            $order_is_first = $order->is_first();
+
             $pay_type = $dat[0]->iap;
             //查看当前的充值总金额
             if($pay_type == 1){
@@ -181,9 +188,11 @@ class  AppleController extends Controller{
                 }
             }
 
+
             // 储值卡，优惠券
             $list = [];
             $result = UcusersVC::where('ucid', $this->user->ucid)->get();
+
             foreach($result as $v) {
                 $fee = $v->balance;
                 if(!$fee) continue;
@@ -223,67 +232,19 @@ class  AppleController extends Controller{
                 'order_id' => $order->sn,
                 'id'      =>$order->id,//返回当前的订单
                 'fee' => $dat[0]->fee,
-                "iap" =>$pay_type //支付的方式1 ios 0为第三方支付
-            ];
-
-            return [
-                'order_id' => $order->sn,
+                "iap" =>$pay_type ,//支付的方式1 ios 0为第三方支付
                 'way' => [1, 2, 3],
                 'vip' => $user_info && $user_info->vip ? (int)$user_info->vip : 0,
                 'balance' => $this->user->balance,
                 'coupons' => $list,
             ];
         }catch(\Exception $e){
-
+            echo $e->getMessage();
         }
 
     }
 
-    /*
-     * 重写 注册方法
-     * */
-    protected function create_order(Orders $order, ) {
-        $uid = $this->parameter->tough('uid');
-        $ucid = $this->parameter->tough("ucid");
-        $vorderid = $this->parameter->tough('vorderid'); //厂家订单id
-        $zone_name = $this->parameter->tough("zone_name");
-        $role_name = $this->parameter->tough('role_name');
-        $product_id = $this->parameter->tough('product_id');
-        $appid  = $this->request->input("_appid");
 
-        $ord = Orders::where("ucid",$ucid)->where('vorderid',$vorderid)->get();
-        if(count($ord)) return "had exists"; //限制关闭
-        try {
-            $sql = "select p.fee,p.product_name,con.notify_url from ios_products as p LEFT JOIN ios_application_config as con ON p.app_id = con.app_id WHERE p.product_id = '{$product_id}' AND p.app_id = {$appid}";
-            $dat = app('db')->select($sql);
-
-
-            $order->vid = $this->procedure->pid;
-            $order->notify_url = $dat[0]->notify_url;
-            $order->vorderid = $vorderid;
-            $order->fee = $dat[0]->fee;
-            $order->subject = $dat[0]->product_name;
-            $order->body = "role_name: " . $role_name . "zone_name: " . $zone_name;
-
-            $order->save();
-
-            $ext = new IosOrderExt;
-            $ext->oid = $order->id;
-            $ext->product_id = $product_id;
-            $ext->zone_name = $zone_name;
-            $ext->role_name = $role_name;
-            $oext = $ext->save();
-
-            return [
-                'order_id' => $order->sn,
-                'id'      =>$ord->id,//返回当前的订单
-                'fee' => $dat[0]->fee,
-                'iap' => $dat[0]->iap
-            ];
-        }catch(\Exception $e){
-            echo  $e->getMessage();
-        }
-    }
 
 
 
