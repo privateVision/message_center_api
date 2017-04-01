@@ -81,7 +81,7 @@ class CouponFunctionTest(unittest.TestCase):
             '_token': 'bm50pbazciog8w8wcow0gkws8',
             '_appid': 778
         }
-        r = requests.post('http://dev.sdkapi.com/msa/v4/coupons', data=body_data)
+        r = requests.post('http://localhost:5000/msa/v4/coupons', data=body_data)
         print r.text
 
     def tearDown(self):
