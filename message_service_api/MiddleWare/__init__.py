@@ -1,6 +1,6 @@
 # _*_ coding: utf-8 _*_
 import threading
-from logging.handlers import TimedRotatingFileHandler
+from logging.handlers import TimedRotatingFileHandler, SMTPHandler
 
 import wtforms_json
 from flask import Flask
@@ -45,6 +45,25 @@ fh.setFormatter(formatter)
 ch.setFormatter(formatter)
 service_logger.addHandler(fh)
 service_logger.addHandler(ch)
+
+
+# 邮件和消息通知
+ADMINS = ['14a1152bf3963d126735637d5e745ae5@mail.bearychat.com']
+mail_handler = SMTPHandler('127.0.0.1', 'server-error@example.com', ADMINS, 'YourApplication Failed')
+mail_handler.setFormatter(logging.Formatter('''
+Message type:       %(levelname)s
+Location:           %(pathname)s:%(lineno)d
+Module:             %(module)s
+Function:           %(funcName)s
+Time:               %(asctime)s
+
+Message:
+
+%(message)s
+'''))
+mail_handler.setLevel(logging.ERROR)
+service_logger.addHandler(mail_handler)
+
 
 redis_store = FlaskRedis()
 wtforms_json.init()
