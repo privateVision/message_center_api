@@ -45,7 +45,7 @@ class UserController extends AuthController
 
         $offset = max(0, ($page - 1) * $limit);
 
-        $order = $this->user->orders()->where('vid', '>=', 100)->where('status', '!=', Orders::Status_WaitPay)->where('hide', 0)->take($limit)->skip($offset)->get();
+        $order = $this->user->orders()->where('vid', '<', 100)->where('status', '!=', Orders::Status_WaitPay)->where('hide', 0)->take($limit)->skip($offset)->get();
 
         $data = [];
         foreach($order as $v) {
@@ -68,7 +68,7 @@ class UserController extends AuthController
 
         $offset = max(0, ($page - 1) * $limit);
 
-        $order = $this->user->orders()->where('vid', '<', 100)->where('status', '!=', Orders::Status_WaitPay)->where('hide', 0)->take($limit)->skip($offset)->get();
+        $order = $this->user->orders()->where('vid', '>=', 100)->where('status', '!=', Orders::Status_WaitPay)->where('hide', 0)->take($limit)->skip($offset)->get();
 
         $data = [];
         foreach($order as $v) {

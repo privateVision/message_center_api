@@ -36,8 +36,8 @@ $app->group(['prefix' => 'pay_callback'], function () use ($app) {
 });
 
 // 对外公开（无限制的）功能（杂项）
-$app->group(['prefix' => 'pub'], function () use ($app) {
-    $app->post('yunpian/callback', 'Pub\\YunpianController@CallbackAction');                                // 云片手机短信回调
+$app->group(['prefix' => 'callback'], function () use ($app) {
+    $app->post('yunpian/request', 'Callback\\YunpianController@RequestAction');                             // 云片手机短信回调
 });
 
 // API接口
