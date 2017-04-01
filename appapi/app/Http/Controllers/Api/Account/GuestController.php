@@ -26,7 +26,7 @@ class GuestController extends Controller {
         $user->uid = $username;
         $user->email = $username . "@anfan.com";
         $user->nickname = $username;
-        $user->password = $password;
+        $user->setPassword($password);
         $user->regip = $this->request->ip();
         $user->rid = $this->parameter->tough('_rid');
         $user->pid = $this->parameter->tough('_appid');

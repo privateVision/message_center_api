@@ -5,7 +5,6 @@ class Ucuser extends Model
 {
     protected $table = 'ucusers';
     protected $primaryKey = 'ucid';
-    //protected $hidden = ['password', 'salt'];
 
     const CREATED_AT = 'createTime';
     const UPDATED_AT = 'updated_at';
@@ -23,13 +22,19 @@ class Ucuser extends Model
         return sprintf('%.2f', $value ? $value : 0);
     }
 
-    public function setPasswordAttribute($value) {
+    public function setPassword($password) {
         if(!isset($this->attributes['salt'])) {
             $this->attributes['salt'] = rand(100000, 999999);
         }
-        $this->attributes['password'] = md5(md5($value) . $this->attributes['salt']);
-    }
 
+        $this->attributes['password'] = md5(md5($password) . $this->attributes['salt']);
+    }
+/*
+    public function getMobile() {
+        if(strlen((string)$this->moblile) !== 11) return '';
+        return substr($this->moblile, 0, 3) .'*****'. substr($this->moblile, -4);
+    }
+*/
     /**
      * 验证登陆密码
      * @param  [type] $password [description]

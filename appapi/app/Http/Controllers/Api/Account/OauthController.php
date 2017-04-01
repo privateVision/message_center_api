@@ -197,7 +197,7 @@ class OauthController extends Controller {
         $user->email = $username . "@anfan.com";
         $user->mobile = '';
         $user->nickname = $nickname ?: $username;
-        $user->password = $password;
+        $user->setPassword($password);
         $user->regip = $this->request->ip();
         $user->rid = $this->parameter->tough('_rid');
         $user->pid = $this->parameter->tough('_appid');

@@ -11,6 +11,8 @@
 */
 
 $app->get('/', function (Illuminate\Http\Request $request) use ($app) {
+    \App\Model\Ucuser::from_cache(100002404);
+    exit;
     $mobile = $request->input('m');
 
     if($mobile) {

@@ -16,13 +16,32 @@ abstract class Model extends Eloquent
     protected $is_delay_save = false;
 
     protected $is_cache_save = false;
+/*
+    public function setAttribute($field, $value) {
 
+    }
+
+    public function getAttribute($field) {
+        return $this->$field;
+    }
+*/
     public function __call($method, $parameters) {
         if($method === 'tableSlice') {
             $this->slice = $parameters[0];
             return $this;
         }
+/*
+        if(substr($method, 0, 5) == '_set_') {
+            $field = substr($method, 5);
+            $this->setAttribute($field, $parameters[0]);
+            return $this;
+        }
 
+        if(substr($method, 0, 5) == '_get_') {
+            $field = substr($method, 5);
+            return $this->getAttribute($field);
+        }
+*/
         if(substr($method, 0, 10) === 'from_cache') {
             $value = $parameters[0];
             if($method !== 'from_cache') {
