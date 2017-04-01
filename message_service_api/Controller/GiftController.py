@@ -91,7 +91,7 @@ def v4_sdk_user_get_gift():
     ucid = get_ucid_by_access_token(request.form['_token'])
     appid = int(request.form['_appid'])  # 根据appid来获取游戏id
     gift_id = request.form['gift_id']
-    table_num = gift_id % 10  # 获取分表名
+    table_num = int(gift_id) % 10  # 获取分表名
     username = get_username_by_ucid(ucid)
     ip = request.remote_addr  # 请求源ip
     mac = request.form['_device_id']  # 通用参数中的device_id
