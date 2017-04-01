@@ -53,7 +53,7 @@ def v4_sdk_get_gifts_list():
                                 "left outer join cms_gameGiftLog as c on c.giftId=a.id and c.uid= %s " \
                                 "where a.gameId=%s and a.failTime > %s and b.platformId=%s and a.status='normal' " \
                                 "order by is_get asc , c.forTime desc, a.id desc) as d " \
-                                "where d.code<>'' or (d.num>0 and d.code='') limit %s, %s " \
+                                "where d.code<>'' or (d.assignNum>0 and d.code='') limit %s, %s " \
                                 % (ucid, game['id'], now, SDK_PLATFORM_ID, start_index, end_index)
     unget_gifts_page_list = mysql_cms_session.execute(unget_gifts_page_list_sql).fetchall()
     data_list = []
