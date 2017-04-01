@@ -5,6 +5,7 @@ use App\Exceptions\ApiException;
 use Illuminate\Http\Request;
 use App\Parameter;
 
+use App\Redis;
 use App\Model\Ucuser;
 
 class UserController extends Controller {
@@ -14,10 +15,27 @@ class UserController extends Controller {
     public function getLoginUser() {
         $username = $this->parameter->tough('username');
         $password = $this->parameter->tough('password');
+        $device_id = $this->parameter->get('_device_id');
 
         $user = Ucuser::where('uid', $username)->orWhere('mobile', $username)->first();
 
         if(!$user || !$user->checkPassword($password)) {
+            // ----- 限制登陆错误次数
+            /*
+            $rediskey = $device_id;
+            if(!$rediskey) {
+                $rediskey = $this->request->ip();
+            }
+
+            $rediskey = 'login_limit_' . md5($rediskey . $username);
+            $count = Redis::get($rediskey);
+            if($count) {
+                Redis::incr($rediskey);
+            } else {
+                Redis::set($rediskey, 1, 'EX', 300);
+            }
+            */
+            // ----- end
             throw new ApiException(ApiException::Remind, "登录失败，用户名或者密码不正确");
         }
 
