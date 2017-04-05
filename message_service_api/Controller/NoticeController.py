@@ -13,7 +13,7 @@ from MongoModel.UserReadMessageLogModel import UserReadMessageLog
 from RequestForm.PostNoticesRequestForm import PostNoticesRequestForm
 from Service.StorageService import system_notices_update
 from Service.UsersService import get_notice_message_detail_info, get_ucid_by_access_token, \
-    sdk_api_request_check, cms_api_request_check
+    sdk_api_request_check, cms_api_request_check, set_message_readed, find_is_message_readed
 from Utils.RedisUtil import RedisHandle
 from Utils.SystemUtils import get_current_timestamp, log_exception
 
@@ -150,21 +150,21 @@ def v4_sdk_set_notice_have_read():
     if message_type is None or message_id is None:
         log_exception(request, '客户端请求错误-type或message_id为空')
         return response_data(200, 0, '客户端请求错误')
-
-    is_exist = UserReadMessageLog.objects(Q(type=message_type)
-                                          & Q(message_id=message_id)
-                                          & Q(ucid=ucid)).count()
-    if is_exist == 0:
-        user_read_message_log = UserReadMessageLog(type=message_type,
-                                                   message_id=message_id,
-                                                   ucid=ucid)
+    # is_exist = UserReadMessageLog.objects(Q(type=message_type)
+    #                                       & Q(message_id=message_id)
+    #                                       & Q(ucid=ucid)).count()
+    if not find_is_message_readed(ucid, message_type, message_id):
+        # user_read_message_log = UserReadMessageLog(type=message_type,
+        #                                            message_id=message_id,
+        #                                            ucid=ucid)
         try:
             UserMessage.objects(Q(type=message_type)
                                 & Q(mysql_id=message_id)
                                 & Q(ucid=ucid)).update(set__is_read=1)
             # 减少缓存未读消息数
             RedisHandle.hdecrby(ucid, message_type)
-            user_read_message_log.save()
+            # user_read_message_log.save()
+            set_message_readed(ucid, message_type, message_id)
         except Exception as err:
             log_exception(request, "设置消息已读异常：%s" % (err.message,))
             return response_data(http_code=200, code=0, message="服务器出错啦/(ㄒoㄒ)/~~")

@@ -12,6 +12,7 @@ from MiddleWare import service_logger, hdfs_logger
 from MongoModel.AppRulesModel import AppVipRules
 from MongoModel.MessageModel import UsersMessage
 from MongoModel.UserMessageModel import UserMessage
+from MongoModel.UserReadMessageLogModel import UserReadMessageLog
 from Utils.RedisUtil import RedisHandle
 from Utils.SystemUtils import get_current_timestamp, log_exception
 
@@ -69,7 +70,8 @@ def get_game_and_area_and_user_type_and_vip_users(game=None, user_type=None, vip
                     mysql_session.rollback()
                 finally:
                     mysql_session.close()
-                return list(set(game_users_list).intersection(set(user_type_users_list)).intersection(set(vip_users_list)))
+                return list(
+                    set(game_users_list).intersection(set(user_type_users_list)).intersection(set(vip_users_list)))
     # 游戏区服为空
     else:
         return []
@@ -137,8 +139,8 @@ def get_ucid_by_access_token(access_token=None):
     from run import mysql_session
     try:
         user_info = mysql_session.execute(find_ucid_sql).first()
-        if user_info:
-            if user_info['ucid']:
+        if user_info is not None:
+            if 'ucid' in user_info:
                 return user_info['ucid']
     except Exception, err:
         service_logger.error(err.message)
@@ -153,8 +155,8 @@ def get_username_by_ucid(ucid=None):
     from run import mysql_session
     try:
         user_info = mysql_session.execute(find_ucid_sql).first()
-        if user_info:
-            if user_info['nickname']:
+        if user_info is not None:
+            if 'nickname' in user_info:
                 return user_info['nickname']
     except Exception, err:
         service_logger.error(err.message)
@@ -176,12 +178,11 @@ def is_session_expired_by_access_token(access_token=None):
     from run import mysql_session
     try:
         user_info = mysql_session.execute(find_expired_ts_sql).first()
-        if user_info:
-            if user_info['expired_ts'] is not None:
+        if user_info is not None:
+            if 'expired_ts' in user_info:
                 if user_info['expired_ts'] < now:
                     return True
-                else:
-                    return False
+                return False
     except Exception, err:
         service_logger.error(err.message)
         mysql_session.rollback()
@@ -198,8 +199,8 @@ def get_user_is_freeze_by_access_token(access_token=None):
     from run import mysql_session
     try:
         user_info = mysql_session.execute(find_freeze_sql).first()
-        if user_info:
-            if user_info['freeze']:
+        if user_info is not None:
+            if 'freeze' in user_info:
                 return user_info['freeze']
     except Exception, err:
         service_logger.error(err.message)
@@ -236,9 +237,10 @@ def find_user_account_is_freeze(ucid=None):
     from run import mysql_session
     try:
         user_info = mysql_session.execute(find_is_freeze_sql).first()
-        if user_info:
-            if user_info['is_freeze'] == 1:
-                return True
+        if user_info is not None:
+            if 'is_freeze' in user_info:
+                if user_info['is_freeze'] == 1:
+                    return True
     except Exception, err:
         service_logger.error(err.message)
         mysql_session.rollback()
@@ -372,7 +374,7 @@ def get_game_info_by_appid(appid=None):
                          "where p.gameCenterId = game.id and p.pid= %s limit 1" % (appid,)
     game_info = mysql_session.execute(find_game_info_sql).fetchone()
     game = {}
-    if game_info:
+    if game_info is not None:
         game['id'] = game_info['id']
         game['name'] = game_info['name']
         game['cover'] = game_info['cover']
@@ -380,16 +382,17 @@ def get_game_info_by_appid(appid=None):
     return None
 
 
-def get_user_current_game_and_area_by_ucid(ucid=None):
+# 根据token获取用户当前所在的区服
+def get_user_current_game_and_area_by_token(token=None):
     from run import mysql_session
-    find_game_info_sql = "select p.gameCenterId as id, game.name, game.cover from procedures as p, zy_game as game " \
-                         "where p.gameCenterId = game.id and p.pid= %s limit 1" % (appid,)
-    game_info = mysql_session.execute(find_game_info_sql).fetchone()
+    find_user_current_game_area_info_sql = "select s.token, s.zone_id, s.zone_name from session as s " \
+                                           "where s.token = %s limit 1" % (token,)
+    game_info = mysql_session.execute(find_user_current_game_area_info_sql).fetchone()
     game = {}
-    if game_info:
-        game['id'] = game_info['id']
-        game['name'] = game_info['name']
-        game['cover'] = game_info['cover']
+    if game_info is not None:
+        game['token'] = game_info['token']
+        game['zone_id'] = game_info['zone_id']
+        game['zone_name'] = game_info['zone_name']
         return game
     return None
 
@@ -398,10 +401,10 @@ def get_user_current_game_and_area_by_ucid(ucid=None):
 def get_user_notice_from_mysql(username=None, rtype=None, vip=None, appid=None, cur_zone=None):
     now = int(time.time())
     data_list = UsersMessage.objects(Q(type='notice')
-                         & (
-                             Q(is_time=0) | (Q(is_time=1) & Q(end_time__gte=now))
-                            )
-                        )
+                                     & (
+                                         Q(is_time=0) | (Q(is_time=1) & Q(end_time__gte=now))
+                                     )
+                                     )
     notice_list = []
     for data in data_list:
         # 检查当前游戏
@@ -436,6 +439,28 @@ def get_user_notice_from_mysql(username=None, rtype=None, vip=None, appid=None, 
                         notice_list.append(data)
                         continue
     return notice_list
+
+
+# 检查消息是否已读
+def find_is_message_readed(ucid=None, message_type=None, message_id=None):
+    is_exist = UserReadMessageLog.objects(Q(type=message_type)
+                                          & Q(message_id=message_id)
+                                          & Q(ucid=ucid)).count()
+    if is_exist == 0:
+        return False
+    return True
+
+
+# 设置消息已读
+def set_message_readed(ucid=None, message_type=None, message_id=None):
+    is_exist = UserReadMessageLog.objects(Q(type=message_type)
+                                          & Q(message_id=message_id)
+                                          & Q(ucid=ucid)).count()
+    if is_exist == 0:
+        user_read_message_log = UserReadMessageLog(type=message_type,
+                                                   message_id=message_id,
+                                                   ucid=ucid)
+        user_read_message_log.save()
 
 
 # sdk api 请求通用装饰器

@@ -75,7 +75,8 @@ $app->group(['prefix' => 'api'], function () use ($app) {
     $app->post('user/report_role', 'Api\\UserController@ReportRoleAction');                                 // 上报玩家角色信息
     $app->post('user/attest', 'Api\\UserController@AttestAction');                                          // 实名认证
     $app->post('user/info', 'Api\\UserController@InfoAction');                                              // 用户详细信息
-    $app->post('user/bind_oauth', 'Api\\UserController@BindOauthAction');                                   // 用户详细信息
+    $app->post('user/bind_oauth', 'Api\\UserController@BindOauthAction');                                   // 第三方帐号绑定
+    $app->post('user/unbind_oauth', 'Api\\UserController@UnbindOauthAction');                               // 第三方帐号解绑
 
 
     $app->post('user_sub/list', 'Api\\UserSubController@ListAction');                                       // 小号列表
