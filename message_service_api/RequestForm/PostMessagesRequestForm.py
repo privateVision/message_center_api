@@ -19,4 +19,5 @@ class PostMessagesRequestForm(Form):
     msg_type = StringField('msg_type')
     send_time = IntegerField('send_time', default=int(time.time()))
     create_time = IntegerField('create_time')
+    is_time = IntegerField('is_time', default=1)
     sys = IntegerField('sys')

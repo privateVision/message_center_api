@@ -13,4 +13,5 @@ class PostRebatesRequestForm(Form):
     content = StringField('content')
     stime = IntegerField('stime')
     etime = IntegerField('etime')
+    is_time = IntegerField('is_time', default=1)
     rule = StringField('rule')

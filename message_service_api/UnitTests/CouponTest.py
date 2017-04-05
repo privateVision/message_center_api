@@ -75,16 +75,23 @@ class CouponFunctionTest(unittest.TestCase):
     #     self.assertEqual(r.status_code, 200)
     #     print r.text
 
-    def test_get_coupon_list(self):
-        body_data = {
-            '_sign': 'bec733343e9169bb3dba700f6b2371e4',
-            '_token': 'bm50pbazciog8w8wcow0gkws8',
-            '_appid': 778,
-            'page': 1,
-            'count': 10
-        }
-        r = requests.post('http://localhost:5000/msa/v4/coupons', data=body_data)
-        print r.text
+    # def test_get_coupon_list(self):
+    #     body_data = {
+    #         '_sign': 'bec733343e9169bb3dba700f6b2371e4',
+    #         '_token': 'bm50pbazciog8w8wcow0gkws8',
+    #         '_appid': 778,
+    #         'page': 1,
+    #         'count': 10
+    #     }
+    #     r = requests.post('http://localhost:5000/msa/v4/coupons', data=body_data)
+    #     print r.text
+
+    def test_get_notice(self):
+        from Service.UsersService import get_user_notice_from_mysql
+        list = get_user_notice_from_mysql(username='223', rtype='3', vip='4', appid='2', cur_zone='湖北3区')
+        print len(list)
+        for item in list:
+            print "%s-%s" % (item['type'], item['mysql_id'])
 
     def tearDown(self):
         pass

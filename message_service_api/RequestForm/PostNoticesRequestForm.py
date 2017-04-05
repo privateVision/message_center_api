@@ -20,6 +20,7 @@ class PostNoticesRequestForm(Form):
     create_time = IntegerField('create_time')
     img = StringField('img')
     url = StringField('url')
+    is_time = IntegerField('is_time', default=1)
     open_type = IntegerField('open_type')
     url_type = StringField('url_type')
     button_content = StringField('button_content')
