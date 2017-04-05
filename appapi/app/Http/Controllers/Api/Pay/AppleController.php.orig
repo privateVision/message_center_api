@@ -15,8 +15,13 @@ use App\Model\UcusersVC;
 use App\Model\VirtualCurrencies;
 use App\Model\ZyCoupon;
 use App\Model\ZyCouponLog;
-use App\Model\OrderExtend;
+<<<<<<< HEAD
 
+=======
+use App\Parameter;
+use Illuminate\Http\Request;
+use App\Model\OrderExtend;
+>>>>>>> 498e110208175c8616fbf2c0662619680c5feb51
 
 
 class  AppleController extends Controller{
@@ -148,7 +153,6 @@ class  AppleController extends Controller{
         try {
             $sql = "select p.fee,p.product_name,con.notify_url,con.iap from ios_products as p LEFT JOIN ios_application_config as con ON p.app_id = con.app_id WHERE p.product_id = '{$product_id}' AND p.app_id = {$appid}";
             $dat = app('db')->select($sql);
-            if(count($dat) == 0) throw new ApiException(ApiException::Remind,"not exists!");
 
             $order = new Orders;
             $order->ucid = $ucid;
