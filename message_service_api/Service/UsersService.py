@@ -139,8 +139,8 @@ def get_ucid_by_access_token(access_token=None):
     from run import mysql_session
     try:
         user_info = mysql_session.execute(find_ucid_sql).first()
-        if user_info:
-            if user_info['ucid']:
+        if user_info is not None:
+            if 'ucid' in user_info:
                 return user_info['ucid']
     except Exception, err:
         service_logger.error(err.message)
@@ -155,8 +155,8 @@ def get_username_by_ucid(ucid=None):
     from run import mysql_session
     try:
         user_info = mysql_session.execute(find_ucid_sql).first()
-        if user_info:
-            if user_info['nickname']:
+        if user_info is not None:
+            if 'nickname' in user_info:
                 return user_info['nickname']
     except Exception, err:
         service_logger.error(err.message)
@@ -178,12 +178,11 @@ def is_session_expired_by_access_token(access_token=None):
     from run import mysql_session
     try:
         user_info = mysql_session.execute(find_expired_ts_sql).first()
-        if user_info:
+        if user_info is not None:
             if 'expired_ts' in user_info:
                 if user_info['expired_ts'] < now:
                     return True
-                else:
-                    return False
+                return False
     except Exception, err:
         service_logger.error(err.message)
         mysql_session.rollback()
@@ -200,8 +199,8 @@ def get_user_is_freeze_by_access_token(access_token=None):
     from run import mysql_session
     try:
         user_info = mysql_session.execute(find_freeze_sql).first()
-        if user_info:
-            if user_info['freeze']:
+        if user_info is not None:
+            if 'freeze' in user_info:
                 return user_info['freeze']
     except Exception, err:
         service_logger.error(err.message)
@@ -238,9 +237,10 @@ def find_user_account_is_freeze(ucid=None):
     from run import mysql_session
     try:
         user_info = mysql_session.execute(find_is_freeze_sql).first()
-        if user_info:
-            if user_info['is_freeze'] == 1:
-                return True
+        if user_info is not None:
+            if 'is_freeze' in user_info:
+                if user_info['is_freeze'] == 1:
+                    return True
     except Exception, err:
         service_logger.error(err.message)
         mysql_session.rollback()
@@ -374,7 +374,7 @@ def get_game_info_by_appid(appid=None):
                          "where p.gameCenterId = game.id and p.pid= %s limit 1" % (appid,)
     game_info = mysql_session.execute(find_game_info_sql).fetchone()
     game = {}
-    if game_info:
+    if game_info is not None:
         game['id'] = game_info['id']
         game['name'] = game_info['name']
         game['cover'] = game_info['cover']
@@ -389,7 +389,7 @@ def get_user_current_game_and_area_by_token(token=None):
                                            "where s.token = %s limit 1" % (token,)
     game_info = mysql_session.execute(find_user_current_game_area_info_sql).fetchone()
     game = {}
-    if game_info:
+    if game_info is not None:
         game['token'] = game_info['token']
         game['zone_id'] = game_info['zone_id']
         game['zone_name'] = game_info['zone_name']
