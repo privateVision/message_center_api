@@ -15,8 +15,7 @@ use App\Model\UcusersVC;
 use App\Model\VirtualCurrencies;
 use App\Model\ZyCoupon;
 use App\Model\ZyCouponLog;
-use App\Parameter;
-use Illuminate\Http\Request;
+
 
 
 class  AppleController extends Controller{
