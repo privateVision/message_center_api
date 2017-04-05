@@ -73,7 +73,7 @@ class ProceduresExtend extends Model
 	public function getLogoutTypeAttribute() {
 		$logout_img = @$this->attributes['logout_img'];
 		$logout_type = @$this->attributes['logout_type'];
-		return $logout_img && $logout_type ? $value : env('logout_type');
+		return $logout_img && $logout_type ? $logout_type : env('logout_type');
 	}
 
 	public function getLogoutRedirectAttribute() {

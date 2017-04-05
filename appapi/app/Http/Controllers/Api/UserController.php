@@ -138,6 +138,13 @@ class UserController extends AuthController
     }
 
     public function BindPhoneAction() {
+        // todo: 以前绑定手机号绑定邮箱走的同一个接口
+        $mobile = $this->request->input('mobile');
+        if(preg_match('/^[\w\d\-\_\.]+@\w+(\.\w+)+$/', $mobile)) {
+            throw new ApiException(ApiException::Remind, "该功能已停用");
+        }
+        // ---- end ----
+
         $mobile = $this->parameter->tough('mobile', 'mobile');
         $code = $this->parameter->tough('code', 'smscode');
 
@@ -245,7 +252,7 @@ class UserController extends AuthController
         $this->user->setPassword($password);
         $this->user->save();
 
-        user_log($this->user, $this->procedure, 'reset_password', '【重置用户密码】通过手机验证码，手机号码{%s}，新密码[%s]，旧密码[%s]', $mobile, $this->user->password, $old_password);
+        user_log($this->user, $this->procedure, 'reset_password', '【重置密码】通过手机验证码，手机号码{%s}，新密码[%s]，旧密码[%s]', $mobile, $this->user->password, $old_password);
 
         return ['result' => true];
     }
@@ -258,6 +265,10 @@ class UserController extends AuthController
         $role_name = $this->parameter->tough('role_name');
 
         $pid = $this->parameter->tough('_appid');
+
+        $this->session->zone_id = $zone_id;
+        $this->session->zone_name = $zone_name;
+        $this->session->save();
 
         async_execute('report_role', $this->user->ucid, $pid, $this->session->user_sub_id, $zone_id, $zone_name, $role_id, $role_name, $role_level);
 
@@ -285,7 +296,7 @@ class UserController extends AuthController
         $user_info->gender = $card_info['gender'];
         $user_info->asyncSave();
 
-        user_log($this->user, $this->procedure, 'real_name_attest', '【实名认证】通过手机验证码，姓名:%s，身份证号码:%s', $name, $card_no);
+        user_log($this->user, $this->procedure, 'real_name_attest', '【实名认证】姓名:%s，身份证号码:%s', $name, $card_no);
 
         return ['result' => true];
     }
@@ -296,6 +307,11 @@ class UserController extends AuthController
         $unionid = $this->parameter->get('unionid');
         $nickname = $this->parameter->get('nickname');
         $avatar = $this->parameter->get('avatar');
+
+        $count = UcuserOauth::where('type', $type)->where('ucid', $this->user->ucid)->count();
+        if($count > 0) {
+            throw new ApiException(ApiException::Remind, "账号已经绑定了" . config("common.oauth.{$type}.text", '第三方'));
+        }
 
         $openid = md5($type .'_'. $openid);
         $unionid = $unionid ? md5($type .'_'. $unionid) : '';
@@ -333,6 +349,23 @@ class UserController extends AuthController
         } elseif($user_oauth->ucid != $this->user->ucid) {
             throw new ApiException(ApiException::Remind, config("common.oauth.{$type}.text", '第三方') . "已经绑定了其它账号");
         }
+
+        user_log($this->user, $this->procedure, 'bind_oauth', '【绑定平台帐号】%s', config("common.oauth.{$type}.text", '第三方'));
+
+        return ['result' => true];
+    }
+
+    public function UnbindOauthAction() {
+        $type = $this->parameter->tough('type');
+
+        $count = UcuserOauth::where('type', '!=', $type)->where('ucid', $this->user->ucid)->count();
+        if($count == 0 && $this->user->mobile == "") {
+            throw new ApiException(ApiException::Remind, "为了防止遗忘账号，请绑定手机或者其他社交账号后再解除绑定");
+        }
+
+        UcuserOauth::where('type', $type)->where('ucid', $this->user->ucid)->delete();
+
+        user_log($this->user, $this->procedure, 'unbind_oauth', '【解绑平台帐号】%s', config("common.oauth.{$type}.text", '第三方'));
 
         return ['result' => true];
     }
