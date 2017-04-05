@@ -359,7 +359,7 @@ def get_user_coupons_by_game(ucid, appid, start_index, end_index):
             if coupon_info['is_time'] == 0:
                 unlimited_time = False
             time_out = False
-            if coupon_info['end_time'] < now:
+            if coupon_info['is_time'] == 1 and coupon_info['end_time'] < now:
                 time_out = True
             info['unlimited_time'] = unlimited_time
             info['time_out'] = time_out
