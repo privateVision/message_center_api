@@ -104,7 +104,7 @@ def send_message_to_game_area_and_user_type_and_vip_users(game, users_type, vip_
                     finally:
                         mysql_session.close()
         else:  # 所有游戏，太可怕了
-            find_game_list_sql = "select pid from procedures"
+            find_game_list_sql = "select distinct(pid) from procedures"
             game_list = mysql_session.execute(find_game_list_sql).fetchall()
             for game in game_list:
                 pid = game['pid']
@@ -171,7 +171,8 @@ def add_user_messsage(ucid, type, msg_id, is_time, start_time, end_time, game):
         user_message.start_time = start_time
         user_message.end_time = end_time
         user_message.is_time = is_time
-        user_message.expireAt = datetime.datetime.utcfromtimestamp(user_message.end_time)
+        if type != 'message':
+            user_message.expireAt = datetime.datetime.utcfromtimestamp(user_message.end_time)
         user_message.save()
         add_mark_to_user_redis(ucid, type)
     else:
