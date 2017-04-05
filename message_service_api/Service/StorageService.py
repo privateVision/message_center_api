@@ -144,6 +144,14 @@ def send_message_to_spcify_users(specify_user, game, type, msg_id, is_time, star
                                     add_user_messsage(user, type, msg_id, is_time, start_time, end_time, game)
                         except Exception, err:
                             service_logger.error("添加消息到每个用户的消息列表发生异常：%s" % (err.message,))
+                else:
+                    try:
+                        for user in specify_user_list:
+                            is_right = check_user_is_in_game(user, game_info['apk_id'])
+                            if is_right:
+                                add_user_messsage(user, type, msg_id, is_time, start_time, end_time, game)
+                    except Exception, err:
+                        service_logger.error("添加消息到每个用户的消息列表发生异常：%s" % (err.message,))
         else:
             try:
                 for user in specify_user_list:
@@ -237,7 +245,7 @@ def get_ucid_list_by_user_uid_name_list(specify_user):
     from run import mysql_session
     if specify_user is not None and specify_user != '':
         for uid in specify_user:
-            find_ucid_sql = "select ucid from ucusers where uid = '%s'" % (uid,)
+            find_ucid_sql = "select ucid from ucusers where uid = '%s' limit 1" % (uid,)
             try:
                 user_info = mysql_session.execute(find_ucid_sql).fetchone()
                 if user_info is not None:
