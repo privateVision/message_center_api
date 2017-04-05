@@ -128,15 +128,16 @@ def v4_sdk_get_notice_list():
     }
     for message in message_list:
         message_info = get_notice_message_detail_info(message['mysql_id'])
-        message_resp['id'] = message_info['mysql_id']
-        message_resp['type'] = message_info['atype']
-        message_resp['title'] = message_info['title']
-        message_resp['content'] = message_info['content']
-        message_resp['url'] = message_info['url']
-        message_resp['show_times'] = message_info['show_times']
-        message_resp['button_content'] = message_info['button_content']
-        message_resp['button_url'] = message_info['button_url']
-        data_list.append(message_resp)
+        if message_info is not None:
+            message_resp['id'] = message_info['mysql_id']
+            message_resp['type'] = message_info['atype']
+            message_resp['title'] = message_info['title']
+            message_resp['content'] = message_info['content']
+            message_resp['url'] = message_info['url']
+            message_resp['show_times'] = message_info['show_times']
+            message_resp['button_content'] = message_info['button_content']
+            message_resp['button_url'] = message_info['button_url']
+            data_list.append(message_resp)
     return response_data(http_code=200, data=data_list)
 
 

@@ -485,8 +485,8 @@ def system_message_persist(data_json=None, update_user_message=True):
             users_message.vip = data_json['vip_user'].split(",")
         if 'is_time' in data_json:
             users_message.is_time = int(data_json['is_time'])
-            if users_message.is_time == 1:
-                users_message.expireAt = datetime.datetime.utcfromtimestamp(users_message.end_time)
+            # if users_message.is_time == 1:
+            #     users_message.expireAt = datetime.datetime.utcfromtimestamp(users_message.end_time)
         try:
             users_message.save()
         except Exception, err:
