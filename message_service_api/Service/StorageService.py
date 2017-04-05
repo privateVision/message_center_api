@@ -190,7 +190,7 @@ def check_user_type_and_vip(ucid=None, user_type=None, vip=None):
     from run import mysql_session
     if user_type is not None:
         user_type_str = ",".join(user_type)
-        find_users_by_user_type_sql = "select count(*) from ucuser_info as u, retailers as r where u.rid = r.rid " \
+        find_users_by_user_type_sql = "select count(*) from ucusers as u, retailers as r where u.rid = r.rid " \
                                       "and r.rtype in (%s) and u.ucid = %s " % (user_type_str, ucid)
         find_users_by_vip_sql = "select count(*) from ucuser_info as u where u.ucid = %s and u.vip >= %s " % (ucid, vip)
         try:
