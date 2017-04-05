@@ -44,7 +44,7 @@ trait CreateOrderAction {
         $list = [];
         $result = UcusersVC::where('ucid', $this->user->ucid)->get();
         foreach($result as $v) {
-            $fee = $v->balance;
+            $fee = $v->balance * 100;
             if(!$fee) continue;
 
             $rule = VirtualCurrencies::from_cache($v->vcid);
