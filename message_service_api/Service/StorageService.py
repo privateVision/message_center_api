@@ -240,7 +240,7 @@ def get_ucid_list_by_user_uid_name_list(specify_user):
             find_ucid_sql = "select ucid from ucusers where uid = '%s'" % (uid,)
             try:
                 user_info = mysql_session.execute(find_ucid_sql).fetchone()
-                if user_info:
+                if user_info is not None:
                     ucid_list.append(user_info['ucid'])
             except Exception, err:
                 service_logger.error(err.message)
