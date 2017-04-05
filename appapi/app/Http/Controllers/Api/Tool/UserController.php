@@ -14,7 +14,10 @@ class UserController extends AuthController
 
         $url = env('reset_password_url');
         $url.= strpos($url, '?') === false ? '?' : '&';
-        $url.= 'token=' . urlencode($token);
+        $url.= http_build_query([
+            'token' => $token,
+            'username' => $this->user->uid
+        ]);
 
         return ['url' => $url, 'token' => $token];
     }
