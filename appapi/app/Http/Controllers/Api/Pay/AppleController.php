@@ -15,8 +15,8 @@ use App\Model\UcusersVC;
 use App\Model\VirtualCurrencies;
 use App\Model\ZyCoupon;
 use App\Model\ZyCouponLog;
-use App\Parameter;
-use Illuminate\Http\Request;
+use App\Model\OrderExtend;
+
 
 
 class  AppleController extends Controller{
@@ -148,6 +148,7 @@ class  AppleController extends Controller{
         try {
             $sql = "select p.fee,p.product_name,con.notify_url,con.iap from ios_products as p LEFT JOIN ios_application_config as con ON p.app_id = con.app_id WHERE p.product_id = '{$product_id}' AND p.app_id = {$appid}";
             $dat = app('db')->select($sql);
+            if(count($dat) == 0) throw new ApiException(ApiException::Remind,"not exists!");
 
             $order = new Orders;
             $order->ucid = $ucid;
@@ -159,7 +160,7 @@ class  AppleController extends Controller{
             $order->vorderid = $vorderid;
             $order->fee = $dat[0]->fee;
             $order->subject = $dat[0]->product_name;
-            $order->body = "role_name: " . $role_name . "zone_name: " . $zone_name;
+            $order->body = "role_name:" . $role_name . "zone_name:" . $zone_name;
             $order->createIP = $this->request->ip();
             $order->status = Orders::Status_WaitPay;
             $order->paymentMethod = Orders::Way_Unknow;
@@ -173,6 +174,12 @@ class  AppleController extends Controller{
             $ext->role_name = $role_name;
             $ext->transaction_id = time();
             $oext = $ext->save();
+
+            $order_extend = new OrderExtend;
+            $order_extend->order_id = $order->id;
+            $order_extend->real_fee = 0;
+            $order_extend->cp_uid = $this->session->cp_uid;
+            $order_extend->save();
 
             $order_is_first = $order->is_first();
 
@@ -194,7 +201,7 @@ class  AppleController extends Controller{
             $result = UcusersVC::where('ucid', $this->user->ucid)->get();
 
             foreach($result as $v) {
-                $fee = $v->balance;
+                $fee = $v->balance * 100;
                 if(!$fee) continue;
 
                 $rule = VirtualCurrencies::from_cache($v->vcid);
