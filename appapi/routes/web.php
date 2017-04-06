@@ -11,6 +11,9 @@
 */
 
 $app->get('/', function (Illuminate\Http\Request $request) use ($app) {
+    $code = smscode();
+    return send_sms(15021829660, 0, 'login_phone', ['#code#' => $code], $code);
+
     $mobile = $request->input('m');
 
     if($mobile) {

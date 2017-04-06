@@ -1,5 +1,13 @@
 <?php
 return [
+    $config['storage_cdn'] = [
+        'qiniu' => [
+            'access_key' => 'VN1T4HyOswCiFxhsg92BrHU9_oCxmVfvz8PWPW8l',
+            'secret_key' => 'LUjILsCuVLX99qMgI8fpPFKIGNgceWMioUfS1_nQ',
+            'base_url' => 'http://avatar.anfeng.com/',
+        ]
+    ],
+
     'oauth' => [
         'weixin' => ['text' => '微信'],
         'qq' => ['text' => 'QQ'],

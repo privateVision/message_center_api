@@ -382,6 +382,28 @@ class UserController extends AuthController
 
     public function SetAvatarAction() {
         $type = $this->parameter->tough('type');
+        $avatar = $this->parameter->tough('avatar');
+
+        $user_info = UcuserInfo::from_cache($this->user->ucid);
+        if(!$user_info) {
+            $user_info = new UcuserInfo;
+            $user_info->ucid = $this->user->ucid;
+        }
+
+        $avatar_url = null;
+
+        if($type == 'url') {
+            $avatar_url = $avatar;
+            $user_info->avatar = $avatar;
+        } elseif ($type == 'bindata') {
+            $avatar_data = base64_decode($avatar);
+
+        }
+
+        return [
+            'result' => $avatar_url ? true : false,
+            'avatar' => $avatar_url,
+        ];
     }
 
     public function EventAction() {
