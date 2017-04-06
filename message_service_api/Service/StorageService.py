@@ -172,7 +172,8 @@ def add_user_messsage(ucid, type, msg_id, is_time, start_time, end_time, game):
         user_message.end_time = end_time
         user_message.is_time = is_time
         if type != 'message':
-            user_message.expireAt = datetime.datetime.utcfromtimestamp(user_message.end_time)
+            if user_message.is_time != 0:
+                user_message.expireAt = datetime.datetime.utcfromtimestamp(user_message.end_time)
         user_message.save()
         add_mark_to_user_redis(ucid, type)
     else:
