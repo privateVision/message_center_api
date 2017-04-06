@@ -492,7 +492,7 @@ def sdk_api_request_check(func):
         is_sign_true = sdk_api_check_sign(request)
         if is_sign_true is True:
             ucid = get_ucid_by_access_token(request.form['_token'])
-            interval = 2
+            interval = 2000
             if 'interval' in request.form:
                 interval = request.form['interval']
             if ucid:

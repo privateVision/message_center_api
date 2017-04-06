@@ -529,11 +529,11 @@ def system_coupon_persist(data_json=None):
             users_message.is_time = int(data_json['is_time'])
             if users_message.is_time == 1:
                 users_message.expireAt = datetime.datetime.utcfromtimestamp(users_message.end_time)
-        try:
-            users_message.save()
-        except Exception, err:
-            service_logger.error("mongodb保存卡券异常：%s" % (err.message,))
-            return
+        # try:
+        #     users_message.save()
+        # except Exception, err:
+        #     service_logger.error("mongodb保存卡券异常：%s" % (err.message,))
+        #     return
         add_to_every_related_users_message_list(users_message)
 
 
