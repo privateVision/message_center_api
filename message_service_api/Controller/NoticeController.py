@@ -110,45 +110,42 @@ def v4_sdk_get_notice_list():
         & Q(end_time__gte=current_timestamp)
         & Q(ucid=ucid)).order_by('sortby, -create_time')
     data_list = []
-    message_resp = {
-        'id': '',
-        'title': '',
-        'type': '',
-        'content': '',
-        'button_content': '',
-        # 'button_type': '',
-        'button_url': '',
-        # 'end_time': '',
-        # 'enter_status': '',
-        'img': '',
-        # 'open_type': '',
-        'show_times': '',
-        'url': '',
-        # 'url_type': ''
-    }
     for message in message_list:
+        message_resp = {
+            'id': '',
+            'title': '',
+            'type': '',
+            'content': '',
+            'button_content': '',
+            'button_type': '',
+            'button_url': '',
+            # 'end_time': '',
+            # 'enter_status': '',
+            'img': '',
+            # 'open_type': '',
+            'show_times': '',
+            'url': '',
+            # 'url_type': ''
+        }
         message_info = get_notice_message_detail_info(message['mysql_id'])
         if message_info is not None:
             message_resp['id'] = message_info['mysql_id']
             message_resp['title'] = message_info['title']
             message_resp['type'] = message_info['atype']
             message_resp['show_times'] = message_info['show_times']
-            if message_resp['type'] == 1:  # 文字公告
-                if 'content' in message_info:
-                    message_resp['content'] = message_info['content']
-                if 'button_content' in message_info:
-                    message_resp['button_content'] = message_info['button_content']
-                if 'button_url' in message_info:
-                    message_resp['button_url'] = message_info['button_url']
+            if 'content' in message_info:
+                message_resp['content'] = message_info['content']
             if message_resp['type'] == 2:  # 图片类型的公告
                 if 'img' in message_info:
-                    message_resp['img'] = message_info['img']
-                if 'url' in message_info:
-                    message_resp['url'] = message_info['url']
-                if 'button_type' in message_info:
-                    message_resp['button_type'] = message_info['button_type']
-            if message_resp['type'] == 3:  # H5公告
-                pass
+                    message_resp['content'] = message_info['img']
+            if 'url' in message_info:
+                message_resp['url'] = message_info['url']
+            if 'button_type' in message_info:
+                message_resp['button_type'] = message_info['button_type']
+            if 'button_content' in message_info:
+                message_resp['button_content'] = message_info['button_content']
+            if 'button_url' in message_info:
+                message_resp['button_url'] = message_info['button_url']
             data_list.append(message_resp)
     return response_data(http_code=200, data=data_list)
 
