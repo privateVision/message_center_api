@@ -17,12 +17,25 @@ class AppController extends Controller
         // config
         $config = ProceduresExtend::from_cache($pid);
         if(!$config) {
-            // todo: 后台添加procedures的同时把procedures_extend也加上就不用写这里了
             $config = new ProceduresExtend;
             $config->pid = $pid;
-            $config->save();
-
-            $config = ProceduresExtend::from_cache($pid);
+            $config->service_qq = env('service_qq');
+            $config->service_page = env('service_page');
+            $config->service_phone = env('service_phone');
+            $config->service_share = env('service_share');
+            $config->heartbeat_interval = 2000;
+            $config->bind_phone_need = true;
+            $config->bind_phone_enforce = false;
+            $config->bind_phone_interval = 86400000;
+            $config->real_name_need = false;
+            $config->real_name_enforce = false;
+            $config->logout_img = env('logout_img');
+            $config->logout_redirect = env('logout_redirect');
+            $config->logout_inside = true;
+            $config->allow_num = 1;
+            $config->create_time = time();
+            $config->update_time = time();
+            $config->saveAndCache();
         }
 
         // check update
