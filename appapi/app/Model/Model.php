@@ -6,7 +6,7 @@ use App\Redis;
 
 abstract class Model extends Eloquent
 {
-    protected $connection = 'anfanapi';
+    protected $connection = 'default';
 
 	const CREATED_AT = null;
     const UPDATED_AT = null;

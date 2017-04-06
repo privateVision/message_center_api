@@ -8,22 +8,22 @@ use App\Model\Orders;
 class NowpayWechatController extends \App\Controller
 {
 
-    protected function get_data(Request $request) {
+    protected function getData(Request $request) {
         //$input = file_get_contents('php://input');
         //parse_str($input, $data);
         //return $data;
         return $_POST;
     }
 
-    protected function get_order_no($data) {
+    protected function getOrderNo($data) {
         return $data['out_trade_no'];
     }
 
-    protected function get_outer_order_no($data, Orders $order) {
+    protected function getTradeOrderNo($data, Orders $order) {
         return $data['trade_no'];
     }
 
-    protected function verify_sign($data, Orders $order) {
+    protected function verifySign($data, Orders $order) {
         $config = config('common.payconfig.nowpay_wechat');
 
         $sign = $data['signature'];
@@ -43,7 +43,7 @@ class NowpayWechatController extends \App\Controller
         return true;
     }
 
-    protected function on_complete($data, Orders $order, $isSuccess) {
+    protected function onComplete($data, Orders $order, $isSuccess) {
         return $isSuccess ? 'success' : 'fail';
     }
 }
