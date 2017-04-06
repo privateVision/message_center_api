@@ -307,6 +307,7 @@ class UserController extends AuthController
         $unionid = $this->parameter->get('unionid');
         $nickname = $this->parameter->get('nickname');
         $avatar = $this->parameter->get('avatar');
+        $forced = $this->parameter->get('forced');
 
         $count = UcuserOauth::where('type', $type)->where('ucid', $this->user->ucid)->count();
         if($count > 0) {
@@ -326,28 +327,37 @@ class UserController extends AuthController
             $user_oauth = UcuserOauth::from_cache_openid($openid);
         }
 
-        if(!$user_oauth) {
+        if($user_oauth) {
+            if($user_oauth->ucid == $this->user->ucid) {
+                return ['result' => true];
+            }
+
+            if($forced == 0)
+                throw new ApiException(ApiException::AlreadyBindOauthOther, config("common.oauth.{$type}.text", '第三方') . "已经绑定了其它账号");
+            }
+
+            $user_oauth->ucid = $this->user->ucid;
+            $user_oauth->save();
+        } else {
             $user_oauth = new UcuserOauth;
             $user_oauth->ucid = $this->user->ucid;
             $user_oauth->type = $type;
             $user_oauth->openid = $openid;
             $user_oauth->unionid = $unionid;
             $user_oauth->saveAndCache();
+        }
 
-            if($avatar) {
-                $user_info = UcuserInfo::from_cache($this->user->ucid);
-                if(!$user_info) {
-                    $user_info = new UcuserInfo;
-                    $user_info->ucid = $this->user->ucid;
-                }
-
-                if(!$user_info->avatar) {
-                    $user_info->avatar = $avatar;
-                    $user_info->saveAndCache();
-                }
+        if($avatar) {
+            $user_info = UcuserInfo::from_cache($this->user->ucid);
+            if(!$user_info) {
+                $user_info = new UcuserInfo;
+                $user_info->ucid = $this->user->ucid;
             }
-        } elseif($user_oauth->ucid != $this->user->ucid) {
-            throw new ApiException(ApiException::Remind, config("common.oauth.{$type}.text", '第三方') . "已经绑定了其它账号");
+
+            if(!$user_info->avatar) {
+                $user_info->avatar = $avatar;
+                $user_info->saveAndCache();
+            }
         }
 
         user_log($this->user, $this->procedure, 'bind_oauth', '【绑定平台帐号】%s', config("common.oauth.{$type}.text", '第三方'));
@@ -368,6 +378,10 @@ class UserController extends AuthController
         user_log($this->user, $this->procedure, 'unbind_oauth', '【解绑平台帐号】%s', config("common.oauth.{$type}.text", '第三方'));
 
         return ['result' => true];
+    }
+
+    public function SetAvatarAction() {
+        $type = $this->parameter->tough('type');
     }
 
     public function EventAction() {

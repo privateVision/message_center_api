@@ -78,6 +78,7 @@ $app->group(['prefix' => 'api'], function () use ($app) {
     $app->post('user/bind_oauth', 'Api\\UserController@BindOauthAction');                                   // 第三方帐号绑定
     $app->post('user/unbind_oauth', 'Api\\UserController@UnbindOauthAction');                               // 第三方帐号解绑
     $app->post('user/event', 'Api\\UserController@EventAction');                                            // 第三方帐号解绑
+    $app->post('user/set_avatar', 'Api\\UserController@SetAvatarAction');                                   // 上传用户头像
 
 
     $app->post('user_sub/list', 'Api\\UserSubController@ListAction');                                       // 小号列表
