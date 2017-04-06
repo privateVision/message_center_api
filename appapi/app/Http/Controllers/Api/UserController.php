@@ -332,7 +332,7 @@ class UserController extends AuthController
                 return ['result' => true];
             }
 
-            if($forced == 0)
+            if($forced == 0) {
                 throw new ApiException(ApiException::AlreadyBindOauthOther, config("common.oauth.{$type}.text", '第三方') . "已经绑定了其它账号");
             }
 
