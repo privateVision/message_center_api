@@ -1,4 +1,5 @@
 # _*_ coding: utf-8 _*_
+import socket
 import threading
 from logging.handlers import TimedRotatingFileHandler, SMTPHandler
 
@@ -49,7 +50,10 @@ service_logger.addHandler(ch)
 
 # 邮件和消息通知
 ADMINS = ['14a1152bf3963d126735637d5e745ae5@mail.bearychat.com']
-mail_handler = SMTPHandler('127.0.0.1', 'server-error@monitor.com', ADMINS, 'Service Exception Report')
+server_host_name = socket.getfqdn(socket.gethostname())
+server_ip = socket.gethostbyname(server_host_name)
+mail_handler = SMTPHandler('127.0.0.1', 'server-error@monitor.com', ADMINS,
+                           "%s-%s-Service Exception Report" % (server_host_name, server_ip))
 mail_handler.setFormatter(logging.Formatter('''
 Message type:       %(levelname)s
 Location:           %(pathname)s:%(lineno)d
