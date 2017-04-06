@@ -355,6 +355,8 @@ def get_user_coupons_by_game(ucid, appid, start_index, end_index):
                 'lock_app': '',
                 'supportDivide': 0
             }
+            if coupon_info['full'] == 0:
+                info['user_condition'] = '通用'
             unlimited_time = True
             if coupon_info['is_time'] == 0:
                 unlimited_time = False
