@@ -263,6 +263,8 @@ def get_ucid_list_by_user_uid_name_list(specify_user):
 def add_mark_to_user_redis(ucid, message_type):
     if message_type == 'message':
         RedisHandle.hincrby(ucid, message_type, 1)  # 自增数量，表示消息的未读数量
+    if message_type == 'broadcast':
+        RedisHandle.hset(ucid, message_type, 1)
 
 
 def add_to_every_related_users_message_list(users_message):
