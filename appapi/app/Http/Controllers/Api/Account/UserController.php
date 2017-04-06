@@ -14,7 +14,7 @@ class UserController extends Controller {
     use LoginAction, RegisterAction;
 
     public function getLoginUser() {
-        $username = $this->parameter->tough('username', 'username');
+        $username = $this->parameter->tough('username');
         $password = $this->parameter->tough('password', 'password');
         $device_id = $this->parameter->get('_device_id');
 
