@@ -67,9 +67,20 @@ class SendSMS extends Job
             $SMSRecord->save();
 
             if($this->code) {
+                Redis::set(sprintf('sms_%s_60s', $this->mobile), 1, 'EX', 60);
                 Redis::set(sprintf('sms_%s_%s', $this->mobile, $this->code), 1, 'EX', 900);
+                $rediskey = sprintf('sms_%s_hourlimit', $this->mobile);
+                if(Redis::exists($rediskey)) {
+                    Redis::incr($rediskey);
+                    Redis::expire($rediskey, 3600);
+                } else {
+                    Redis::incr($rediskey);
+                }
+                
             }
-        } else {
+        } elseif(@$res['code'] != 8 && @$res['code'] != 22) {
+            // 8:  同一个手机号 13065549260 30秒内重复提交相同的内容
+            // 22: 验证码类短信1小时内同一手机号发送次数不能超过3次
             log_error('sendsms', ['req' => $data, 'res' => $restext]);
             return $this->release(5);
         }

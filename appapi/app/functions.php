@@ -88,6 +88,10 @@ function parse_card_id($card_id) {
     return ['birthday' => $birthday, 'gender' => $gender, 'province' => $province];
 }
 
+function upload_to_cdn() {
+
+}
+
 /**
  * 生成唯一用户名
  * @return [type] [description]
@@ -203,19 +207,12 @@ function order_success($order_id) {
 function send_sms($mobile, $pid, $template_id, $repalce, $code = '') {
     $smsconfig = config('common.smsconfig');
 
-    $SMSRecord = \App\Model\SMSRecord::where('mobile', $mobile)->where('date', date('Ymd'))->where('hour', date('G'))->orderBy('created_at', 'desc')->get();
+    if(!env('APP_DEBUG') && Redis::exists(sprintf('sms_%s_60s', $mobile))) {
+        throw new \App\Exceptions\Exception('短信发送过于频繁');
+    }
 
-    if(!env('APP_DEBUG')) {
-        if(count($SMSRecord) >= $smsconfig['hour_limit']) {
-            throw new \App\Exceptions\Exception(sprintf('短信发送次数超过限制，请%d分钟后再试', 60 - intval(date('i'))));
-        }
-
-        if(count($SMSRecord)) {
-            $last_sms = $SMSRecord[0];
-            if(time() - strtotime($last_sms->created_at) < 60) {
-                throw new \App\Exceptions\Exception('短信发送过于频繁');
-            }
-        }
+    if(!env('APP_DEBUG') && Redis::get(sprintf('sms_%s_hourlimit', $mobile)) >= 10 ) {
+        throw new \App\Exceptions\Exception('短信发送次数超过限制，请稍候再试');
     }
 
     if(!isset($smsconfig['template'][$template_id])) {
