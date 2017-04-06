@@ -369,6 +369,24 @@ def get_user_coupons_by_game(ucid, appid, start_index, end_index):
     return new_coupon_list
 
 
+#  用户领取卡券的逻辑
+def user_get_coupon(ucid=None, coupon_id=None, app_id=None):
+    from run import mysql_session
+    now = int(time.time())
+    get_coupon_info_sql = "select game, users_type, vip_user, specify_user from zy_coupon where status = 'normal' " \
+                          "and ( (is_time=0) or (is_time=1 and start_time <= %s and end_time >= %s) ) and id = %s " \
+                          % (now, now, coupon_id)
+    coupon_info = mysql_session.execute(get_coupon_info_sql).fetchone()
+    if coupon_info is not None:
+        if coupon_info['game'] == 0:  # 卡券适用全部游戏
+            pass
+        else:
+            if coupon_info['game'] == app_id:
+                pass
+            return False
+    return False
+
+
 # 根据appid获取游戏信息
 def get_game_info_by_appid(appid=None):
     from run import mysql_session
@@ -468,6 +486,19 @@ def set_message_readed(ucid=None, message_type=None, message_id=None):
 #  根据ucid获取用户名、vip等级、电话等信息
 def get_user_vip_and_mobile_info_by_ucid(ucid=None):
     pass
+
+
+def get_user_user_type_and_vip_and_uid_by_ucid(ucid=None):
+    from run import mysql_session
+    find_users_type_info_sql = "select u.ucid, u.uid, r.rtype from ucusers as u, retailers as r where u.rid = r.rid " \
+                                  "and u.ucid = %s" % (ucid,)
+    user_type_info = mysql_session.execute(find_users_type_info_sql).fetchone()
+    if user_type_info is not None:
+        find_users_vip_info_sql = "select vip from ucuser_info as u where u.ucid = %s" % (ucid,)
+        user_vip_info = mysql_session.execute(find_users_vip_info_sql).fetchone()
+        if user_vip_info is not None:
+            return user_type_info['rtype'], user_vip_info['vip'], user_type_info['uid']
+    return None
 
 
 # sdk api 请求通用装饰器

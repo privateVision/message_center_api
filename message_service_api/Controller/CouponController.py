@@ -13,7 +13,7 @@ from MongoModel.UserMessageModel import UserMessage
 from RequestForm.PostCouponsRequestForm import PostCouponsRequestForm
 from Service.StorageService import system_coupon_update
 from Service.UsersService import get_ucid_by_access_token, get_coupon_message_detail_info, \
-    sdk_api_request_check, cms_api_request_check, get_stored_value_card_list, get_user_coupons_by_game
+    sdk_api_request_check, cms_api_request_check, get_stored_value_card_list, get_user_coupons_by_game, user_get_coupon
 from Utils.SystemUtils import get_current_timestamp, log_exception
 
 coupon_controller = Blueprint('CouponController', __name__)
@@ -74,6 +74,22 @@ def v4_cms_delete_coupon():
         log_exception(request, err.message)
         return response_data(http_code=200, code=0, message="删除卡券失败")
     return response_data(http_code=200)
+
+
+# api 领取卡券
+@coupon_controller.route('/msa/v4/get_coupon', methods=['POST'])
+@sdk_api_request_check
+def v4_user_get_coupon():
+    ucid = get_ucid_by_access_token(request.form['_token'])
+    game_id = int(request.form['_appid'])
+    coupon_id = int(request.form['coupon_id'])
+    if coupon_id is None or coupon_id == '':
+        log_exception(request, '客户端请求错误-coupon_id为空')
+        return response_data(200, 0, '客户端请求错误')
+    result = user_get_coupon(ucid, coupon_id, game_id)
+    if result:
+        return response_data(http_code=200, message="领取成功")
+    return response_data(http_code=200, code=0, message="领取失败")
 
 
 # SDK 获取卡券列表
