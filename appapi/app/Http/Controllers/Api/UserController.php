@@ -369,4 +369,9 @@ class UserController extends AuthController
 
         return ['result' => true];
     }
+
+    public function EventAction() {
+        $event = $this->parameter->tough('event');
+        return ['result' => true];
+    }
 }

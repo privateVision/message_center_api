@@ -77,11 +77,11 @@ $app->group(['prefix' => 'api'], function () use ($app) {
     $app->post('user/info', 'Api\\UserController@InfoAction');                                              // 用户详细信息
     $app->post('user/bind_oauth', 'Api\\UserController@BindOauthAction');                                   // 第三方帐号绑定
     $app->post('user/unbind_oauth', 'Api\\UserController@UnbindOauthAction');                               // 第三方帐号解绑
+    $app->post('user/event', 'Api\\UserController@EventAction');                                            // 第三方帐号解绑
 
 
     $app->post('user_sub/list', 'Api\\UserSubController@ListAction');                                       // 小号列表
     $app->post('user_sub/new', 'Api\\UserSubController@NewAction');                                         // 添加小号
-    //$app->post('user_sub/switch', 'Api\\UserSubController@SwitchAction');                                 // 添加小号
 
     $app->post('pay/order/new', 'Api\\Pay\\OrderController@NewAction');                                     // 创建订单
     $app->post('pay/order/f/new', 'Api\\Pay\\FController@NewAction');                                       // 充值F币的订单

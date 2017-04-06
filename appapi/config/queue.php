@@ -59,7 +59,7 @@ return [
         'redis' => [
             'driver' => 'redis',
             'connection' => 'default',
-            'queue' => 'default',
+            'queue' => 'sdkapi_appapi',
             'retry_after' => 60,
         ],
 
