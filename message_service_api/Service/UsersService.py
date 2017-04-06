@@ -331,7 +331,7 @@ def get_user_coupons_by_game(ucid, appid, start_index, end_index):
     now = int(time.time())
     get_user_coupon_sql = "select log.coupon_id from zy_coupon_log as log join zy_coupon as coupon " \
                           "on log.coupon_id=coupon.id where coupon.status='normal' and log.is_used = 0 " \
-                          "and log.ucid=%s and log.pid=%s " \
+                          "and log.ucid=%s and ( (log.pid=0) or (log.pid=%s) )" \
                           "and ((coupon.is_time = 0) or ((coupon.is_time = 1) " \
                           "and coupon.start_time <= %s  " \
                           "and coupon.end_time >= %s)) order by log.id desc limit %s, %s" \
@@ -351,7 +351,7 @@ def get_user_coupons_by_game(ucid, appid, start_index, end_index):
                 'desc': coupon_info['info'],
                 'fee': coupon_info['money'],
                 'method': coupon_info['method'],
-                'user_condition': "满%s可用" % (coupon_info['full'],),
+                'user_condition': "满%s可用" % (coupon_info['full']/100,),
                 'lock_app': '',
                 'supportDivide': 0
             }
@@ -461,6 +461,11 @@ def set_message_readed(ucid=None, message_type=None, message_id=None):
                                                    message_id=message_id,
                                                    ucid=ucid)
         user_read_message_log.save()
+
+
+#  根据ucid获取用户名、vip等级、电话等信息
+def get_user_vip_and_mobile_info_by_ucid(ucid=None):
+    pass
 
 
 # sdk api 请求通用装饰器
