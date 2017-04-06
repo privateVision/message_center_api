@@ -35,50 +35,51 @@ class UserSubController extends AuthController
     }
 
     public function NewAction() {
-        $pid = $this->parameter->tough('_appid');
-        $rid = $this->parameter->tough('_rid');
+        // 自旋锁
+        return Redis::spin_lock(sprintf('user_sub_new_lock_%s', $this->user->ucid), function() {
+            $pid = $this->parameter->tough('_appid');
+            $rid = $this->parameter->tough('_rid');
 
-        $config = ProceduresExtend::from_cache($pid);
-        $allow_num = $config && $config['allow_num'] ? (int)$config['allow_num'] : 1;
+            $config = ProceduresExtend::from_cache($pid);
+            $allow_num = $config && $config['allow_num'] ? (int)$config['allow_num'] : 1;
 
-        $redisfield = $this->user->ucid .'_'. $pid;
-        $user_sub_num = Redis::hget('user_sub_num', $redisfield);
-        if(!$user_sub_num) {
-            $reset = true;
-            $user_sub_num = UcuserSub::tableSlice($this->user->ucid)->where('ucid', $this->user->ucid)->where('pid', $pid)->count();
-        }
+            $redisfield = $this->user->ucid .'_'. $pid;
+            $user_sub_num = Redis::hget('user_sub_num', $redisfield);
+            if(!$user_sub_num) {
+                $reset = true;
+                $user_sub_num = UcuserSub::tableSlice($this->user->ucid)->where('ucid', $this->user->ucid)->where('pid', $pid)->count();
+            }
 
-        if($allow_num <= $user_sub_num) {
-            throw new ApiException(ApiException::Remind, "小号创建数量已达上限");
-        }
+            if($allow_num <= $user_sub_num) {
+                throw new ApiException(ApiException::Remind, "小号创建数量已达上限");
+            }
 
-        $user_sub = UcuserSub::tableSlice($this->user->ucid);
-        $user_sub->id = uuid($this->user->ucid);
-        $user_sub->ucid = $this->user->ucid;
-        $user_sub->pid = $pid;
-        $user_sub->rid = $rid;
-        $user_sub->old_rid = $rid;
-        $user_sub->cp_uid = uuid();
-        $user_sub->name = "小号" . sprintf('%02d', $user_sub_num + 1);
-        $user_sub->priority = 0;
-        $user_sub->last_login_at = null;
-        $user_sub->save();
+            $user_sub = UcuserSub::tableSlice($this->user->ucid);
+            $user_sub->id = uuid($this->user->ucid);
+            $user_sub->ucid = $this->user->ucid;
+            $user_sub->pid = $pid;
+            $user_sub->rid = $rid;
+            $user_sub->old_rid = $rid;
+            $user_sub->cp_uid = uuid();
+            $user_sub->name = "小号" . sprintf('%02d', $user_sub_num + 1);
+            $user_sub->priority = 0;
+            $user_sub->last_login_at = null;
+            $user_sub->save();
 
-        if(isset($reset)) {
-            Redis::hset('user_sub_num', $redisfield, $user_sub_num + 1);
-        } else {
-            Redis::hincrby('user_sub_num', $redisfield, 1);
-        }
+            if(isset($reset)) {
+                Redis::hset('user_sub_num', $redisfield, $user_sub_num + 1);
+            } else {
+                Redis::hincrby('user_sub_num', $redisfield, 1);
+            }
 
-        return [
-            'id' => $user_sub->id,
-            'openid' => $user_sub->cp_uid,
-            'name' => $user_sub->name,
-            'status' => 0,
-            //'is_freeze' => false,
-            //'is_unused' => true,
-            'is_default' => false,
-            'last_login_at' => "",
-        ];
+            return [
+                'id' => $user_sub->id,
+                'openid' => $user_sub->cp_uid,
+                'name' => $user_sub->name,
+                'status' => 0,
+                'is_default' => false,
+                'last_login_at' => "",
+            ];
+        });
     }
 }

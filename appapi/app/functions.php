@@ -1,6 +1,8 @@
 <?php
 use App\Redis;
 use Illuminate\Support\Facades\Queue;
+use Qiniu\Auth;
+use Qiniu\Storage\BucketManager;
 
 // 设置redis的key在过期时间
 // 1. 一个用户的所有数据应该同时过期
@@ -89,7 +91,9 @@ function parse_card_id($card_id) {
 }
 
 function upload_to_cdn() {
-
+    $config = config('common.storage_cdn.qiniu');
+    $auth = new Auth($config['access_key'], $config['secret_key']);
+    $bucketMgr = new BucketManager($auth);
 }
 
 /**

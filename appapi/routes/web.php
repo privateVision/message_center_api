@@ -1,4 +1,7 @@
 <?php
+use Qiniu\Auth;
+use Qiniu\Storage\BucketManager;
+use Qiniu\Storage\UploadManager;
 /*
 |--------------------------------------------------------------------------
 | Application Routes
@@ -11,9 +14,13 @@
 */
 
 $app->get('/', function (Illuminate\Http\Request $request) use ($app) {
-    $code = smscode();
-    return send_sms(15021829660, 0, 'login_phone', ['#code#' => $code], $code);
+    $config = config('common.storage_cdn.qiniu');
+    $auth = new Auth($config['access_key'], $config['secret_key']);
+    $bucketMgr = new BucketManager($auth);
+    $token = $auth->uploadToken($bucket);
+    $uploadMgr = new UploadManager();
 
+    return;
     $mobile = $request->input('m');
 
     if($mobile) {
