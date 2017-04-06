@@ -23,7 +23,6 @@ class UcuserInfo extends Model
      * @return boolean
      */
     public function isAdult() {
-
         if($this->birthday && strlen($this->birthday) == 8) {
             $y = substr($this->birthday, 0, 4);
             $m = substr($this->birthday, 4, 2);
