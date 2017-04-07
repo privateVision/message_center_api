@@ -421,6 +421,30 @@ class UserController extends AuthController
         ];
     }
 
+    public function SetUsernameAction() {
+        $username = $this->parameter->tough('username');
+
+        $user = Ucuser::where('uid', $username)->orWhere('mobile', $username)->orWhere('email', $username)->first();
+        if($user) {
+            if($user->ucid != $this->user->ucid) {
+                throw new ApiException(ApiException::Remind, '设置失败，用户名已被占用');
+            }
+        } else {
+            $this->user->uid = $username;
+            $this->user->save();
+        }
+
+        return ['result' => true];
+    }
+
+    public function SetNicknameAction() {
+        $nickname = $this->parameter->tough('nickname');
+        $this->user->nickname = $nickname;
+        $this->user->save();
+
+        return ['result' => true];
+    }
+
     public function EventAction() {
         $event = $this->parameter->tough('event');
         return ['result' => true];

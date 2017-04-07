@@ -80,8 +80,10 @@ $app->group(['prefix' => 'api'], function () use ($app) {
     $app->post('user/info', 'Api\\UserController@InfoAction');                                              // 用户详细信息
     $app->post('user/bind_oauth', 'Api\\UserController@BindOauthAction');                                   // 第三方帐号绑定
     $app->post('user/unbind_oauth', 'Api\\UserController@UnbindOauthAction');                               // 第三方帐号解绑
-    $app->post('user/event', 'Api\\UserController@EventAction');                                            // 第三方帐号解绑
+    $app->post('user/event', 'Api\\UserController@EventAction');                                            // 触发用户事件
     $app->post('user/set_avatar', 'Api\\UserController@SetAvatarAction');                                   // 上传用户头像
+    $app->post('user/set_username', 'Api\\UserController@SetUsernameAction');                               // 设置username
+    $app->post('user/set_nickname', 'Api\\UserController@SetNicknameAction');                               // 设置nickname
 
 
     $app->post('user_sub/list', 'Api\\UserSubController@ListAction');                                       // 小号列表
