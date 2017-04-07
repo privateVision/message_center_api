@@ -411,7 +411,7 @@ class UserController extends AuthController
         }
 
         if($avatar_url) {
-            $user_info->avatar = $avatar;
+            $user_info->avatar = $avatar_url;
             $user_info->save();
         }
 
