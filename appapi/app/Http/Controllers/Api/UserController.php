@@ -394,16 +394,55 @@ class UserController extends AuthController
 
         if($type == 'url') {
             $avatar_url = $avatar;
-            $user_info->avatar = $avatar;
         } elseif ($type == 'bindata') {
+            $filename = sprintf('avatar/%d.png', $this->user->ucid);
+            $filepath = base_path('storage/uploads/') . $filename;
             $avatar_data = base64_decode($avatar);
 
+            $fp = fopen($filepath, 'wb');
+            fwrite($fp, $avatar_data);
+            fclose($fp);
+
+            try {
+                $avatar_url = upload_to_cdn($filename, $filepath);
+            } catch(\App\Exceptions\Exception $e) {
+                throw new ApiException(ApiException::Remind, '头像上传失败：' . $e->getMessage());
+            }
+        }
+
+        if($avatar_url) {
+            $user_info->avatar = $avatar_url;
+            $user_info->save();
         }
 
         return [
             'result' => $avatar_url ? true : false,
             'avatar' => $avatar_url,
         ];
+    }
+
+    public function SetUsernameAction() {
+        $username = $this->parameter->tough('username');
+
+        $user = Ucuser::where('uid', $username)->orWhere('mobile', $username)->orWhere('email', $username)->first();
+        if($user) {
+            if($user->ucid != $this->user->ucid) {
+                throw new ApiException(ApiException::Remind, '设置失败，用户名已被占用');
+            }
+        } else {
+            $this->user->uid = $username;
+            $this->user->save();
+        }
+
+        return ['result' => true];
+    }
+
+    public function SetNicknameAction() {
+        $nickname = $this->parameter->tough('nickname');
+        $this->user->nickname = $nickname;
+        $this->user->save();
+
+        return ['result' => true];
     }
 
     public function EventAction() {

@@ -3,6 +3,7 @@ use App\Redis;
 use Illuminate\Support\Facades\Queue;
 use Qiniu\Auth;
 use Qiniu\Storage\BucketManager;
+use Qiniu\Storage\UploadManager;
 
 // 设置redis的key在过期时间
 // 1. 一个用户的所有数据应该同时过期
@@ -90,10 +91,70 @@ function parse_card_id($card_id) {
     return ['birthday' => $birthday, 'gender' => $gender, 'province' => $province];
 }
 
-function upload_to_cdn() {
+function upload_to_cdn($filename, $filepath, $is_delete = false) {
+    /*
+    200 操作执行成功。
+    298 部分操作执行成功。
+    400 请求报文格式错误。包括上传时，上传表单格式错误
+    401 认证授权失败。包括密钥信息不正确；数字签名错误；授权已超时。
+    403 拒绝访问。防盗链屏蔽的结果
+    404 资源不存在。包括空间资源不存在；镜像源资源不存在。
+    405 请求方式错误。主要指非预期的请求方式。
+    406 上传的数据 CRC32 校验错误。
+    413 请求资源大小大于指定的最大值。
+    419 用户账号被冻结。
+    478 镜像回源失败。主要指镜像源服务器出现异常。
+    502 错误网关。
+    503 服务端不可用。
+    504 服务端操作超时。
+    573 单个资源访问频率过高。
+    579 上传成功但是回调失败。包括业务服务器异常；七牛服务器异常；服务器间网络异常。
+    599 服务端操作失败。
+    608 资源内容被修改。
+    612 指定资源不存在或已被删除。
+    614 目标资源已存在。
+    630 已创建的空间数量达到上限，无法创建新空间。
+    631 指定空间不存在。
+    640 调用列举资源(list)接口时，指定非法的marker参数。
+    701 在断点续上传过程中，后续上传接收地址不正确或ctx信息已过期。
+    */
     $config = config('common.storage_cdn.qiniu');
+
     $auth = new Auth($config['access_key'], $config['secret_key']);
-    $bucketMgr = new BucketManager($auth);
+
+    $delete = function() use($auth, $config, $filename) {
+        $bucketMgr = new BucketManager($auth);
+
+        $result = $bucketMgr->delete($config['bucket'], $filename);
+        if($result && $result->code() != 612 && $result->code() != 200) {
+            log_error('cdn_delete_error', ['code' => $result->code(), 'message' => $result->message()]);
+            throw new \App\Exceptions\Exception('文件上传失败：'. $result->message());
+        }
+    };
+
+    $update = function() use($auth, $config, $filename, $filepath, $delete) {
+        $uploadMgr = new UploadManager();
+        $token = $auth->uploadToken($config['bucket']);
+
+        list($ret, $err) = $uploadMgr->putFile($token, $filename, $filepath);
+
+        if($err) {
+            if($err->code() != 614) {
+                log_error('cdn_update_error', ['code' => $result->code(), 'message' => $result->message()]);
+                throw new \App\Exceptions\Exception('文件上传失败：'. $result->message());
+            }
+
+            $delete();
+            $update();
+        }
+
+        return $ret;
+    };
+
+    if($is_delete) $delete();
+    $update();
+
+    return $config['base_url'] . $filename;
 }
 
 /**
