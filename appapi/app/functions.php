@@ -3,6 +3,7 @@ use App\Redis;
 use Illuminate\Support\Facades\Queue;
 use Qiniu\Auth;
 use Qiniu\Storage\BucketManager;
+use Qiniu\Storage\UploadManager;
 
 // 设置redis的key在过期时间
 // 1. 一个用户的所有数据应该同时过期
@@ -90,10 +91,32 @@ function parse_card_id($card_id) {
     return ['birthday' => $birthday, 'gender' => $gender, 'province' => $province];
 }
 
-function upload_to_cdn() {
+function upload_to_cdn($filename, $filepath, $is_delete = false) {
     $config = config('common.storage_cdn.qiniu');
+
     $auth = new Auth($config['access_key'], $config['secret_key']);
-    $bucketMgr = new BucketManager($auth);
+    
+    $uploadMgr = new UploadManager();
+
+    $delete = function() use($auth, $config, $filename) {
+        $bucketMgr = new BucketManager($auth);
+
+        $result = $bucketMgr->delete($config['bucket'], $filename);
+        if($result->code() != 612 && $result->code() != 200) {
+            log_error('cdn_delete_error', ['code' => $result->code(), 'message' => $result->message()]);
+            throw new \App\Exceptions\Exception('文件上传失败：'. $result->message());
+        }
+    };
+
+    if($is_delete) {
+        $delete();
+    }
+
+    // upload
+    $token = $auth->uploadToken($config['bucket']);
+    list($ret, $err) = $uploadMgr->putFile($token, $filename, $filepath);
+
+    return $config['base_url'] . $filename;
 }
 
 /**

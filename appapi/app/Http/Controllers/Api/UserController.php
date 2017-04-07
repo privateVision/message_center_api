@@ -396,8 +396,16 @@ class UserController extends AuthController
             $avatar_url = $avatar;
             $user_info->avatar = $avatar;
         } elseif ($type == 'bindata') {
+            $filename = sprintf('user_avatar_%d.png', $this->user->ucid);
+            $filepath = base_path('storage/uploads/avatar/') . $filename;
             $avatar_data = base64_decode($avatar);
 
+            $result = file_put_contents($filepath, $avatar_data);
+            if($result) {
+                $avatar_url = upload_to_cdn($filename, $filepath);
+            }
+
+            throw new ApiException(ApiException::Remind, '头像上传失败');
         }
 
         return [
