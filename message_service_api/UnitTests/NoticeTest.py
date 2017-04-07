@@ -98,9 +98,9 @@ class NoticeFunctionTest(unittest.TestCase):
 
     def test_get_notice_list(self):
         body_data = {
-            '_sign': '16143c5420604c18e292c00dcf73852a',
-            '_token': 'n9nfb13uwask8os0kwc4w0kw',
-            '_appid': 778,
+            '_sign': '5593e17f0803545452dc85db2000d948',
+            '_token': 'af5f2p4zxc84gcgg4wwwco0ww',
+            '_appid': 2,
         }
         r = requests.post('http://sdkv4test.qcwanwan.com/msa/v4/notices', data=body_data)
         print r.text
