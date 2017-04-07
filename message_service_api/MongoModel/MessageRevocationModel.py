@@ -1,5 +1,6 @@
 # _*_ coding: utf-8 _*_
 from datetime import datetime
+import time
 
 from mongoengine import StringField, DynamicDocument, IntField, DateTimeField
 
@@ -11,3 +12,4 @@ class MessageRevocation(DynamicDocument):
     type = StringField(required=True)
     mysql_id = IntField(required=True)
     create_time = DateTimeField(required=True, default=datetime.now())
+    create_timestamp = IntField(required=True, default=int(time.time()))
