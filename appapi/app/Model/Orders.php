@@ -55,6 +55,6 @@ class Orders extends Model
 	 * @return boolean [description]
 	 */
 	public function is_f() {
-		return $this->vid < 100;
+		return $this->vid < 100 || !$this->notify_url;
 	}
 }

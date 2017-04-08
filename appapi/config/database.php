@@ -84,6 +84,18 @@ return [
                 'database' => 'admin' // sets the authentication database required by mongo 3
             ]
         ],
+
+        'log' => [
+            'driver'   => 'mongodb',
+            'host'     => env('MONGODB_LOG_HOST'),
+            'port'     => env('MONGODB_LOG_PORT'),
+            'database' => env('MONGODB_LOG_DATABASE'),
+            'username' => env('MONGODB_LOG_USERNAME'),
+            'password' => env('MONGODB_LOG_PASSWORD'),
+            'options'  => [
+                'database' => 'admin' // sets the authentication database required by mongo 3
+            ]
+        ],
     ],
 
     /*

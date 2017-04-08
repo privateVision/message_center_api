@@ -45,10 +45,15 @@ class UserController extends AuthController
 
         $offset = max(0, ($page - 1) * $limit);
 
-        $order = $this->user->orders()->where('vid', '<', 100)->where('status', '!=', Orders::Status_WaitPay)->where('hide', 0)->take($limit)->skip($offset)->get();
+        $order = Orders::where('ucid', $this->user->ucid);
+        $order = $order->where('hide', 0);
+        $order = $order->where('status', '!=', Orders::Status_WaitPay);
+        $order = $order->orderBy('id', 'desc');
+        $order = $order->take($limit)->skip($offset)->get();
 
         $data = [];
         foreach($order as $v) {
+            if(!$v->is_f()) continue;
             $data[] = [
                 'order_id' => $v->sn,
                 'fee' => $v->fee,
@@ -68,10 +73,15 @@ class UserController extends AuthController
 
         $offset = max(0, ($page - 1) * $limit);
 
-        $order = $this->user->orders()->where('vid', '>=', 100)->where('status', '!=', Orders::Status_WaitPay)->where('hide', 0)->take($limit)->skip($offset)->get();
+        $order = Orders::where('ucid', $this->user->ucid);
+        $order = $order->where('hide', 0);
+        $order = $order->where('status', '!=', Orders::Status_WaitPay);
+        $order = $order->orderBy('id', 'desc');
+        $order = $order->take($limit)->skip($offset)->get();
 
         $data = [];
         foreach($order as $v) {
+            if($v->is_f()) continue;
             $data[] = [
                 'order_id' => $v->sn,
                 'fee' => $v->fee,

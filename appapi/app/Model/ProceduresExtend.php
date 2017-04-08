@@ -58,7 +58,7 @@ class ProceduresExtend extends Model
 
 	public function getBindPhoneIntervalAttribute() {
 		$value = trim(@$this->attributes['bind_phone_interval']);
-		return is_numeric($value) ? intval($value) : 86400000;
+		return is_numeric($value) ? intval($value) : 259200000;
 	}
 
 	public function getAllowNumAttribute() {

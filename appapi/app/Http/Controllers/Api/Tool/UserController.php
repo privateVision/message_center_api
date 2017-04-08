@@ -24,8 +24,12 @@ class UserController extends AuthController
 
     public function FreezeAction() {
         $status = $this->parameter->tough('status');
+        $admin_user = $this->parameter->tough('admin_user');
 
         $is_freeze = $status > 0 ? true : false;
+        if($is_freeze) {
+            $comment = $this->parameter->tough('comment');
+        }
 
         $this->user->is_freeze = $is_freeze;
         $this->user->save();
@@ -36,6 +40,10 @@ class UserController extends AuthController
                 $session->freeze = $is_freeze ? 1 : 0;
                 $session->save();
             }
+
+            user_log($this->user, $this->procedure, 'freeze', '【冻结账号】%s，由%s操作', $comment, $admin_user);
+        } else {
+            user_log($this->user, $this->procedure, 'unfreeze', '【解冻账号】由%s操作', $admin_user);
         }
 
         return ['result' => true];
