@@ -88,10 +88,12 @@ trait RequestAction {
             $ordersExt->fee = $fee / 100;
             $ordersExt->save();
 
-            $data = $this->payHandle($order, $fee);
+            // $data = $this->payHandle($order, $fee);
         } else {
-            //order_success($order->id); // 不用支付，直接发货
+            // order_success($order->id); // 不用支付，直接发货
         }
+
+        $data = $this->payHandle($order, $fee);
 
         $order->paymentMethod = static::PayTypeText;
         $order->real_fee = $fee;

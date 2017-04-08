@@ -14,12 +14,6 @@ use Qiniu\Storage\UploadManager;
 */
 
 $app->get('/', function (Illuminate\Http\Request $request) use ($app) {
-    $a = \App\Model\Ucuser::from_cache(100002759);
-    $a->increment('balance', 1);//->updateCache();exit;
-    return $a->updateCache();
-    //$a->balance = rand(1,222);
-    //$a->save();exit;
-
     $mobile = $request->input('m');
 
     if($mobile) {
