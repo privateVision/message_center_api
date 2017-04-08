@@ -13,9 +13,9 @@ class AppController extends Controller
     public function InitializeAction() {
         $pid = $this->parameter->tough('_appid');
         $rid = $this->parameter->tough('_rid');
-        $imei = $this->parameter->tough('_imei');
+        $imei = $this->parameter->get('_imei');
         $uuid = $this->parameter->tough('_device_id');
-        $apps = $this->parameter->tough('device_apps');
+        $apps = $this->parameter->get('device_apps');
         $info = $this->parameter->tough('device_info');
         $app_version = $this->parameter->tough('app_version');
 
@@ -53,7 +53,7 @@ class AppController extends Controller
             $config->heartbeat_interval = 2000;
             $config->bind_phone_need = true;
             $config->bind_phone_enforce = false;
-            $config->bind_phone_interval = 86400000;
+            $config->bind_phone_interval = 259200000;
             $config->real_name_need = false;
             $config->real_name_enforce = false;
             $config->logout_img = env('logout_img');
