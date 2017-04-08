@@ -46,7 +46,8 @@ def v4_sdk_get_gifts_list():
                             "where d.code<>'' or (d.num>0 and d.code='')" % (ucid, game['id'], now, SDK_PLATFORM_ID)
     unget_gifts_count = mysql_cms_session.execute(unget_gifts_count_sql).scalar()
 
-    unget_gifts_page_list_sql = "select * from (select a.id,a.gameId,a.gameName,a.name,a.gift,a.isAfReceive," \
+    unget_gifts_page_list_sql = "select * from (select a.id,a.gameId,a.gameName,a.name,a.gift," \
+                                "a.isAfReceive, a.isBindPhone," \
                                 "a.content,a.label,a.uid,a.publishTime,a.failTime,a.createTime,a.updateTime,a.status," \
                                 "b.num, b.assignNum, ifnull(c.code,'') as code,if(c.code<>'', '1', '0') " \
                                 "as is_get from cms_gameGift as a join cms_gameGiftAssign as b on a.id=b.giftId " \
@@ -71,7 +72,8 @@ def v4_sdk_get_gifts_list():
             'num': gift['assignNum'],
             'total': int(gift['assignNum'])+int(gift['num']),
             'is_get': gift['is_get'],
-            'is_af_receive': gift['isAfReceive']
+            'is_af_receive': gift['isAfReceive'],
+            'is_bind_phone': gift['isBindPhone']
         }
         data_list.append(info)
     data = {
