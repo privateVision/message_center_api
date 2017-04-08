@@ -303,7 +303,7 @@ def get_stored_value_card_list(ucid, start_index, end_index):
                     'lock_app': card['lockApp'],
                     'desc': card['descript'],
                     'type': 1,
-                    'fee': card['balance'],
+                    'fee': card['balance'] * 100,  # 单位由元转成分
                     'unlimited_time': False,
                     'user_condition': '',
                     'time_out': False,
