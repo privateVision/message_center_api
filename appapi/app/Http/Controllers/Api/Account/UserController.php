@@ -29,9 +29,8 @@ class UserController extends Controller {
         $rediskey_limit = 'login_limit_' . $key;
 
         if(Redis::get($rediskey_lock)) {
-            throw new ApiException(ApiException::Remind, "操作太频繁，请稍候重试");
+            throw new ApiException(ApiException::Remind, "错误次数太多，请稍后再试");
         }
-
         // --------- end
         
         // todo:数据迁移

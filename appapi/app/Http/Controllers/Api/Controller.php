@@ -69,7 +69,7 @@ class Controller extends \App\Controller
 			return array('code' => $e->getCode(), 'msg' => $e->getMessage(), 'data' => null);
 		} catch (\App\Exceptions\Exception $e) {
 			log_warning('Exception', ['code' => $e->getCode()], $e->getMessage());
-			return array('code' => ApiException::Error, 'msg' => $e->getMessage(), 'data' => null);
+			return array('code' => ApiException::Remind, 'msg' => $e->getMessage(), 'data' => null);
 		} catch(\Exception $e) {
 			echo $e->getMessage();
 			log_error('error', ['message' => $e->getMessage(), 'code' => $e->getCode(), 'file' => $e->getFile(), 'line' => $e->getLine()]);

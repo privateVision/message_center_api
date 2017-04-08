@@ -152,6 +152,16 @@ abstract class Model extends Eloquent
         return parent::save($options);
     }
 
+    /**
+     * 解决increment和decrement方法不会触发更新缓存的替代方案
+     * @return [type] [description]
+     */
+    public function updateCache() {
+        $rediskey_2 = $this->table .'_'. $this->getKey();
+        Redis::set($rediskey_2, json_encode($this));
+        return $this;
+    }
+
     public function __destruct() {
         if($this->is_delay_save) {
             $this->save();

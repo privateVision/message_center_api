@@ -10,7 +10,7 @@ class FController extends Controller {
 
     use RequestAction, CreateOrderAction;
 
-    const PayType = '-1';
+    const PayType = '0';
     const PayTypeText = 'F币或卡券直接支付';
     const EnableStoreCard = true;
     const EnableCoupon = true;
@@ -18,7 +18,7 @@ class FController extends Controller {
 
     public function payHandle(Orders $order, $real_fee) {
         if($real_fee > 0) {
-            throw new ApiException(ApiException::Remind, '不能使用余额直接抵扣');
+            throw new ApiException(ApiException::Remind, '不能使用余额或优惠券直接抵扣');
         }
         
         order_success($order->id);
