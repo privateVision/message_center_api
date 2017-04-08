@@ -71,7 +71,6 @@ class Controller extends \App\Controller
 			log_warning('Exception', ['code' => $e->getCode()], $e->getMessage());
 			return array('code' => ApiException::Remind, 'msg' => $e->getMessage(), 'data' => null);
 		} catch(\Exception $e) {
-			echo $e->getMessage();
 			log_error('error', ['message' => $e->getMessage(), 'code' => $e->getCode(), 'file' => $e->getFile(), 'line' => $e->getLine()]);
 			return array('code' => ApiException::Error, 'msg' => 'system error', 'data' => null);
 		}

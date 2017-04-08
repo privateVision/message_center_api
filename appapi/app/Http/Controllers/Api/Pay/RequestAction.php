@@ -21,7 +21,7 @@ trait RequestAction {
         }
 
         if($order->status != Orders::Status_WaitPay) {
-            throw new ApiException(ApiException::Remind, '订单状态不正确');
+            throw new ApiException(ApiException::Remind, '订单已支付完成，请勿重复支付');
         }
 
         $order->getConnection()->beginTransaction();

@@ -28,7 +28,7 @@ trait CreateOrderAction {
         $order->paymentMethod = '';
         $order->cp_uid = $this->session->cp_uid;
         $order->user_sub_id = $this->session->user_sub_id;
-        //$order->user_sub_name = $this->session->user_sub_name;
+        $order->user_sub_name = $this->session->user_sub_name;
         $this->onCreateOrder($order);
         $order->real_fee = $order->fee;
         $order->save();
