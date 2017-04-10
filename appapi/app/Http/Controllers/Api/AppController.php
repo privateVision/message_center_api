@@ -19,15 +19,17 @@ class AppController extends Controller
         $info = $this->parameter->tough('device_info');
         $app_version = $this->parameter->tough('app_version');
 
-        $_apps = json_decode($apps, true);
-        if($_apps) {
-            $device_apps = new DeviceApps;
-            $device_apps->imei = $imei;
-            $device_apps->uuid = $uuid;
-            $device_apps->apps = $_apps;
-            $device_apps->asyncSave();
-        } else {
-            log_error('report_device_apps_parse_error', null, '上报的DeviceApps格式无法解析');
+        if($apps) {
+            $_apps = json_decode($apps, true);
+            if($_apps) {
+                $device_apps = new DeviceApps;
+                $device_apps->imei = $imei;
+                $device_apps->uuid = $uuid;
+                $device_apps->apps = $_apps;
+                $device_apps->asyncSave();
+            } else {
+                log_('report_device_apps_parse_error', null, '上报的DeviceApps格式无法解析');
+            }
         }
 
         $_info = json_decode($info, true);

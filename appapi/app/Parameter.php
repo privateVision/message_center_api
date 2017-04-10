@@ -21,7 +21,7 @@ class Parameter
 			return $type_fun_regex_default;
 		}
 
-		if(method_exists($this, $type_fun_regex_default)) {
+		if(is_string($type_fun_regex_default) && method_exists($this, $type_fun_regex_default)) {
 			return $this->$type_fun_regex_default($data);
 		}
 
@@ -46,7 +46,7 @@ class Parameter
 			throw new Exception ('param is missing:"'.$key.'"', 0);
 		}
 
-		if(method_exists($this, $type_fun_regex)) {
+		if(is_string($type_fun_regex) && method_exists($this, $type_fun_regex)) {
 			return $this->$type_fun_regex($data);
 		}
 
