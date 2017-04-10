@@ -32,7 +32,7 @@ def get_game_and_area_and_user_type_and_vip_users(game=None, user_type=None, vip
                     for zone in game_info['zone_id_list']:
                         find_users_in_game_area_sql = "select distinct(ucid) from ucuser_role_%s where pid = %s " \
                                                       "and zoneName = '%s'" \
-                                                      % (int(int(game_info['apk_id'])/30), game_info['apk_id'], zone)
+                                                      % (int(int(game_info['apk_id']) / 30), game_info['apk_id'], zone)
                         try:
                             tmp_user_list = mysql_session.execute(find_users_in_game_area_sql).fetchall()
                             for item in tmp_user_list:
@@ -44,7 +44,7 @@ def get_game_and_area_and_user_type_and_vip_users(game=None, user_type=None, vip
                             mysql_session.close()
                 else:  # 没传区服信息，那就所有区服咯
                     find_users_in_game_area_sql = "select distinct(ucid) from ucuser_role_%s where pid = %s " \
-                                                  % (int(int(game_info['apk_id'])/30), game_info['apk_id'])
+                                                  % (int(int(game_info['apk_id']) / 30), game_info['apk_id'])
                     try:
                         tmp_user_list = mysql_session.execute(find_users_in_game_area_sql).fetchall()
                         for item in tmp_user_list:
@@ -60,7 +60,7 @@ def get_game_and_area_and_user_type_and_vip_users(game=None, user_type=None, vip
             game_list = mysql_session.execute(find_game_list_sql).fetchall()
             for game in game_list:
                 pid = game['pid']
-                find_all_game_users_sql = "select distinct(ucid) from ucuser_role_%s " % (int(int(pid)/30),)
+                find_all_game_users_sql = "select distinct(ucid) from ucuser_role_%s " % (int(int(pid) / 30),)
                 try:
                     tmp_user_list = mysql_session.execute(find_all_game_users_sql).fetchall()
                     for item in tmp_user_list:
@@ -329,13 +329,24 @@ def get_stored_value_card_list(ucid, start_index, end_index):
 def get_user_coupons_by_game(ucid, appid, start_index, end_index):
     from run import mysql_session
     now = int(time.time())
-    get_user_coupon_sql = "select log.coupon_id from zy_coupon_log as log join zy_coupon as coupon " \
-                          "on log.coupon_id=coupon.id where coupon.status='normal' and log.is_used = 0 " \
-                          "and log.ucid=%s and ( (log.pid=0) or (log.pid=%s) )" \
-                          "and ((coupon.is_time = 0) or ((coupon.is_time = 1) " \
-                          "and coupon.start_time <= %s  " \
-                          "and coupon.end_time >= %s)) order by log.id desc limit %s, %s" \
-                          % (ucid, appid, now, now, start_index, end_index)
+    not_show_coupon_list = get_first_coupon_id_list(ucid, appid)
+    if len(not_show_coupon_list) > 0:
+        not_show_coupon_list_str = ",".join(not_show_coupon_list)
+        get_user_coupon_sql = "select log.coupon_id from zy_coupon_log as log join zy_coupon as coupon " \
+                              "on log.coupon_id=coupon.id where coupon.status='normal' and log.is_used = 0 " \
+                              "and log.ucid=%s and coupon.id not in (%s) and ( (log.pid=0) or (log.pid=%s) )" \
+                              "and ((coupon.is_time = 0) or ((coupon.is_time = 1) " \
+                              "and coupon.start_time <= %s " \
+                              "and coupon.end_time >= %s )) order by log.id desc limit %s, %s" \
+                              % (ucid, not_show_coupon_list_str, appid, now, now, start_index, end_index)
+    else:
+        get_user_coupon_sql = "select log.coupon_id from zy_coupon_log as log join zy_coupon as coupon " \
+                              "on log.coupon_id=coupon.id where coupon.status='normal' and log.is_used = 0 " \
+                              "and log.ucid=%s and ( (log.pid=0) or (log.pid=%s) )" \
+                              "and ((coupon.is_time = 0) or ((coupon.is_time = 1) " \
+                              "and coupon.start_time <= %s " \
+                              "and coupon.end_time >= %s)) order by log.id desc limit %s, %s" \
+                              % (ucid, appid, now, now, start_index, end_index)
     coupon_list = mysql_session.execute(get_user_coupon_sql).fetchall()
     new_coupon_list = []
     for coupon in coupon_list:
@@ -356,7 +367,7 @@ def get_user_coupons_by_game(ucid, appid, start_index, end_index):
                 'desc': desc,
                 'fee': coupon_info['money'],
                 'method': coupon_info['method'],
-                'user_condition': "满%s可用" % (coupon_info['full']/100,),
+                'user_condition': "满%s可用" % (coupon_info['full'] / 100,),
                 'lock_app': '',
                 'supportDivide': 0
             }
@@ -374,6 +385,24 @@ def get_user_coupons_by_game(ucid, appid, start_index, end_index):
             info['time_out'] = time_out
             new_coupon_list.append(info)
     return new_coupon_list
+
+
+#  获取用户首充之后，剩下的首充券的id
+def get_first_coupon_id_list(ucid=None, pid=None):
+    from run import mysql_session
+    coupon_id_list = []
+    get_user_first_coupon_count_sql = "select count(*) from zy_coupon as coupon join zy_coupon_log as log " \
+                                      "on coupon.id = log.coupon_id where coupon.is_first = 1 " \
+                                      "and log.ucid = %s and  ( (log.pid=0) or (log.pid=%s) ) and log.is_used = 1" % (ucid, pid)
+    get_user_first_coupon_sql = "select distinct(log.coupon_id) from zy_coupon as coupon join zy_coupon_log as log " \
+                                "on coupon.id = log.coupon_id where coupon.is_first = 1 " \
+                                "and log.ucid = %s and  ( (log.pid=0) or (log.pid=%s) )" % (ucid, pid)
+    count = mysql_session.execute(get_user_first_coupon_count_sql).scalar()
+    if count > 0:
+        coupon_list = mysql_session.execute(get_user_first_coupon_sql).fetchall()
+        for coupon in coupon_list:
+            coupon_id_list.append(str(coupon['coupon_id']))
+    return coupon_id_list
 
 
 #  用户领取卡券的逻辑
@@ -490,7 +519,7 @@ def set_message_readed(ucid=None, message_type=None, message_id=None):
         user_read_message_log.save()
 
 
-#  根据ucid获取用户名、vip等级、电话等信息
+# 根据ucid获取用户名、vip等级、电话等信息
 def get_user_vip_and_mobile_info_by_ucid(ucid=None):
     pass
 
@@ -498,7 +527,7 @@ def get_user_vip_and_mobile_info_by_ucid(ucid=None):
 def get_user_user_type_and_vip_and_uid_by_ucid(ucid=None):
     from run import mysql_session
     find_users_type_info_sql = "select u.ucid, u.uid, r.rtype from ucusers as u, retailers as r where u.rid = r.rid " \
-                                  "and u.ucid = %s" % (ucid,)
+                               "and u.ucid = %s" % (ucid,)
     user_type_info = mysql_session.execute(find_users_type_info_sql).fetchone()
     if user_type_info is not None:
         find_users_vip_info_sql = "select vip from ucuser_info as u where u.ucid = %s" % (ucid,)
