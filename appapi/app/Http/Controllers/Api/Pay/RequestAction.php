@@ -21,7 +21,7 @@ trait RequestAction {
         }
 
         if($order->status != Orders::Status_WaitPay) {
-            throw new ApiException(ApiException::Remind, '订单状态不正确');
+            throw new ApiException(ApiException::Remind, '订单已支付完成，请勿重复支付');
         }
 
         $order->getConnection()->beginTransaction();
@@ -43,6 +43,10 @@ trait RequestAction {
 
             // 储值卡
             if(static::EnableStoreCard && $vcinfo['type'] == 1) {
+                if($vcinfo['e'] > 0 && $vcinfo['e'] < time()) {
+                    throw new ApiException(ApiException::Remind, '优惠券不可使用，已过期');
+                }
+
                 $use_fee = min($fee, $vcinfo['fee']);
 
                 $ordersExt = new OrdersExt;
@@ -54,6 +58,10 @@ trait RequestAction {
                 $fee = $fee - $use_fee;
             // 优惠券
             } elseif(static::EnableCoupon && $vcinfo['type'] == 2) {
+                if($vcinfo['e'] > 0 && $vcinfo['e'] < time()) {
+                    throw new ApiException(ApiException::Remind, '优惠券不可使用，已过期');
+                }
+
                 $use_fee = min($fee, $vcinfo['fee']);
 
                 $ordersExt = new OrdersExt;
