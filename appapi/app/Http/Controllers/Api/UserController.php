@@ -39,6 +39,38 @@ class UserController extends AuthController
         ];
     }
 
+    public function BindListAction() {
+        $data = [
+            'mobile' => [
+                'is_bind' => $this->user->mobile ? true : false
+            ],
+        ];
+
+        $oauth = cuserOauth::where('ucid', $this->user->ucid)->pluck('type');
+        foreach($oauth as $v) {
+            $data[$v]['is_bind'] = true;
+        }
+
+        return $data;
+    }
+
+    public function SetAction() {
+        $nickname = $this->parameter->get('nickname');
+        $birthday = $this->parameter->get('birthday', function($v) {
+            if(!preg_match('/^\d{4}-\d{2}-\d{2}$/', $v)) {
+                throw new ApiException(ApiException::Remind, "生日格式不正确，yyyy-mm-dd");
+            }
+
+            $interval = date_diff(date_create($v), date_create(date('Y-m-d')));
+
+            if(@$interval->y > 80 || $interval->y < 1) {
+                throw new ApiException(ApiException::Remind, "生日不是一个有效的日期");
+            }
+
+            return $v;
+        });
+    }
+
     public function RechargeAction() {
         $page = $this->parameter->get('page', 1);
         $limit = $this->parameter->get('count', 10);

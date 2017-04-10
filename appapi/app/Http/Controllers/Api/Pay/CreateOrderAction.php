@@ -81,6 +81,7 @@ trait CreateOrderAction {
         return [
             'order_id' => $order->sn,
             'way' => [1, 2, 3],
+            'fee' => $order->fee,
             'vip' => $user_info && $user_info->vip ? (int)$user_info->vip : 0,
             'balance' => $this->user->balance,
             'coupons' => $list,

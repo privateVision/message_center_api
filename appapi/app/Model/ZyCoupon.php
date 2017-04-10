@@ -17,7 +17,7 @@ class ZyCoupon extends Model
         $fee = intval($order_fee * 100);
 
         // 满 full 元可用
-        if($this->full && $this->full < $fee) return false;
+        if($this->full && $this->full > $fee) return false;
 
         // 首充可用
         if($this->is_first && !$order_is_first) return false;
