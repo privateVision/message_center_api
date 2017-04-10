@@ -13,7 +13,7 @@ class UcuserRole extends Model
         $pid = @$this->pid ?: ($this->slice ?: 0);
 
         if($pid) {
-            return $this->table .'_'. 2;//$pid;
+            return $this->table .'_'. $pid;
         }
 
         return $this->table;

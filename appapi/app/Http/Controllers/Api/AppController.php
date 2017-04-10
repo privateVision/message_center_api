@@ -25,7 +25,7 @@ class AppController extends Controller
             $device_apps->imei = $imei;
             $device_apps->uuid = $uuid;
             $device_apps->apps = $_apps;
-            $device_apps->save();
+            $device_apps->asyncSave();
         } else {
             log_error('report_device_apps_parse_error', null, '上报的DeviceApps格式无法解析');
         }
@@ -36,7 +36,7 @@ class AppController extends Controller
             $device_info->imei = $imei;
             $device_info->uuid = $uuid;
             $device_info->info = $_info;
-            $device_info->save();
+            $device_info->asyncSave();
         } else {
             log_error('report_device_info_parse_error', null, '上报的DeviceInfo格式无法解析');
         }

@@ -11,7 +11,7 @@ class ZyCoupon extends Model
      * @param  [type]  $pid            
      * @param  [type]  $order_fee      订单总额：元
      * @param  [type]  $order_is_first 是否是首充
-     * @return boolean
+     * @return mixed false，不可用，0可用且不限制时间，大于0表示可用且限制的时间
      */
     public function is_valid($pid, $order_fee, $order_is_first) {
         $fee = intval($order_fee * 100);
@@ -21,6 +21,8 @@ class ZyCoupon extends Model
 
         // 首充可用
         if($this->is_first && !$order_is_first) return false;
+
+        $e = 0;
 
         // 时间限制
         if($this->is_time) {
@@ -33,10 +35,10 @@ class ZyCoupon extends Model
         }
 
         // 游戏限制
-        if($this->game) {
-            return $pid == $this->game;
+        if($this->game && $pid != $this->game) {
+            return false;
         }
 
-        return true;
+        return $e;
     }
 }
