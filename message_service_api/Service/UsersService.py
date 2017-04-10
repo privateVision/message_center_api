@@ -341,6 +341,11 @@ def get_user_coupons_by_game(ucid, appid, start_index, end_index):
     for coupon in coupon_list:
         get_user_coupon_sql = "select * from zy_coupon where id=%s limit 1" % (coupon['coupon_id'])
         coupon_info = mysql_session.execute(get_user_coupon_sql).fetchone()
+        game = coupon_info['game']
+        desc = "所有游戏"
+        game_info = get_game_info_by_appid(game)
+        if game_info is not None:
+            desc = game_info['name']
         if coupon_info is not None:
             info = {
                 'id': coupon_info['id'],
@@ -348,7 +353,7 @@ def get_user_coupons_by_game(ucid, appid, start_index, end_index):
                 'type': 2,
                 'start_time': coupon_info['start_time'],
                 'end_time': coupon_info['end_time'],
-                'desc': coupon_info['info'],
+                'desc': desc,
                 'fee': coupon_info['money'],
                 'method': coupon_info['method'],
                 'user_condition': "满%s可用" % (coupon_info['full']/100,),
@@ -358,7 +363,7 @@ def get_user_coupons_by_game(ucid, appid, start_index, end_index):
             if coupon_info['full'] == 0:
                 info['user_condition'] = '通用'
             unlimited_time = True
-            if coupon_info['is_time'] == 0:
+            if coupon_info['is_time'] == 1:
                 unlimited_time = False
             time_out = False
             if coupon_info['is_time'] == 1 and coupon_info['end_time'] < now:

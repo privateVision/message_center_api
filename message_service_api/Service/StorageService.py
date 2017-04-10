@@ -61,6 +61,16 @@ def send_message_to_game_area_and_user_type_and_vip_users(game, users_type, vip_
                         find_user_count_in_game_area_sql = "select count(distinct(ucid)) from ucuser_role_%s " \
                                                            "where pid = %s and zoneName = '%s'" \
                                                            % (game_info['apk_id'], game_info['apk_id'], zone)
+                        # ------ fake ------ #
+                        # if int(game_info['apk_id']) == 2:
+                        #     find_user_count_in_game_area_sql = "select count(distinct(ucid)) from ucuser_role_2 " \
+                        #                                        "where pid = %s and zoneName = '%s'" \
+                        #                                        % (778, zone)
+                        # else:
+                        #     find_user_count_in_game_area_sql = "select count(distinct(ucid)) from ucuser_role_%s " \
+                        #                                         "where pid = %s and zoneName = '%s'" \
+                        #                                        % (game_info['apk_id'], game_info['apk_id'], zone)
+                        # ------ fake ------ #
                         try:
                             total_count = mysql_session.execute(find_user_count_in_game_area_sql).scalar()
                             total_page = int(total_count / 100) + 1
@@ -70,10 +80,22 @@ def send_message_to_game_area_and_user_type_and_vip_users(game, users_type, vip_
                                                               "where pid = %s and zoneName = '%s' limit %s, 100 " \
                                                               % (game_info['apk_id'], game_info['apk_id'],
                                                                  zone, start_index)
+                                # ------ fake ------ #
+                                # if int(game_info['apk_id']) == 2:
+                                #     find_users_in_game_area_sql = "select distinct(ucid) from ucuser_role_2 " \
+                                #                                   "where pid = %s and zoneName = '%s' limit %s, 100 " \
+                                #                                   % (778, zone, start_index)
+                                # else:
+                                #     find_users_in_game_area_sql = "select distinct(ucid) from ucuser_role_%s " \
+                                #                                   "where pid = %s and zoneName = '%s' limit %s, 100 " \
+                                #                                   % (game_info['apk_id'], game_info['apk_id'],
+                                #                                      zone, start_index)
+                                # ------ fake ------ #
                                 tmp_user_list = mysql_session.execute(find_users_in_game_area_sql).fetchall()
                                 for item in tmp_user_list:
                                     ucid = item['ucid']
                                     is_right = check_user_type_and_vip(ucid, users_type, vip_user[0])
+                                    service_logger.info("目标用户条件匹配检测结果：%s" % (is_right,))
                                     if is_right:
                                         add_user_messsage(ucid, type, msg_id, is_time, start_time, end_time, game)
                         except Exception, err:
@@ -84,6 +106,14 @@ def send_message_to_game_area_and_user_type_and_vip_users(game, users_type, vip_
                 else:  # 没传区服信息，那就所有区服咯
                     find_user_count_in_game_area_sql = "select count(distinct(ucid)) from ucuser_role_%s" \
                                                        " where pid = %s " % (game_info['apk_id'], game_info['apk_id'])
+                    # ------ fake ------ #
+                    # if int(game_info['apk_id']) == 2:
+                    #     find_user_count_in_game_area_sql = "select count(distinct(ucid)) from ucuser_role_2" \
+                    #                                         " where pid = %s " % (778,)
+                    # else:
+                    #     find_user_count_in_game_area_sql = "select count(distinct(ucid)) from ucuser_role_%s" \
+                    #                                         " where pid = %s " % (game_info['apk_id'], game_info['apk_id'])
+                    # ------ fake ------ #
                     try:
                         total_count = mysql_session.execute(find_user_count_in_game_area_sql).scalar()
                         total_page = int(total_count / 100) + 1
@@ -92,6 +122,15 @@ def send_message_to_game_area_and_user_type_and_vip_users(game, users_type, vip_
                             find_users_in_game_area_sql = "select distinct(ucid) from ucuser_role_%s where pid = %s " \
                                                           "limit %s, 100" % (game_info['apk_id'],
                                                                              game_info['apk_id'], start_index)
+                            # ------ fake ------ #
+                            # if int(game_info['apk_id']) == 2:
+                            #     find_users_in_game_area_sql = "select distinct(ucid) from ucuser_role_2 where pid = %s " \
+                            #                                   "limit %s, 100" % (778, start_index)
+                            # else:
+                            #     find_users_in_game_area_sql = "select distinct(ucid) from ucuser_role_%s where pid = %s " \
+                            #                                   "limit %s, 100" % (game_info['apk_id'],
+                            #                                                      game_info['apk_id'], start_index)
+                            # ------ fake ------ #
                             tmp_user_list = mysql_session.execute(find_users_in_game_area_sql).fetchall()
                             for item in tmp_user_list:
                                 ucid = item['ucid']
@@ -205,11 +244,22 @@ def check_user_type_and_vip(ucid=None, user_type=None, vip=None):
         find_users_by_vip_sql = "select count(*) from ucuser_info as u where u.ucid = %s and u.vip >= %s " % (ucid, vip)
         try:
             is_exist = mysql_session.execute(find_users_by_user_type_sql).scalar()
+            service_logger.info("用户类型查找结果：%s" % (is_exist,))
             if is_exist is None or is_exist == 0:
                 return False
-            is_exist = mysql_session.execute(find_users_by_vip_sql).scalar()
-            if is_exist is None or is_exist == 0:
-                return False
+            is_vip_exist = mysql_session.execute(find_users_by_vip_sql).scalar()
+            service_logger.info("用户vip匹配查找结果：%s" % (is_vip_exist,))
+            if is_vip_exist == 0:
+                service_logger.info("检查是否vip等级为0：%s" % (vip,))
+                if int(vip) == 0:
+                    return True
+                else:
+                    return False
+                # find_user_info_exist_sql = "select count(*) from ucuser_info as u where u.ucid = %s " % (ucid,)
+                # is_user_info_exist = mysql_session.execute(find_user_info_exist_sql).scalar()
+                # if is_user_info_exist is None or is_user_info_exist == 0:
+                #     if vip == 0:
+                #         return True
             return True
         except Exception, err:
             service_logger.error(err.message)

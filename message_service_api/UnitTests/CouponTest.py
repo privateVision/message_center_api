@@ -77,8 +77,8 @@ class CouponFunctionTest(unittest.TestCase):
 
     def test_get_coupon_list(self):
         body_data = {
-            '_sign': 'f1dece939a405839b62d22cd9166c17a',
-            '_token': 'n9nfb13uwask8os0kwc4w0kw',
+            '_sign': '72a7ed7b0b2313c35285ce126f76e204',
+            '_token': '5yjem0xdtcg8k4wsgwksc0w40',
             '_appid': 778,
             'page': 1,
             'count': 10
