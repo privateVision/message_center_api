@@ -151,6 +151,7 @@ class  AppleController extends Controller{
             if(count($dat) == 0) throw new ApiException(ApiException::Remind,"not exists!");
 
             $order = new Orders;
+            $order->getConnection()->beginTransaction();
             $order->ucid = $ucid;
             $order->uid = $uid;
 
@@ -165,6 +166,11 @@ class  AppleController extends Controller{
             $order->status = Orders::Status_WaitPay;
             $order->paymentMethod = Orders::Way_Unknow;
             $order->hide = false;
+
+            $order->cp_uid = $this->session->cp_uid;
+            $order->user_sub_id = $this->session->user_sub_id;
+            $order->user_sub_name = $this->session->user_sub_name;
+            $order->real_fee = $order->fee;
             $order->save();
 
             $ext = new IosOrderExt;
@@ -173,14 +179,9 @@ class  AppleController extends Controller{
             $ext->zone_name = $zone_name;
             $ext->role_name = $role_name;
             $ext->transaction_id = time();
-            $oext = $ext->save();
+            $ext->save();
 
-            $order_extend = new OrderExtend;
-            $order_extend->order_id = $order->id;
-            $order_extend->real_fee = 0;
-            $order_extend->cp_uid = $this->session->cp_uid;
-            $order_extend->save();
-
+            $order->getConnection()->commit();
             $order_is_first = $order->is_first();
 
             $pay_type = $dat[0]->iap;
