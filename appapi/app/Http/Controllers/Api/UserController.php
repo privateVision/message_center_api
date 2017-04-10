@@ -27,6 +27,8 @@ class UserController extends AuthController
             'balance' => $this->user->balance,
             'gender' => $user_info && $user_info->gender ? (int)$user_info->gender : 0,
             'birthday' => $user_info && $user_info->birthday ? (string)$user_info->birthday : "",
+            'province' => $user_info && $user_info->province ? (string)$user_info->province : "",
+            'city' => $user_info && $user_info->city ? (string)$user_info->city : "",
             'address' => $user_info && $user_info->address ? (string)$user_info->address : "",
             'avatar' => $user_info && $user_info->avatar ? (string)$user_info->avatar : env('default_avatar'),
             'real_name' => $user_info && $user_info->real_name ? (string)$user_info->real_name : "",
@@ -56,12 +58,19 @@ class UserController extends AuthController
 
     public function SetAction() {
         $nickname = $this->parameter->get('nickname');
+        $province = $this->parameter->get('province');
+        $city = $this->parameter->get('city');
+        $address = $this->parameter->get('address');
         $birthday = $this->parameter->get('birthday', function($v) {
-            if(!preg_match('/^\d{4}-\d{2}-\d{2}$/', $v)) {
+            if(!preg_match('/^\d{8}$/', $v)) {
                 throw new ApiException(ApiException::Remind, "生日格式不正确，yyyy-mm-dd");
             }
 
-            $interval = date_diff(date_create($v), date_create(date('Y-m-d')));
+            $y = substr($v, 0, 4);
+            $m = substr($v, 4, 2);
+            $d = substr($v, 6, 2);
+
+            $interval = date_diff(date_create("{$y}-{$m}-{$d}"), date_create(date('Y-m-d')));
 
             if(@$interval->y > 80 || $interval->y < 1) {
                 throw new ApiException(ApiException::Remind, "生日不是一个有效的日期");
@@ -69,6 +78,37 @@ class UserController extends AuthController
 
             return $v;
         });
+
+        $user_info = UcuserInfo::from_cache($this->user->ucid);
+        if(!$user_info) {
+            $user_info = new UcuserInfo();
+            $user_info->ucid = $this->user->ucid;
+        }
+
+        if($nickname) {
+            $this->user->nickname = $nickname;
+        }
+
+        if($birthday) {
+            $user_info->birthday = $birthday;
+        }
+
+        if($province) {
+            $user_info->province = $province;
+        }
+
+        if($city) {
+            $user_info->city = $city;
+        }
+
+        if($address) {
+            $user_info->address = $address;
+        }
+
+        $this->user->save();
+        $user_info->save();
+
+        return ['result' => true];
     }
 
     public function RechargeAction() {
