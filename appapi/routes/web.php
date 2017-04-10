@@ -84,7 +84,8 @@ $app->group(['prefix' => 'api'], function () use ($app) {
     $app->post('user/set_avatar', 'Api\\UserController@SetAvatarAction');                                   // 上传用户头像
     $app->post('user/set_username', 'Api\\UserController@SetUsernameAction');                               // 设置username
     $app->post('user/set_nickname', 'Api\\UserController@SetNicknameAction');                               // 设置nickname
-
+    $app->post('user/bind_list', 'Api\\UserController@BindListAction');                                     // 获取用户绑定了哪些平台、邮箱、手机
+    $app->post('user/set', 'Api\\UserController@SetAction');                                                // 设置用户资料
 
     $app->post('user_sub/list', 'Api\\UserSubController@ListAction');                                       // 小号列表
     $app->post('user_sub/new', 'Api\\UserSubController@NewAction');                                         // 添加小号

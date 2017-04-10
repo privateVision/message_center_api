@@ -170,6 +170,11 @@ class OauthController extends Controller {
         $nickname = $this->parameter->get('nickname');
         $avatar = $this->parameter->get('avatar');
 
+        $ctype = config("common.oauth.{$type}", false);
+        if(!$ctype) {
+            throw new ApiException(ApiException::Error, '未知的第三方登陆类型，type='.$type);
+        }
+
         $openid = md5($type .'_'. $openid);
         $unionid = $unionid ? md5($type .'_'. $unionid) : '';
 
@@ -219,7 +224,7 @@ class OauthController extends Controller {
             $user_info->saveAndCache();
         }
 
-        user_log($user, $this->procedure, 'register', '【注册】通过%s注册，密码[%s]', config("common.oauth.{$type}.text", '第三方'), $user->password);
+        user_log($user, $this->procedure, 'register', '【注册】通过%s注册，密码[%s]', $ctype['text'], $user->password);
         
         return $user;
     }
