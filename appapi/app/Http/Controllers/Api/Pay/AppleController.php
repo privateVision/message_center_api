@@ -151,6 +151,7 @@ class  AppleController extends Controller{
             if(count($dat) == 0) throw new ApiException(ApiException::Remind,"not exists!");
 
             $order = new Orders;
+            $order->getConnection()->beginTransaction();
             $order->ucid = $ucid;
             $order->uid = $uid;
 
@@ -165,6 +166,11 @@ class  AppleController extends Controller{
             $order->status = Orders::Status_WaitPay;
             $order->paymentMethod = Orders::Way_Unknow;
             $order->hide = false;
+
+            $order->cp_uid = $this->session->cp_uid;
+            $order->user_sub_id = $this->session->user_sub_id;
+            $order->user_sub_name = $this->session->user_sub_name;
+            $order->real_fee = $order->fee;
             $order->save();
 
             $ext = new IosOrderExt;
@@ -173,14 +179,9 @@ class  AppleController extends Controller{
             $ext->zone_name = $zone_name;
             $ext->role_name = $role_name;
             $ext->transaction_id = time();
-            $oext = $ext->save();
+            $ext->save();
 
-            $order_extend = new OrderExtend;
-            $order_extend->order_id = $order->id;
-            $order_extend->real_fee = 0;
-            $order_extend->cp_uid = $this->session->cp_uid;
-            $order_extend->save();
-
+            $order->getConnection()->commit();
             $order_is_first = $order->is_first();
 
             $pay_type = $dat[0]->iap;
@@ -199,7 +200,6 @@ class  AppleController extends Controller{
             // 储值卡，优惠券
             $list = [];
             $result = UcusersVC::where('ucid', $this->user->ucid)->get();
-
             foreach($result as $v) {
                 $fee = $v->balance * 100;
                 if(!$fee) continue;
@@ -207,10 +207,11 @@ class  AppleController extends Controller{
                 $rule = VirtualCurrencies::from_cache($v->vcid);
                 if(!$rule) continue;
 
-                if(!$rule->is_valid($pid)) continue;
+                $e = $rule->is_valid($pid);
+                if($e === false) continue;
 
                 $list[] = [
-                    'id' => encrypt3des(json_encode(['oid' => $order->id, 'type' => 1, 'fee' => $fee, 'id' => $v->vcid])),
+                    'id' => encrypt3des(json_encode(['oid' => $order->id, 'type' => 1, 'fee' => $fee, 'id' => $v->vcid, 'e' => $e])),
                     'fee' => $fee,
                     'name' => $rule->vcname,
                 ];
@@ -224,15 +225,15 @@ class  AppleController extends Controller{
                 $fee = $rule->money;
                 if(!$fee) continue;
 
-                if(!$rule->is_valid($pid, $order->fee, $order_is_first)) continue;
+                $e = $rule->is_valid($pid, $order->fee, $order_is_first);
+                if($e === false) continue;
 
                 $list[] = [
-                    'id' => encrypt3des(json_encode(['oid' => $order->id, 'type' => 2, 'fee' => $fee, 'id' => $v->id])),
+                    'id' => encrypt3des(json_encode(['oid' => $order->id, 'type' => 2, 'fee' => $fee, 'id' => $v->id, 'e' => $e])),
                     'fee' => $fee,
                     'name' => $rule->name,
                 ];
             }
-
             $user_info = UcuserInfo::from_cache($this->user->ucid);
 
             return [

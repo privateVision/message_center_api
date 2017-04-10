@@ -397,7 +397,8 @@ function http_request($url, $data, $is_post = true) {
         curl_setopt($ch, CURLOPT_POST, true);
         curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
     }
-
+    curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 60); //超时限制
+    curl_setopt($ch, CURLOPT_TIMEOUT, 60);
     $res = curl_exec($ch);
     curl_close($ch);
 
