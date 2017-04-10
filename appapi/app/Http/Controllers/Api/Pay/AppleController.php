@@ -200,7 +200,6 @@ class  AppleController extends Controller{
             // 储值卡，优惠券
             $list = [];
             $result = UcusersVC::where('ucid', $this->user->ucid)->get();
-
             foreach($result as $v) {
                 $fee = $v->balance * 100;
                 if(!$fee) continue;
@@ -208,10 +207,11 @@ class  AppleController extends Controller{
                 $rule = VirtualCurrencies::from_cache($v->vcid);
                 if(!$rule) continue;
 
-                if(!$rule->is_valid($pid)) continue;
+                $e = $rule->is_valid($pid);
+                if($e === false) continue;
 
                 $list[] = [
-                    'id' => encrypt3des(json_encode(['oid' => $order->id, 'type' => 1, 'fee' => $fee, 'id' => $v->vcid])),
+                    'id' => encrypt3des(json_encode(['oid' => $order->id, 'type' => 1, 'fee' => $fee, 'id' => $v->vcid, 'e' => $e])),
                     'fee' => $fee,
                     'name' => $rule->vcname,
                 ];
@@ -225,15 +225,15 @@ class  AppleController extends Controller{
                 $fee = $rule->money;
                 if(!$fee) continue;
 
-                if(!$rule->is_valid($pid, $order->fee, $order_is_first)) continue;
+                $e = $rule->is_valid($pid, $order->fee, $order_is_first);
+                if($e === false) continue;
 
                 $list[] = [
-                    'id' => encrypt3des(json_encode(['oid' => $order->id, 'type' => 2, 'fee' => $fee, 'id' => $v->id])),
+                    'id' => encrypt3des(json_encode(['oid' => $order->id, 'type' => 2, 'fee' => $fee, 'id' => $v->id, 'e' => $e])),
                     'fee' => $fee,
                     'name' => $rule->name,
                 ];
             }
-
             $user_info = UcuserInfo::from_cache($this->user->ucid);
 
             return [
