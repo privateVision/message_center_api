@@ -52,7 +52,7 @@ def v4_get_app_zone_list(app_id=None):
     zone_list = []
     from run import mysql_session
     find_users_by_user_type_sql = "select distinct(zoneId), zoneName from ucuser_role_%s as r where r.pid = %s " \
-                                  % (app_id, app_id)
+                                  % (int(int(app_id)/30), app_id)
     try:
         origin_list = mysql_session.execute(find_users_by_user_type_sql)
         for zone in origin_list:
