@@ -7,6 +7,7 @@ use App\Parameter;
 
 use App\Redis;
 use App\Model\Ucuser;
+use App\Model\_56GameBBS\Members as Member;
 
 class UserController extends Controller {
 
@@ -14,7 +15,7 @@ class UserController extends Controller {
 
     public function getLoginUser() {
         $username = $this->parameter->tough('username');
-        $password = $this->parameter->tough('password');
+        $password = $this->parameter->tough('password', 'password');
         $device_id = $this->parameter->get('_device_id');
 
         // --------- 登陆错误限制
@@ -28,11 +29,45 @@ class UserController extends Controller {
         $rediskey_limit = 'login_limit_' . $key;
 
         if(Redis::get($rediskey_lock)) {
-            throw new ApiException(ApiException::Remind, "操作太频繁，请稍候重试");
+            throw new ApiException(ApiException::Remind, "错误次数太多，请稍后再试");
         }
         // --------- end
+        
+        // todo:数据迁移
+        $user = Ucuser::where('uid', $username)->orWhere('mobile', $username)->orWhere('email', $username)->first();
+        do {
+            if($user && $user->password) break;
 
-        $user = Ucuser::where('uid', $username)->orWhere('mobile', $username)->first();
+            $member = Member::where('username', $username)->orWhere('email', $username)->first();
+            if(!$member) break;
+
+            $user = Ucuser::from_cache($member->uid);
+            if($user) {
+                if(!$user->uid) $user->uid = $member->username;
+                if(!$user->email) $user->email = $member->email;
+                if(!$user->nickname) $user->nickname = $member->username;
+                if(!$user->regip) $user->regip = $member->regip;
+                if(!$user->regdate) $user->regdate = $member->regdate;
+                if(!$user->password) {
+                    $user->password = $member->password;
+                    $user->salt = $member->salt;
+                }
+
+                $user->save();
+            } else {
+                $user = new Ucuser;
+                $user->uid = $member->username;
+                $user->email = $member->email ?: ($member->username . '@anfan.com');
+                $user->nickname = $member->username;
+                $user->password =$member->password;
+                $user->salt =$member->salt;
+                $user->regip = $member->regip;
+                $user->regdate = $member->regdate;
+                $user->rid = $this->parameter->tough('_rid');
+                $user->pid = $this->parameter->tough('_appid');
+                $user->save();
+            }
+        } while(false);
 
         if(!$user || !$user->checkPassword($password)) {
             // --------- 错误计数

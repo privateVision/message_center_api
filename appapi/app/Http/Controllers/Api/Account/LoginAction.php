@@ -78,6 +78,7 @@ trait LoginAction {
         $session->rid = $rid;
         $session->ucid = $user->ucid;
         $session->user_sub_id = $user_sub->id;
+        $session->user_sub_name = $user_sub->name;
         $session->cp_uid = $user_sub->cp_uid;
         $session->token = uuid($user->ucid);
         $session->expired_ts = time() + 2592000; // 1个月有效期

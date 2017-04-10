@@ -1,5 +1,15 @@
 <?php
 return [
+    'storage_cdn' => [
+        // doc: http://developer.qiniu.com/kodo/sdk/1241/php
+        'qiniu' => [
+            'access_key' => 'VN1T4HyOswCiFxhsg92BrHU9_oCxmVfvz8PWPW8l',
+            'secret_key' => 'LUjILsCuVLX99qMgI8fpPFKIGNgceWMioUfS1_nQ',
+            'base_url' => 'http://avatar.anfeng.com/',
+            'bucket' => 'anfeng-avatar',
+        ]
+    ],
+
     'oauth' => [
         'weixin' => ['text' => '微信'],
         'qq' => ['text' => 'QQ'],

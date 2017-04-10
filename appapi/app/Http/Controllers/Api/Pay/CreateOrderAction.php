@@ -6,7 +6,6 @@ use App\Exceptions\ApiException;
 use App\Parameter;
 use App\Model\UcuserInfo;
 use App\Model\Orders;
-use App\Model\OrderExtend;
 use App\Model\UcusersVC;
 use App\Model\VirtualCurrencies;
 use App\Model\ZyCouponLog;
@@ -27,14 +26,12 @@ trait CreateOrderAction {
         $order->createIP = $this->request->ip();
         $order->status = Orders::Status_WaitPay;
         $order->paymentMethod = '';
+        $order->cp_uid = $this->session->cp_uid;
+        $order->user_sub_id = $this->session->user_sub_id;
+        $order->user_sub_name = $this->session->user_sub_name;
         $this->onCreateOrder($order);
+        $order->real_fee = $order->fee;
         $order->save();
-
-        $order_extend = new OrderExtend;
-        $order_extend->order_id = $order->id;
-        $order_extend->real_fee = 0;
-        $order_extend->cp_uid = $this->session->cp_uid;
-        $order_extend->save();
 
         $order->getConnection()->commit();
 
@@ -42,6 +39,7 @@ trait CreateOrderAction {
         
         // 储值卡，优惠券
         $list = [];
+
         $result = UcusersVC::where('ucid', $this->user->ucid)->get();
         foreach($result as $v) {
             $fee = $v->balance * 100;
@@ -50,10 +48,11 @@ trait CreateOrderAction {
             $rule = VirtualCurrencies::from_cache($v->vcid);
             if(!$rule) continue;
 
-            if(!$rule->is_valid($pid)) continue;
+            $e = $rule->is_valid($pid);
+            if($e === false) continue;
 
             $list[] = [
-                'id' => encrypt3des(json_encode(['oid' => $order->id, 'type' => 1, 'fee' => $fee, 'id' => $v->vcid])),
+                'id' => encrypt3des(json_encode(['oid' => $order->id, 'type' => 1, 'fee' => $fee, 'id' => $v->vcid, 'e' => $e])),
                 'fee' => $fee,
                 'name' => $rule->vcname,
             ];
@@ -67,10 +66,11 @@ trait CreateOrderAction {
             $fee = $rule->money;
             if(!$fee) continue;
             
-            if(!$rule->is_valid($pid, $order->fee, $order_is_first)) continue;
+            $e = $rule->is_valid($pid, $order->fee, $order_is_first);
+            if($e === false) continue;
 
             $list[] = [
-                'id' => encrypt3des(json_encode(['oid' => $order->id, 'type' => 2, 'fee' => $fee, 'id' => $v->id])),
+                'id' => encrypt3des(json_encode(['oid' => $order->id, 'type' => 2, 'fee' => $fee, 'id' => $v->id, 'e' => $e])),
                 'fee' => $fee,
                 'name' => $rule->name,
             ];

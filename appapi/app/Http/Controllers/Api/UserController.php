@@ -45,10 +45,15 @@ class UserController extends AuthController
 
         $offset = max(0, ($page - 1) * $limit);
 
-        $order = $this->user->orders()->where('vid', '<', 100)->where('status', '!=', Orders::Status_WaitPay)->where('hide', 0)->take($limit)->skip($offset)->get();
+        $order = Orders::where('ucid', $this->user->ucid);
+        $order = $order->where('hide', 0);
+        $order = $order->where('status', '!=', Orders::Status_WaitPay);
+        $order = $order->orderBy('id', 'desc');
+        $order = $order->take($limit)->skip($offset)->get();
 
         $data = [];
         foreach($order as $v) {
+            if(!$v->is_f()) continue;
             $data[] = [
                 'order_id' => $v->sn,
                 'fee' => $v->fee,
@@ -68,10 +73,15 @@ class UserController extends AuthController
 
         $offset = max(0, ($page - 1) * $limit);
 
-        $order = $this->user->orders()->where('vid', '>=', 100)->where('status', '!=', Orders::Status_WaitPay)->where('hide', 0)->take($limit)->skip($offset)->get();
+        $order = Orders::where('ucid', $this->user->ucid);
+        $order = $order->where('hide', 0);
+        $order = $order->where('status', '!=', Orders::Status_WaitPay);
+        $order = $order->orderBy('id', 'desc');
+        $order = $order->take($limit)->skip($offset)->get();
 
         $data = [];
         foreach($order as $v) {
+            if($v->is_f()) continue;
             $data[] = [
                 'order_id' => $v->sn,
                 'fee' => $v->fee,
@@ -307,6 +317,7 @@ class UserController extends AuthController
         $unionid = $this->parameter->get('unionid');
         $nickname = $this->parameter->get('nickname');
         $avatar = $this->parameter->get('avatar');
+        $forced = $this->parameter->get('forced');
 
         $count = UcuserOauth::where('type', $type)->where('ucid', $this->user->ucid)->count();
         if($count > 0) {
@@ -326,28 +337,37 @@ class UserController extends AuthController
             $user_oauth = UcuserOauth::from_cache_openid($openid);
         }
 
-        if(!$user_oauth) {
+        if($user_oauth) {
+            if($user_oauth->ucid == $this->user->ucid) {
+                return ['result' => true];
+            }
+
+            if($forced == 0) {
+                throw new ApiException(ApiException::AlreadyBindOauthOther, config("common.oauth.{$type}.text", '第三方') . "已经绑定了其它账号");
+            }
+
+            $user_oauth->ucid = $this->user->ucid;
+            $user_oauth->save();
+        } else {
             $user_oauth = new UcuserOauth;
             $user_oauth->ucid = $this->user->ucid;
             $user_oauth->type = $type;
             $user_oauth->openid = $openid;
             $user_oauth->unionid = $unionid;
             $user_oauth->saveAndCache();
+        }
 
-            if($avatar) {
-                $user_info = UcuserInfo::from_cache($this->user->ucid);
-                if(!$user_info) {
-                    $user_info = new UcuserInfo;
-                    $user_info->ucid = $this->user->ucid;
-                }
-
-                if(!$user_info->avatar) {
-                    $user_info->avatar = $avatar;
-                    $user_info->saveAndCache();
-                }
+        if($avatar) {
+            $user_info = UcuserInfo::from_cache($this->user->ucid);
+            if(!$user_info) {
+                $user_info = new UcuserInfo;
+                $user_info->ucid = $this->user->ucid;
             }
-        } elseif($user_oauth->ucid != $this->user->ucid) {
-            throw new ApiException(ApiException::Remind, config("common.oauth.{$type}.text", '第三方') . "已经绑定了其它账号");
+
+            if(!$user_info->avatar) {
+                $user_info->avatar = $avatar;
+                $user_info->saveAndCache();
+            }
         }
 
         user_log($this->user, $this->procedure, 'bind_oauth', '【绑定平台帐号】%s', config("common.oauth.{$type}.text", '第三方'));
@@ -367,6 +387,76 @@ class UserController extends AuthController
 
         user_log($this->user, $this->procedure, 'unbind_oauth', '【解绑平台帐号】%s', config("common.oauth.{$type}.text", '第三方'));
 
+        return ['result' => true];
+    }
+
+    public function SetAvatarAction() {
+        $type = $this->parameter->tough('type');
+        $avatar = $this->parameter->tough('avatar');
+
+        $user_info = UcuserInfo::from_cache($this->user->ucid);
+        if(!$user_info) {
+            $user_info = new UcuserInfo;
+            $user_info->ucid = $this->user->ucid;
+        }
+
+        $avatar_url = null;
+
+        if($type == 'url') {
+            $avatar_url = $avatar;
+        } elseif ($type == 'bindata') {
+            $filename = sprintf('avatar/%d.png', $this->user->ucid);
+            $filepath = base_path('storage/uploads/') . $filename;
+            $avatar_data = base64_decode($avatar);
+
+            $fp = fopen($filepath, 'wb');
+            fwrite($fp, $avatar_data);
+            fclose($fp);
+
+            try {
+                $avatar_url = upload_to_cdn($filename, $filepath);
+            } catch(\App\Exceptions\Exception $e) {
+                throw new ApiException(ApiException::Remind, '头像上传失败：' . $e->getMessage());
+            }
+        }
+
+        if($avatar_url) {
+            $user_info->avatar = $avatar_url;
+            $user_info->save();
+        }
+
+        return [
+            'result' => $avatar_url ? true : false,
+            'avatar' => $avatar_url,
+        ];
+    }
+
+    public function SetUsernameAction() {
+        $username = $this->parameter->tough('username');
+
+        $user = Ucuser::where('uid', $username)->orWhere('mobile', $username)->orWhere('email', $username)->first();
+        if($user) {
+            if($user->ucid != $this->user->ucid) {
+                throw new ApiException(ApiException::Remind, '设置失败，用户名已被占用');
+            }
+        } else {
+            $this->user->uid = $username;
+            $this->user->save();
+        }
+
+        return ['result' => true];
+    }
+
+    public function SetNicknameAction() {
+        $nickname = $this->parameter->tough('nickname');
+        $this->user->nickname = $nickname;
+        $this->user->save();
+
+        return ['result' => true];
+    }
+
+    public function EventAction() {
+        $event = $this->parameter->tough('event');
         return ['result' => true];
     }
 }

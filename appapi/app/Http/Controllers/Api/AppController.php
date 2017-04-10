@@ -5,24 +5,64 @@ use App\Exceptions\ApiException;
 use Illuminate\Http\Request;
 use App\Parameter;
 use App\Model\ProceduresExtend;
+use App\Model\Log\DeviceApps;
+use App\Model\Log\DeviceInfo;
 
 class AppController extends Controller
 {
     public function InitializeAction() {
         $pid = $this->parameter->tough('_appid');
         $rid = $this->parameter->tough('_rid');
-        $device_id = $this->parameter->tough('_device_id');
+        $imei = $this->parameter->get('_imei');
+        $uuid = $this->parameter->tough('_device_id');
+        $apps = $this->parameter->get('device_apps');
+        $info = $this->parameter->tough('device_info');
         $app_version = $this->parameter->tough('app_version');
+
+        $_apps = json_decode($apps, true);
+        if($_apps) {
+            $device_apps = new DeviceApps;
+            $device_apps->imei = $imei;
+            $device_apps->uuid = $uuid;
+            $device_apps->apps = $_apps;
+            $device_apps->asyncSave();
+        } else {
+            log_error('report_device_apps_parse_error', null, '上报的DeviceApps格式无法解析');
+        }
+
+        $_info = json_decode($info, true);
+        if($_info) {
+            $device_info = new DeviceInfo;
+            $device_info->imei = $imei;
+            $device_info->uuid = $uuid;
+            $device_info->info = $_info;
+            $device_info->asyncSave();
+        } else {
+            log_error('report_device_info_parse_error', null, '上报的DeviceInfo格式无法解析');
+        }
 
         // config
         $config = ProceduresExtend::from_cache($pid);
         if(!$config) {
-            // todo: 后台添加procedures的同时把procedures_extend也加上就不用写这里了
             $config = new ProceduresExtend;
             $config->pid = $pid;
-            $config->save();
-
-            $config = ProceduresExtend::from_cache($pid);
+            $config->service_qq = env('service_qq');
+            $config->service_page = env('service_page');
+            $config->service_phone = env('service_phone');
+            $config->service_share = env('service_share');
+            $config->heartbeat_interval = 2000;
+            $config->bind_phone_need = true;
+            $config->bind_phone_enforce = false;
+            $config->bind_phone_interval = 259200000;
+            $config->real_name_need = false;
+            $config->real_name_enforce = false;
+            $config->logout_img = env('logout_img');
+            $config->logout_redirect = env('logout_redirect');
+            $config->logout_inside = true;
+            $config->allow_num = 1;
+            $config->create_time = time();
+            $config->update_time = time();
+            $config->saveAndCache();
         }
 
         // check update
@@ -36,7 +76,7 @@ class AppController extends Controller
             );
         }
 
-        $oauth_params = sprintf('appid=%d&rid=%d&device_id=%s', $pid, $rid, $device_id);
+        $oauth_params = sprintf('appid=%d&rid=%d&device_id=%s', $pid, $rid, $uuid);
         $oauth_qq = env('oauth_url_qq');
         $oauth_qq .= (strpos($oauth_qq, '?') === false ? '?' : '&') . $oauth_params;
         $oauth_weixin = env('oauth_url_weixin');
@@ -105,4 +145,31 @@ class AppController extends Controller
     public function UuidAction() {
         return ['uuid' => uuid()];
     }
+/*
+    public function ReportAppsAction() {
+        $imei = $this->parameter->tough('imei');
+        $uuid = $this->parameter->tough('_device_id');
+        $apps = $this->parameter->tough('apps');
+
+        $device_apps = new DeviceApps;
+        $device_apps->imei = $imei;
+        $device_apps->uuid = $uuid;
+        $device_apps->apps = $apps;
+        $device_apps->save();
+
+        return ['result' => true];
+    }
+
+    public function ReportDeviceInfoAction() {
+        $imei = $this->parameter->tough('imei');
+        $uuid = $this->parameter->tough('_device_id');
+
+        $device_info = new DeviceInfo;
+        $device_info->imei = $imei;
+        $device_info->uuid = $uuid;
+        $device_info->save();
+
+        return ['result' => true];
+    }
+*/
 }

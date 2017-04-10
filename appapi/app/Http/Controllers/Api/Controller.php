@@ -18,6 +18,8 @@ class Controller extends \App\Controller
 		try {
 			$data = $request->all();
 
+			log_info('request', $data, $request->path());
+
 			$this->parameter = new Parameter($data);
 			$_appid = $this->parameter->tough('_appid');
 			$_sign = $this->parameter->tough('_sign');
@@ -37,8 +39,6 @@ class Controller extends \App\Controller
 			if($_sign !== $sign) {
 				throw new ApiException(ApiException::Error, "签名验证失败");
 			}
-
-			log_info('request', $data, $request->path());
 
 			// --------- 平台登陆特殊处理 ---------
 			$__appid = $this->parameter->get('__appid');
@@ -69,9 +69,8 @@ class Controller extends \App\Controller
 			return array('code' => $e->getCode(), 'msg' => $e->getMessage(), 'data' => null);
 		} catch (\App\Exceptions\Exception $e) {
 			log_warning('Exception', ['code' => $e->getCode()], $e->getMessage());
-			return array('code' => ApiException::Error, 'msg' => $e->getMessage(), 'data' => null);
+			return array('code' => ApiException::Remind, 'msg' => $e->getMessage(), 'data' => null);
 		} catch(\Exception $e) {
-			echo $e->getMessage();
 			log_error('error', ['message' => $e->getMessage(), 'code' => $e->getCode(), 'file' => $e->getFile(), 'line' => $e->getLine()]);
 			return array('code' => ApiException::Error, 'msg' => 'system error', 'data' => null);
 		}

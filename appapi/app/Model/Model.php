@@ -6,7 +6,7 @@ use App\Redis;
 
 abstract class Model extends Eloquent
 {
-    protected $connection = 'anfanapi';
+    protected $connection = 'default';
 
 	const CREATED_AT = null;
     const UPDATED_AT = null;
@@ -150,6 +150,16 @@ abstract class Model extends Eloquent
     public function save(array $options = []) {
         $this->is_delay_save = false;
         return parent::save($options);
+    }
+
+    /**
+     * 解决increment和decrement方法不会触发更新缓存的替代方案
+     * @return [type] [description]
+     */
+    public function updateCache() {
+        $rediskey_2 = $this->table .'_'. $this->getKey();
+        Redis::set($rediskey_2, json_encode($this));
+        return $this;
     }
 
     public function __destruct() {

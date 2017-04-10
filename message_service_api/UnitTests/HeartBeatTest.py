@@ -11,11 +11,11 @@ class HeartBeatTest(unittest.TestCase):
 
     def test_heart_beat_profiling(self):
         body_data = {
-            '_sign': '1cc33dc706b7497f97f08213d2435ef0',
+            '_sign': '0223838a96441c934b71c357b801332b',
             '_appid': 2,
-            '_token': '70609a34090b9010b4bbe8eabd56a7a4'
+            '_token': '4oz3up7kqscgwwk0c4s0ck4og'
         }
-        r = requests.post('http://localhost:5000/msa/v4/app/heartbeat', data=body_data)
+        r = requests.post('http://dev.sdkapi.com/msa/v4/app/heartbeat', data=body_data)
         print r.text
         self.assertEqual(r.status_code, 200)
 

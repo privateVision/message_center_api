@@ -8,6 +8,7 @@ from MiddleWare import service_logger
 from Service.UsersService import get_ucid_by_access_token, sdk_api_request_check, get_username_by_ucid, \
     get_game_info_by_appid
 from Utils.SystemUtils import log_exception
+import math
 
 gift_controller = Blueprint('GiftController', __name__)
 
@@ -46,7 +47,8 @@ def v4_sdk_get_gifts_list():
                             "where d.code<>'' or (d.num>0 and d.code='')" % (ucid, game['id'], now, SDK_PLATFORM_ID)
     unget_gifts_count = mysql_cms_session.execute(unget_gifts_count_sql).scalar()
 
-    unget_gifts_page_list_sql = "select * from (select a.id,a.gameId,a.gameName,a.name,a.gift,a.isAfReceive," \
+    unget_gifts_page_list_sql = "select * from (select a.id,a.gameId,a.gameName,a.name,a.gift," \
+                                "a.isAfReceive, a.isBindPhone," \
                                 "a.content,a.label,a.uid,a.publishTime,a.failTime,a.createTime,a.updateTime,a.status," \
                                 "b.num, b.assignNum, ifnull(c.code,'') as code,if(c.code<>'', '1', '0') " \
                                 "as is_get from cms_gameGift as a join cms_gameGiftAssign as b on a.id=b.giftId " \
@@ -71,7 +73,8 @@ def v4_sdk_get_gifts_list():
             'num': gift['assignNum'],
             'total': int(gift['assignNum'])+int(gift['num']),
             'is_get': gift['is_get'],
-            'is_af_receive': gift['isAfReceive']
+            'is_af_receive': gift['isAfReceive'],
+            'is_bind_phone': gift['isBindPhone']
         }
         data_list.append(info)
     data = {
@@ -109,13 +112,58 @@ def v4_sdk_user_get_gift():
     game_id = game['id']
     find_game_gift_info_sql = "select * from cms_gameGift where id= %s limit 1" % (gift_id,)
     game_gift_info = mysql_cms_session.execute(find_game_gift_info_sql).fetchone()
-    if game_gift_info:
+    if game_gift_info is not None:
         if game_gift_info['gameId'] != game_id or game_gift_info['status'] != 'normal':
             return response_data(200, 0, '礼包不存在或者礼包已经过期')
         if game_gift_info['assignNum'] < 1:
             return response_data(200, 0, '礼包被领取完了')
         if game_gift_info['failTime'] < int(time.time()):
             return response_data(200, 0, '礼包已经过期了')
+        if game_gift_info['isBindPhone'] == 1:  # 需要绑定手机
+            from run import mysql_session
+            find_users_mobile_sql = "select mobile from ucusers as u where u.ucid = %s limit 1" % (ucid,)
+            try:
+                user_mobile_info = mysql_session.execute(find_users_mobile_sql).fetchone()
+                if user_mobile_info is not None:
+                    if user_mobile_info['mobile'] == '':
+                        return response_data(200, 0, '该礼包需要绑定手机的用户才能领取，请先绑定手机!')
+            except Exception, err:
+                service_logger.error(err.message)
+                mysql_session.rollback()
+            finally:
+                mysql_session.close()
+        if game_gift_info['memberLevel'] is not None:  # 有用户等级要求
+            level_list = game_gift_info['memberLevel'].split(',')
+            from run import mysql_session
+            find_users_vip_sql = "select vip from ucuser_info as u where u.ucid = %s limit 1" % (ucid,)
+            try:
+                user_vip_info = mysql_session.execute(find_users_vip_sql).fetchone()
+                if user_vip_info is not None:
+                    if user_vip_info['vip'] not in level_list:
+                        return response_data(200, 0, '该礼包需要特定等级的用户才可领取，您的等级不符合要求！')
+            except Exception, err:
+                service_logger.error(err.message)
+                mysql_session.rollback()
+            finally:
+                mysql_session.close()
+        if game_gift_info['isSpecify'] == 1:  # 是否指定用户领取
+            from run import mysql_session
+            find_game_gift_user_list_sql = "select value from cms_gameGiftSpecify where giftId= %s" \
+                                           % (gift_id,)
+            specify_user_list = mysql_cms_session.execute(find_game_gift_user_list_sql).fetchall()
+            find_users_uid_sql = "select uid from ucusers as u where u.ucid = %s limit 1" % (ucid,)
+            try:
+                user_uid_info = mysql_session.execute(find_users_uid_sql).fetchone()
+                if user_uid_info is not None:
+                    _uid = user_uid_info['uid']
+                    if _uid not in specify_user_list:
+                        return response_data(200, 0, '该礼包需要在指定的用户中才可领取！')
+            except Exception, err:
+                service_logger.error(err.message)
+                mysql_session.rollback()
+            finally:
+                mysql_cms_session.close()
+                mysql_session.close()
         # 检查领取记录
         find_game_gift_log_count_sql = "select count(*) from cms_gameGiftLog where gameId = %s " \
                                        "and giftId = %s and platformId = %s and forTime >= %s and forIp = '%s' " \

@@ -11,7 +11,7 @@ use App\Model\UcuserInfo;
 class AuthController extends Controller {
 
 	protected $user = null;
-	protected $ucuser_info = null;
+	protected $user_info = null;
 	protected $session = null;
 
 	public function before() {

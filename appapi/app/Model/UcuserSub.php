@@ -13,7 +13,7 @@ class UcuserSub extends Model
         $ucid = @$this->ucid ?: ($this->slice ?: 0);
 
         if($ucid) {
-            return $this->table .'_'. 0;//($ucid / 500000);
+            return $this->table .'_'. intval($ucid / 500000);
         }
 
         return $this->table;

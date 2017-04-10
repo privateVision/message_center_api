@@ -303,7 +303,7 @@ def get_stored_value_card_list(ucid, start_index, end_index):
                     'lock_app': card['lockApp'],
                     'desc': card['descript'],
                     'type': 1,
-                    'fee': card['balance'],
+                    'fee': card['balance'] * 100,  # 单位由元转成分
                     'unlimited_time': False,
                     'user_condition': '',
                     'time_out': False,
@@ -331,7 +331,7 @@ def get_user_coupons_by_game(ucid, appid, start_index, end_index):
     now = int(time.time())
     get_user_coupon_sql = "select log.coupon_id from zy_coupon_log as log join zy_coupon as coupon " \
                           "on log.coupon_id=coupon.id where coupon.status='normal' and log.is_used = 0 " \
-                          "and log.ucid=%s and log.pid=%s " \
+                          "and log.ucid=%s and ( (log.pid=0) or (log.pid=%s) )" \
                           "and ((coupon.is_time = 0) or ((coupon.is_time = 1) " \
                           "and coupon.start_time <= %s  " \
                           "and coupon.end_time >= %s)) order by log.id desc limit %s, %s" \
@@ -341,6 +341,11 @@ def get_user_coupons_by_game(ucid, appid, start_index, end_index):
     for coupon in coupon_list:
         get_user_coupon_sql = "select * from zy_coupon where id=%s limit 1" % (coupon['coupon_id'])
         coupon_info = mysql_session.execute(get_user_coupon_sql).fetchone()
+        game = coupon_info['game']
+        desc = "所有游戏"
+        game_info = get_game_info_by_appid(game)
+        if game_info is not None:
+            desc = game_info['name']
         if coupon_info is not None:
             info = {
                 'id': coupon_info['id'],
@@ -348,23 +353,43 @@ def get_user_coupons_by_game(ucid, appid, start_index, end_index):
                 'type': 2,
                 'start_time': coupon_info['start_time'],
                 'end_time': coupon_info['end_time'],
-                'desc': coupon_info['info'],
+                'desc': desc,
                 'fee': coupon_info['money'],
                 'method': coupon_info['method'],
-                'user_condition': "满%s可用" % (coupon_info['full'],),
+                'user_condition': "满%s可用" % (coupon_info['full']/100,),
                 'lock_app': '',
                 'supportDivide': 0
             }
+            if coupon_info['full'] == 0:
+                info['user_condition'] = '通用'
             unlimited_time = True
-            if coupon_info['is_time'] == 0:
+            if coupon_info['is_time'] == 1:
                 unlimited_time = False
             time_out = False
-            if coupon_info['end_time'] < now:
+            if coupon_info['is_time'] == 1 and coupon_info['end_time'] < now:
                 time_out = True
             info['unlimited_time'] = unlimited_time
             info['time_out'] = time_out
             new_coupon_list.append(info)
     return new_coupon_list
+
+
+#  用户领取卡券的逻辑
+def user_get_coupon(ucid=None, coupon_id=None, app_id=None):
+    from run import mysql_session
+    now = int(time.time())
+    get_coupon_info_sql = "select game, users_type, vip_user, specify_user from zy_coupon where status = 'normal' " \
+                          "and ( (is_time=0) or (is_time=1 and start_time <= %s and end_time >= %s) ) and id = %s " \
+                          % (now, now, coupon_id)
+    coupon_info = mysql_session.execute(get_coupon_info_sql).fetchone()
+    if coupon_info is not None:
+        if coupon_info['game'] == 0:  # 卡券适用全部游戏
+            pass
+        else:
+            if coupon_info['game'] == app_id:
+                pass
+            return False
+    return False
 
 
 # 根据appid获取游戏信息
@@ -463,6 +488,24 @@ def set_message_readed(ucid=None, message_type=None, message_id=None):
         user_read_message_log.save()
 
 
+#  根据ucid获取用户名、vip等级、电话等信息
+def get_user_vip_and_mobile_info_by_ucid(ucid=None):
+    pass
+
+
+def get_user_user_type_and_vip_and_uid_by_ucid(ucid=None):
+    from run import mysql_session
+    find_users_type_info_sql = "select u.ucid, u.uid, r.rtype from ucusers as u, retailers as r where u.rid = r.rid " \
+                                  "and u.ucid = %s" % (ucid,)
+    user_type_info = mysql_session.execute(find_users_type_info_sql).fetchone()
+    if user_type_info is not None:
+        find_users_vip_info_sql = "select vip from ucuser_info as u where u.ucid = %s" % (ucid,)
+        user_vip_info = mysql_session.execute(find_users_vip_info_sql).fetchone()
+        if user_vip_info is not None:
+            return user_type_info['rtype'], user_vip_info['vip'], user_type_info['uid']
+    return None
+
+
 # sdk api 请求通用装饰器
 def sdk_api_request_check(func):
     @wraps(func)
@@ -492,7 +535,7 @@ def sdk_api_request_check(func):
         is_sign_true = sdk_api_check_sign(request)
         if is_sign_true is True:
             ucid = get_ucid_by_access_token(request.form['_token'])
-            interval = 2
+            interval = 2000
             if 'interval' in request.form:
                 interval = request.form['interval']
             if ucid:

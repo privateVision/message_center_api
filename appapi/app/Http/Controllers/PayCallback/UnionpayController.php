@@ -1,11 +1,9 @@
 <?php //银联技术文档地址：https://open.unionpay.com/ajweb/product/detail?id=3
-namespace App\Controller\External;
+namespace App\Http\Controllers\PayCallback;
 
-use App\Exceptions\PayCallbackException;
 use Illuminate\Http\Request;
-use App\Model\Orders;
 
-class UnionpayController extends \App\Controller
+class UnionpayController extends Controller
 {
 
     protected function getData(Request $request) {
@@ -16,11 +14,11 @@ class UnionpayController extends \App\Controller
         return $data['orderId'];
     }
 
-    protected function getTradeOrderNo($data, Orders $order) {
-        return $data['trade_no'];
+    protected function getTradeOrderNo($data, $order) {
+        return $data['queryId'];
     }
 
-    protected function verifySign($data, Orders $order) {
+    protected function verifySign($data, $order) {
         $config = config('common.payconfig.unionpay');
 
         $sign = $data['signature'];
@@ -40,12 +38,12 @@ class UnionpayController extends \App\Controller
         return openssl_verify($params_sha1x16, $sign, $public_key, OPENSSL_ALGO_SHA1);
     }
 
-    protected function handler($data, Orders  $order){
+    protected function handler($data, $order){
         return true;
     }
 
     // 商户返回码为200时，银联判定为通知成功，其他返回码为通知失败。
-    protected function onComplete($data, Orders $order, $isSuccess) {
+    protected function onComplete($data, $order, $isSuccess) {
         return http_response_code(200);
     }
 }

@@ -1,11 +1,9 @@
 <?php
-namespace App\Controller\External;
+namespace App\Http\Controllers\PayCallback;
 
-use App\Exceptions\PayCallbackException;
 use Illuminate\Http\Request;
-use App\Model\Orders;
 
-class AlipayController extends \App\Controller
+class AlipayController extends Controller
 {
     protected function getData(Request $request) {
         return $_POST;
@@ -15,11 +13,11 @@ class AlipayController extends \App\Controller
         return $data['out_trade_no'];
     }
 
-    protected function getTradeOrderNo($data, Orders $order) {
+    protected function getTradeOrderNo($data, $order) {
         return $data['trade_no'];
     }
 
-    protected function verifySign($data, Orders $order) {
+    protected function verifySign($data, $order) {
         $config = config('common.payconfig.alipay');
 
         $sign = $data['sign'];
@@ -34,18 +32,18 @@ class AlipayController extends \App\Controller
         }
         $str = trim($str, '&');
         
-        return rsaVerify($str, $config['PubKey'], $sign);
+        return static::rsaVerify($str, $config['PubKey'], $sign);
     }
 
-    protected function handler($data, Orders  $order){
-        return true;
+    protected function handler($data, $order){
+        return $data['trade_status'] == 'TRADE_SUCCESS';
     }
 
-    protected function onComplete($data, Orders $order, $isSuccess) {
+    protected function onComplete($data, $order, $isSuccess) {
         return $isSuccess ? 'success' : 'fail';
     }
 
-    protected function rsaVerify($data, $ali_public_key_path, $sign)  {
+    protected static function rsaVerify($data, $ali_public_key_path, $sign)  {
         $pubKey = file_get_contents($ali_public_key_path);
         $res = openssl_get_publickey($pubKey);
         $result = (bool)openssl_verify($data, base64_decode($sign), $res);

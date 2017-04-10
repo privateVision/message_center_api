@@ -5,86 +5,79 @@ class ProceduresExtend extends Model
 {
 	protected $table = 'procedures_extend';
 	protected $primaryKey = 'pid';
+	protected static $_instances = [];
 
 	public function procedures() {
 		return  $this->belongsTo(Procedures::class, 'pid', 'pid');
 	}
 
 	public function getBindPhoneNeedAttribute() {
-		$value = @$this->attributes['bind_phone_need'];
-		return ($value === null || $value === "") ? true : $value == 1;
+		$value = trim(@$this->attributes['bind_phone_need']);
+		return $value !== '' ? (bool)$value : true;
 	}
 
 	public function getBindPhoneEnforceAttribute() {
-		$value = @$this->attributes['bind_phone_enforce'];
-		return ($value === null || $value === "") ? false : $value == 1;
+		$value = trim(@$this->attributes['bind_phone_enforce']);
+		return $value !== '' ? (bool)$value : false;
 	}
 
 	public function getRealNameNeedAttribute() {
-		$value = @$this->attributes['real_name_need'];
-		return ($value === null || $value === "") ? false : $value == 1;
+		$value = trim(@$this->attributes['real_name_need']);
+		return $value !== '' ? (bool)$value : false;
 	}
 
 	public function getRealNameEnforceAttribute() {
-		$value = @$this->attributes['real_name_enforce'];
-		return ($value === null || $value === "") ? false : $value == 1;
+		$value = trim(@$this->attributes['real_name_enforce']);
+		return $value !== '' ? (bool)$value : false;
 	}
 
 	public function getServiceQqAttribute() {
-		$value = @$this->attributes['service_qq'];
-		return $value ?: env('SERVICE_QQ');
+		$value = trim(@$this->attributes['service_qq']);
+		return $value !== '' ? $value : env('service_qq');
 	}
 
 	public function getServicePageAttribute() {
-		$value = @$this->attributes['service_page'];
-		return $value ?: env('SERVICE_PAGE');
+		$value = trim(@$this->attributes['service_page']);
+		return $value !== '' ? $value : env('service_page');
 	}
 
 	public function getServicePhoneAttribute() {
-		$value = @$this->attributes['service_phone'];
-		return $value ?: env('SERVICE_PHONE');
+		$value = trim(@$this->attributes['service_phone']);
+		return $value !== '' ? $value : env('service_phone');
 	}
 
 	public function getServiceShareAttribute() {
-		$value = @$this->attributes['service_share'];
-		return $value ?: env('SERVICE_SHARE');
+		$value = trim(@$this->attributes['service_share']);
+		return $value !== '' ? $value : env('service_share');
 	}
 
 	public function getHeartbeatIntervalAttribute() {
-		$value = @$this->attributes['heartbeat_interval'];
-		return ($value === null || $value === "") ? intval(env('default_heartbeat_interval')) : intval($value);
+		$value = trim(@$this->attributes['heartbeat_interval']);
+		return is_numeric($value) ? intval($value) : 2000;
 	}
 
 	public function getBindPhoneIntervalAttribute() {
-		$value = @$this->attributes['bind_phone_interval'];
-		return ($value === null || $value === "") ? 86400000 : $value;
+		$value = trim(@$this->attributes['bind_phone_interval']);
+		return is_numeric($value) ? intval($value) : 259200000;
 	}
 
 	public function getAllowNumAttribute() {
 		$value = intval(@$this->attributes['allow_num']);
-		return $value ?: 1;
+		return $value >= 1 ? $value : 1;
 	}
 
 	public function getLogoutImgAttribute() {
-		$value = @$this->attributes['logout_img'];
-		return $value ?: env('logout_img');
-	}
-
-	public function getLogoutTypeAttribute() {
-		$logout_img = @$this->attributes['logout_img'];
-		$logout_type = @$this->attributes['logout_type'];
-		return $logout_img && $logout_type ? $logout_type : env('logout_type');
+		$value = trim(@$this->attributes['logout_img']);
+		return $value !== '' ? $value : env('logout_img');
 	}
 
 	public function getLogoutRedirectAttribute() {
-		$logout_img = @$this->attributes['logout_img'];
-		$logout_type = @$this->attributes['logout_type'];
-		$logout_redirect = @$this->attributes['logout_redirect'];
-		return $logout_img && $logout_redirect ? $logout_redirect : env('logout_redirect');
+		$value = trim(@$this->attributes['logout_redirect']);
+		return $value !== '' ? $value : env('logout_redirect');
 	}
 
 	public function getLogoutInsideAttribute() {
-		$value = @$this->attributes['logout_inside'];
-		return $value ? true : env('logout_inside');
+		$value = trim(@$this->attributes['logout_inside']);
+		return $value !== '' ? (bool)$value : true;
 	}
 }

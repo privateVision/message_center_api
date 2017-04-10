@@ -1,5 +1,5 @@
 <?php
-namespace App\Controller\External;
+namespace App\Http\Controllers\PayCallback;
 
 use Illuminate\Http\Request;
 use App\Model\Orders;
@@ -11,7 +11,7 @@ abstract class Controller extends \App\Controller
         try {
             $data = $this->getData($request);
 
-            log_info('callback_request', ['route' => $request->path(), 'data' => $data]);
+            log_info('paycallback', ['route' => $request->path(), 'data' => $data]);
 
             $sn = $this->getOrderNo($data); 
             $order = null;
@@ -21,17 +21,17 @@ abstract class Controller extends \App\Controller
             }
 
             if(!$order) {
-                log_error('callback_order_not_exists', $data);
+                log_error('paycallback_order_not_exists', null, '订单不存在');
                 return $this->onComplete($data, null, true);
             }
             
             if($order->status != Orders::Status_WaitPay) {
-                log_error('callback_order_status_error', ['sn' => $sn]);
+                log_error('paycallback_order_status_error', ['sn' => $sn], '订单状态不正确');
                 return $this->onComplete($data, null, true);
             }
             
             if(!$this->verifySign($data, $order)) {
-                log_error('callback_order_verify_sign_fail', ['route' => $request->path(), 'data' => $data]);
+                log_error('paycallback_order_verify_sign_fail', null, '签名验证失败');
                 return $this->onComplete($data, null, false);
             }
 
@@ -51,8 +51,8 @@ abstract class Controller extends \App\Controller
 
     abstract protected function getData(Request $request);
     abstract protected function getOrderNo($data);
-    abstract protected function getTradeOrderNo($data, Orders $order);
-    abstract protected function verifySign($data, Orders $order);
-    abstract protected function handler($data, Orders  $order);
-    abstract protected function onComplete($data, Orders $order, $isSuccess, $code);
+    abstract protected function getTradeOrderNo($data, $order);
+    abstract protected function verifySign($data, $order);
+    abstract protected function handler($data, $order);
+    abstract protected function onComplete($data, $order, $isSuccess);
 }

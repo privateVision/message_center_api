@@ -36,11 +36,8 @@ class OrderSuccess extends Job
             do {
                 if(!$user) break;
 
-                $orderExt = $order->ordersExt;
-                if(!$orderExt) break;
-
                 $is_s = true;
-
+                $orderExt = $order->ordersExt;
                 foreach($orderExt as $k => $v) {
                     $fee = intval($v->fee * 100);
                     if($fee <= 0) continue;
@@ -53,22 +50,23 @@ class OrderSuccess extends Job
                             continue;
                         }
 
-                        log_error("orderFail", ['text' => '优惠券无效', 'order_id' => $this->order_id, 'fee' => $fee, 'ucid' => $user->ucid, 'vcid' => $v->vcid]);
+                        log_error("orderFail", ['order_id' => $this->order_id, 'fee' => $fee, 'ucid' => $user->ucid, 'vcid' => $v->vcid], '优惠券无效');
                         $is_s = false;
                     } elseif($v->vcid > 0) { // vcid > 0：储值卡
                         $ucusersvc = UcusersVC::where('ucid', $order->ucid)->where('vcid', $v->vcid)->first(); // todo: 联合主键，ORM不支持
                         if(!$ucusersvc || intval($ucusersvc->balance * 100) < $fee) {
-                            log_error("orderFail", ['text' => '储值卡余额不足以抵扣订单', 'order_id' => $this->order_id, 'fee' => $fee, 'ucid' => $user->ucid, 'vcid' => $v->vcid]);
+                            log_error("orderFail", ['order_id' => $this->order_id, 'fee' => $fee, 'ucid' => $user->ucid, 'vcid' => $v->vcid], '储值卡余额不足以抵扣订单');
                             $is_s = false;
                         } else {
                              UcusersVC::where('ucid', $order->ucid)->where('vcid', $v->vcid)->decrement('balance', $fee / 100); // todo: 联合主键，ORM不支持
                         }
                     } elseif($v->vcid == 0) { // vcid == 0：F币
                         if(intval($user->balance * 100) < $fee) {
-                            log_error("orderFail", ['text' => 'F币不足以抵扣订单', 'order_id' => $this->order_id, 'fee' => $fee, 'ucid' => $user->ucid, 'balance' => $balance]);
+                            log_error("orderFail", ['order_id' => $this->order_id, 'fee' => $fee, 'ucid' => $user->ucid, 'balance' => $balance], 'F币不足以抵扣订单');
                             $is_s = false;
                         } else {
                             $user->decrement('balance', $fee / 100);
+                            $user->updateCache();
                         }
                     }
                 }
@@ -83,8 +81,9 @@ class OrderSuccess extends Job
 
                 // 购买F币
                 if($order->is_f()) {
+                    log_debug('debug', $order->toArray(), '购买F币');
                     $user->increment('balance', $order->fee); // 原子操作很重要
-                    $user->save();
+                    $user->updateCache();
                 }
 /*
                 $order_extend = OrderExtend::from_cache($order->id);

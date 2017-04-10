@@ -76,29 +76,30 @@ def v4_sdk_get_message_list():
         # & Q(is_read=0)
         & Q(start_time__lte=current_timestamp)
         # & Q(end_time__gte=current_timestamp)  # 消息发送后是一直存在的
-        & Q(ucid=ucid)).order_by('-create_time')[start_index:end_index]
+        & Q(ucid=ucid)).order_by('-create_timestamp')[start_index:end_index]
     data_list = []
     for message in message_list:
         message_info = get_message_detail_info(message['mysql_id'])
-        if int(message['is_read']) == 1:
-            message['is_read'] = True
-        else:
-            message['is_read'] = False
-        message_resp = {
-            'title': message_info['title'],
-            'summary': message_info['description'],
-            'type': message_info['atype'],
-            'id': message_info['mysql_id'],
-            'img': '',
-            'url': '',
-            'content': '',
-            'is_read': message['is_read']
-        }
-        if 'img' in message_info:
-            message_resp['img'] = message_info['img']
-        if 'content' in message_info:
-            message_resp['content'] = message_info['content']
-        if 'url' in message_info:
-            message_resp['url'] = message_info['url']
-        data_list.append(message_resp)
+        if message_info is not None:
+            if int(message['is_read']) == 1:
+                message['is_read'] = True
+            else:
+                message['is_read'] = False
+            message_resp = {
+                'title': message_info['title'],
+                'summary': message_info['description'],
+                'type': message_info['atype'],
+                'id': message_info['mysql_id'],
+                'img': '',
+                'url': '',
+                'content': '',
+                'is_read': message['is_read']
+            }
+            if 'img' in message_info:
+                message_resp['img'] = message_info['img']
+            if 'content' in message_info:
+                message_resp['content'] = message_info['content']
+            if 'url' in message_info:
+                message_resp['url'] = message_info['url']
+            data_list.append(message_resp)
     return response_data(http_code=200, data=data_list)
