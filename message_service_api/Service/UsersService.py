@@ -362,6 +362,8 @@ def get_user_coupons_by_game(ucid, appid, start_index, end_index):
             }
             if coupon_info['full'] == 0:
                 info['user_condition'] = '通用'
+            if coupon_info['is_first'] == 1:
+                info['user_condition'] = '首充券'
             unlimited_time = True
             if coupon_info['is_time'] == 1:
                 unlimited_time = False

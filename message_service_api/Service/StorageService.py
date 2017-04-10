@@ -165,6 +165,7 @@ def send_message_to_spcify_users(specify_user=None, game=None, users_type=None, 
                 for user in specify_user_list:
                     # 和区服中的用户去重
                     is_user_in_users_type_and_vip = check_user_type_and_vip(user, users_type, vip_user[0])
+                    service_logger.info("检查指定用户列表的用户类型和vip,用于过滤，结果为：%s" % (is_user_in_users_type_and_vip,))
                     if is_user_in_users_type_and_vip is False:
                         add_user_messsage(user, type, msg_id, is_time, start_time, end_time, game)
             except Exception, err:
@@ -239,7 +240,7 @@ def check_user_type_and_vip(ucid=None, user_type=None, vip=None):
         finally:
             mysql_session.close()
     else:
-        return True
+        return False
 
 
 # 检查用户是否在某个游戏下
