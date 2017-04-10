@@ -11,7 +11,7 @@ from MongoModel.MessageModel import UsersMessage
 from MongoModel.MessageRevocationModel import MessageRevocation
 from MongoModel.UserMessageModel import UserMessage
 from Service.UsersService import get_ucid_by_access_token, sdk_api_request_check, cms_api_request_check, \
-    get_user_is_freeze_by_access_token
+    get_user_is_freeze_by_access_token, get_user_gift_count
 from Utils.RedisUtil import RedisHandle
 from Utils.SystemUtils import log_exception
 
@@ -135,8 +135,10 @@ def v4_cms_message_revocation():
 @sdk_api_request_check
 def v4_sdk_heartbeat():
     ucid = get_ucid_by_access_token(request.form['_token'])
+    appid = request.form['_appid']
     if ucid:
         data = RedisHandle.get_user_data_mark_in_redis(ucid)
+        data['gift_num'] = get_user_gift_count(ucid, appid)
         freeze = get_user_is_freeze_by_access_token(request.form['_token'])
         if freeze is not None:
             if freeze == 1:

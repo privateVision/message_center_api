@@ -231,6 +231,29 @@ def get_user_broadcast_list(ucid=None):
     return None
 
 
+# 获取用户可领的礼包数
+def get_user_gift_count(ucid=None, appid=None):
+    from run import mysql_cms_session
+    from run import SDK_PLATFORM_ID
+    now = int(time.time())
+    game = get_game_info_by_appid(appid)
+    if game is None:
+        return 0
+    unget_gifts_page_list_sql = "select count(*) from (select a.id,a.gameId,a.gameName,a.name,a.gift," \
+                                "a.isAfReceive, a.isBindPhone," \
+                                "a.content,a.label,a.uid,a.publishTime,a.failTime,a.createTime,a.updateTime,a.status," \
+                                "b.num, b.assignNum, ifnull(c.code,'') as code,if(c.code<>'', '1', '0') " \
+                                "as is_get from cms_gameGift as a join cms_gameGiftAssign as b on a.id=b.giftId " \
+                                "left outer join cms_gameGiftLog as c on c.giftId=a.id and c.uid= %s " \
+                                "where a.gameId=%s and a.failTime > %s and b.platformId=%s and a.status='normal' " \
+                                "and a.assignNum > 0 and b.assignNum > 0 order by is_get asc ," \
+                                " c.forTime desc, a.id desc) as d " \
+                                "where d.code<>'' or (d.assignNum>0 and d.code='')" \
+                                % (ucid, game['id'], now, SDK_PLATFORM_ID)
+    count = mysql_cms_session.execute(unget_gifts_page_list_sql).scalar()
+    return count
+
+
 # 检查用户账号是否被冻结
 def find_user_account_is_freeze(ucid=None):
     find_is_freeze_sql = "select is_freeze from ucusers where ucid = %s" % (ucid,)

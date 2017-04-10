@@ -36,14 +36,14 @@ def v4_sdk_get_gifts_list():
     start_timestamp = int(now - (now % 86400) + time.timezone)
     end_timestamp = int(start_timestamp + 86399)
     find_today_gifts_count_sql = "select count(*) from cms_gameGift where gameId = %s and status = 'normal' " \
-                                 "and publishTime >= %s and publishTime <= %s " % (
+                                 "and publishTime >= %s and publishTime <= %s and assignNum > 0 " % (
                                      game['id'], start_timestamp, end_timestamp)
     today_gift_count = mysql_cms_session.execute(find_today_gifts_count_sql).scalar()
 
     unget_gifts_count_sql = "select count(*) as num from (select ifnull(c.code,'') as code,b.num from cms_gameGift " \
                             "as a join cms_gameGiftAssign as b on a.id = b.giftId left outer join cms_gameGiftLog " \
                             "as c on c.giftId=a.id and c.uid= %s where a.gameId= %s and a.failTime > %s " \
-                            "and b.platformId=%s and a.status='normal') as d " \
+                            "and a.assignNum > 0 and b.assignNum > 0 and b.platformId=%s and a.status='normal') as d " \
                             "where d.code<>'' or (d.num>0 and d.code='')" % (ucid, game['id'], now, SDK_PLATFORM_ID)
     unget_gifts_count = mysql_cms_session.execute(unget_gifts_count_sql).scalar()
 
@@ -54,7 +54,7 @@ def v4_sdk_get_gifts_list():
                                 "as is_get from cms_gameGift as a join cms_gameGiftAssign as b on a.id=b.giftId " \
                                 "left outer join cms_gameGiftLog as c on c.giftId=a.id and c.uid= %s " \
                                 "where a.gameId=%s and a.failTime > %s and b.platformId=%s and a.status='normal' " \
-                                "order by is_get asc , c.forTime desc, a.id desc) as d " \
+                                "and a.assignNum > 0 and b.assignNum > 0 order by is_get asc , c.forTime desc, a.id desc) as d " \
                                 "where d.code<>'' or (d.assignNum>0 and d.code='') limit %s, %s " \
                                 % (ucid, game['id'], now, SDK_PLATFORM_ID, start_index, end_index)
     unget_gifts_page_list = mysql_cms_session.execute(unget_gifts_page_list_sql).fetchall()
