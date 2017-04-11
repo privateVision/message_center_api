@@ -122,15 +122,16 @@ class UserController extends AuthController
 
         $offset = max(0, ($page - 1) * $limit);
 
-        $order = Orders::where('ucid', $this->user->ucid);
+        $order = Orders::whereIsNotF();
+        $order = $order->where('ucid', $this->user->ucid);
         $order = $order->where('hide', 0);
         $order = $order->where('status', '!=', Orders::Status_WaitPay);
+        $count = $order->count();
         $order = $order->orderBy('id', 'desc');
         $order = $order->take($limit)->skip($offset)->get();
 
         $data = [];
         foreach($order as $v) {
-            if(!$v->is_f()) continue;
             $data[] = [
                 'order_id' => $v->sn,
                 'fee' => $v->fee,
@@ -141,7 +142,7 @@ class UserController extends AuthController
             ];
         }
 
-        return $data;
+        return ['count' => $count, 'list' => $data];
     }
 
     public function ConsumeAction() {
@@ -150,15 +151,17 @@ class UserController extends AuthController
 
         $offset = max(0, ($page - 1) * $limit);
 
-        $order = Orders::where('ucid', $this->user->ucid);
+        $order = Orders::whereIsF();
+        $order = $order->where('ucid', $this->user->ucid);
         $order = $order->where('hide', 0);
         $order = $order->where('status', '!=', Orders::Status_WaitPay);
+        $count = $order->count();
         $order = $order->orderBy('id', 'desc');
         $order = $order->take($limit)->skip($offset)->get();
 
         $data = [];
         foreach($order as $v) {
-            if($v->is_f()) continue;
+            //if($v->is_f()) continue;
             $data[] = [
                 'order_id' => $v->sn,
                 'fee' => $v->fee,
@@ -169,7 +172,7 @@ class UserController extends AuthController
             ];
         }
 
-        return $data;
+        return ['count' => $count, 'list' => $data];
     }
 
     public function HideOrderAction() {
