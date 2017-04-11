@@ -35,28 +35,65 @@ def v4_sdk_get_gifts_list():
     now = int(time.time())
     start_timestamp = int(now - (now % 86400) + time.timezone)
     end_timestamp = int(start_timestamp + 86399)
-    find_today_gifts_count_sql = "select count(*) from cms_gameGift where gameId = %s and status = 'normal' " \
-                                 "and publishTime >= %s and publishTime <= %s and assignNum > 0 " % (
-                                     game['id'], start_timestamp, end_timestamp)
+
+    find_user_already_get_gift_id_sql = "select distinct(giftId) from cms_gameGiftLog where gameId = %s" \
+                                        " and status = 'normal' and uid = %s " % (game['id'], ucid)
+    gift_id_list = mysql_cms_session.execute(find_user_already_get_gift_id_sql).fetchall()
+    already_get_gift_id_list = []
+    for gift_id in gift_id_list:
+        already_get_gift_id_list.append(str(gift_id['giftId']))
+    already_get_gift_id_list_str = ",".join(already_get_gift_id_list)
+
+    if len(already_get_gift_id_list) > 0:
+        find_today_gifts_count_sql = "select count(*) from cms_gameGift where gameId = %s and status = 'normal' " \
+                                     "and publishTime >= %s and publishTime <= %s and ((assignNum > 0) or (id in (%s))) " \
+                                     % (game['id'], start_timestamp, end_timestamp, already_get_gift_id_list_str)
+        unget_gifts_count_sql = "select count(*) as num from (select ifnull(c.code,'') as code,b.num from cms_gameGift " \
+                                "as a join cms_gameGiftAssign as b on a.id = b.giftId left outer join cms_gameGiftLog " \
+                                "as c on c.giftId=a.id and c.uid= %s where a.gameId= %s and a.failTime > %s " \
+                                "and ((a.assignNum > 0 and b.assignNum > 0) or (a.id in (%s)))" \
+                                " and b.platformId= %s and a.status='normal') as d " \
+                                "where d.code<>'' or (d.num>0 and d.code='')" \
+                                % (ucid, game['id'], now, already_get_gift_id_list_str, SDK_PLATFORM_ID)
+        unget_gifts_page_list_sql = "select * from (select a.id,a.gameId,a.gameName,a.name,a.gift," \
+                                    "a.isAfReceive, a.isBindPhone," \
+                                    "a.content,a.label,a.uid,a.publishTime,a.failTime,a.createTime,a.updateTime,a.status," \
+                                    "b.num, b.assignNum, ifnull(c.code,'') as code,if(c.code<>'', '1', '0') " \
+                                    "as is_get from cms_gameGift as a join cms_gameGiftAssign as b on a.id=b.giftId " \
+                                    "left outer join cms_gameGiftLog as c on c.giftId=a.id and c.uid= %s " \
+                                    "where a.gameId=%s and a.failTime > %s and b.platformId=%s and a.status='normal' " \
+                                    "and ((a.assignNum > 0 and b.assignNum > 0) or (a.id in (%s))) " \
+                                    "order by is_get asc , c.forTime desc, a.id desc) as d " \
+                                    "where d.code<>'' or (d.assignNum>0 and d.code='') limit %s, %s " \
+                                    % (ucid, game['id'], now, SDK_PLATFORM_ID, already_get_gift_id_list_str,
+                                       start_index, end_index)
+    else:
+        find_today_gifts_count_sql = "select count(*) from cms_gameGift where gameId = %s and status = 'normal' " \
+                                     "and publishTime >= %s and publishTime <= %s and assignNum > 0 " \
+                                     % (game['id'], start_timestamp, end_timestamp)
+        unget_gifts_count_sql = "select count(*) as num from (select ifnull(c.code,'') as code,b.num from cms_gameGift " \
+                                "as a join cms_gameGiftAssign as b on a.id = b.giftId left outer join cms_gameGiftLog " \
+                                "as c on c.giftId=a.id and c.uid= %s where a.gameId= %s and a.failTime > %s " \
+                                "and (a.assignNum > 0 and b.assignNum > 0)" \
+                                " and b.platformId= %s and a.status='normal') as d " \
+                                "where d.code<>'' or (d.num>0 and d.code='')" \
+                                % (ucid, game['id'], now, SDK_PLATFORM_ID)
+        unget_gifts_page_list_sql = "select * from (select a.id,a.gameId,a.gameName,a.name,a.gift," \
+                                    "a.isAfReceive, a.isBindPhone," \
+                                    "a.content,a.label,a.uid,a.publishTime,a.failTime,a.createTime,a.updateTime,a.status," \
+                                    "b.num, b.assignNum, ifnull(c.code,'') as code,if(c.code<>'', '1', '0') " \
+                                    "as is_get from cms_gameGift as a join cms_gameGiftAssign as b on a.id=b.giftId " \
+                                    "left outer join cms_gameGiftLog as c on c.giftId=a.id and c.uid= %s " \
+                                    "where a.gameId=%s and a.failTime > %s and b.platformId=%s and a.status='normal' " \
+                                    "and (a.assignNum > 0 and b.assignNum > 0) " \
+                                    "order by is_get asc , c.forTime desc, a.id desc) as d " \
+                                    "where d.code<>'' or (d.assignNum>0 and d.code='') limit %s, %s " \
+                                    % (ucid, game['id'], now, SDK_PLATFORM_ID,
+                                       start_index, end_index)
     today_gift_count = mysql_cms_session.execute(find_today_gifts_count_sql).scalar()
 
-    unget_gifts_count_sql = "select count(*) as num from (select ifnull(c.code,'') as code,b.num from cms_gameGift " \
-                            "as a join cms_gameGiftAssign as b on a.id = b.giftId left outer join cms_gameGiftLog " \
-                            "as c on c.giftId=a.id and c.uid= %s where a.gameId= %s and a.failTime > %s " \
-                            "and a.assignNum > 0 and b.assignNum > 0 and b.platformId=%s and a.status='normal') as d " \
-                            "where d.code<>'' or (d.num>0 and d.code='')" % (ucid, game['id'], now, SDK_PLATFORM_ID)
     unget_gifts_count = mysql_cms_session.execute(unget_gifts_count_sql).scalar()
 
-    unget_gifts_page_list_sql = "select * from (select a.id,a.gameId,a.gameName,a.name,a.gift," \
-                                "a.isAfReceive, a.isBindPhone," \
-                                "a.content,a.label,a.uid,a.publishTime,a.failTime,a.createTime,a.updateTime,a.status," \
-                                "b.num, b.assignNum, ifnull(c.code,'') as code,if(c.code<>'', '1', '0') " \
-                                "as is_get from cms_gameGift as a join cms_gameGiftAssign as b on a.id=b.giftId " \
-                                "left outer join cms_gameGiftLog as c on c.giftId=a.id and c.uid= %s " \
-                                "where a.gameId=%s and a.failTime > %s and b.platformId=%s and a.status='normal' " \
-                                "and a.assignNum > 0 and b.assignNum > 0 order by is_get asc , c.forTime desc, a.id desc) as d " \
-                                "where d.code<>'' or (d.assignNum>0 and d.code='') limit %s, %s " \
-                                % (ucid, game['id'], now, SDK_PLATFORM_ID, start_index, end_index)
     unget_gifts_page_list = mysql_cms_session.execute(unget_gifts_page_list_sql).fetchall()
     data_list = []
     for gift in unget_gifts_page_list:
@@ -71,7 +108,7 @@ def v4_sdk_get_gifts_list():
             'fail_time': gift['failTime'],
             'code': gift['code'],
             'num': gift['assignNum'],
-            'total': int(gift['assignNum'])+int(gift['num']),
+            'total': int(gift['assignNum']) + int(gift['num']),
             'is_get': gift['is_get'],
             'is_af_receive': gift['isAfReceive'],
             'is_bind_phone': gift['isBindPhone']
@@ -199,9 +236,10 @@ def v4_sdk_user_get_gift():
                                 update_gift_code_result = mysql_cms_session.execute(update_gift_code_sql)
                                 if update_gift_code_result:
                                     insert_get_gift_log_sql = "insert into cms_gameGiftLog(gameId, giftId, platformId, " \
-                                                          "code, uid, username, forTime, forIp, forMac) " \
-                                                          "values(%s, %s, %s, '%s', %s, '%s', %s, '%s', '%s')" \
-                                                          % (game_id, gift_id, SDK_PLATFORM_ID, game_gift_code['code'],
+                                                              "code, uid, username, forTime, forIp, forMac) " \
+                                                              "values(%s, %s, %s, '%s', %s, '%s', %s, '%s', '%s')" \
+                                                              % (
+                                                              game_id, gift_id, SDK_PLATFORM_ID, game_gift_code['code'],
                                                               ucid, username, int(time.time()), ip, mac)
                                     mysql_cms_session.execute(insert_get_gift_log_sql)
                                     # 礼包个数减一
