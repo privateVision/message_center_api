@@ -481,6 +481,20 @@ def get_game_info_by_appid(appid=None):
     return None
 
 
+def get_game_info_by_gameid(gameid=None):
+    from run import mysql_session
+    find_game_info_sql = "select id, name, cover from zy_game " \
+                         "where id = %s limit 1" % (gameid,)
+    game_info = mysql_session.execute(find_game_info_sql).fetchone()
+    game = {}
+    if game_info is not None:
+        game['id'] = game_info['id']
+        game['name'] = game_info['name']
+        game['cover'] = game_info['cover']
+        return game
+    return None
+
+
 # 根据token获取用户当前所在的区服
 def get_user_current_game_and_area_by_token(token=None):
     from run import mysql_session

@@ -169,7 +169,7 @@ def v4_sdk_user_get_gift():
                 mysql_session.rollback()
             finally:
                 mysql_session.close()
-        if game_gift_info['memberLevel'] is not None:  # 有用户等级要求
+        if game_gift_info['memberLevel'] is not None and game_gift_info['memberLevel'] != '':  # 有用户等级要求
             level_list = game_gift_info['memberLevel'].split(',')
             from run import mysql_session
             find_users_vip_sql = "select vip from ucuser_info as u where u.ucid = %s limit 1" % (ucid,)
@@ -185,15 +185,15 @@ def v4_sdk_user_get_gift():
                 mysql_session.close()
         if game_gift_info['isSpecify'] == 1:  # 是否指定用户领取
             from run import mysql_session
-            find_game_gift_user_list_sql = "select value from cms_gameGiftSpecify where giftId= %s" \
-                                           % (gift_id,)
-            specify_user_list = mysql_cms_session.execute(find_game_gift_user_list_sql).fetchall()
             find_users_uid_sql = "select uid from ucusers as u where u.ucid = %s limit 1" % (ucid,)
             try:
                 user_uid_info = mysql_session.execute(find_users_uid_sql).fetchone()
                 if user_uid_info is not None:
                     _uid = user_uid_info['uid']
-                    if _uid not in specify_user_list:
+                    find_game_gift_user_list_sql = "select count(*) from cms_gameGiftSpecify where giftId= %s " \
+                                                   "and value = '%s' " % (gift_id, _uid)
+                    result = mysql_cms_session.execute(find_game_gift_user_list_sql).scalar()
+                    if result == 0:
                         return response_data(200, 0, '该礼包需要在指定的用户中才可领取！')
             except Exception, err:
                 service_logger.error(err.message)
