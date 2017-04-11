@@ -16,6 +16,7 @@ class UserSubController extends AuthController
         $data = [];
         $user_sub = UcuserSub::tableSlice($this->user->ucid)->where('ucid', $this->user->ucid)->where('pid', $pid)->orderBy('name', 'asc')->get();
         foreach($user_sub as $v) {
+            if($v->pid < 100) continue;
             $data[] = [
                 'id' => $v->id,
                 'openid' => $v->cp_uid,
