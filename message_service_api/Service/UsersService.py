@@ -239,17 +239,37 @@ def get_user_gift_count(ucid=None, appid=None):
     game = get_game_info_by_appid(appid)
     if game is None:
         return 0
-    unget_gifts_page_list_sql = "select count(*) from (select a.id,a.gameId,a.gameName,a.name,a.gift," \
-                                "a.isAfReceive, a.isBindPhone," \
-                                "a.content,a.label,a.uid,a.publishTime,a.failTime,a.createTime,a.updateTime,a.status," \
-                                "b.num, b.assignNum, ifnull(c.code,'') as code,if(c.code<>'', '1', '0') " \
-                                "as is_get from cms_gameGift as a join cms_gameGiftAssign as b on a.id=b.giftId " \
-                                "left outer join cms_gameGiftLog as c on c.giftId=a.id and c.uid= %s " \
-                                "where a.gameId=%s and a.failTime > %s and b.platformId=%s and a.status='normal' " \
-                                "and a.assignNum > 0 and b.assignNum > 0 order by is_get asc ," \
-                                " c.forTime desc, a.id desc) as d " \
-                                "where d.code<>'' or (d.assignNum>0 and d.code='')" \
-                                % (ucid, game['id'], now, SDK_PLATFORM_ID)
+    find_user_already_get_gift_id_sql = "select distinct(giftId) from cms_gameGiftLog where gameId = %s" \
+                                        " and status = 'normal' and uid = %s " % (game['id'], ucid)
+    gift_id_list = mysql_cms_session.execute(find_user_already_get_gift_id_sql).fetchall()
+    already_get_gift_id_list = []
+    for gift_id in gift_id_list:
+        already_get_gift_id_list.append(str(gift_id['giftId']))
+    already_get_gift_id_list_str = ",".join(already_get_gift_id_list)
+    if len(already_get_gift_id_list) > 0:
+        unget_gifts_page_list_sql = "select count(*) from (select a.id,a.gameId,a.gameName,a.name,a.gift," \
+                                    "a.isAfReceive, a.isBindPhone," \
+                                    "a.content,a.label,a.uid,a.publishTime,a.failTime,a.createTime,a.updateTime,a.status," \
+                                    "b.num, b.assignNum, ifnull(c.code,'') as code,if(c.code<>'', '1', '0') " \
+                                    "as is_get from cms_gameGift as a join cms_gameGiftAssign as b on a.id=b.giftId " \
+                                    "left outer join cms_gameGiftLog as c on c.giftId=a.id and c.uid= %s " \
+                                    "where a.gameId=%s and a.failTime > %s and b.platformId=%s and a.status='normal' " \
+                                    "and a.assignNum > 0 and b.assignNum > 0 and a.id not in (%s) order by is_get asc ," \
+                                    " c.forTime desc, a.id desc) as d " \
+                                    "where d.code<>'' or (d.assignNum>0 and d.code='')" \
+                                    % (ucid, game['id'], now, SDK_PLATFORM_ID, already_get_gift_id_list_str)
+    else:
+        unget_gifts_page_list_sql = "select count(*) from (select a.id,a.gameId,a.gameName,a.name,a.gift," \
+                                    "a.isAfReceive, a.isBindPhone," \
+                                    "a.content,a.label,a.uid,a.publishTime,a.failTime,a.createTime,a.updateTime,a.status," \
+                                    "b.num, b.assignNum, ifnull(c.code,'') as code,if(c.code<>'', '1', '0') " \
+                                    "as is_get from cms_gameGift as a join cms_gameGiftAssign as b on a.id=b.giftId " \
+                                    "left outer join cms_gameGiftLog as c on c.giftId=a.id and c.uid= %s " \
+                                    "where a.gameId=%s and a.failTime > %s and b.platformId=%s and a.status='normal' " \
+                                    "and a.assignNum > 0 and b.assignNum > 0 order by is_get asc ," \
+                                    " c.forTime desc, a.id desc) as d " \
+                                    "where d.code<>'' or (d.assignNum>0 and d.code='')" \
+                                    % (ucid, game['id'], now, SDK_PLATFORM_ID)
     count = mysql_cms_session.execute(unget_gifts_page_list_sql).scalar()
     return count
 
