@@ -92,7 +92,7 @@ class OrderSuccess extends Job
                     $ucuser_total_pay->ucid = $user->ucid;
                     $ucuser_total_pay->pay_count = 1;
                     $ucuser_total_pay->pay_total = $order->fee;
-                    $ucuser_total_pay->pay_fee = $order_extend->real_fee / 100;
+                    $ucuser_total_pay->pay_fee = $order->real_fee / 100;
                     $ucuser_total_pay->save();
                 } else {
                     $ucuser_total_pay->increment('pay_count', 1);
