@@ -122,7 +122,7 @@ class UserController extends AuthController
 
         $offset = max(0, ($page - 1) * $limit);
 
-        $order = Orders::whereIsNotF();
+        $order = Orders::whereIsF();
         $order = $order->where('ucid', $this->user->ucid);
         $order = $order->where('hide', 0);
         $order = $order->where('status', '!=', Orders::Status_WaitPay);
@@ -151,7 +151,7 @@ class UserController extends AuthController
 
         $offset = max(0, ($page - 1) * $limit);
 
-        $order = Orders::whereIsF();
+        $order = Orders::whereIsNotF();
         $order = $order->where('ucid', $this->user->ucid);
         $order = $order->where('hide', 0);
         $order = $order->where('status', '!=', Orders::Status_WaitPay);
