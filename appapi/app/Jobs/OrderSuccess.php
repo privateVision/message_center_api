@@ -85,8 +85,6 @@ class OrderSuccess extends Job
                     $user->increment('balance', $order->fee); // 原子操作很重要
                     $user->updateCache();
                 }
-/*
-                $order_extend = OrderExtend::from_cache($order->id);
 
                 $ucuser_total_pay = UcuserTotalPay::from_cache($user->ucid);
                 if(!$ucuser_total_pay) {
@@ -99,10 +97,10 @@ class OrderSuccess extends Job
                 } else {
                     $ucuser_total_pay->increment('pay_count', 1);
                     $ucuser_total_pay->increment('pay_total', $order->fee);
-                    $ucuser_total_pay->increment('pay_fee', $order_extend->real_fee / 100);
-                    $ucuser_total_pay->save();
+                    $ucuser_total_pay->increment('pay_fee', $order->real_fee / 100);
+                    $ucuser_total_pay->updateCache();
                 }
-*/
+
             } while(false);
 
             $order->status = Orders::Status_Success;
