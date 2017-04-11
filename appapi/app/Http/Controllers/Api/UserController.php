@@ -48,7 +48,7 @@ class UserController extends AuthController
             ],
         ];
 
-        $oauth = cuserOauth::where('ucid', $this->user->ucid)->pluck('type');
+        $oauth = UcuserOauth::where('ucid', $this->user->ucid)->pluck('type');
         foreach($oauth as $v) {
             $data[$v]['is_bind'] = true;
         }
