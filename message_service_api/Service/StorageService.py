@@ -283,6 +283,21 @@ def get_ucid_list_by_user_uid_name_list(specify_user):
     return ucid_list
 
 
+def get_uid_by_ucid(ucid=None):
+    from run import mysql_session
+    find_ucid_sql = "select uid from ucusers where ucid = %s limit 1" % (ucid,)
+    try:
+        user_info = mysql_session.execute(find_ucid_sql).fetchone()
+        if user_info is not None:
+            return user_info['uid']
+    except Exception, err:
+        service_logger.error(err.message)
+        mysql_session.rollback()
+    finally:
+        mysql_session.close()
+    return None
+
+
 # 给用户在redis中设置标记位
 def add_mark_to_user_redis(ucid, message_type):
     if message_type == 'message':
