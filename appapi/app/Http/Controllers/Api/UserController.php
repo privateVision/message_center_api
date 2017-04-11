@@ -61,6 +61,7 @@ class UserController extends AuthController
         $province = $this->parameter->get('province');
         $city = $this->parameter->get('city');
         $address = $this->parameter->get('address');
+        $gender = $this->parameter->get('gender');
         $birthday = $this->parameter->get('birthday', function($v) {
             if(!preg_match('/^\d{8}$/', $v)) {
                 throw new ApiException(ApiException::Remind, "生日格式不正确，yyyy-mm-dd");
@@ -103,6 +104,10 @@ class UserController extends AuthController
 
         if($address) {
             $user_info->address = $address;
+        }
+
+        if($gender) {
+            $user_info->gender = $gender;
         }
 
         $this->user->save();
@@ -288,7 +293,7 @@ class UserController extends AuthController
 
             user_log($this->user, $this->procedure, 'unbind_phone', '【解绑手机】手机号码{%s}', $mobile);
         }
-        
+
         return [
             'result' => true,
             'username' => $this->user->uid,
