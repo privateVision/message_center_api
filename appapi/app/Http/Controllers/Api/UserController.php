@@ -42,15 +42,15 @@ class UserController extends AuthController
     }
 
     public function BindListAction() {
-        $data = [
-            'mobile' => [
-                'is_bind' => $this->user->mobile ? true : false
-            ],
-        ];
+        $data = [];
 
-        $oauth = cuserOauth::where('ucid', $this->user->ucid)->pluck('type');
+        $oauth = UcuserOauth::where('ucid', $this->user->ucid)->pluck('type');
         foreach($oauth as $v) {
             $data[$v]['is_bind'] = true;
+        }
+
+        if($this->user->mobile) {
+            $data['mobile']['is_bind'] = true;
         }
 
         return $data;
