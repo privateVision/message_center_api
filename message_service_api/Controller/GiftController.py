@@ -7,7 +7,7 @@ from Controller.BaseController import response_data
 from MiddleWare import service_logger
 from Service.StorageService import get_uid_by_ucid
 from Service.UsersService import get_ucid_by_access_token, sdk_api_request_check, get_username_by_ucid, \
-    get_game_info_by_appid, get_user_gift_count, get_user_can_see_gift_count
+    get_game_info_by_appid, get_user_gift_count, get_user_can_see_gift_count, get_user_can_see_gift_list
 from Utils.SystemUtils import log_exception
 import math
 
@@ -119,7 +119,8 @@ def v4_sdk_get_gifts_list():
 
     unget_gifts_count = get_user_can_see_gift_count(ucid, appid)
 
-    unget_gifts_page_list = mysql_cms_session.execute(unget_gifts_page_list_sql).fetchall()
+    # unget_gifts_page_list = mysql_cms_session.execute(unget_gifts_page_list_sql).fetchall()
+    unget_gifts_page_list = get_user_can_see_gift_list(ucid, game['id'], start_index, end_index)
     data_list = []
     for gift in unget_gifts_page_list:
         info = {
