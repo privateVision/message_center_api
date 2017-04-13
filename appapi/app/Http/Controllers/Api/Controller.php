@@ -47,8 +47,13 @@ class Controller extends \App\Controller
 			$__appid = $this->parameter->get('__appid');
 			if($__appid) {
 				$this->procedure = Procedures::from_cache($__appid);
+
+				if(!$this->procedure){
+					$this->procedure = Procedures::where("pid",$__appid)->first();
+				}
+
 				if (!$this->procedure) {
-					throw new ApiException(ApiException::Error, "appid不正确:{$_appid}");
+					throw new ApiException(ApiException::Error, "appid not found:{$_appid}");
 				}
 
 				$this->parameter->set('_appid', $__appid);
