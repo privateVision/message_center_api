@@ -57,25 +57,25 @@ class MessageFunctionTest(unittest.TestCase):
     #     self.assertEqual(r.status_code, 200)
     #     print r.text
     #
-    # def test_get_message_list(self):
-    #     body_data = {
-    #         '_sign': '141aa24d6419b7ba2850bdcab13e95da',
-    #         '_token': 'c31fc6b6b2f7b993713c124f8104209d',
-    #         '_appid': 2
-    #     }
-    #     r = requests.post('http://localhost:5000/msa/v4/messages', data=body_data)
-    #     print r.text
-
-    def test_set_message_readed(self):
+    def test_get_message_list(self):
         body_data = {
-            '_sign': '393a792560a461622a42f134724387fb',
-            '_token': 'bm50pbazciog8w8wcow0gkws8',
-            'type': 'message',
-            'message_id': 2,
+            '_sign': '7004f02a9d4f466c79c9dace143541e7',
+            '_token': 'a1bg7dhi95440sosoggk40ss8',
             '_appid': 778
         }
-        r = requests.post('http://localhost:5000/msa/v4/message/read', data=body_data)
+        r = requests.post('http://sdkv4test.qcwanwan.com/msa/v4/messages', data=body_data)
         print r.text
+
+    # def test_set_message_readed(self):
+    #     body_data = {
+    #         '_sign': '393a792560a461622a42f134724387fb',
+    #         '_token': 'a1bg7dhi95440sosoggk40ss8',
+    #         'type': 'message',
+    #         'message_id': 2,
+    #         '_appid': 778
+    #     }
+    #     r = requests.post('http://sdkv4test.qcwanwan.com/msa/v4/message/read', data=body_data)
+    #     print r.text
 
     def tearDown(self):
         pass

@@ -186,8 +186,11 @@ def add_user_messsage(ucid, type, msg_id, is_time, start_time, end_time, game):
         if type != 'message':
             if user_message.is_time != 0:
                 user_message.expireAt = datetime.datetime.utcfromtimestamp(user_message.end_time)
+        message_info = UsersMessage.objects(Q(type='message') & Q(mysql_id=msg_id)).first()
+        if message_info is not None:
+            user_message.create_timestamp = message_info['create_timestamp']
         user_message.save()
-        add_mark_to_user_redis(ucid, type)
+        # add_mark_to_user_redis(ucid, type)
     else:
         service_logger.info("mysql添加用户消息：%s-%s-%s" % (ucid, type, msg_id))
         from run import mysql_session

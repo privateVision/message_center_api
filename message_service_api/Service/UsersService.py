@@ -378,7 +378,7 @@ def get_user_can_see_gift_list(ucid=None, game_id=None, start_index=None, end_in
                                         "as is_get from cms_gameGift as a join cms_gameGiftAssign as b on a.id=b.giftId " \
                                         "left outer join cms_gameGiftLog as c on c.giftId=a.id and c.uid= %s " \
                                         "where a.gameId=%s and a.failTime > %s and b.platformId=%s " \
-                                        "and a.status='normal' and b.status='normal' and c.status='normal' " \
+                                        "and a.status='normal' " \
                                         "and ((a.assignNum > 0 and b.assignNum > 0) " \
                                         "and ((a.isSpecify=1 and a.id in (%s)) or (a.isSpecify=0)) or a.id in (%s) ) " \
                                         "order by is_get asc , c.forTime desc, a.id desc) as d " \
@@ -393,7 +393,7 @@ def get_user_can_see_gift_list(ucid=None, game_id=None, start_index=None, end_in
                                         "as is_get from cms_gameGift as a join cms_gameGiftAssign as b on a.id=b.giftId " \
                                         "left outer join cms_gameGiftLog as c on c.giftId=a.id and c.uid= %s " \
                                         "where a.gameId=%s and a.failTime > %s and b.platformId=%s " \
-                                        "and a.status='normal' and b.status='normal' and c.status='normal' " \
+                                        "and a.status='normal' " \
                                         "and ((a.assignNum > 0 and b.assignNum > 0) " \
                                         "and (a.isSpecify=0) or a.id in (%s) ) " \
                                         "order by is_get asc , c.forTime desc, a.id desc) as d " \
@@ -410,7 +410,7 @@ def get_user_can_see_gift_list(ucid=None, game_id=None, start_index=None, end_in
                                         "left outer join cms_gameGiftLog as c on c.giftId=a.id and c.uid= %s " \
                                         "where ((a.isSpecify = 1 and a.id in (%s)) or (a.isSpecify = 0)) " \
                                         "and a.gameId=%s and a.failTime > %s and b.platformId=%s " \
-                                        "and a.status='normal' and b.status='normal' and c.status='normal' " \
+                                        "and a.status='normal' " \
                                         "and (a.assignNum > 0 and b.assignNum > 0) " \
                                         "order by is_get asc , c.forTime desc, a.id desc) as d " \
                                         "where d.code<>'' or (d.assignNum>0 and d.code='') limit %s, %s " \
@@ -425,7 +425,7 @@ def get_user_can_see_gift_list(ucid=None, game_id=None, start_index=None, end_in
                                         "left outer join cms_gameGiftLog as c on c.giftId=a.id and c.uid= %s " \
                                         "where a.isSpecify = 0 " \
                                         "and a.gameId=%s and a.failTime > %s and b.platformId=%s " \
-                                        "and a.status='normal' and b.status='normal' and c.status='normal' " \
+                                        "and a.status='normal' " \
                                         "and (a.assignNum > 0 and b.assignNum > 0) " \
                                         "order by is_get asc , c.forTime desc, a.id desc) as d " \
                                         "where d.code<>'' or (d.assignNum>0 and d.code='') limit %s, %s " \
