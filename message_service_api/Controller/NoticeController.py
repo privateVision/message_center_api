@@ -107,7 +107,6 @@ def v4_cms_set_post_notice_sort():
         for sort in sort_data:
             notice_id = sort['id']
             sortby = sort['sortby']
-            print "%s - %s" % (notice_id, sortby)
             UsersMessage.objects(Q(type='notice') & Q(mysql_id=notice_id)).update(set__sortby=sortby)
             UserMessage.objects(Q(type='notice') & Q(mysql_id=notice_id)).update(set__sortby=sortby)
     except Exception, err:
@@ -129,7 +128,7 @@ def v4_sdk_get_notice_list():
         # & Q(is_read=0)
         & Q(start_time__lte=current_timestamp)
         & Q(end_time__gte=current_timestamp)
-        & Q(ucid=ucid)).order_by('sortby, -create_timestamp')
+        & Q(ucid=ucid)).order_by('-sortby, -create_timestamp')
     data_list = []
     for message in message_list:
         message_resp = {

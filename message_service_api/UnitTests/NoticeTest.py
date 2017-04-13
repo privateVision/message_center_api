@@ -96,25 +96,25 @@ class NoticeFunctionTest(unittest.TestCase):
     #     self.assertEqual(r.status_code, 200)
     #     print r.text
 
-    def test_add_notice(self):
-        data = {
-            "sort_data": [{'id': 1, 'sortby': 1}, {'id': 2, 'sortby': 2}]
-        }
-        headers = {"Content-Type": "application/json"}
-        data_json = json.dumps(data)
-        sign = get_cms_md5_sign(data_json)
-        r = requests.post("http://localhost:5000/msa/v4/notice/sort?sign=%s" % (sign,), data=data_json, headers=headers)
-        self.assertEqual(r.status_code, 200)
-        print r.text
-
-    # def test_get_notice_list(self):
-    #     body_data = {
-    #         '_sign': '5593e17f0803545452dc85db2000d948',
-    #         '_token': 'af5f2p4zxc84gcgg4wwwco0ww',
-    #         '_appid': 2,
+    # def test_add_notice(self):
+    #     data = {
+    #         "sort_data": [{'id': 1, 'sortby': 1}, {'id': 2, 'sortby': 2}]
     #     }
-    #     r = requests.post('http://sdkv4test.qcwanwan.com/msa/v4/notices', data=body_data)
+    #     headers = {"Content-Type": "application/json"}
+    #     data_json = json.dumps(data)
+    #     sign = get_cms_md5_sign(data_json)
+    #     r = requests.post("http://localhost:5000/msa/v4/notice/sort?sign=%s" % (sign,), data=data_json, headers=headers)
+    #     self.assertEqual(r.status_code, 200)
     #     print r.text
+
+    def test_get_notice_list(self):
+        body_data = {
+            '_sign': '7004f02a9d4f466c79c9dace143541e7',
+            '_token': 'a1bg7dhi95440sosoggk40ss8',
+            '_appid': 778,
+        }
+        r = requests.post('http://sdkv4test.qcwanwan.com/msa/v4/notices', data=body_data)
+        print r.text
 
     def tearDown(self):
         pass
