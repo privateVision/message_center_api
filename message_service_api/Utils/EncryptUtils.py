@@ -124,7 +124,6 @@ def sdk_api_check_sign(request):
             m = hashlib.md5()
             m.update(pri_key)
             pri_key = m.hexdigest()
-            # pri_key = "%s%s" % (md5_key[0:16], md5_key[0:8])
             m = hashlib.md5()
             m.update(data_str + "key=" + pri_key)
             service_logger.info(data_str + "key=" + pri_key)
@@ -141,4 +140,23 @@ def sdk_api_check_sign(request):
         mysql_session.rollback()
     finally:
         mysql_session.close()
+    return False
+
+
+def anfeng_helper_api_check_sign(request):
+    data_str = ""
+    request_data = request.json.copy()
+    del request_data['sign']
+    for key in sorted(request_data.keys()):
+        k = urllib.quote_plus(key)
+        v = urllib.quote_plus(str(request_data[key]))
+        data_str += "%s=%s&" % (k, v)
+    pri_key = "2134sdva151235gdfgrew34"
+    m = hashlib.md5()
+    enc_str = "%skey=%s" % (data_str, pri_key)
+    print enc_str
+    m.update(enc_str)
+    gen_sign = m.hexdigest()
+    if gen_sign == request.form['sign']:
+        return True
     return False

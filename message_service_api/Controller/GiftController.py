@@ -48,9 +48,12 @@ def v4_sdk_get_gifts_list():
     for game_gift in game_gift_list:
         game_gift_array.append(str(game_gift['id']))
     game_gift_array_str = ",".join(game_gift_array)
-    find_specify_user_gift_id_sql = "select distinct(giftId) from cms_gameGiftSpecify where giftId in (%s)" \
-                                    " and value = '%s' " % (game_gift_array_str, uid)
-    append_gift_id_list = mysql_cms_session.execute(find_specify_user_gift_id_sql).fetchall()
+
+    append_gift_id_list = []
+    if len(game_gift_array) > 0:
+        find_specify_user_gift_id_sql = "select distinct(giftId) from cms_gameGiftSpecify where giftId in (%s)" \
+                                        " and value = '%s' " % (game_gift_array_str, uid)
+        append_gift_id_list = mysql_cms_session.execute(find_specify_user_gift_id_sql).fetchall()
 
     already_get_gift_id_list = []
     specify_user_gift_id_list = []

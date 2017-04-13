@@ -255,13 +255,15 @@ def get_user_gift_count(ucid=None, appid=None):
     for game_gift in game_gift_list:
         game_gift_array.append(str(game_gift['id']))
     game_gift_array_str = ",".join(game_gift_array)
-    find_specify_user_gift_id_sql = "select distinct(giftId) from cms_gameGiftSpecify where giftId in (%s)" \
-                                    " and value = '%s' " % (game_gift_array_str, uid)
-    append_gift_id_list = mysql_cms_session.execute(find_specify_user_gift_id_sql).fetchall()
+
     specify_user_gift_id_list = []
-    for gift_id in append_gift_id_list:
-        specify_user_gift_id_list.append(str(gift_id['giftId']))
-    specify_user_gift_id_list_str = ",".join(specify_user_gift_id_list)
+    if len(game_gift_array) > 0:
+        find_specify_user_gift_id_sql = "select distinct(giftId) from cms_gameGiftSpecify where giftId in (%s)" \
+                                        " and value = '%s' " % (game_gift_array_str, uid)
+        append_gift_id_list = mysql_cms_session.execute(find_specify_user_gift_id_sql).fetchall()
+        for gift_id in append_gift_id_list:
+            specify_user_gift_id_list.append(str(gift_id['giftId']))
+        specify_user_gift_id_list_str = ",".join(specify_user_gift_id_list)
 
     if len(already_get_gift_id_list) > 0:
         # 获取没有指定用户的还有剩余礼包的礼包数
@@ -345,9 +347,13 @@ def get_user_can_see_gift_list(ucid=None, game_id=None, start_index=None, end_in
     for game_gift in game_gift_list:
         game_gift_array.append(str(game_gift['id']))
     game_gift_array_str = ",".join(game_gift_array)
-    find_specify_user_gift_id_sql = "select distinct(giftId) from cms_gameGiftSpecify where giftId in (%s)" \
-                                    " and value = '%s' " % (game_gift_array_str, uid)
-    append_gift_id_list = mysql_cms_session.execute(find_specify_user_gift_id_sql).fetchall()
+
+    append_gift_id_list = []
+    if len(game_gift_array) > 0:
+        find_specify_user_gift_id_sql = "select distinct(giftId) from cms_gameGiftSpecify where giftId in (%s)" \
+                                        " and value = '%s' " % (game_gift_array_str, uid)
+        append_gift_id_list = mysql_cms_session.execute(find_specify_user_gift_id_sql).fetchall()
+
     specify_user_gift_id_list = []
     for gift_id in append_gift_id_list:
         specify_user_gift_id_list.append(str(gift_id['giftId']))
@@ -845,7 +851,6 @@ def sdk_api_request_check(func):
             return func(*args, **kwargs)
         else:
             return response_data(200, 0, '请求校验错误')
-
     return wraper
 
 
@@ -858,5 +863,18 @@ def cms_api_request_check(func):
         if not check_result:
             return check_exception
         return func(*args, **kwargs)
-
     return wraper
+
+
+# anfeng helper api 请求通用装饰器
+def anfeng_helper_request_check(func):
+    @wraps(func)
+    def wraper(*args, **kwargs):
+        from Utils.EncryptUtils import anfeng_helper_api_check_sign
+        is_sign_true = anfeng_helper_api_check_sign(request)
+        if is_sign_true is True:
+            return func(*args, **kwargs)
+        else:
+            return response_data(200, 0, '请求校验错误')
+    return wraper
+
