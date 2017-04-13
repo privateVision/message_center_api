@@ -170,6 +170,7 @@ function updateQnCache($url){
     $headers = $auth->authorization('http://fusion.qiniuapi.com/v2/tune/refresh');
     $headers['Content-Type'] = 'application/json';
     $res = Client::post('http://fusion.qiniuapi.com/v2/tune/refresh', json_encode($data), $headers);
+    return $res;
 }
 
 
