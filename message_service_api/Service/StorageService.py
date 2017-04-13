@@ -345,7 +345,10 @@ def system_notices_persist(data_json=None):
         users_message.create_time = data_json['create_time']
         users_message.enter_status = data_json['enter_status']
         users_message.content = data_json['content']
-        users_message.sortby = data_json['sortby']
+        if 'sortby' not in data_json:
+            users_message.sortby = 0
+        else:
+            users_message.sortby = int(data_json['sortby'])
         users_message.button_url = data_json['button_url']
         users_message.open_type = data_json['open_type']
         users_message.img = data_json['img']
@@ -390,7 +393,10 @@ def system_notices_update(data_json=None):
         users_message.create_time = data_json['create_time']
         users_message.enter_status = data_json['enter_status']
         users_message.content = data_json['content']
-        users_message.sortby = data_json['sortby']
+        if 'sortby' not in data_json:
+            users_message.sortby = 0
+        else:
+            users_message.sortby = int(data_json['sortby'])
         users_message.button_url = data_json['button_url']
         users_message.open_type = data_json['open_type']
         users_message.img = data_json['img']
