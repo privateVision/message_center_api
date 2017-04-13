@@ -241,10 +241,16 @@ class OauthController extends Controller {
 
         if($unionid) {
             $user_oauth = UcuserOauth::from_cache_unionid($unionid);
+            if(!$user_oauth){
+                $user_oauth = UcuserOauth::where("unionid",$unionid)->first();
+            }
         }
 
         if(!$user_oauth) {
             $user_oauth = UcuserOauth::from_cache_openid($openid);
+            if(!$user_oauth){
+                $user_oauth = UcuserOauth::where()->first();
+            }
         }
         
         if(!$user_oauth) {
@@ -252,6 +258,9 @@ class OauthController extends Controller {
         }
 
         $user = Ucuser::from_cache($user_oauth->ucid);
+        if(!$user){
+            $user = Ucuser::where("ucid",$user_oauth->ucid)->first();
+        }
         return $user;
     }
 }

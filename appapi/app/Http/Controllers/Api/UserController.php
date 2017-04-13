@@ -300,7 +300,7 @@ class UserController extends AuthController
         return [
             'result' => true,
             'username' => $this->user->uid,
-            'text' => '解绑成功，您不可以再使用该手机号码登陆，请使用用户名登陆，用户名：'. $this->user->uid,
+            'text' => '解绑成功',
         ];
     }
 
@@ -342,7 +342,7 @@ class UserController extends AuthController
         $this->user->setPassword($password);
         $this->user->save();
 
-        user_log($this->user, $this->procedure, 'reset_password', '【重置密码】通过手机验证码，手机号码{%s}，新密码[%s]，旧密码[%s]', $mobile, $this->user->password, $old_password);
+        user_log($this->user, $this->procedure, 'reset_password', '【重置密码】通过手机验证码重置，手机号码{%s}，旧密码[%s]，新密码[%s]', $mobile, $old_password, $this->user->password);
 
         return ['result' => true];
     }
@@ -488,13 +488,12 @@ class UserController extends AuthController
             $filename = sprintf('avatar/%d.png', $this->user->ucid);
             $filepath = base_path('storage/uploads/') . $filename;
             $avatar_data = base64_decode($avatar);
-
-            $fp = fopen($filepath, 'wb');
+            $fp = fopen($filepath, 'w+');
             fwrite($fp, $avatar_data);
             fclose($fp);
 
             try {
-                $avatar_url = upload_to_cdn($filename, $filepath);
+                $avatar_url = upload_to_cdn($filename, $filepath,true);
             } catch(\App\Exceptions\Exception $e) {
                 throw new ApiException(ApiException::Remind, '头像上传失败：' . $e->getMessage());
             }

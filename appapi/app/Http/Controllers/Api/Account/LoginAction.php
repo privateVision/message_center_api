@@ -18,7 +18,7 @@ trait LoginAction {
         $rid = $this->parameter->tough('_rid');
         
         $user = $this->getLoginUser();
-        if($user->is_freeze) {
+        if(isset($user) && $user->is_freeze) {
             throw new ApiException(ApiException::AccountFreeze, '账号已被冻结，无法登陆');
         }
         

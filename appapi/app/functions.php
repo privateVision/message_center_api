@@ -91,7 +91,7 @@ function parse_card_id($card_id) {
     return ['birthday' => $birthday, 'gender' => $gender, 'province' => $province];
 }
 
-function upload_to_cdn($filename, $filepath, $is_delete = false) {
+function upload_to_cdn($filename, $filepath, $is_delete = true) {
     /*
     200 操作执行成功。
     298 部分操作执行成功。
@@ -130,7 +130,10 @@ function upload_to_cdn($filename, $filepath, $is_delete = false) {
             log_error('cdn_delete_error', ['code' => $result->code(), 'message' => $result->message()]);
             throw new \App\Exceptions\Exception('文件上传失败：'. $result->message());
         }
+
     };
+
+    if($is_delete) $delete();
 
     $update = function() use($auth, $config, $filename, $filepath, $delete) {
         $uploadMgr = new UploadManager();
@@ -140,18 +143,18 @@ function upload_to_cdn($filename, $filepath, $is_delete = false) {
 
         if($err) {
             if($err->code() != 614) {
-                log_error('cdn_update_error', ['code' => $result->code(), 'message' => $result->message()]);
-                throw new \App\Exceptions\Exception('文件上传失败：'. $result->message());
+                log_error('cdn_update_error', ['code' => $ret->code(), 'message' => $ret->message()]);
+                throw new \App\Exceptions\Exception('文件上传失败：'. $ret->message());
             }
 
             $delete();
-            $update();
+           // $update();
         }
 
         return $ret;
     };
 
-    if($is_delete) $delete();
+
     $update();
 
     return $config['base_url'] . $filename;
