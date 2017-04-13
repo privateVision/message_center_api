@@ -97,7 +97,7 @@ def v4_anfeng_helper_get_user_gifts():
 def v4_anfeng_helper_is_user_gift_get():
     from run import mysql_cms_session
     ucid = request.json.get('ucid')
-    gift_id = request.form['gift_id']
+    gift_id = request.json.get('gift_id')
     is_exist_sql = "select count(*) from cms_gameGiftLog as log where log.status = 'normal'" \
                    " and log.uid = %s and log.giftId = %s " % (ucid, gift_id)
     is_exist = mysql_cms_session.execute(is_exist_sql).scalar()

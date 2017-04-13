@@ -6,6 +6,7 @@
 
 class Config:
     MD5_SIGN_KEY = "868a4601f68867aff87950532857da34"
+    ANFENG_HELPER_SIGN_KEY = "ebe89a4c54f35e593d86455aab4343a8"
 
     @staticmethod
     def init_app(app):

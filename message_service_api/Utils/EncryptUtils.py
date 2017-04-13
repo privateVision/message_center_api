@@ -143,6 +143,7 @@ def sdk_api_check_sign(request):
     return False
 
 
+# 安锋助手的后台请求校验函数
 def anfeng_helper_api_check_sign(request):
     data_str = ""
     request_data = request.json.copy()
@@ -151,12 +152,14 @@ def anfeng_helper_api_check_sign(request):
         k = urllib.quote_plus(key)
         v = urllib.quote_plus(str(request_data[key]))
         data_str += "%s=%s&" % (k, v)
-    pri_key = "2134sdva151235gdfgrew34"
+    anfeng_helper_sign_key = app.config.get('ANFENG_HELPER_SIGN_KEY')
     m = hashlib.md5()
-    enc_str = "%skey=%s" % (data_str, pri_key)
-    print enc_str
+    enc_str = "%skey=%s" % (data_str, anfeng_helper_sign_key)
+    service_logger.info(enc_str)
     m.update(enc_str)
     gen_sign = m.hexdigest()
-    if gen_sign == request.form['sign']:
+    service_logger.info("客户端sign为：%s" % (request.json.get('sign'),))
+    service_logger.info("服务器运算生成sign为：%s" % (gen_sign,))
+    if gen_sign == request.json.get('sign'):
         return True
     return False
