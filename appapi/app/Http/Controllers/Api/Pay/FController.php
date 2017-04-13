@@ -15,6 +15,7 @@ class FController extends Controller {
     const EnableStoreCard = true;
     const EnableCoupon = true;
     const EnableBalance = true;
+    const FSIGN = 2;
 
     public function payHandle(Orders $order, $real_fee) {
         if($real_fee > 0) {
@@ -30,7 +31,7 @@ class FController extends Controller {
         $fee = $this->parameter->tough('fee');
         $body = $this->parameter->tough('body');
         $subject = $this->parameter->tough('subject');
-
+        $order->vid = self::FSIGN;
         $order->fee = $fee;
         $order->subject = $subject;
         $order->body = $body;

@@ -4,6 +4,7 @@ use Illuminate\Support\Facades\Queue;
 use Qiniu\Auth;
 use Qiniu\Storage\BucketManager;
 use Qiniu\Storage\UploadManager;
+use Qiniu\Http\Client;
 
 // 设置redis的key在过期时间
 // 1. 一个用户的所有数据应该同时过期
@@ -91,7 +92,7 @@ function parse_card_id($card_id) {
     return ['birthday' => $birthday, 'gender' => $gender, 'province' => $province];
 }
 
-function upload_to_cdn($filename, $filepath, $is_delete = false) {
+function upload_to_cdn($filename, $filepath, $is_delete = true) {
     /*
     200 操作执行成功。
     298 部分操作执行成功。
@@ -130,7 +131,10 @@ function upload_to_cdn($filename, $filepath, $is_delete = false) {
             log_error('cdn_delete_error', ['code' => $result->code(), 'message' => $result->message()]);
             throw new \App\Exceptions\Exception('文件上传失败：'. $result->message());
         }
+
     };
+
+    if($is_delete) $delete();
 
     $update = function() use($auth, $config, $filename, $filepath, $delete) {
         $uploadMgr = new UploadManager();
@@ -140,22 +144,34 @@ function upload_to_cdn($filename, $filepath, $is_delete = false) {
 
         if($err) {
             if($err->code() != 614) {
-                log_error('cdn_update_error', ['code' => $result->code(), 'message' => $result->message()]);
-                throw new \App\Exceptions\Exception('文件上传失败：'. $result->message());
+                log_error('cdn_update_error', ['code' => $ret->code(), 'message' => $ret->message()]);
+                throw new \App\Exceptions\Exception('文件上传失败：'. $ret->message());
             }
 
             $delete();
-            $update();
+           // $update();
         }
 
         return $ret;
     };
 
-    if($is_delete) $delete();
+
     $update();
 
     return $config['base_url'] . $filename;
 }
+
+//更新七牛缓存文件
+function updateQnCache($url){
+    $data = ["urls"=>[$url]];
+    $config = config('common.storage_cdn.qiniu');
+
+    $auth = new Auth($config['access_key'], $config['secret_key']);
+    $headers = $auth->authorization('http://fusion.qiniuapi.com/v2/tune/refresh');
+    $headers['Content-Type'] = 'application/json';
+    $res = Client::post('http://fusion.qiniuapi.com/v2/tune/refresh', json_encode($data), $headers);
+}
+
 
 /**
  * 生成唯一用户名

@@ -17,6 +17,7 @@ trait RegisterAction {
         $rid = $this->parameter->tough('_rid');
         
         $user = $this->getRegisterUser();
+        if(!$user) throw new ApiException(ApiException::OauthNotRegister, '未注册第三方账号，请注册');
         if($user->is_freeze) {
             throw new ApiException(ApiException::AccountFreeze, '账号被冻结，无法登陆');
         }

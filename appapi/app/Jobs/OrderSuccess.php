@@ -64,7 +64,7 @@ class OrderSuccess extends Job
                                 }
                             } elseif($v->vcid == 0) { // vcid == 0：F币
                                 if(intval($user->balance * 100) < $fee) {
-                                    log_error("orderFail", ['order_id' => $this->order_id, 'fee' => $fee, 'ucid' => $user->ucid, 'balance' => $balance], 'F币不足以抵扣订单');
+                                    log_error("orderFail", ['order_id' => $this->order_id, 'fee' => $fee, 'ucid' => $user->ucid, 'balance' => intval($user->balance)], 'F币不足以抵扣订单');
                                     $is_s = false;
                                 } else {
                                     $user->decrement('balance', $fee / 100);

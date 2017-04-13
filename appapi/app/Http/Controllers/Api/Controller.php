@@ -25,8 +25,11 @@ class Controller extends \App\Controller
 			$_sign = $this->parameter->tough('_sign');
 
 			$this->procedure = Procedures::from_cache($_appid);
+			 if(!$this->procedure){
+				 $this->procedure = Procedures::where("pid",$_appid)->first();
+			 }
 			if (!$this->procedure) {
-				throw new ApiException(ApiException::Error, "appid不正确:{$_appid}");
+				throw new ApiException(ApiException::Error, "appid not exists:{$_appid}");
 			}
 
 			//$this->procedure = $procedure;
