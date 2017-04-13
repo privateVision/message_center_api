@@ -3,7 +3,6 @@ import json
 
 from MiddleWare import redis_store
 
-
 class RedisHandle(object):
     common_key_prefix = "msa_"
 
@@ -64,8 +63,8 @@ class RedisHandle(object):
                     if broadcast_data is not None:
                         user_mark['broadcast'] = broadcast_data
                         redis_store.hset(key, 'broadcast', 0)
-            if redis_mark_data.has_key('message'):
-                user_mark['message'] = int(redis_mark_data['message'])
+        from Service.UsersService import get_user_unread_message_count
+        user_mark['message'] = get_user_unread_message_count(key_name)
         return user_mark
 
     @staticmethod
