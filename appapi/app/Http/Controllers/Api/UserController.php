@@ -494,6 +494,7 @@ class UserController extends AuthController
 
             try {
                 $avatar_url = upload_to_cdn($filename, $filepath,true);
+               // updateQnCache($avatar_url);
             } catch(\App\Exceptions\Exception $e) {
                 throw new ApiException(ApiException::Remind, '头像上传失败：' . $e->getMessage());
             }

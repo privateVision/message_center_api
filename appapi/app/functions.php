@@ -4,6 +4,7 @@ use Illuminate\Support\Facades\Queue;
 use Qiniu\Auth;
 use Qiniu\Storage\BucketManager;
 use Qiniu\Storage\UploadManager;
+use Qiniu\Http\Client;
 
 // 设置redis的key在过期时间
 // 1. 一个用户的所有数据应该同时过期
@@ -159,6 +160,18 @@ function upload_to_cdn($filename, $filepath, $is_delete = true) {
 
     return $config['base_url'] . $filename;
 }
+
+//更新七牛缓存文件
+function updateQnCache($url){
+    $data = ["urls"=>[$url]];
+    $config = config('common.storage_cdn.qiniu');
+
+    $auth = new Auth($config['access_key'], $config['secret_key']);
+    $headers = $auth->authorization('http://fusion.qiniuapi.com/v2/tune/refresh');
+    $headers['Content-Type'] = 'application/json';
+    $res = Client::post('http://fusion.qiniuapi.com/v2/tune/refresh', json_encode($data), $headers);
+}
+
 
 /**
  * 生成唯一用户名

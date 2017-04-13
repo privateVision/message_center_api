@@ -21,7 +21,7 @@ trait LoginAction {
         if(isset($user) && $user->is_freeze) {
             throw new ApiException(ApiException::AccountFreeze, '账号已被冻结，无法登陆');
         }
-        
+        if(!$user)  throw new ApiException(ApiException::OauthNotRegister, '未注册第三方账号，请注册');
         $user_sub_id = $this->getDefaultUserSubId($user);
 
         $user_sub = null;
