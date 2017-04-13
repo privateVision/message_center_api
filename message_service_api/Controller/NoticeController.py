@@ -95,6 +95,27 @@ def v4_cms_set_post_notice_open():
     return response_data(http_code=200)
 
 
+# CMS 设置礼包优先级排序
+@notice_controller.route('/msa/v4/notice/sort', methods=['POST'])
+@cms_api_request_check
+def v4_cms_set_post_notice_sort():
+    sort_data = request.json.get('sort_data')
+    if sort_data is None or sort_data == '':
+        log_exception(request, "客户端请求错误-sort_data为空")
+        return response_data(200, 0, '客户端请求错误')
+    try:
+        for sort in sort_data:
+            notice_id = sort['id']
+            sortby = sort['sortby']
+            print "%s - %s" % (notice_id, sortby)
+            UsersMessage.objects(Q(type='notice') & Q(mysql_id=notice_id)).update(set__sortby=sortby)
+            UserMessage.objects(Q(type='notice') & Q(mysql_id=notice_id)).update(set__sortby=sortby)
+    except Exception, err:
+        service_logger.error("设置公告优先级异常：%s" % (err.message,))
+        return response_data(200, 0, '服务端异常')
+    return response_data(http_code=200)
+
+
 # SDK 获取公告列表
 @notice_controller.route('/msa/v4/notices', methods=['POST'])
 @sdk_api_request_check
