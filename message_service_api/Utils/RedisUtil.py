@@ -53,6 +53,7 @@ class RedisHandle(object):
             "message": 0,
             "gift_num": 0
         }
+        from Service.UsersService import get_user_unread_message_count
         if redis_store.exists(key):
             redis_mark_data = redis_store.hgetall(key)
             if redis_mark_data.has_key('broadcast'):
@@ -63,8 +64,14 @@ class RedisHandle(object):
                     if broadcast_data is not None:
                         user_mark['broadcast'] = broadcast_data
                         redis_store.hset(key, 'broadcast', 0)
-        from Service.UsersService import get_user_unread_message_count
-        user_mark['message'] = get_user_unread_message_count(key_name)
+            if redis_mark_data.has_key('message'):
+                user_mark['message'] = int(redis_mark_data['message'])
+                if user_mark['message'] <= 0:
+                    user_mark['message'] = get_user_unread_message_count(key_name)
+                    RedisHandle.hset(key_name, 'message', user_mark['message'])
+        else:  # 不存在缓存数据
+            user_mark['message'] = get_user_unread_message_count(key_name)
+            RedisHandle.hset(key_name, 'message', user_mark['message'])
         return user_mark
 
     @staticmethod
