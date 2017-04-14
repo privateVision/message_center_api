@@ -6,6 +6,7 @@ from flask import request
 from mongoengine import Q
 
 from Controller.BaseController import response_data, response_ok
+from LanguageConf import get_tips
 from MongoModel.AppRulesModel import AppVipRules
 from MongoModel.MessageModel import UsersMessage
 from MongoModel.MessageRevocationModel import MessageRevocation
@@ -115,7 +116,7 @@ def v4_cms_message_revocation():
     msg_id = request.json.get('mysql_id')
     if type is None or type == '' or msg_id is None or msg_id == '':
         log_exception(request, '客户端请求错误-消息类型或消息id为空')
-        return response_data(200, 0, '客户端请求错误')
+        return response_data(200, 0, get_tips('common', 'client_request_error'))
     message_revocation = MessageRevocation()
     message_revocation.id = "%s%s" % (message_type, msg_id)
     message_revocation.type = message_type
@@ -127,7 +128,7 @@ def v4_cms_message_revocation():
     except Exception, err:
         log_exception(request, 'mongo写入失败: %s' % (err.message,))
         return response_data(http_code=200, code=0, message="mongo写入失败")
-    return response_data(http_code=200, message="消息撤回成功")
+    return response_data(http_code=200, message=get_tips('cms', 'message_revocation_success'))
 
 
 # 心跳
@@ -156,9 +157,9 @@ def v4_sdk_heartbeat():
         freeze = get_user_is_freeze_by_access_token(request.form['_token'])
         if freeze is not None:
             if freeze == 1:
-                return response_data(200, 101, '大账号被冻结')
+                return response_data(200, 101, get_tips('heartbeat', 'user_account_freezed'))
             if freeze == 2:
-                return response_data(200, 108, '小账号被冻结')
+                return response_data(200, 108, get_tips('heartbeat', 'sub_user_account_freezed'))
         return response_data(data=data)
 
 
