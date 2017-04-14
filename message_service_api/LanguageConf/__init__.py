@@ -1,3 +1,5 @@
+# _*_ coding: utf8 _*_
+
 import ConfigParser
 import os
 
