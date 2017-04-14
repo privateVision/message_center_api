@@ -5,6 +5,7 @@ from flask import request
 
 from Controller.BaseController import response_data
 from MiddleWare import service_logger
+from MysqlModel.GameGiftLog import GameGiftLog
 from Service.StorageService import get_uid_by_ucid
 from Service.UsersService import get_ucid_by_access_token, sdk_api_request_check, get_username_by_ucid, \
     get_game_info_by_appid, get_user_gift_count, get_user_can_see_gift_count, get_user_can_see_gift_list
@@ -233,14 +234,20 @@ def v4_sdk_user_get_gift():
                                                           SDK_PLATFORM_ID, game_gift_code['id'])
                                 update_gift_code_result = mysql_cms_session.execute(update_gift_code_sql)
                                 if update_gift_code_result:
-                                    insert_get_gift_log_sql = "insert into cms_gameGiftLog(gameId, giftId, platformId, " \
-                                                              "code, uid, username, forTime, forIp, forMac) " \
-                                                              "values(%s, %s, %s, '%s', %s, '%s', %s, '%s', '%s')" \
-                                                              % (
-                                                                  game_id, gift_id, SDK_PLATFORM_ID,
-                                                                  game_gift_code['code'],
-                                                                  ucid, username, int(time.time()), ip, mac)
-                                    mysql_cms_session.execute(insert_get_gift_log_sql)
+                                    # insert_get_gift_log_sql = "insert into cms_gameGiftLog(gameId, giftId, platformId, " \
+                                    #                           "code, uid, username, forTime, forIp, forMac) " \
+                                    #                           "values(%s, %s, %s, '%s', %s, '%s', %s, '%s', '%s')" \
+                                    #                           % (
+                                    #                               game_id, gift_id, SDK_PLATFORM_ID,
+                                    #                               game_gift_code['code'],
+                                    #                               ucid, username, int(time.time()), ip, mac)
+                                    # mysql_cms_session.execute(insert_get_gift_log_sql)
+                                    # 礼包码可能有特殊字符，无奈改成 ORM 了
+                                    game_gift_log = GameGiftLog(gameId=game_id, giftId=gift_id,
+                                                                platformId=SDK_PLATFORM_ID, code=game_gift_code['code'],
+                                                                uid=ucid, username=username, forTime=int(time.time()),
+                                                                forIp=ip, forMac=mac)
+                                    mysql_cms_session.add(game_gift_log)
                                     # 礼包个数减一
                                     update_gift_count_sql = "update cms_gameGift set num = num+1, " \
                                                             "assignNum = assignNum-1 where id=%s " \
