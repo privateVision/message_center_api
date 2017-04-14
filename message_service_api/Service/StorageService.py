@@ -190,7 +190,9 @@ def add_user_messsage(ucid, type, msg_id, is_time, start_time, end_time, game):
         if message_info is not None:
             user_message.create_timestamp = message_info['create_timestamp']
         user_message.save()
-        # add_mark_to_user_redis(ucid, type)
+        if type == 'broadcast':
+            service_logger.info("设置缓存中的广播数")
+            add_mark_to_user_redis(ucid, type)
     else:
         service_logger.info("mysql添加用户消息：%s-%s-%s" % (ucid, type, msg_id))
         from run import mysql_session
@@ -310,14 +312,6 @@ def add_mark_to_user_redis(ucid, message_type):
 
 
 def add_to_every_related_users_message_list(users_message):
-    # from run import mysql_session
-    # try:
-    #     mysql_session.execute('select 1').scalar()
-    # except Exception, err:
-    #     mysql_session.rollback()
-    #     service_logger.error(err.message)
-    # finally:
-    #     mysql_session.close()
     if 'distribute' not in users_message:
         users_message.distribute = None
     add_user_message_thread = threading.Thread(target=add_message_to_user_message_list,

@@ -220,6 +220,7 @@ def get_user_broadcast_list(ucid=None):
         & Q(start_time__lte=current_timestamp)
         & Q(end_time__gte=current_timestamp)
         & Q(ucid=ucid)).order_by('-start_time')[:1]
+    data_list = []
     for message in broadcast_list:
         message_info = get_broadcast_message_detail_info(message['mysql_id'])
         message_resp = {
@@ -227,8 +228,8 @@ def get_user_broadcast_list(ucid=None):
             "close_time": message_info['close_time']
         }
         UserMessage.objects(Q(type='broadcast') & Q(ucid=ucid)).update(set__is_read=1)
-        return message_resp
-    return None
+        data_list.append(message_resp)
+    return data_list
 
 
 # 根据用户id获取未读消息数

@@ -4,6 +4,7 @@ from flask import Blueprint
 from flask import request
 
 from Controller.BaseController import response_data
+from LanguageConf import get_tips
 from MiddleWare import service_logger
 from MysqlModel.GameGiftLog import GameGiftLog
 from Service.StorageService import get_uid_by_ucid
@@ -34,7 +35,7 @@ def v4_sdk_get_gifts_list():
     # 查询游戏信息
     game = get_game_info_by_appid(appid)
     if game is None:
-        return response_data(200, 0, '游戏未找到')
+        return response_data(200, 0, get_tips('gift', 'game_not_found'))
     now = int(time.time())
     start_timestamp = int(now - (now % 86400) + time.timezone)
     end_timestamp = int(start_timestamp + 86399)
@@ -138,23 +139,23 @@ def v4_sdk_user_get_gift():
     end_for_time = int(time.time()) - 3600 * 24  # 限制24小时的时间间隔
     if appid is None or gift_id is None or ip is None or mac is None:
         log_exception(request, '客户端请求错误-appid或giftid或ip\mac为空')
-        return response_data(200, 0, '客户端参数错误')
+        return response_data(200, 0, get_tips('common', 'client_params_error'))
     if 'platform_id' in request.form:
         SDK_PLATFORM_ID = int(request.form['platform_id'])
     # 查询游戏信息
     game = get_game_info_by_appid(appid)
     if game is None:
-        return response_data(200, 0, '游戏未找到')
+        return response_data(200, 0, get_tips('gift', 'game_not_found'))
     game_id = game['id']
     find_game_gift_info_sql = "select * from cms_gameGift where id= %s limit 1" % (gift_id,)
     game_gift_info = mysql_cms_session.execute(find_game_gift_info_sql).fetchone()
     if game_gift_info is not None:
         if game_gift_info['gameId'] != game_id or game_gift_info['status'] != 'normal':
-            return response_data(200, 0, '礼包不存在或者礼包已经过期')
+            return response_data(200, 0, get_tips('gift', 'gift_not_exist_or_out_of_date'))
         if game_gift_info['assignNum'] < 1:
-            return response_data(200, 0, '礼包被领取完了')
+            return response_data(200, 0, get_tips('gift', 'gift_pool_is_empty'))
         if game_gift_info['failTime'] < int(time.time()):
-            return response_data(200, 0, '礼包已经过期了')
+            return response_data(200, 0, get_tips('gift', 'gift_already_out_of_date'))
         if game_gift_info['isBindPhone'] == 1:  # 需要绑定手机
             from run import mysql_session
             find_users_mobile_sql = "select mobile from ucusers as u where u.ucid = %s limit 1" % (ucid,)
@@ -162,7 +163,7 @@ def v4_sdk_user_get_gift():
                 user_mobile_info = mysql_session.execute(find_users_mobile_sql).fetchone()
                 if user_mobile_info is not None:
                     if user_mobile_info['mobile'] == '':
-                        return response_data(200, 0, '该礼包需要绑定手机的用户才能领取，请先绑定手机!')
+                        return response_data(200, 0, get_tips('gift', 'gift_need_bind_mobile'))
             except Exception, err:
                 service_logger.error(err.message)
                 mysql_session.rollback()
@@ -176,7 +177,7 @@ def v4_sdk_user_get_gift():
                 user_vip_info = mysql_session.execute(find_users_vip_sql).fetchone()
                 if user_vip_info is not None:
                     if user_vip_info['vip'] not in level_list:
-                        return response_data(200, 0, '该礼包需要特定等级的用户才可领取，您的等级不符合要求！')
+                        return response_data(200, 0, get_tips('gift', 'gift_need_reach_vip_level'))
             except Exception, err:
                 service_logger.error(err.message)
                 mysql_session.rollback()
@@ -193,7 +194,7 @@ def v4_sdk_user_get_gift():
                                                    "and value = '%s' " % (gift_id, _uid)
                     result = mysql_cms_session.execute(find_game_gift_user_list_sql).scalar()
                     if result == 0:
-                        return response_data(200, 0, '该礼包需要在指定的用户中才可领取！')
+                        return response_data(200, 0, get_tips('gift', 'gift_need_get_by_specify_users'))
             except Exception, err:
                 service_logger.error(err.message)
                 mysql_session.rollback()
@@ -207,7 +208,7 @@ def v4_sdk_user_get_gift():
                                                                end_for_time, ip, mac)
         game_gift_log_count = mysql_cms_session.execute(find_game_gift_log_count_sql).scalar()
         if game_gift_log_count > 3:
-            return response_data(200, 0, '已经领取过了')
+            return response_data(200, 0, get_tips('gift', 'already_get_gift'))
         # 检查礼包获取资格
         find_user_game_gift_log_sql = "select count(*) from cms_gameGiftLog where gameId = %s " \
                                       "and giftId = %s and platformId = %s and forTime >= %s " \
@@ -234,14 +235,6 @@ def v4_sdk_user_get_gift():
                                                           SDK_PLATFORM_ID, game_gift_code['id'])
                                 update_gift_code_result = mysql_cms_session.execute(update_gift_code_sql)
                                 if update_gift_code_result:
-                                    # insert_get_gift_log_sql = "insert into cms_gameGiftLog(gameId, giftId, platformId, " \
-                                    #                           "code, uid, username, forTime, forIp, forMac) " \
-                                    #                           "values(%s, %s, %s, '%s', %s, '%s', %s, '%s', '%s')" \
-                                    #                           % (
-                                    #                               game_id, gift_id, SDK_PLATFORM_ID,
-                                    #                               game_gift_code['code'],
-                                    #                               ucid, username, int(time.time()), ip, mac)
-                                    # mysql_cms_session.execute(insert_get_gift_log_sql)
                                     # 礼包码可能有特殊字符，无奈改成 ORM 了
                                     game_gift_log = GameGiftLog(gameId=game_id, giftId=gift_id,
                                                                 platformId=SDK_PLATFORM_ID, code=game_gift_code['code'],
@@ -261,19 +254,19 @@ def v4_sdk_user_get_gift():
                                     data = {'code': game_gift_code['code']}
                                     # 减少缓存中的未领取的礼包数
                                     RedisHandle.hdecrby(ucid, 'gift_num')
-                                    return response_data(200, 1, '领取成功', data)
+                                    return response_data(200, 1, get_tips('gift', 'get_gift_success'), data)
                             except Exception, err:
                                 service_logger.error(err.message)
                                 mysql_cms_session.rollback()
                             finally:
                                 mysql_cms_session.close()
-                return response_data(200, 0, '礼包被领取完了')
+                return response_data(200, 0, get_tips('gift', 'gift_pool_is_empty'))
             else:
-                return response_data(200, 0, '该游戏未找到该平台可用的礼包')
+                return response_data(200, 0, get_tips('gift', 'platform_has_no_gift'))
         else:
-            return response_data(200, 0, '已经领取过了')
+            return response_data(200, 0, get_tips('gift', 'already_get_gift'))
     else:
-        return response_data(200, 0, '礼包不存在')
+        return response_data(200, 0, get_tips('gift', 'gift_not_exist'))
 
 
 # 查询游戏是否有未领取礼包
