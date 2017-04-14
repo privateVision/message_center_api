@@ -50,8 +50,7 @@ class RedisHandle(object):
         key = "%s%s" % (RedisHandle.common_key_prefix, key_name)
         user_mark = {
             "broadcast": [],
-            "message": 0,
-            "gift_num": 0
+            "message": 0
         }
         from Service.UsersService import get_user_unread_message_count
         if redis_store.exists(key):

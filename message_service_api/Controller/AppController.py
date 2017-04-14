@@ -138,7 +138,21 @@ def v4_sdk_heartbeat():
     appid = request.form['_appid']
     if ucid:
         data = RedisHandle.get_user_data_mark_in_redis(ucid)
-        data['gift_num'] = get_user_gift_count(ucid, appid)
+        if RedisHandle.exists(ucid):  # 存在用户的缓存数据
+            redis_mark_data = RedisHandle.hgetall(ucid)
+            if redis_mark_data.has_key('gift_num'):
+                gift_num = int(redis_mark_data['gift_num'])
+                if gift_num <= 0:
+                    data['gift_num'] = get_user_gift_count(ucid, appid)
+                    RedisHandle.hset(ucid, 'gift_num', data['gift_num'])
+                else:
+                    data['gift_num'] = gift_num
+            else:
+                data['gift_num'] = get_user_gift_count(ucid, appid)
+                RedisHandle.hset(ucid, 'gift_num', data['gift_num'])
+        else:
+            data['gift_num'] = get_user_gift_count(ucid, appid)
+            RedisHandle.hset(ucid, 'gift_num', data['gift_num'])
         freeze = get_user_is_freeze_by_access_token(request.form['_token'])
         if freeze is not None:
             if freeze == 1:

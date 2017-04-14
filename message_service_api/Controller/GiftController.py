@@ -8,6 +8,7 @@ from MiddleWare import service_logger
 from Service.StorageService import get_uid_by_ucid
 from Service.UsersService import get_ucid_by_access_token, sdk_api_request_check, get_username_by_ucid, \
     get_game_info_by_appid, get_user_gift_count, get_user_can_see_gift_count, get_user_can_see_gift_list
+from Utils.RedisUtil import RedisHandle
 from Utils.SystemUtils import log_exception
 import math
 
@@ -251,6 +252,8 @@ def v4_sdk_user_get_gift():
                                     mysql_cms_session.execute(update_gift_count_sql)
                                     mysql_cms_session.commit()
                                     data = {'code': game_gift_code['code']}
+                                    # 减少缓存中的未领取的礼包数
+                                    RedisHandle.hdecrby(ucid, 'gift_num')
                                     return response_data(200, 1, '领取成功', data)
                             except Exception, err:
                                 service_logger.error(err.message)
