@@ -281,18 +281,22 @@ def get_user_gift_count(ucid=None, appid=None):
 
     if len(already_get_gift_id_list) > 0:
         # 获取没有指定用户的还有剩余礼包的礼包数
-        get_not_specify_user_gift_count_sql = "select count(*) from cms_gameGift as gift join cms_gameGiftAssign as assign" \
+        get_not_specify_user_gift_count_sql = "select count(*) from cms_gameGift as gift join cms_gameGiftAssign " \
+                                              "as assign" \
                                               " on gift.id=assign.giftId where gift.status='normal' " \
                                               "and gift.failTime > %s and assign.platformId = %s " \
-                                              "and assign.status='normal' and assign.assignNum>0 and gift.isSpecify=0 " \
+                                              "and assign.status='normal' and assign.assignNum>0 " \
+                                              "and gift.isSpecify=0 " \
                                               "and gift.id not in(%s)" % (
                                                   now, SDK_PLATFORM_ID, already_get_gift_id_list_str)
         if len(specify_user_gift_id_list) > 0:
             # 获取指定了用户的还有剩余礼包的礼包数
-            get_specify_user_gift_count_sql = "select count(*) from cms_gameGift as gift join cms_gameGiftAssign as assign" \
+            get_specify_user_gift_count_sql = "select count(*) from cms_gameGift as gift join cms_gameGiftAssign " \
+                                              "as assign" \
                                               " on gift.id=assign.giftId where gift.status='normal' " \
                                               "and gift.failTime > %s and assign.platformId = %s " \
-                                              "and assign.status='normal' and assign.assignNum>0 and gift.isSpecify=1 " \
+                                              "and assign.status='normal' and assign.assignNum>0 " \
+                                              "and gift.isSpecify=1 " \
                                               "and gift.id in(%s) and gift.id not in(%s) " \
                                               % (now, SDK_PLATFORM_ID, specify_user_gift_id_list_str,
                                                  already_get_gift_id_list_str)
@@ -301,17 +305,21 @@ def get_user_gift_count(ucid=None, appid=None):
             get_specify_user_gift_count_sql = None
     else:
         # 获取没有指定用户的还有剩余礼包的礼包数
-        get_not_specify_user_gift_count_sql = "select count(*) from cms_gameGift as gift join cms_gameGiftAssign as assign" \
+        get_not_specify_user_gift_count_sql = "select count(*) from cms_gameGift as gift join cms_gameGiftAssign " \
+                                              "as assign" \
                                               " on gift.id=assign.giftId where gift.status='normal' " \
                                               "and gift.failTime > %s and assign.platformId = %s " \
-                                              "and assign.status='normal' and assign.assignNum>0 and gift.isSpecify=0 " \
+                                              "and assign.status='normal' and assign.assignNum>0 " \
+                                              "and gift.isSpecify=0 " \
                                               % (now, SDK_PLATFORM_ID)
         if len(specify_user_gift_id_list) > 0:
             # 获取指定了用户的还有剩余礼包的礼包数
-            get_specify_user_gift_count_sql = "select count(*) from cms_gameGift as gift join cms_gameGiftAssign as assign" \
+            get_specify_user_gift_count_sql = "select count(*) from cms_gameGift as gift join cms_gameGiftAssign" \
+                                              " as assign" \
                                               " on gift.id=assign.giftId where gift.status='normal' " \
                                               "and gift.failTime > %s and assign.platformId = %s " \
-                                              "and assign.status='normal' and assign.assignNum>0 and gift.isSpecify=1 " \
+                                              "and assign.status='normal' and assign.assignNum>0 " \
+                                              "and gift.isSpecify=1 " \
                                               "and gift.id in(%s)" \
                                               % (now, SDK_PLATFORM_ID, specify_user_gift_id_list_str)
         else:
@@ -379,7 +387,8 @@ def get_user_can_see_gift_list(ucid=None, game_id=None, start_index=None, end_in
                                         "a.isAfReceive, a.isBindPhone," \
                                         "a.content,a.label,a.uid,a.publishTime,a.failTime,a.status," \
                                         "b.num, b.assignNum, ifnull(c.code,'') as code,if(c.code<>'', '1', '0') " \
-                                        "as is_get from cms_gameGift as a join cms_gameGiftAssign as b on a.id=b.giftId " \
+                                        "as is_get from cms_gameGift as a join cms_gameGiftAssign as b " \
+                                        "on a.id=b.giftId " \
                                         "left outer join cms_gameGiftLog as c on c.giftId=a.id and c.uid= %s " \
                                         "where a.gameId=%s and a.failTime > %s and b.platformId=%s " \
                                         "and a.status='normal' and b.status='normal' " \
@@ -394,7 +403,8 @@ def get_user_can_see_gift_list(ucid=None, game_id=None, start_index=None, end_in
                                         "a.isAfReceive, a.isBindPhone," \
                                         "a.content,a.label,a.uid,a.publishTime,a.failTime,a.status," \
                                         "b.num, b.assignNum, ifnull(c.code,'') as code,if(c.code<>'', '1', '0') " \
-                                        "as is_get from cms_gameGift as a join cms_gameGiftAssign as b on a.id=b.giftId " \
+                                        "as is_get from cms_gameGift as a join cms_gameGiftAssign as b " \
+                                        "on a.id=b.giftId " \
                                         "left outer join cms_gameGiftLog as c on c.giftId=a.id and c.uid= %s " \
                                         "where a.gameId=%s and a.failTime > %s and b.platformId=%s " \
                                         "and a.status='normal' and b.status='normal' " \
@@ -410,7 +420,8 @@ def get_user_can_see_gift_list(ucid=None, game_id=None, start_index=None, end_in
                                         "a.isAfReceive, a.isBindPhone," \
                                         "a.content,a.label,a.uid,a.publishTime,a.failTime,a.status," \
                                         "b.num, b.assignNum, ifnull(c.code,'') as code,if(c.code<>'', '1', '0') " \
-                                        "as is_get from cms_gameGift as a join cms_gameGiftAssign as b on a.id=b.giftId " \
+                                        "as is_get from cms_gameGift as a join cms_gameGiftAssign as b " \
+                                        "on a.id=b.giftId " \
                                         "left outer join cms_gameGiftLog as c on c.giftId=a.id and c.uid= %s " \
                                         "where ((a.isSpecify = 1 and a.id in (%s)) or (a.isSpecify = 0)) " \
                                         "and a.gameId=%s and a.failTime > %s and b.platformId=%s " \
@@ -425,7 +436,8 @@ def get_user_can_see_gift_list(ucid=None, game_id=None, start_index=None, end_in
                                         "a.isAfReceive, a.isBindPhone," \
                                         "a.content,a.label,a.uid,a.publishTime,a.failTime,a.status," \
                                         "b.num, b.assignNum, ifnull(c.code,'') as code,if(c.code<>'', '1', '0') " \
-                                        "as is_get from cms_gameGift as a join cms_gameGiftAssign as b on a.id=b.giftId " \
+                                        "as is_get from cms_gameGift as a join cms_gameGiftAssign as b " \
+                                        "on a.id=b.giftId " \
                                         "left outer join cms_gameGiftLog as c on c.giftId=a.id and c.uid= %s " \
                                         "where a.isSpecify = 0 " \
                                         "and a.gameId=%s and a.failTime > %s and b.platformId=%s " \
@@ -436,70 +448,6 @@ def get_user_can_see_gift_list(ucid=None, game_id=None, start_index=None, end_in
                                         % (ucid, game_id, now, SDK_PLATFORM_ID, start_index, end_index)
     unget_gifts_page_list = mysql_cms_session.execute(unget_gifts_page_list_sql).fetchall()
     return unget_gifts_page_list
-
-
-# 获取用户可看到的礼包列表
-# def get_user_gift_list(ucid=None, appid=None, start_index=None, end_index=None):
-#     from run import mysql_cms_session
-#     from run import SDK_PLATFORM_ID
-#     now = int(time.time())
-#     game = get_game_info_by_appid(appid)
-#     if game is None:
-#         return 0
-#     find_user_already_get_gift_id_sql = "select distinct(giftId) from cms_gameGiftLog where gameId = %s" \
-#                                         " and status = 'normal' and uid = %s " % (game['id'], ucid)
-#     gift_id_list = mysql_cms_session.execute(find_user_already_get_gift_id_sql).fetchall()
-#     already_get_gift_id_list = []
-#     for gift_id in gift_id_list:
-#         already_get_gift_id_list.append(gift_id['giftId'])
-#
-#     from Service.StorageService import get_uid_by_ucid
-#     uid = get_uid_by_ucid(ucid)
-#     game_gift_list_sql = "select id from cms_gameGift where status = 'normal' and gameId = %s" % (game['id'],)
-#     game_gift_list = mysql_cms_session.execute(game_gift_list_sql).fetchall()
-#     game_gift_array = []
-#     for game_gift in game_gift_list:
-#         game_gift_array.append(str(game_gift['id']))
-#     game_gift_array_str = ",".join(game_gift_array)
-#     find_specify_user_gift_id_sql = "select distinct(giftId) from cms_gameGiftSpecify where giftId in (%s)" \
-#                                     " and value = '%s' " % (game_gift_array_str, uid)
-#     append_gift_id_list = mysql_cms_session.execute(find_specify_user_gift_id_sql).fetchall()
-#     specify_user_gift_id_list = []
-#     for gift_id in append_gift_id_list:
-#         specify_user_gift_id_list.append(gift_id['giftId'])
-#
-#     need_remove = list(set(already_get_gift_id_list).union(set(specify_user_gift_id_list)))
-#     need_add_gift_id_list = []
-#     for g_id in need_remove:
-#         need_add_gift_id_list.append(str(g_id))
-#     need_add_gift_id_list_str = ",".join(need_add_gift_id_list)
-#
-#     if len(need_add_gift_id_list) > 0:
-#         unget_gifts_page_list_sql = "select * from (select a.id,a.gameId,a.gameName,a.name,a.gift," \
-#                                     "a.isAfReceive, a.isBindPhone," \
-#                                     "a.content,a.label,a.uid,a.publishTime,a.failTime,a.status," \
-#                                     "b.num, b.assignNum, ifnull(c.code,'') as code,if(c.code<>'', '1', '0') " \
-#                                     "as is_get from cms_gameGift as a join cms_gameGiftAssign as b on a.id=b.giftId " \
-#                                     "left outer join cms_gameGiftLog as c on c.giftId=a.id and c.uid= %s " \
-#                                     "where a.gameId=%s and a.failTime > %s and b.platformId=%s " \
-#                                     "and a.status='normal' and b.status='normal' and c.status='normal' " \
-#                                     "and ((a.assignNum > 0 and b.assignNum > 0) or (a.id in (%s))) " \
-#                                     "order by is_get asc , c.forTime desc, a.id desc) as d " \
-#                                     "where d.code<>'' or (d.assignNum>0 and d.code='') limit %s, %s " \
-#                                     % (ucid, game['id'], now, SDK_PLATFORM_ID, need_add_gift_id_list_str,
-#                                        start_index, end_index)
-#     else:
-#         unget_gifts_page_list_sql = "select * from (select a.id,a.gameId,a.gameName, " \
-#                                     "b.assignNum, ifnull(c.code,'') as code,if(c.code<>'', '1', '0') " \
-#                                     "as is_get from cms_gameGift as a join cms_gameGiftAssign as b on a.id=b.giftId " \
-#                                     "left outer join cms_gameGiftLog as c on c.giftId=a.id and c.uid= %s " \
-#                                     "where a.gameId=%s and a.failTime > %s and b.platformId=%s and a.status='normal' " \
-#                                     "and a.assignNum > 0 and b.assignNum > 0 order by is_get asc ," \
-#                                     " c.forTime desc, a.id desc) as d " \
-#                                     "where d.code<>'' or (d.assignNum>0 and d.code='')" \
-#                                     % (ucid, game['id'], now, SDK_PLATFORM_ID)
-#     count = mysql_cms_session.execute(unget_gifts_page_list_sql).scalar()
-#     return count
 
 
 # 检查用户账号是否被冻结
@@ -545,7 +493,8 @@ def get_stored_value_card_list(ucid, start_index, end_index):
     total_count = 0
     value_card_list = []
     time_now = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-    find_user_store_value_card_list_sql = "select vc.*, uvc.balance from ucusersVC as uvc, virtualCurrencies as vc where " \
+    find_user_store_value_card_list_sql = "select vc.*, uvc.balance from ucusersVC as uvc, " \
+                                          "virtualCurrencies as vc where " \
                                           "uvc.vcid = vc.vcid and uvc.balance > 0 and uvc.ucid = %s and " \
                                           "((vc.untimed = 1) or ((vc.untimed = 0) and " \
                                           "unix_timestamp(vc.startTime) <= unix_timestamp('%s') " \
@@ -803,11 +752,6 @@ def set_message_readed(ucid=None, message_type=None, message_id=None):
                                                    message_id=message_id,
                                                    ucid=ucid)
         user_read_message_log.save()
-
-
-# 根据ucid获取用户名、vip等级、电话等信息
-def get_user_vip_and_mobile_info_by_ucid(ucid=None):
-    pass
 
 
 def get_user_user_type_and_vip_and_uid_by_ucid(ucid=None):
