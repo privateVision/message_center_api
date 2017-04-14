@@ -386,7 +386,7 @@ def get_user_can_see_gift_list(ucid=None, game_id=None, start_index=None, end_in
             unget_gifts_page_list_sql = "select * from (select a.id,a.gameId,a.gameName,a.name,a.gift," \
                                         "a.isAfReceive, a.isBindPhone," \
                                         "a.content,a.label,a.uid,a.publishTime,a.failTime,a.status," \
-                                        "b.num, b.assignNum, ifnull(c.code,'') as code,if(c.code<>'', '1', '0') " \
+                                        "b.num, b.assignNum, ifnull(c.code,'') as code,if(c.code<>'', 1, 0) " \
                                         "as is_get from cms_gameGift as a join cms_gameGiftAssign as b " \
                                         "on a.id=b.giftId " \
                                         "left outer join cms_gameGiftLog as c on c.giftId=a.id and c.uid= %s " \
@@ -402,7 +402,7 @@ def get_user_can_see_gift_list(ucid=None, game_id=None, start_index=None, end_in
             unget_gifts_page_list_sql = "select * from (select a.id,a.gameId,a.gameName,a.name,a.gift," \
                                         "a.isAfReceive, a.isBindPhone," \
                                         "a.content,a.label,a.uid,a.publishTime,a.failTime,a.status," \
-                                        "b.num, b.assignNum, ifnull(c.code,'') as code,if(c.code<>'', '1', '0') " \
+                                        "b.num, b.assignNum, ifnull(c.code,'') as code,if(c.code<>'', 1, 0) " \
                                         "as is_get from cms_gameGift as a join cms_gameGiftAssign as b " \
                                         "on a.id=b.giftId " \
                                         "left outer join cms_gameGiftLog as c on c.giftId=a.id and c.uid= %s " \
@@ -419,7 +419,7 @@ def get_user_can_see_gift_list(ucid=None, game_id=None, start_index=None, end_in
             unget_gifts_page_list_sql = "select * from (select a.id,a.gameId,a.gameName,a.name,a.gift," \
                                         "a.isAfReceive, a.isBindPhone," \
                                         "a.content,a.label,a.uid,a.publishTime,a.failTime,a.status," \
-                                        "b.num, b.assignNum, ifnull(c.code,'') as code,if(c.code<>'', '1', '0') " \
+                                        "b.num, b.assignNum, ifnull(c.code,'') as code,if(c.code<>'', 1, 0) " \
                                         "as is_get from cms_gameGift as a join cms_gameGiftAssign as b " \
                                         "on a.id=b.giftId " \
                                         "left outer join cms_gameGiftLog as c on c.giftId=a.id and c.uid= %s " \
@@ -435,7 +435,7 @@ def get_user_can_see_gift_list(ucid=None, game_id=None, start_index=None, end_in
             unget_gifts_page_list_sql = "select * from (select a.id,a.gameId,a.gameName,a.name,a.gift," \
                                         "a.isAfReceive, a.isBindPhone," \
                                         "a.content,a.label,a.uid,a.publishTime,a.failTime,a.status," \
-                                        "b.num, b.assignNum, ifnull(c.code,'') as code,if(c.code<>'', '1', '0') " \
+                                        "b.num, b.assignNum, ifnull(c.code,'') as code,if(c.code<>'', 1, 0) " \
                                         "as is_get from cms_gameGift as a join cms_gameGiftAssign as b " \
                                         "on a.id=b.giftId " \
                                         "left outer join cms_gameGiftLog as c on c.giftId=a.id and c.uid= %s " \
