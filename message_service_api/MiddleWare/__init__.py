@@ -96,11 +96,11 @@ def create_app():
     # kafka_consumer_thread.start()
 
     app.config['SQLALCHEMY_DATABASE_URI'] = app.config.get('SQLALCHEMY_DATABASE_URI')
-    mysql_engine = create_engine(app.config['SQLALCHEMY_DATABASE_URI'], encoding="utf-8", echo=True,
+    mysql_engine = create_engine(app.config['SQLALCHEMY_DATABASE_URI'], encoding="utf-8", echo=False,
                                  pool_recycle=28800, poolclass=NullPool)
     mysql_session = sessionmaker(autocommit=False, bind=mysql_engine)
 
-    mysql_cms_engine = create_engine(app.config['SQLALCHEMY_CMS_DATABASE_URI'], encoding="utf-8", echo=True,
+    mysql_cms_engine = create_engine(app.config['SQLALCHEMY_CMS_DATABASE_URI'], encoding="utf-8", echo=False,
                                      pool_recycle=28800, poolclass=NullPool)
     mysql_cms_session = sessionmaker(autocommit=False, bind=mysql_cms_engine)
 
