@@ -138,8 +138,10 @@ def v4_sdk_heartbeat():
     ucid = get_ucid_by_access_token(request.form['_token'])
     appid = request.form['_appid']
     if ucid:
+        # 获取用户相关广播和未读消息数
         data = RedisHandle.get_user_data_mark_in_redis(ucid)
-        if RedisHandle.exists(ucid):  # 存在用户的缓存数据
+        # 获取用户未领取的礼包数
+        if RedisHandle.exists(ucid):
             redis_mark_data = RedisHandle.hgetall(ucid)
             if redis_mark_data.has_key('gift_num'):
                 gift_num = int(redis_mark_data['gift_num'])

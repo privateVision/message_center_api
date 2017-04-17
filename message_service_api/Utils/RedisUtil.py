@@ -53,8 +53,10 @@ class RedisHandle(object):
             "message": 0
         }
         from Service.UsersService import get_user_broadcast_list
+        # 获取用户的广播数据
         broadcast_data = get_user_broadcast_list(key_name)
         user_mark['broadcast'].extend(broadcast_data)
+        # 获取用户的未读消息数
         from Service.UsersService import get_user_unread_message_count
         if redis_store.exists(key):
             redis_mark_data = redis_store.hgetall(key)
