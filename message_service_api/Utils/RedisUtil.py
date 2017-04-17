@@ -52,20 +52,12 @@ class RedisHandle(object):
             "broadcast": [],
             "message": 0
         }
+        from Service.UsersService import get_user_broadcast_list
+        broadcast_data = get_user_broadcast_list(key_name)
+        user_mark['broadcast'].extend(broadcast_data)
         from Service.UsersService import get_user_unread_message_count
         if redis_store.exists(key):
             redis_mark_data = redis_store.hgetall(key)
-            from Service.UsersService import get_user_broadcast_list
-            broadcast_data = get_user_broadcast_list(key_name)
-            user_mark['broadcast'].extend(broadcast_data)
-            # if redis_mark_data.has_key('broadcast'):
-            #     broadcast_count = int(redis_mark_data['broadcast'])
-            #     if broadcast_count > 0:
-            #         from Service.UsersService import get_user_broadcast_list
-            #         broadcast_data = get_user_broadcast_list(key_name)
-            #         if broadcast_data is not None:
-            #             user_mark['broadcast'].extend(broadcast_data)
-            #             redis_store.hset(key, 'broadcast', 0)
             if redis_mark_data.has_key('message'):
                 user_mark['message'] = int(redis_mark_data['message'])
                 if user_mark['message'] <= 0:

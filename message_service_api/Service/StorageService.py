@@ -191,7 +191,6 @@ def add_user_messsage(ucid, type, msg_id, is_time, start_time, end_time, game):
             user_message.create_timestamp = message_info['create_timestamp']
         user_message.save()
         if type == 'broadcast':
-            service_logger.info("设置缓存中的广播数")
             add_mark_to_user_redis(ucid, type)
     else:
         service_logger.info("mysql添加用户消息：%s-%s-%s" % (ucid, type, msg_id))
