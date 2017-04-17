@@ -236,7 +236,7 @@ def v4_sdk_user_get_gift():
                                 update_gift_code_result = mysql_cms_session.execute(update_gift_code_sql)
                                 if update_gift_code_result:
                                     # 礼包码可能有特殊字符，无奈改成 ORM 了
-                                    game_gift_log = GameGiftLog(gameId=game_id, giftId=gift_id,
+                                    game_gift_log = GameGiftLog(gameId=game_id, giftId=int(gift_id),
                                                                 platformId=SDK_PLATFORM_ID, code=game_gift_code['code'],
                                                                 uid=ucid, username=username, forTime=int(time.time()),
                                                                 forIp=ip, forMac=mac)
