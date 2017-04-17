@@ -1,6 +1,9 @@
 # _*_ coding: utf-8 _*_
 import json
 
+import time
+
+import datetime
 from flask import Blueprint
 from flask import request
 from mongoengine import Q
@@ -135,6 +138,7 @@ def v4_cms_message_revocation():
 @app_controller.route('/msa/v4/app/heartbeat', methods=['POST'])
 @sdk_api_request_check
 def v4_sdk_heartbeat():
+    start_time = time.time()
     ucid = get_ucid_by_access_token(request.form['_token'])
     appid = request.form['_appid']
     if ucid:
@@ -147,6 +151,8 @@ def v4_sdk_heartbeat():
                 return response_data(200, 101, get_tips('heartbeat', 'user_account_freezed'))
             if freeze == 2:
                 return response_data(200, 108, get_tips('heartbeat', 'sub_user_account_freezed'))
+        end_time = time.time()
+        print (end_time - start_time)
         return response_data(data=data)
 
 

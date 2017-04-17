@@ -190,8 +190,9 @@ def add_user_messsage(ucid, type, msg_id, is_time, start_time, end_time, game):
         if message_info is not None:
             user_message.create_timestamp = message_info['create_timestamp']
         user_message.save()
-        if type == 'broadcast':
-            add_mark_to_user_redis(ucid, type)
+        add_mark_to_user_redis(ucid, type)
+        # if type == 'broadcast':
+        #     add_mark_to_user_redis(ucid, type)
     else:
         service_logger.info("mysql添加用户消息：%s-%s-%s" % (ucid, type, msg_id))
         from run import mysql_session

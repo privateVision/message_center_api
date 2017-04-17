@@ -2,7 +2,6 @@
 import json
 
 from MiddleWare import redis_store
-from Service.UsersService import get_user_gift_count
 
 
 class RedisHandle(object):
@@ -75,6 +74,7 @@ class RedisHandle(object):
             RedisHandle.hset(key_name, 'message', user_mark['message'])
 
         # 获取用户未领取的礼包数
+        from Service.UsersService import get_user_gift_count
         if RedisHandle.exists(key_name):
             redis_mark_data = RedisHandle.hgetall(key_name)
             if redis_mark_data.has_key('gift_num'):
