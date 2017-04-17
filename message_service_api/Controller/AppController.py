@@ -144,7 +144,7 @@ def v4_sdk_heartbeat():
     if ucid:
         # 获取用户相关广播和未读消息数
         data = RedisHandle.get_user_data_mark_in_redis(ucid, appid)
-
+        print "%s - %s" % (ucid, json.dumps(data))
         freeze = get_user_is_freeze_by_access_token(request.form['_token'])
         if freeze is not None:
             if freeze == 1:
