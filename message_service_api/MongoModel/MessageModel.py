@@ -19,5 +19,5 @@ class UsersMessage(DynamicDocument):
     start_time = IntField(required=True, default=0)
     end_time = IntField(required=True, default=0)
     show_times = IntField(required=True, default=0)
-    create_timestamp = IntField(required=True, default=int(time.time()))
+    # create_timestamp = IntField(required=True, default=int(time.time()))
 

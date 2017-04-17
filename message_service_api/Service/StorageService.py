@@ -351,6 +351,7 @@ def system_notices_persist(data_json=None):
         users_message.img = data_json['img']
         users_message.url = data_json['url']
         users_message.is_time = 1
+        users_message.create_timestamp = int(time.time())
         users_message.users = None
         if 'specify_user' in data_json and data_json['specify_user'] is not None:
             users_message.users = data_json['specify_user'].split(",")
@@ -399,6 +400,7 @@ def system_notices_update(data_json=None):
         users_message.img = data_json['img']
         users_message.url = data_json['url']
         users_message.is_time = 1
+        users_message.create_timestamp = int(time.time())
         users_message.users = None
         if 'specify_user' in data_json and data_json['specify_user'] is not None:
             users_message.users = data_json['specify_user'].split(",")
@@ -435,6 +437,7 @@ def system_broadcast_persist(data_json=None):
         users_message.end_time = int(data_json['stime']) + 10
         users_message.close_time = data_json['close_time']
         users_message.is_time = 1
+        users_message.create_timestamp = int(time.time())
         users_message.users = None
         if 'specify_user' in data_json and data_json['specify_user'] is not None:
             users_message.users = data_json['specify_user'].split(",")
@@ -469,6 +472,7 @@ def system_broadcast_update(data_json=None, update_user_message=True):
         users_message.end_time = int(data_json['stime']) + 10
         users_message.close_time = data_json['close_time']
         users_message.is_time = 1
+        users_message.create_timestamp = int(time.time())
         users_message.users = None
         if 'specify_user' in data_json and data_json['specify_user'] is not None:
             users_message.users = data_json['specify_user'].split(",")
@@ -512,6 +516,7 @@ def system_message_persist(data_json=None, update_user_message=True):
         users_message.img = data_json['img']
         users_message.url = data_json['url']
         users_message.is_time = 1
+        users_message.create_timestamp = int(time.time())
         if data_json['send_time'] == 0:
             users_message.start_time = int(time.time())
         else:
