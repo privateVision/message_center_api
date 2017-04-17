@@ -2,6 +2,8 @@
 import json
 
 from MiddleWare import redis_store
+from Service.UsersService import get_user_gift_count
+
 
 class RedisHandle(object):
     common_key_prefix = "msa_"
@@ -46,16 +48,19 @@ class RedisHandle(object):
         return redis_store.hset(key, field_name, 0)
 
     @staticmethod
-    def get_user_data_mark_in_redis(key_name):
+    def get_user_data_mark_in_redis(key_name, appid):
         key = "%s%s" % (RedisHandle.common_key_prefix, key_name)
         user_mark = {
             "broadcast": [],
-            "message": 0
+            "message": 0,
+            "gift_num": 0
         }
-        from Service.UsersService import get_user_broadcast_list
+
         # 获取用户的广播数据
+        from Service.UsersService import get_user_broadcast_list
         broadcast_data = get_user_broadcast_list(key_name)
         user_mark['broadcast'].extend(broadcast_data)
+
         # 获取用户的未读消息数
         from Service.UsersService import get_user_unread_message_count
         if redis_store.exists(key):
@@ -68,6 +73,24 @@ class RedisHandle(object):
         else:  # 不存在缓存数据
             user_mark['message'] = get_user_unread_message_count(key_name)
             RedisHandle.hset(key_name, 'message', user_mark['message'])
+
+        # 获取用户未领取的礼包数
+        if RedisHandle.exists(key_name):
+            redis_mark_data = RedisHandle.hgetall(key_name)
+            if redis_mark_data.has_key('gift_num'):
+                gift_num = int(redis_mark_data['gift_num'])
+                if gift_num <= 0:
+                    user_mark['gift_num'] = get_user_gift_count(key_name, appid)
+                    RedisHandle.hset(key_name, 'gift_num', user_mark['gift_num'])
+                else:
+                    user_mark['gift_num'] = gift_num
+            else:
+                user_mark['gift_num'] = get_user_gift_count(key_name, appid)
+                RedisHandle.hset(key_name, 'gift_num', user_mark['gift_num'])
+        else:
+            user_mark['gift_num'] = get_user_gift_count(key_name, appid)
+            RedisHandle.hset(key_name, 'gift_num', user_mark['gift_num'])
+
         return user_mark
 
     @staticmethod
