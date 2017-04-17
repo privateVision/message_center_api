@@ -6,6 +6,7 @@ from flask import request
 from mongoengine import Q
 
 from Controller.BaseController import response_data
+from LanguageConf import get_tips
 from MiddleWare import service_logger
 from MongoModel.MessageModel import UsersMessage
 from MongoModel.UserMessageModel import UserMessage
@@ -26,7 +27,7 @@ def v4_cms_post_broadcast():
     form = PostBroadcastsRequestForm.from_json(request.json)
     if not form.validate():
         log_exception(request, '客户端请求错误: %s' % (json.dumps(form.errors)))
-        return response_data(200, 0, '客户端请求错误')
+        return response_data(200, 0, get_tips('common', 'client_request_error'))
     else:
         from run import kafka_producer
         try:
@@ -39,7 +40,7 @@ def v4_cms_post_broadcast():
             kafka_producer.send('message-service', message_str)
         except Exception, err:
             log_exception(request, "发送广播异常：%s" % (err.message,))
-            return response_data(http_code=200, code=0, message="kafka服务异常")
+            return response_data(http_code=200, code=0, message=get_tips('cms', 'kafka_service_exception'))
         return response_data(http_code=200)
 
 
@@ -50,7 +51,7 @@ def v4_cms_update_broadcast():
     form = PostBroadcastsRequestForm.from_json(request.json)
     if not form.validate():
         log_exception(request, '客户端请求错误: %s' % (json.dumps(form.errors)))
-        return response_data(200, 0, '客户端请求错误')
+        return response_data(200, 0, get_tips('common', 'client_request_error'))
     else:
         try:
             service_logger.info("更新广播：%s" % (json.dumps(form.data),))

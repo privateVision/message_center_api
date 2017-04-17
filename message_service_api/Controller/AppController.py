@@ -127,7 +127,7 @@ def v4_cms_message_revocation():
         UserMessage.objects(Q(type=message_type) & Q(mysql_id=msg_id)).update(set__closed=1)
     except Exception, err:
         log_exception(request, 'mongo写入失败: %s' % (err.message,))
-        return response_data(http_code=200, code=0, message="mongo写入失败")
+        return response_data(http_code=200, code=0, message=get_tips('cms', 'mongo_write_exception'))
     return response_data(http_code=200, message=get_tips('cms', 'message_revocation_success'))
 
 
