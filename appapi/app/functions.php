@@ -155,7 +155,6 @@ function upload_to_cdn($filename, $filepath, $is_delete = true) {
         return $ret;
     };
 
-
     $update();
 
     return $config['base_url'] . $filename;
@@ -172,7 +171,6 @@ function updateQnCache($url){
     $res = Client::post('http://fusion.qiniuapi.com/v2/tune/refresh', json_encode($data), $headers);
     return $res;
 }
-
 
 /**
  * 生成唯一用户名

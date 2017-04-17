@@ -52,6 +52,7 @@ class AppController extends Controller
             $config->service_page = env('service_page');
             $config->service_phone = env('service_phone');
             $config->service_share = env('service_share');
+            $config->service_af_download = env('af_download');
             $config->heartbeat_interval = 2000;
             $config->bind_phone_need = true;
             $config->bind_phone_enforce = false;
@@ -110,6 +111,7 @@ class AppController extends Controller
                 'phone' => $config->service_phone,
                 'share' => $config->service_share,
                 'interval' => $config->heartbeat_interval,
+                'af_download' =>env('af_download')
             ],
             'bind_phone' => [
                 'need' => $config->bind_phone_need,

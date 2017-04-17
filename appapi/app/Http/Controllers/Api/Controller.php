@@ -49,7 +49,7 @@ class Controller extends \App\Controller
 				$this->procedure = Procedures::from_cache($__appid);
 
 				if(!$this->procedure){
-					$this->procedure = Procedures::where("pid",$__appid)->first();
+					$this->procedure = Procedures::where("pid",$_appid)->first();
 				}
 
 				if (!$this->procedure) {

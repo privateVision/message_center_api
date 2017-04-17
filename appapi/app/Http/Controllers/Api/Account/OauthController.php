@@ -181,16 +181,20 @@ class OauthController extends Controller {
         $user_oauth = null;
 
         if($unionid) {
-            $user_oauth = UcuserOauth::from_cache_unionid($unionid);
+            //$user_oauth = UcuserOauth::from_cache_unionid($unionid);
+            $user_oauth = UcuserOauth::where("unionid",$unionid)->first();
+
         }
 
         if(!$user_oauth) {
-            $user_oauth = UcuserOauth::from_cache_openid($openid);
+           // $user_oauth = UcuserOauth::from_cache_openid($openid);
+            $user_oauth = UcuserOauth::where("openid",$openid)->first();
         }
 
         if($user_oauth) {
-            $user = Ucuser::from_cache($user_oauth->ucid);
-            return $user;
+            //$user = Ucuser::from_cache($user_oauth->ucid);
+            $user = Ucuser::where("ucid",$user_oauth->ucid)->first();
+            if($user) return $user;
         }
 
         // 注册
@@ -215,12 +219,14 @@ class OauthController extends Controller {
         $user_oauth->openid = $openid;
         $user_oauth->unionid = $unionid;
         $user_oauth->saveAndCache();
+        $user_oauth->updateCache();
 
-        $user_info = UcuserInfo::from_cache($user->ucid);
+        $user_info = UcuserInfo::where("ucid",$user->ucid)->first();
+
         if(!$user_info) {
             $user_info = new UcuserInfo;
             $user_info->ucid = $user->ucid;
-            $user_info->avatar = $avatar;
+            $user_info->avatar = $avatar?$avatar:env('default_avatar');
             $user_info->saveAndCache();
         }
 
@@ -240,27 +246,24 @@ class OauthController extends Controller {
         $user_oauth = null;
 
         if($unionid) {
-            $user_oauth = UcuserOauth::from_cache_unionid($unionid);
-            if(!$user_oauth){
-                $user_oauth = UcuserOauth::where("unionid",$unionid)->first();
-            }
+            //$user_oauth = UcuserOauth::from_cache_unionid($unionid);
+            $user_oauth = UcuserOauth::where("unionid",$unionid)->first();
+
         }
 
         if(!$user_oauth) {
-            $user_oauth = UcuserOauth::from_cache_openid($openid);
-            if(!$user_oauth){
-                $user_oauth = UcuserOauth::where()->first();
-            }
+            $user_oauth = UcuserOauth::where("openid",$openid)->first();
+           // $user_oauth = UcuserOauth::from_cache_openid($openid);
+
         }
         
         if(!$user_oauth) {
             throw new ApiException(ApiException::OauthNotRegister, "尚未注册");
         }
 
-        $user = Ucuser::from_cache($user_oauth->ucid);
-        if(!$user){
-            $user = Ucuser::where("ucid",$user_oauth->ucid)->first();
-        }
+       // $user = Ucuser::from_cache($user_oauth->ucid);
+
+        $user = Ucuser::where("ucid",$user_oauth->ucid)->first();
         return $user;
     }
 }
