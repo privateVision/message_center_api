@@ -346,7 +346,7 @@ def get_user_can_see_gift_count(ucid=None, appid=None):
     find_user_already_get_gift_count_sql = "select count(distinct(log.giftId)) from cms_gameGiftLog as log " \
                                            "join cms_gameGift as gift on log.giftId = gift.id where log.gameId = %s" \
                                            " and gift.status='normal' and log.status = 'normal'" \
-                                           " and gift.failTime > %s and log.uid = %s " % (now, game['id'], ucid)
+                                           " and gift.failTime > %s and log.uid = %s " % (game['id'], now, ucid)
     already_get_gift_count = mysql_cms_session.execute(find_user_already_get_gift_count_sql).scalar()
     unget_count = get_user_gift_count(ucid, appid)
     return unget_count + already_get_gift_count
