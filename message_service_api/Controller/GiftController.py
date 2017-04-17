@@ -74,20 +74,20 @@ def v4_sdk_get_gifts_list():
     if len(specify_user_gift_id_list) > 0:
         find_today_gifts_count_sql = "select count(*) from cms_gameGift as gift join cms_gameGiftAssign as assign" \
                                      " on gift.id = assign.giftId where gift.gameId = %s and gift.status = 'normal' " \
-                                     "and gift.publishTime >= %s and gift.publishTime <= %s" \
+                                     "and gift.publishTime >= %s and gift.publishTime <= %s and gift.failTime > %s " \
                                      " and assign.platformId = %s and assign.status = 'normal' " \
                                      "and ((assign.assignNum > 0) " \
                                      "and ( (gift.isSpecify=0) or ((gift.isSpecify=1) and (gift.id in (%s)) ))) " \
-                                     % (game['id'], start_timestamp, end_timestamp,
+                                     % (game['id'], start_timestamp, end_timestamp, now,
                                         SDK_PLATFORM_ID, specify_user_gift_id_list_str)
     else:
         find_today_gifts_count_sql = "select count(*) from cms_gameGift as gift join cms_gameGiftAssign as assign" \
                                      " on gift.id = assign.giftId where gift.gameId = %s and gift.status = 'normal' " \
-                                     "and gift.publishTime >= %s and gift.publishTime <= %s" \
+                                     "and gift.publishTime >= %s and gift.publishTime <= %s and gift.failTime > %s " \
                                      " and assign.platformId = %s and assign.status = 'normal' " \
                                      "and ((assign.assignNum > 0) " \
                                      "and gift.isSpecify=0) " \
-                                     % (game['id'], start_timestamp, end_timestamp, SDK_PLATFORM_ID)
+                                     % (game['id'], start_timestamp, end_timestamp, now, SDK_PLATFORM_ID)
 
     today_gift_count = mysql_cms_session.execute(find_today_gifts_count_sql).scalar()
 
