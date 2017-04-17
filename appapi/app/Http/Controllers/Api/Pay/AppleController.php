@@ -252,8 +252,29 @@ class  AppleController extends Controller{
 
     }
 
+    //返回当前的限制的控制
+    public function AppleLimitAction(){
+        $ucid = $this->user->ucid;
+        $product_id = $this->parameter->tough('product_id');
+        $appid  = $this->request->input("_appid");
 
+        $sql = "select con.iap from ios_products as p LEFT JOIN ios_application_config as con ON p.app_id = con.app_id WHERE p.product_id = '{$product_id}' AND p.app_id = {$appid}";
+        $dat = app('db')->select($sql);
+        if(count($dat) == 0) throw new ApiException(ApiException::Remind,"not exists!");
 
+        $pay_type = $dat[0]->iap;
+        //查看当前的充值总金额
+        if($pay_type == 1){
+            $sum = Orders::where("ucid",$ucid)->where("status",1)->sum('fee');
+            //获取限额
+            $sl = "select id,appids,fee from force_close_iaps where closed=0 AND {$appid} IN (appids)";
+            $d = app('db')->select($sl);
+            if(count($d)){
+                $pay_type =  ($sum > $d[0]->fee)?0:1;
+            }
+        }
+        return ["paytype"=>$pay_type];
+    }
 
 
 }
