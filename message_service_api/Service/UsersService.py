@@ -264,7 +264,7 @@ def get_user_gift_count(ucid=None, appid=None):
     from Service.StorageService import get_uid_by_ucid
     uid = get_uid_by_ucid(ucid)
     now = int(time.time())
-    game_gift_list_sql = "select id from cms_gameGift where status = 'normal' and failTime > %s and gameId = %s"\
+    game_gift_list_sql = "select id from cms_gameGift where status = 'normal' and failTime > %s and gameId = %s" \
                          % (now, game['id'],)
     game_gift_list = mysql_cms_session.execute(game_gift_list_sql).fetchall()
     game_gift_array = []
@@ -350,6 +350,25 @@ def get_user_can_see_gift_count(ucid=None, appid=None):
     already_get_gift_count = mysql_cms_session.execute(find_user_already_get_gift_count_sql).scalar()
     unget_count = get_user_gift_count(ucid, appid)
     return unget_count + already_get_gift_count
+
+
+# 获取用户已经领取的并且在今天发布的礼包列表
+def get_user_already_get_and_today_publish_gift_id_list(ucid=None, game_id=None):
+    from run import mysql_cms_session
+    now = int(time.time())
+    start_timestamp = int(now - (now % 86400) + time.timezone)
+    end_timestamp = int(start_timestamp + 86399)
+    find_user_already_get_gift_sql = "select distinct(log.giftId) from cms_gameGiftLog as log " \
+                                     "join cms_gameGift as gift on log.giftId = gift.id where log.gameId = %s" \
+                                     " and gift.status='normal' and log.status = 'normal'" \
+                                     " and gift.publishTime > %s and gift.publishTime < %s " \
+                                     " and gift.failTime > %s and log.uid = %s " % (game_id, start_timestamp,
+                                                                                    end_timestamp, now, ucid)
+    already_get_gift_list = mysql_cms_session.execute(find_user_already_get_gift_sql).fetchall()
+    gift_id_list = []
+    for gift in already_get_gift_list:
+        gift_id_list.append(str(gift['giftId']))
+    return gift_id_list
 
 
 # 获取用户可以看到的礼包列表
@@ -813,6 +832,7 @@ def sdk_api_request_check(func):
             return func(*args, **kwargs)
         else:
             return response_data(200, 0, '请求校验错误')
+
     return wraper
 
 
@@ -825,6 +845,7 @@ def cms_api_request_check(func):
         if not check_result:
             return check_exception
         return func(*args, **kwargs)
+
     return wraper
 
 
@@ -838,5 +859,5 @@ def anfeng_helper_request_check(func):
             return func(*args, **kwargs)
         else:
             return response_data(200, 0, '请求校验错误')
-    return wraper
 
+    return wraper
