@@ -61,21 +61,21 @@ class RedisHandle(object):
         user_mark['broadcast'].extend(broadcast_data)
 
         # 获取用户的未读消息数
-        if redis_store.exists(key):
-            redis_mark_data = redis_store.hgetall(key)
-            if redis_mark_data.has_key('message'):
-                user_mark['message'] = int(redis_mark_data['message'])
-        # from Service.UsersService import get_user_unread_message_count
         # if redis_store.exists(key):
         #     redis_mark_data = redis_store.hgetall(key)
         #     if redis_mark_data.has_key('message'):
         #         user_mark['message'] = int(redis_mark_data['message'])
-        #         if user_mark['message'] <= 0:
-        #             user_mark['message'] = get_user_unread_message_count(key_name)
-        #             RedisHandle.hset(key_name, 'message', user_mark['message'])
-        # else:  # 不存在缓存数据
-        #     user_mark['message'] = get_user_unread_message_count(key_name)
-        #     RedisHandle.hset(key_name, 'message', user_mark['message'])
+        from Service.UsersService import get_user_unread_message_count
+        if redis_store.exists(key):
+            redis_mark_data = redis_store.hgetall(key)
+            if redis_mark_data.has_key('message'):
+                user_mark['message'] = int(redis_mark_data['message'])
+                if user_mark['message'] <= 0:
+                    user_mark['message'] = get_user_unread_message_count(key_name)
+                    RedisHandle.hset(key_name, 'message', user_mark['message'])
+        else:  # 不存在缓存数据
+            user_mark['message'] = get_user_unread_message_count(key_name)
+            RedisHandle.hset(key_name, 'message', user_mark['message'])
 
         # 获取用户未领取的礼包数
         from Service.UsersService import get_user_gift_count
