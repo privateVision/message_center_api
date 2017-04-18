@@ -26,7 +26,7 @@ return [
     |
     */
 
-    'default' => env('DB_CONNECTION'),
+    'default' => 'default',
 
     /*
     |--------------------------------------------------------------------------
@@ -45,18 +45,18 @@ return [
     */
 
     'connections' => [
-        'anfanapi' => [
+        'default' => [
             'driver'    => 'mysql',
-            'host'      => env('DB_ANFANAPI_HOST'),
-            'port'      => env('DB_ANFANAPI_PORT'),
-            'database'  => env('DB_ANFANAPI_DATABASE'),
-            'username'  => env('DB_ANFANAPI_USERNAME'),
-            'password'  => env('DB_ANFANAPI_PASSWORD'),
-            'charset'   => env('DB_ANFANAPI_CHARSET', 'utf8'),
-            'collation' => env('DB_ANFANAPI_COLLATION', 'utf8_unicode_ci'),
-            'prefix'    => env('DB_ANFANAPI_PREFIX'),
-            'timezone'  => env('DB_ANFANAPI_TIMEZONE', '+00:00'),
-            'strict'    => env('DB_ANFANAPI_STRICT_MODE', false),
+            'host'      => env('DB_HOST'),
+            'port'      => env('DB_PORT'),
+            'database'  => env('DB_DATABASE'),
+            'username'  => env('DB_USERNAME'),
+            'password'  => env('DB_PASSWORD'),
+            'charset'   => env('DB_CHARSET', 'utf8'),
+            'collation' => env('DB_COLLATION', 'utf8_unicode_ci'),
+            'prefix'    => env('DB_PREFIX'),
+            'timezone'  => env('DB_TIMEZONE', '+00:00'),
+            'strict'    => env('DB_STRICT_MODE', false),
         ],
 
         '56gamebbs' => [
@@ -71,6 +71,30 @@ return [
             'prefix'    => env('DB_56GAMEBBS_PREFIX'),
             'timezone'  => env('DB_56GAMEBBS_TIMEZONE', '+00:00'),
             'strict'    => env('DB_56GAMEBBS_STRICT_MODE', false),
+        ],
+
+        'mongodb' => [
+            'driver'   => 'mongodb',
+            'host'     => env('MONGODB_HOST'),
+            'port'     => env('MONGODB_PORT'),
+            'database' => env('MONGODB_DATABASE'),
+            'username' => env('MONGODB_USERNAME'),
+            'password' => env('MONGODB_PASSWORD'),
+            'options'  => [
+                'database' => 'admin' // sets the authentication database required by mongo 3
+            ]
+        ],
+
+        'log' => [
+            'driver'   => 'mongodb',
+            'host'     => env('MONGODB_LOG_HOST'),
+            'port'     => env('MONGODB_LOG_PORT'),
+            'database' => env('MONGODB_LOG_DATABASE'),
+            'username' => env('MONGODB_LOG_USERNAME'),
+            'password' => env('MONGODB_LOG_PASSWORD'),
+            'options'  => [
+                'database' => 'admin' // sets the authentication database required by mongo 3
+            ]
         ],
     ],
 
@@ -107,6 +131,7 @@ return [
             'port'     => env('REDIS_PORT'),
             'database' => env('REDIS_DATABASE'),
             'password' => env('REDIS_PASSWORD'),
+            'prefix' => env('REDIS_PREFIX'),
         ],
 
     ],

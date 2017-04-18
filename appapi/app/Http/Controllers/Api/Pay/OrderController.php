@@ -1,0 +1,28 @@
+<?php
+namespace App\Http\Controllers\Api\Pay;
+
+use Illuminate\Http\Request;
+use App\Exceptions\ApiException;
+use App\Parameter;
+use App\Model\Orders;
+use App\Model\OrdersExt;
+use App\Model\OrderExtend;
+
+class OrderController extends Controller {
+
+    use CreateOrderAction;
+
+    protected function onCreateOrder(Orders $order) {
+        $fee = $this->parameter->tough('fee');
+        $body = $this->parameter->tough('body');
+        $subject = $this->parameter->tough('subject');
+        $vorderid = $this->parameter->tough('vorderid');
+        $notify_url = $this->parameter->tough('notify_url');
+
+        $order->notify_url = $notify_url;
+        $order->vorderid = $vorderid;
+        $order->fee = $fee;
+        $order->subject = $subject;
+        $order->body = $body;
+    }
+}

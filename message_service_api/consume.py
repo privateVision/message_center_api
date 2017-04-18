@@ -1,13 +1,15 @@
-# _*_ coding: utf-8 _*_
-import json
-
+# _*_ coding: utf8 _*_
 from kafka import KafkaConsumer
 
+from MiddleWare import service_logger
+from run import app
+from Service.KafkaHandler import consume_handler
+
 if __name__ == '__main__':
-    kafka_consumer = KafkaConsumer(bootstrap_servers='192.168.1.128:9092')
-    kafka_consumer.subscribe(['message-service'])
-    ts = kafka_consumer.topics()
-    for t in ts:
-        print t
+    kafka_consumer = KafkaConsumer(bootstrap_servers=app.config.get('KAFKA_URL'), group_id='anfeng_message_service')
+    kafka_consumer.subscribe([app.config.get('KAFKA_TOPIC')])
     for msg in kafka_consumer:
-        print json.dumps(msg)
+        try:
+            consume_handler(msg)
+        except Exception, err:
+            service_logger.error("处理kafka消息异常：%s" % (err.message,))

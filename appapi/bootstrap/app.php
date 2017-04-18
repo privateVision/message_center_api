@@ -23,6 +23,10 @@ $app = new Laravel\Lumen\Application(
     realpath(__DIR__.'/../')
 );
 
+$app->register(Jenssegers\Mongodb\MongodbServiceProvider::class);
+$app->singleton('mailer', function () use ($app) {
+    return $app->loadComponent('mail', Illuminate\Mail\MailServiceProvider::class, 'mailer');
+});
 $app->withFacades();
 
 $app->withEloquent();
@@ -63,9 +67,9 @@ $app->singleton(
 //    App\Http\Middleware\ExampleMiddleware::class
 // ]);
 
-//$app->routeMiddleware([
-//	'api' => App\Http\Middleware\ApiMiddleware::class,
-//]);
+$app->routeMiddleware([
+    'cors' => App\Http\Middleware\CorsMiddleware::class,
+]);
 
 /*
 |--------------------------------------------------------------------------
@@ -78,10 +82,10 @@ $app->singleton(
 |
 */
 
-// $app->register(App\Providers\AppServiceProvider::class);
-// $app->register(App\Providers\AuthServiceProvider::class);
-// $app->register(App\Providers\EventServiceProvider::class);
+$app->register(App\Providers\AppServiceProvider::class);
+$app->register(App\Providers\EventServiceProvider::class);
 $app->register(Illuminate\Redis\RedisServiceProvider::class);
+$app->register(App\Providers\CatchAllOptionsRequestsProvider::class);
 
 /*
 |--------------------------------------------------------------------------
@@ -97,5 +101,5 @@ $app->register(Illuminate\Redis\RedisServiceProvider::class);
 $app->group(['namespace' => 'App\Http\Controllers'], function ($app) {
     require __DIR__.'/../routes/web.php';
 });
-
+$app->configure('common');
 return $app;

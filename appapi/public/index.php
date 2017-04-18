@@ -1,5 +1,5 @@
 <?php
-
+header("Access-Control-Allow-Origin: *");
 /*
 |--------------------------------------------------------------------------
 | Create The Application
@@ -24,5 +24,5 @@ $app = require __DIR__.'/../bootstrap/app.php';
 | and wonderful application we have prepared for them.
 |
 */
-
-$app->run();
+$request = Illuminate\Http\Request::capture();
+$app->run($request);

@@ -2,18 +2,26 @@
 
 namespace App\Http\Controllers;
 
+use App\Events\ExampleEvent;
+use App\Model\Gamebbs56\UcenterMembers;
+use App\Model\Ucusers;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Event;
+use Mockery\Generator\Parameter;
 
 class TestController extends \App\Controller
 {
     const APPID = 778;
     const DESKEY = '4c6e0a99384aff934c6e0a99';
-    const BASEURL = 'http://sdkapi.anfan.com/';
+    const BASEURL = '192.168.1.116/';
     const RID = 255;
 
     protected $access_token = '';
 
-    public function TestAction(Request $request) {
+    public function TestAction(Request $request ) {
+
+        // ---------------- 从这里写测试代码 ----------------
+
         date_default_timezone_set('Asia/Shanghai');
 
         // 初始化，并获取access_token
@@ -28,11 +36,8 @@ class TestController extends \App\Controller
         ));
 
         if($data == false) return;
+        $usename = $this->httpRequest("api/account/username",$data);
 
-        $this->access_token = $data['access_token'];
-
-        // ---------------- 从这里写测试代码 ----------------
-        
     }
 
     protected function httpRequest($uri, $data) {
@@ -41,8 +46,8 @@ class TestController extends \App\Controller
 
         $data['access_token'] = $this->access_token;
 
-        echo "<strong>request data:</strong>";
-        echo "<pre>";var_dump($data);echo "</pre>";
+     //   echo "<strong>request data:</strong>";
+       // echo "<pre>";var_dump($data);echo "</pre>";
 
         $postdata = array (
             'appid' => static::APPID,
@@ -62,9 +67,30 @@ class TestController extends \App\Controller
             return false;
         }
 
-        echo "<strong>response data:</strong>";
-        echo "<pre>";var_dump($res_data);echo "</pre>";
+        //echo "<strong>response data:</strong>";
+       // echo "<pre>";var_dump($res_data);echo "</pre>";
 
         return $res_data['data'];
     }
+
+    /*
+     * 工具测试
+     * */
+
+    public function UsernameAction() {
+        $username = null;
+
+        $chars = 'abcdefghjkmnpqrstuvwxy';
+        do {
+            $username = $chars[rand(0, 21)] . rand(10000, 99999999);
+            $count = Ucusers::where('uid', $username)->count();
+            if($count ==0 ) return ['username' => $username];
+        } while(true);
+
+    }
+
+    //创建用户
+
+
+
 }

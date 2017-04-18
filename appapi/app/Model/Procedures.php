@@ -14,10 +14,7 @@ class Procedures extends Model
 		return $this->hasMany(UpdateApks::class, 'pid', 'pid');
 	}
 
-	public function deskey() {
-		$md5 = md5($this->priKey);
-		$a = substr($md5, 0, 16);
-		$b = substr($md5, 0, 8);
-		return $a . $b;
+	public function appkey() {
+		return md5($this->priKey);
 	}
 }

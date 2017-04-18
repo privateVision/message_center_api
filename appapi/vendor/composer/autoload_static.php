@@ -11,8 +11,17 @@ class ComposerStaticInit7920f5af7a2779f08ce7e6693369c5f0
         '5255c38a0faeba867671b61dfda6d864' => __DIR__ . '/..' . '/paragonie/random_compat/lib/random.php',
         '72579e7bd17821bb1321b87411366eae' => __DIR__ . '/..' . '/illuminate/support/helpers.php',
         '1d1b89d124cc9cb8219922c9d5569199' => __DIR__ . '/..' . '/hamcrest/hamcrest-php/hamcrest/Hamcrest.php',
+        'c964ee0ededf28c96ebd9db5099ef910' => __DIR__ . '/..' . '/guzzlehttp/promises/src/functions_include.php',
+        'a0edc8309cc5e1d60e3047b5df6b7052' => __DIR__ . '/..' . '/guzzlehttp/psr7/src/functions_include.php',
+        'b067bc7112e384b61c701452d53a14a8' => __DIR__ . '/..' . '/mtdowling/jmespath.php/src/JmesPath.php',
+        '37a3dc5111fe8f707ab4c132ef1dbc62' => __DIR__ . '/..' . '/guzzlehttp/guzzle/src/functions_include.php',
+        '2c102faa651ef8ea5874edb585946bce' => __DIR__ . '/..' . '/swiftmailer/swiftmailer/lib/swift_required.php',
+        '8a9dc1de0ca7e01f3e08231539562f61' => __DIR__ . '/..' . '/aws/aws-sdk-php/src/functions.php',
         '253c157292f75eb38082b5acb06f3f01' => __DIR__ . '/..' . '/nikic/fast-route/src/functions.php',
+        '3a37ebac017bc098e9a86b35401e7a68' => __DIR__ . '/..' . '/mongodb/mongodb/src/functions.php',
+        'bd9634f2d41831496de0d3dfe4c94881' => __DIR__ . '/..' . '/symfony/polyfill-php56/bootstrap.php',
         'bee9632da3ca00a99623b9c35d0c4f8b' => __DIR__ . '/..' . '/laravel/lumen-framework/src/helpers.php',
+        '841780ea2e1d6545ea3a253239d59c05' => __DIR__ . '/..' . '/qiniu/php-sdk/src/Qiniu/functions.php',
         'f82e97c0dd2fb608b8cde919d54b1b0f' => __DIR__ . '/../..' . '/app/functions.php',
     );
 
@@ -25,8 +34,14 @@ class ComposerStaticInit7920f5af7a2779f08ce7e6693369c5f0
         array (
             'Webmozart\\Assert\\' => 17,
         ),
+        'T' => 
+        array (
+            'TijsVerkoyen\\CssToInlineStyles\\' => 31,
+        ),
         'S' => 
         array (
+            'Symfony\\Polyfill\\Util\\' => 22,
+            'Symfony\\Polyfill\\Php56\\' => 23,
             'Symfony\\Polyfill\\Mbstring\\' => 26,
             'Symfony\\Component\\Yaml\\' => 23,
             'Symfony\\Component\\Translation\\' => 30,
@@ -36,20 +51,34 @@ class ComposerStaticInit7920f5af7a2779f08ce7e6693369c5f0
             'Symfony\\Component\\Finder\\' => 25,
             'Symfony\\Component\\EventDispatcher\\' => 34,
             'Symfony\\Component\\Debug\\' => 24,
+            'Symfony\\Component\\CssSelector\\' => 30,
             'Symfony\\Component\\Console\\' => 26,
+            'SuperClosure\\' => 13,
+        ),
+        'Q' => 
+        array (
+            'Qiniu\\' => 6,
         ),
         'P' => 
         array (
             'Psr\\Log\\' => 8,
+            'Psr\\Http\\Message\\' => 17,
             'Predis\\' => 7,
+            'PhpParser\\' => 10,
+            'Pheanstalk\\' => 11,
         ),
         'M' => 
         array (
             'Monolog\\' => 8,
+            'MongoDB\\' => 8,
         ),
         'L' => 
         array (
             'Laravel\\Lumen\\' => 14,
+        ),
+        'J' => 
+        array (
+            'JmesPath\\' => 9,
         ),
         'I' => 
         array (
@@ -62,6 +91,7 @@ class ComposerStaticInit7920f5af7a2779f08ce7e6693369c5f0
             'Illuminate\\Queue\\' => 17,
             'Illuminate\\Pipeline\\' => 20,
             'Illuminate\\Pagination\\' => 22,
+            'Illuminate\\Mail\\' => 16,
             'Illuminate\\Http\\' => 16,
             'Illuminate\\Hashing\\' => 19,
             'Illuminate\\Filesystem\\' => 22,
@@ -76,6 +106,12 @@ class ComposerStaticInit7920f5af7a2779f08ce7e6693369c5f0
             'Illuminate\\Bus\\' => 15,
             'Illuminate\\Broadcasting\\' => 24,
             'Illuminate\\Auth\\' => 16,
+        ),
+        'G' => 
+        array (
+            'GuzzleHttp\\Psr7\\' => 16,
+            'GuzzleHttp\\Promise\\' => 19,
+            'GuzzleHttp\\' => 11,
         ),
         'F' => 
         array (
@@ -93,8 +129,13 @@ class ComposerStaticInit7920f5af7a2779f08ce7e6693369c5f0
             'Cron\\' => 5,
             'Carbon\\' => 7,
         ),
+        'B' => 
+        array (
+            'Barryvdh\\Cors\\' => 14,
+        ),
         'A' => 
         array (
+            'Aws\\' => 4,
             'App\\' => 4,
         ),
     );
@@ -109,6 +150,18 @@ class ComposerStaticInit7920f5af7a2779f08ce7e6693369c5f0
         'Webmozart\\Assert\\' => 
         array (
             0 => __DIR__ . '/..' . '/webmozart/assert/src',
+        ),
+        'TijsVerkoyen\\CssToInlineStyles\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/tijsverkoyen/css-to-inline-styles/src',
+        ),
+        'Symfony\\Polyfill\\Util\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/symfony/polyfill-util',
+        ),
+        'Symfony\\Polyfill\\Php56\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/symfony/polyfill-php56',
         ),
         'Symfony\\Polyfill\\Mbstring\\' => 
         array (
@@ -146,25 +199,57 @@ class ComposerStaticInit7920f5af7a2779f08ce7e6693369c5f0
         array (
             0 => __DIR__ . '/..' . '/symfony/debug',
         ),
+        'Symfony\\Component\\CssSelector\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/symfony/css-selector',
+        ),
         'Symfony\\Component\\Console\\' => 
         array (
             0 => __DIR__ . '/..' . '/symfony/console',
+        ),
+        'SuperClosure\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/jeremeamia/SuperClosure/src',
+        ),
+        'Qiniu\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/qiniu/php-sdk/src/Qiniu',
         ),
         'Psr\\Log\\' => 
         array (
             0 => __DIR__ . '/..' . '/psr/log/Psr/Log',
         ),
+        'Psr\\Http\\Message\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/psr/http-message/src',
+        ),
         'Predis\\' => 
         array (
             0 => __DIR__ . '/..' . '/predis/predis/src',
+        ),
+        'PhpParser\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/nikic/php-parser/lib/PhpParser',
+        ),
+        'Pheanstalk\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/pda/pheanstalk/src',
         ),
         'Monolog\\' => 
         array (
             0 => __DIR__ . '/..' . '/monolog/monolog/src/Monolog',
         ),
+        'MongoDB\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/mongodb/mongodb/src',
+        ),
         'Laravel\\Lumen\\' => 
         array (
             0 => __DIR__ . '/..' . '/laravel/lumen-framework/src',
+        ),
+        'JmesPath\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/mtdowling/jmespath.php/src',
         ),
         'Illuminate\\View\\' => 
         array (
@@ -201,6 +286,10 @@ class ComposerStaticInit7920f5af7a2779f08ce7e6693369c5f0
         'Illuminate\\Pagination\\' => 
         array (
             0 => __DIR__ . '/..' . '/illuminate/pagination',
+        ),
+        'Illuminate\\Mail\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/illuminate/mail',
         ),
         'Illuminate\\Http\\' => 
         array (
@@ -258,6 +347,18 @@ class ComposerStaticInit7920f5af7a2779f08ce7e6693369c5f0
         array (
             0 => __DIR__ . '/..' . '/illuminate/auth',
         ),
+        'GuzzleHttp\\Psr7\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/guzzlehttp/psr7/src',
+        ),
+        'GuzzleHttp\\Promise\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/guzzlehttp/promises/src',
+        ),
+        'GuzzleHttp\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/guzzlehttp/guzzle/src',
+        ),
         'FastRoute\\' => 
         array (
             0 => __DIR__ . '/..' . '/nikic/fast-route/src',
@@ -286,6 +387,14 @@ class ComposerStaticInit7920f5af7a2779f08ce7e6693369c5f0
         array (
             0 => __DIR__ . '/..' . '/nesbot/carbon/src/Carbon',
         ),
+        'Barryvdh\\Cors\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/barryvdh/laravel-cors/src',
+        ),
+        'Aws\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/aws/aws-sdk-php/src',
+        ),
         'App\\' => 
         array (
             0 => __DIR__ . '/../..' . '/app',
@@ -299,12 +408,27 @@ class ComposerStaticInit7920f5af7a2779f08ce7e6693369c5f0
             array (
                 0 => __DIR__ . '/..' . '/phpspec/prophecy/src',
             ),
+            'Parsedown' => 
+            array (
+                0 => __DIR__ . '/..' . '/erusev/parsedown',
+            ),
         ),
         'M' => 
         array (
             'Mockery' => 
             array (
                 0 => __DIR__ . '/..' . '/mockery/mockery/library',
+            ),
+        ),
+        'J' => 
+        array (
+            'Jenssegers\\Mongodb' => 
+            array (
+                0 => __DIR__ . '/..' . '/jenssegers/mongodb/src',
+            ),
+            'Jenssegers\\Eloquent' => 
+            array (
+                0 => __DIR__ . '/..' . '/jenssegers/mongodb/src',
             ),
         ),
         'D' => 
@@ -317,6 +441,7 @@ class ComposerStaticInit7920f5af7a2779f08ce7e6693369c5f0
     );
 
     public static $classMap = array (
+        'CreateFailedJobsTable' => __DIR__ . '/../..' . '/database/migrations/2017_03_03_193159_create_failed_jobs_table.php',
         'DatabaseSeeder' => __DIR__ . '/../..' . '/database/seeds/DatabaseSeeder.php',
         'ExampleTest' => __DIR__ . '/../..' . '/tests/ExampleTest.php',
         'File_Iterator' => __DIR__ . '/..' . '/phpunit/php-file-iterator/src/Iterator.php',

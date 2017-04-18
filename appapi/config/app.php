@@ -13,9 +13,10 @@ return [
     |
     */
 
-    'key' => env('APP_KEY', 'SomeRandomString!!!'),
+    'key' => '13d9c077e9cd1b9d8fec1d2a32dda274',
 
     'cipher' => 'AES-256-CBC',
+
     'log' => 'daily',
 
     /*
@@ -28,7 +29,7 @@ return [
     | to any of the locales which will be supported by the application.
     |
     */
-    'locale' => env('APP_LOCALE', 'en'),
+    'locale' => env('APP_LOCALE', 'zh-cn'),
     /*
     |--------------------------------------------------------------------------
     | Application Fallback Locale
@@ -39,5 +40,5 @@ return [
     | the language folders that are provided through your application.
     |
     */
-    'fallback_locale' => env('APP_FALLBACK_LOCALE', 'en'),
+    'fallback_locale' => env('APP_FALLBACK_LOCALE', 'zh-cn'),
 ];
