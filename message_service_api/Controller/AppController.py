@@ -1,6 +1,9 @@
 # _*_ coding: utf-8 _*_
 import json
 
+import time
+
+import datetime
 from flask import Blueprint
 from flask import request
 from mongoengine import Q
@@ -12,7 +15,7 @@ from MongoModel.MessageModel import UsersMessage
 from MongoModel.MessageRevocationModel import MessageRevocation
 from MongoModel.UserMessageModel import UserMessage
 from Service.UsersService import get_ucid_by_access_token, sdk_api_request_check, cms_api_request_check, \
-    get_user_is_freeze_by_access_token, get_user_gift_count
+    get_user_is_freeze_by_access_token
 from Utils.RedisUtil import RedisHandle
 from Utils.SystemUtils import log_exception
 
@@ -135,31 +138,21 @@ def v4_cms_message_revocation():
 @app_controller.route('/msa/v4/app/heartbeat', methods=['POST'])
 @sdk_api_request_check
 def v4_sdk_heartbeat():
+    start_time = time.time()
     ucid = get_ucid_by_access_token(request.form['_token'])
     appid = request.form['_appid']
     if ucid:
-        data = RedisHandle.get_user_data_mark_in_redis(ucid)
-        if RedisHandle.exists(ucid):  # 存在用户的缓存数据
-            redis_mark_data = RedisHandle.hgetall(ucid)
-            if redis_mark_data.has_key('gift_num'):
-                gift_num = int(redis_mark_data['gift_num'])
-                if gift_num <= 0:
-                    data['gift_num'] = get_user_gift_count(ucid, appid)
-                    RedisHandle.hset(ucid, 'gift_num', data['gift_num'])
-                else:
-                    data['gift_num'] = gift_num
-            else:
-                data['gift_num'] = get_user_gift_count(ucid, appid)
-                RedisHandle.hset(ucid, 'gift_num', data['gift_num'])
-        else:
-            data['gift_num'] = get_user_gift_count(ucid, appid)
-            RedisHandle.hset(ucid, 'gift_num', data['gift_num'])
+        # 获取用户相关广播和未读消息数
+        data = RedisHandle.get_user_data_mark_in_redis(ucid, appid)
+        print "%s - %s" % (ucid, json.dumps(data))
         freeze = get_user_is_freeze_by_access_token(request.form['_token'])
         if freeze is not None:
             if freeze == 1:
                 return response_data(200, 101, get_tips('heartbeat', 'user_account_freezed'))
             if freeze == 2:
                 return response_data(200, 108, get_tips('heartbeat', 'sub_user_account_freezed'))
+        end_time = time.time()
+        print (end_time - start_time)
         return response_data(data=data)
 
 
