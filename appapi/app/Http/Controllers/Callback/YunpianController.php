@@ -13,11 +13,11 @@ class YunpianController extends \App\Controller
 
             $sms_reply = $request->input('sms_reply');
 
+            log_info('YunpianCallback', $sms_reply);
 
-
-            $sms_reply = @json_decode($sms_reply, true);
+            $sms_reply = @json_decode(urldecode($sms_reply), true);
             if(!$sms_reply) {
-                return 'SUCCESS';
+                return 'FAILURE';
             }
 
             $sign = $sms_reply['_sign'];
@@ -29,7 +29,7 @@ class YunpianController extends \App\Controller
                 $dat[$k] = trim(urldecode($v)," ");
             }
            $dat[] = config('common.smsconfig.apikey');
-          //  $dat[] = '0000';
+
             // todo: 这里要改...
             $str = implode(',', $dat);
             log_info('YunpianCallback', $str."_____".strtolower(md5($str))."====".$sign);
@@ -37,6 +37,7 @@ class YunpianController extends \App\Controller
             if($sign !== md5($str)) {
                 return 'FAILURE';
             }
+
             log_info('YunpianCallback', $sms_reply);
             $yunpiansms = new YunpianCallback;
             $yunpiansms->yid = $sms_reply['id'];
@@ -50,6 +51,7 @@ class YunpianController extends \App\Controller
             return 'SUCCESS';
         }catch(\Exception $e){
             log_info('YunpianCallback', $e->getMessage());
+            return 'FAILURE';
         }
 
     }
