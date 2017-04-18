@@ -10,6 +10,7 @@ from mongoengine import Q
 
 from Controller.BaseController import response_data, response_ok
 from LanguageConf import get_tips
+from MiddleWare import service_logger
 from MongoModel.AppRulesModel import AppVipRules
 from MongoModel.MessageModel import UsersMessage
 from MongoModel.MessageRevocationModel import MessageRevocation
@@ -144,7 +145,7 @@ def v4_sdk_heartbeat():
     if ucid:
         # 获取用户相关广播和未读消息数
         data = RedisHandle.get_user_data_mark_in_redis(ucid, appid)
-        print "%s - %s" % (ucid, json.dumps(data))
+        service_logger.info("%s - %s" % (ucid, json.dumps(data)))
         freeze = get_user_is_freeze_by_access_token(request.form['_token'])
         if freeze is not None:
             if freeze == 1:
