@@ -234,10 +234,12 @@ def get_user_broadcast_list(ucid=None):
 
 # 根据用户id获取未读消息数
 def get_user_unread_message_count(ucid=None):
+    current_timestamp = get_current_timestamp()
     count = UserMessage.objects(
         Q(type='message')
         & Q(closed=0)
         & Q(is_read=0)
+        & Q(start_time__lte=current_timestamp)
         & Q(ucid=ucid)).count()
     return count
 
