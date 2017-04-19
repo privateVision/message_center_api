@@ -265,8 +265,8 @@ function user_log($user, $procedure, $type, $text_format) {
     $user_log->type = $type;
     $user_log->ucid = $user->ucid;
     $user_log->mobile = $user->mobile;
-    $user_log->pid = $procedure ? $procedure->pid : '';
-    $user_log->pname = $procedure ? $procedure->pname : '';
+    $user_log->pid = isset($procedure) ? $procedure->pid : '';
+    $user_log->pname = isset($procedure) ? $procedure->pname : '';
     $user_log->text = count($format_arguments) ? sprintf($text_format, ...$format_arguments) : $text_format;
     $user_log->asyncSave();
 }

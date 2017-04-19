@@ -89,6 +89,7 @@ $app->group(['prefix' => 'api'], function () use ($app) {
     $app->post('user/updaterole','Api\\UserController@UpdateRoleAction');                                   // 角色信息日志
 
 
+
     $app->post('user_sub/list', 'Api\\UserSubController@ListAction');                                       // 小号列表
     $app->post('user_sub/new', 'Api\\UserSubController@NewAction');                                         // 添加小号
 
@@ -105,6 +106,13 @@ $app->group(['prefix' => 'api'], function () use ($app) {
     $app->post('tool/reset_password/request','Api\\Tool\\ResetPasswordController@RequestAction');           // 通过token用户自行修改密码
     $app->post('tool/user/reset_password_page','Api\\Tool\\UserController@ResetPasswordPageAction');        // 获取重设密码页面
     $app->post('tool/user/freeze','Api\\Tool\\UserController@FreezeAction');                                // 冻结用户
+
+    $app->post('tool/user/sign','Api\\Tool\\OpenController@createSign');                                    // 生成测试签名
+    $app->post('tool/info/order','Api\\Tool\\OpenController@GetOrderInfoAction');                           //获取订单详情
+    $app->post('tool/user/auth','Api\\Tool\\OpenController@AuthLoginAction');                               //获取订单详情
+
+
+
 
 });
 

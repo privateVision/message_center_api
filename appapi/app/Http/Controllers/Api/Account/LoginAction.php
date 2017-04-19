@@ -104,7 +104,7 @@ trait LoginAction {
             'sub_nickname' => strval($user_sub->name),
             'uid' => $user->ucid,
             'username' => $user->uid,
-            'nickname' => $user->nickname,
+            'nickname' => $user->nickname?$user->nickname:"",
             'mobile' => strval($user->mobile),
             'avatar' => $user_info && $user_info->avatar ? (string)$user_info->avatar : env('default_avatar'),
             'is_real' => $user_info && $user_info->isReal(),

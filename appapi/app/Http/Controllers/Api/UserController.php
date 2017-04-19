@@ -7,12 +7,14 @@ use Illuminate\Http\Request;
 use App\Parameter;
 use App\Model\Ucuser;
 use App\Model\Orders;
+use App\Model\Session;
 use App\Model\UcuserRole;
 use App\Model\ProceduresZone;
 use App\Model\ProceduresExtend;
 use App\Model\UcuserSub;
 use App\Model\UcuserOauth;
 use App\Model\UcuserInfo;
+
 
 class UserController extends AuthController
 {
@@ -571,4 +573,38 @@ class UserController extends AuthController
 
         return $logdata->save()?"true":"false";
     }
+
+    /*获取订单详情
+     * */
+
+    public function GetOrderInfoAction(){
+        $sn = $this->parameter->tough('sn');
+        if (strlen($sn) >32)  throw  new  ApiException(ApiException::Remind,trans("messages.order_info_error"));
+
+        $ucid = $this->user->ucid;
+        $ord = Orders::where("ucid",$ucid)->where('sn',$sn)->first();
+        if($ord){
+            return $ord;
+        }
+        return "";
+    }
+
+    //验证当前用户的登录
+
+    public function AuthLoginAction(){
+        $token = $this->parameter->tough('_token');
+        $ucid = $this->parameter->tough("ucid");
+
+        //查询当前的session
+        $dat = Session::where("token",$token)->where("ucid",$ucid)->first();
+
+        if(time() > $dat['expired_ts']) return false;
+
+        if($dat){
+            return true;
+        }
+        return false;
+    }
+
+
 }

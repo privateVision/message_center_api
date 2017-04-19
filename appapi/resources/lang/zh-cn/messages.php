@@ -38,6 +38,6 @@ return [
     "apple_buy_success"             => "苹果购买成功！",
     "app_param_type_error"          => "您好，传递的参数的格式错误！",
     //loginAction
-
+    "order_info_error"              => "订单信息有误"
 
 ];
