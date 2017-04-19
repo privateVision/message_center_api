@@ -267,7 +267,7 @@ def get_user_gift_count(ucid=None, appid=None):
     uid = get_uid_by_ucid(ucid)
     now = int(time.time())
     game_gift_list_sql = "select id from cms_gameGift where status = 'normal' and failTime > %s and gameId = %s" \
-                         % (now, game['id'],)
+                         % (now, game['id'])
     game_gift_list = mysql_cms_session.execute(game_gift_list_sql).fetchall()
     game_gift_array = []
     for game_gift in game_gift_list:
