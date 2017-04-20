@@ -21,6 +21,11 @@ class ApiException extends \Exception
     const AlreadyBindMobile = 107;  // 账号已经绑定了手机号码，无法再次绑定
     const AlreadyBindOauthOther = 109; // 平台账号已经绑定了其它账号
 
+    //订单验证
+    const WAITED_PAY = 110; //验证等待支付
+
+
+
 	public function __construct($code, $message) {
 		parent::__construct($message, $code);
 	}

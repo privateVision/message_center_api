@@ -31,10 +31,19 @@ class NowpayWechatController extends Controller {
         $mht['notifyUrl'] = url('pay_callback/nowpay_wechat');
         $mht['payChannelType'] = $config['payChannelType'];
         ksort($mht);
+
+
         $mht['mhtSignature'] = md5(static::encode($mht) .'&'. md5($config['secure_key']));
         $mht['mhtSignType'] = $config['mhtSignType'];
 
-        return ['data' => static::encode($mht)];
+        $str = [];
+        foreach($mht as $k => $v) {
+            if($v == "") continue;
+            $str[] = "{$k}=".urlencode($v);
+        }
+
+        $dt =  implode('&', $str);
+        return ['data' => $dt];
     }
 
     protected static function encode($data) {

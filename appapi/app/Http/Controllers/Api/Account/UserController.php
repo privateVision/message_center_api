@@ -36,9 +36,9 @@ class UserController extends Controller {
         // todo:数据迁移
         $user = Ucuser::where('uid', $username)->orWhere('mobile', $username)->orWhere('email', $username)->first();
         do {
-            if($user && $user->password) break;
+            if(!isset($user)) break;
 
-            $member = Member::where('username', $username)->orWhere('email', $username)->first();
+            $member = Member::where('uid', $user->ucid)->first();
             if(!$member) break;
 
             $user = Ucuser::from_cache($member->uid);
