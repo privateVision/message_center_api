@@ -44,7 +44,8 @@ class AppController extends Controller
         }
 
         // config
-        $config = ProceduresExtend::from_cache($pid);
+        //$config = ProceduresExtend::from_cache($pid);
+        $config = ProceduresExtend::where("pid",$pid)->first();
         if(!$config) {
             $config = new ProceduresExtend;
             $config->pid = $pid;

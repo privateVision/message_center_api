@@ -110,7 +110,8 @@ $app->group(['prefix' => 'api'], function () use ($app) {
     $app->post('tool/user/sign','Api\\Tool\\OpenController@createSign');                                    // 生成测试签名
     $app->post('tool/info/order','Api\\Tool\\OpenController@GetOrderInfoAction');                           //获取订单详情
     $app->post('tool/user/auth','Api\\Tool\\OpenController@AuthLoginAction');                               //获取订单详情
-
+    $app->post('tool/order/success','Api\\Tool\OpenController@sendOrder');                                  //发送发送订单信息
+    $app->post('tool/order/notify','Api\\Tool\OpenController@TestNotify');                                  //接受短信的回调地址
 
 
 

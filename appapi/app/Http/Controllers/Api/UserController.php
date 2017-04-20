@@ -7,14 +7,14 @@ use Illuminate\Http\Request;
 use App\Parameter;
 use App\Model\Ucuser;
 use App\Model\Orders;
-use App\Model\Session;
+
 use App\Model\UcuserRole;
 use App\Model\ProceduresZone;
 use App\Model\ProceduresExtend;
 use App\Model\UcuserSub;
 use App\Model\UcuserOauth;
 use App\Model\UcuserInfo;
-
+use Illuminate\Support\Facades\Session;
 
 class UserController extends AuthController
 {

@@ -24,7 +24,7 @@ class OpenController extends \App\Controller
 
         $appid = $request->get("appid"); //vid
 
-        if(!preg_match('/\d{1,10}/',$appid)) throw  new  ApiException(ApiException::Remind,trans("messages.order_info_error"));
+        if(!preg_match('/\d{1,10}/',$appid)) throw  new  ApiException(ApiException::Remind,trans("messages.param_type_error"));
         $sn = $request->get("sn");
 
         $sub_uid = $request->get("ucid"); //其实是小号的ID
@@ -34,10 +34,17 @@ class OpenController extends \App\Controller
         $ord = Orders::where("ucid", $sub_uid)->where('sn', $sn)->where("vid",$appid)->first();
         if ($ord) { //拼接返回的数据
 
-            return "SUCESS";
+            switch($ord->status){
+                case 0:
+                    return 1000; //订单待处理
+                    break;
+                case 1:
+                    return 1001; //正确的返回值
+                    break;
+            }
         }
 
-        return "FALSE"; //验证当前的订单如果失败，标记为是失败
+        return "1002"; //验证当前的订单如果失败，标记为是失败
     }
 
     //验证当前用户的登录
@@ -58,7 +65,7 @@ class OpenController extends \App\Controller
             return "SUCESS";
         }
 
-        return "FALSE";
+        return "FAILED";
     }
 
 
@@ -105,5 +112,18 @@ class OpenController extends \App\Controller
             return  $sign === $dat['sign'];
         }
     }
+
+  //通知发货测试代码 接收数据
+    public function TestNotify(Request $request){
+        $dat = $request->all();
+        log_info('OrderNotify', ['url' => "TestNotify", 'reqdata' => $dat]);
+    }
+ //执行发货的测试
+    public function sendOrder(Request $request){
+        $order = $request->get("order");
+        order_success($order);
+        log_info('send order', ['order' => $order]);
+    }
+
 
 }
