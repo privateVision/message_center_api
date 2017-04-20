@@ -47,6 +47,11 @@ class RedisHandle(object):
         return redis_store.hset(key, field_name, 0)
 
     @staticmethod
+    def set_key_exipre(key_name, ttl):
+        key = "%s%s" % (RedisHandle.common_key_prefix, key_name)
+        redis_store.expire(key, ttl)
+
+    @staticmethod
     def get_user_data_mark_in_redis(key_name, appid):
         key = "%s%s" % (RedisHandle.common_key_prefix, key_name)
         user_mark = {
@@ -76,6 +81,7 @@ class RedisHandle(object):
         else:  # 不存在缓存数据
             user_mark['message'] = get_user_unread_message_count(key_name)
             RedisHandle.hset(key_name, 'message', user_mark['message'])
+            RedisHandle.set_key_exipre(key_name, 14400)
 
         # 获取用户未领取的礼包数
         from Service.UsersService import get_user_gift_count
@@ -94,6 +100,7 @@ class RedisHandle(object):
         else:
             user_mark['gift_num'] = get_user_gift_count(key_name, appid)
             RedisHandle.hset(key_name, 'gift_num', user_mark['gift_num'])
+            RedisHandle.set_key_exipre(key_name, 14400)
 
         return user_mark
 
