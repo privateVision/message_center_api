@@ -22,67 +22,105 @@ class ApiExampleTest(unittest.TestCase):
             k = urllib.quote_plus(key)
             v = urllib.quote_plus(str(post_data[key]))
             data_str += "%s=%s&" % (k, v)
-        data_str += "signKey=%s" % (sign_key,)
+        data_str += "sign_key=%s" % (sign_key,)
         m = hashlib.md5()
         m.update(data_str)
         sign = m.hexdigest()
         return sign
 
-    # 用户登录 API Example
+    # 用户登录状态检测 API Example
     """
+    请求方式：POST
     请求参数：
         参数名  | 是否必填 |   类型  |   描述
-        token  |    是   |  string | 用户识别码
-        open_id|    是   |  string | 安峰网用户唯一标识
-        app_id |    否   |  string | 商户应用 id,每应用惟一
-
-    Response:
-        {
-            "code": 0,
-            "msg": "",
-            "data": "SUCESS"
-        }
-    """
-    def test_user_login_auth(self):
-        request_params = {
-            'token': '3sxixcko4nc4kkcw44k0o8c0k',
-            'open_id': 'ctmlmrm37jks4cs8848ok4804',
-            'app_id': 778
-        }
-        request_data_sign = self.api_post_data_sign_gen(request_params, sign_key='84ee7ad1a1c0e67c02d7c79418e532a0')
-        request_params['sign'] = request_data_sign
-        response = requests.post('http://sdkv4.qcwan.com/api/tool/user/auth', data=request_params)
-        print response.text
-
-    # 订单查询 API Example
-    """
-    请求参数：
-        参数名    | 是否必填 |   类型  |   描述
-        app_id   |    是   |   int   | 商户应用 id
-        open_id  |    是   |  string | 唯一识别id
-        sn       |    是   |  string | 安锋网订单号
-        sign     |    是   |  string | 厂商签名
-        vorderid |    是   |  string | 厂家订单号
+        token  |    是   |  string | 登录返回token
+        open_id|    是   |  string | 支付的发起人,用户在SDK 的数字标记
+        app_id |    否   |  string | 商户应用AF_APPID
 
     Response:
         {
             "code": 1,
-            "msg": "",
-            "data": "1000"
+            "msg": "用户信息",
+            "data": true
+        }
+    """
+    # def test_user_login_auth(self):
+    #     api_http_url = 'http://sdkv4.qcwan.com/api/tool/user/auth'
+    #     request_params = {
+    #         'token': '3sxixcko4nc4kkcw44k0o8c0k',
+    #         'open_id': 'ctmlmrm37jks4cs8848ok4804',
+    #         'app_id': 778
+    #     }
+    #     request_data_sign = self.api_post_data_sign_gen(request_params, sign_key='84ee7ad1a1c0e67c02d7c79418e532a0')
+    #     request_params['sign'] = request_data_sign
+    #     response = requests.post(api_http_url, data=request_params)
+    #     print response.text
+
+    # 订单查询 API Example
+    """
+    请求方式：POST
+    请求参数：
+        参数名    | 是否必填 |   类型  |   描述
+        app_id   |    是   |   int   | 商户应用AF_APPID
+        open_id  |    是   |  string | 支付的发起人,用户在SDK 的数字标记
+        sn       |    是   |  string | SDK 订单号
+        sign     |    是   |  string | sdk 验证签名
+        vorder_id|    是   |  string | 厂家订单号
+
+    Response:
+        {
+            "code": 1,
+            "msg": "订单待处理",
+            "data": {
+                "open_id":"b7qvattt01wkwc0g080cw0k0k",
+                "vorder_id":"1492768478794",
+                "sn":"170421175437312464423937",
+                "app_id":null,
+                "fee":"1.00",
+                "body":"为刀塔传奇充值10水晶",
+                "create_time":{
+                    "date":"2017-04-21 17:54:37.000000",
+                    "timezone_type":3,
+                    "timezone":"Asia/Shanghai"
+                }
+            }
         }
     """
     def test_query_order_list(self):
+        api_http_url = 'http://sdkv4.qcwan.com/api/tool/info/order'
         request_params = {
             'app_id': 778,
-            'open_id': 'ctmlmrm37jks4cs8848ok4804',
-            'token': '3sxixcko4nc4kkcw44k0o8c0k',
-            'sn': '170420143534155874389659',
-            'vorderid': '1492670134367'
+            'open_id': 'b7qvattt01wkwc0g080cw0k0k',
+            'sn': '170421175437312464423937',
+            'vorder_id': '1492768478794'
         }
         request_sign = self.api_post_data_sign_gen(request_params, sign_key='84ee7ad1a1c0e67c02d7c79418e532a0')
         request_params['sign'] = request_sign
-        response = requests.post('http://sdkv4.qcwan.com/api/tool/info/order', data=request_params)
+        response = requests.post(api_http_url, data=request_params)
         print response.text
+
+
+    # 接收发货通知
+    # @app_controller.route('/msa/v4/notify_test', methods=['POST'])
+    # def v4_notify_test():
+    #     sign_key = "84ee7ad1a1c0e67c02d7c79418e532a0"
+    #     data_str = ""
+    #     request_data = request.form.copy()
+    #     del request_data['sign']
+    #     for key in sorted(request_data.keys()):
+    #         k = urllib.quote_plus(key)
+    #         v = urllib.quote_plus(str(request_data[key]))
+    #         data_str += "%s=%s&" % (k, v)
+    #     data_str += "sign_key=%s" % (sign_key,)
+    #     m = hashlib.md5()
+    #     m.update(data_str)
+    #     gen_sign = m.hexdigest()
+    #     print gen_sign
+    #     print request.form['sign']
+    #     if gen_sign == request.form['sign']:
+    #         return response_ok()
+    #     else:
+    #         return response_exception()
 
 if __name__ == '__main__':
     unittest.main()
