@@ -45,7 +45,7 @@ class UserController extends Controller {
             if($user) {
                 if(!$user->uid) $user->uid = $member->username;
                 if(!$user->email) $user->email = $member->email;
-                if(!$user->nickname) $user->nickname = $member->username;
+                if(!$user->nickname) $user->nickname = rand(111111,999999);
                 if(!$user->regip) $user->regip = $member->regip;
                 if(!$user->regdate) $user->regdate = $member->regdate;
                 if(!$user->password) {
