@@ -6,7 +6,7 @@ from flask import Blueprint
 from flask import request
 
 from Controller.BaseController import response_data
-from Service.UsersService import get_game_info_by_gameid, anfeng_helper_request_check
+from Service.UsersService import get_game_info_by_gameid, anfeng_helper_request_check, get_game_info_by_appid
 
 anfeng_controller = Blueprint('AnfengController', __name__)
 
@@ -56,22 +56,19 @@ def v4_anfeng_helper_get_user_coupon():
     user_coupon_list = mysql_session.execute(get_user_coupon_sql).fetchall()
     for coupon in user_coupon_list:
         coupon_info = {
-            'id': coupon['id'],
-            'name': coupon['name'],
-            'is_time': coupon['is_time'],
+            'coupon_id': coupon['id'],
+            'coupon_name': coupon['name'],
+            'lock_time': coupon['is_time'],
             'start_time': coupon['start_time'],
             'end_time': coupon['end_time'],
-            'game': coupon['game'],
-            'is_first': coupon['is_first'],
-            'info': coupon['info'],
-            'num': coupon['num'],
-            'full': coupon['full'],
-            'money': coupon['money'],
-            'method': coupon['method'],
-            'users_type': coupon['users_type'],
-            'vip_user': coupon['vip_user'],
-            'specify_user': coupon['specify_user']
+            'amount': coupon['money']
         }
+        # 查询游戏信息
+        game = get_game_info_by_appid(coupon['game'])
+        if game is None:
+            coupon_info['lock_apk_id'] = coupon['game']
+            coupon_info['game_name'] = game['name']
+            coupon_info['game_id'] = game['id']
         coupon_list.append(coupon_info)
     data = {
         'total_count': user_coupon_count,
