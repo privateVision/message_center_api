@@ -41,6 +41,7 @@ class UserController extends AuthController
             'score' => $user_info && $user_info->score ? (int)$user_info->score : 0,
             'is_real' => $user_info && $user_info->isReal(),
             'is_adult' => $user_info && $user_info->isAdult(),
+            'reg_time' => $this->user->createTime,
         ];
     }
 
@@ -572,38 +573,6 @@ class UserController extends AuthController
         $logdata->sub_id        = $sud_id;
 
         return $logdata->save()?"true":"false";
-    }
-
-    /*获取订单详情
-     * */
-
-    public function GetOrderInfoAction(){
-        $sn = $this->parameter->tough('sn');
-        if (strlen($sn) >32)  throw  new  ApiException(ApiException::Remind,trans("messages.order_info_error"));
-
-        $ucid = $this->user->ucid;
-        $ord = Orders::where("ucid",$ucid)->where('sn',$sn)->first();
-        if($ord){
-            return $ord;
-        }
-        return "";
-    }
-
-    //验证当前用户的登录
-
-    public function AuthLoginAction(){
-        $token = $this->parameter->tough('_token');
-        $ucid = $this->parameter->tough("ucid");
-
-        //查询当前的session
-        $dat = Session::where("token",$token)->where("ucid",$ucid)->first();
-
-        if(time() > $dat['expired_ts']) return false;
-
-        if($dat){
-            return true;
-        }
-        return false;
     }
 
 

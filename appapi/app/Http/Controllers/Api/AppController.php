@@ -177,4 +177,31 @@ class AppController extends Controller
         return ['result' => true];
     }
 */
+
+ /*
+  * 热更新信息
+  * */
+    public function HotupdateAction(){
+
+        $gps = $this->parameter->tough("gps"); //gps 信息
+        $imei = $this->parameter->tough("imei"); //设备信息
+
+        $manifest = [];
+        $manifest["version"] = "1.0.0";
+        $manifest["bundles"][] = ["type"=>"lib","pkg"=>"com.anfeng.pay"];
+
+        $updates = [];
+        $updates["pkg"] = "com.anfeng.pay";
+        $updates["version"] = 4;
+        $updates["url"] = "http://afsdkup.qcwan.com/down/com.anfeng.pay.apk";
+
+        return ["manifest"=>$manifest,"updates"=>[$updates]];
+    }
+
+
+
+
+
+
+
 }

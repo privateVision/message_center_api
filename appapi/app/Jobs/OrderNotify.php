@@ -26,15 +26,15 @@ class OrderNotify extends Job
 
         $appkey = $procedures->psingKey;
 
-        $data['uid'] = $order->uid;
-        $data['ucid'] = $order->cp_uid ? $order->cp_uid : $order->ucid; // todo: 兼容旧系统
+        $data['openid'] = $order->user_sub_id;
+       // $data['ucid'] = $order->cp_uid ? $order->cp_uid : $order->ucid; // todo: 兼容旧系统
         $data['body'] = $order->body;
         $data['subject'] = $order->subject;
         $data['fee'] = sprintf('%.2f',$order->fee);
         $data['vid'] = $order->vid;
         $data['sn'] = $order->sn;
-        $data['vorderid'] = $order->vorderid;
-        $data['createTime'] = strval($order->createTime);
+        $data['vorder_id'] = $order->vorderid;
+        $data['create_time'] = strval($order->createTime);
         ksort($data);
 
         $str = '';
@@ -42,7 +42,7 @@ class OrderNotify extends Job
             $str .= "{$k}={$v}&";
         }
 
-        $str .= 'signKey='. $appkey;
+        $str .= 'sign_key='. $appkey;
 
         $data['sign'] = md5($str);
 
