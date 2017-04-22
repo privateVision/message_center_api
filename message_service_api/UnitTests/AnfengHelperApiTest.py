@@ -18,11 +18,11 @@ class AnfengHelperApiTest(unittest.TestCase):
 
     def test_get_coupon(self):
         data = {
-            "uid": 11421096,
+            "uid": 100002702,
             "status": 0,
             "page": 1,
             "pagesize": 5,
-            "sign": "3629ad398f35468e18a46adf66493606"
+            "sign": "e702882b1375fef523d5b195cf919360"
         }
         headers = {"Content-Type": "application/json"}
         data_json = json.dumps(data)

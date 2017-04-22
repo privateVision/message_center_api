@@ -65,14 +65,14 @@ def v4_anfeng_helper_get_user_coupon():
         }
         # 查询游戏信息
         game = get_game_info_by_appid(coupon['game'])
-        if game is None:
+        if game is not None:
             coupon_info['lock_apk_id'] = coupon['game']
             coupon_info['game_name'] = game['name']
             coupon_info['game_id'] = game['id']
         coupon_list.append(coupon_info)
     data = {
         'total_count': user_coupon_count,
-        'data': coupon_list
+        'coupon_list': coupon_list
     }
     return response_data(http_code=200, data=data)
 
@@ -82,13 +82,13 @@ def v4_anfeng_helper_get_user_coupon():
 @anfeng_helper_request_check
 def v4_anfeng_helper_get_user_gifts():
     from run import mysql_cms_session
-    ucid = request.json.get('ucid')
+    ucid = request.json.get('uid')
     page = int(request.json.get('page'))
-    count = int(request.json.get('count'))
+    count = int(request.json.get('pagesize'))
     start_index = (page - 1) * count
     end_index = start_index + count
     gift_list = []
-    user_gift_total_count_sql = "select count(gift.*) from cms_gameGiftLog as log join cms_gameGift as gift" \
+    user_gift_total_count_sql = "select count(gift.id) from cms_gameGiftLog as log join cms_gameGift as gift" \
                                 " on log.giftId = gift.id where gift.status = 'normal' and " \
                                 "log.status = 'normal' and log.uid = %s " % (ucid,)
     get_user_gift_sql = "select gift.* from cms_gameGiftLog as log join cms_gameGift as gift on log.giftId = gift.id" \
