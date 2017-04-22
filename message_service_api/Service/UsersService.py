@@ -289,11 +289,11 @@ def get_user_gift_count(ucid=None, appid=None):
         get_not_specify_user_gift_count_sql = "select count(*) from cms_gameGift as gift join cms_gameGiftAssign " \
                                               "as assign" \
                                               " on gift.id=assign.giftId where gift.status='normal' " \
-                                              "and gift.failTime > %s and assign.platformId = %s " \
+                                              "and gift.failTime > %s and assign.platformId = %s and gift.gameId = %s " \
                                               "and assign.status='normal' and assign.assignNum>0 " \
                                               "and gift.isSpecify=0 " \
                                               "and gift.id not in(%s)" % (
-                                                  now, SDK_PLATFORM_ID, already_get_gift_id_list_str)
+                                                  now, SDK_PLATFORM_ID, game['id'], already_get_gift_id_list_str)
         if len(specify_user_gift_id_list) > 0:
             # 获取指定了用户的还有剩余礼包的礼包数
             get_specify_user_gift_count_sql = "select count(*) from cms_gameGift as gift join cms_gameGiftAssign " \
@@ -301,9 +301,9 @@ def get_user_gift_count(ucid=None, appid=None):
                                               " on gift.id=assign.giftId where gift.status='normal' " \
                                               "and gift.failTime > %s and assign.platformId = %s " \
                                               "and assign.status='normal' and assign.assignNum>0 " \
-                                              "and gift.isSpecify=1 " \
+                                              "and gift.isSpecify=1 and gift.gameId = %s " \
                                               "and gift.id in(%s) and gift.id not in(%s) " \
-                                              % (now, SDK_PLATFORM_ID, specify_user_gift_id_list_str,
+                                              % (now, SDK_PLATFORM_ID, game['id'], specify_user_gift_id_list_str,
                                                  already_get_gift_id_list_str)
         else:
             # 获取指定了用户的还有剩余礼包的礼包数
@@ -313,10 +313,10 @@ def get_user_gift_count(ucid=None, appid=None):
         get_not_specify_user_gift_count_sql = "select count(*) from cms_gameGift as gift join cms_gameGiftAssign " \
                                               "as assign" \
                                               " on gift.id=assign.giftId where gift.status='normal' " \
-                                              "and gift.failTime > %s and assign.platformId = %s " \
+                                              "and gift.failTime > %s and assign.platformId = %s and gift.gameId = %s " \
                                               "and assign.status='normal' and assign.assignNum>0 " \
                                               "and gift.isSpecify=0 " \
-                                              % (now, SDK_PLATFORM_ID)
+                                              % (now, SDK_PLATFORM_ID, game['id'])
         if len(specify_user_gift_id_list) > 0:
             # 获取指定了用户的还有剩余礼包的礼包数
             get_specify_user_gift_count_sql = "select count(*) from cms_gameGift as gift join cms_gameGiftAssign" \
@@ -324,9 +324,9 @@ def get_user_gift_count(ucid=None, appid=None):
                                               " on gift.id=assign.giftId where gift.status='normal' " \
                                               "and gift.failTime > %s and assign.platformId = %s " \
                                               "and assign.status='normal' and assign.assignNum>0 " \
-                                              "and gift.isSpecify=1 " \
+                                              "and gift.isSpecify=1 and gift.gameId = %s " \
                                               "and gift.id in(%s)" \
-                                              % (now, SDK_PLATFORM_ID, specify_user_gift_id_list_str)
+                                              % (now, SDK_PLATFORM_ID, game['id'], specify_user_gift_id_list_str)
         else:
             # 获取指定了用户的还有剩余礼包的礼包数
             get_specify_user_gift_count_sql = None
