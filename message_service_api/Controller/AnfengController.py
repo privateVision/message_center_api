@@ -16,16 +16,43 @@ anfeng_controller = Blueprint('AnfengController', __name__)
 @anfeng_helper_request_check
 def v4_anfeng_helper_get_user_coupon():
     from run import mysql_session
-    ucid = request.json.get('ucid')
+    ucid = request.json.get('uid')
+    status = int(request.json.get('status'))
+    page = int(request.json.get('page'))
+    count = int(request.json.get('pagesize'))
+    start_index = (page - 1) * count
+    end_index = start_index + count
     now = int(time.time())
     coupon_list = []
-    get_user_coupon_sql = "select coupon.* from zy_coupon_log as log join zy_coupon as coupon " \
-                          "on log.coupon_id=coupon.id where coupon.status='normal' and log.is_used = 0 " \
-                          "and log.ucid=%s " \
-                          "and ((coupon.is_time = 0) or ((coupon.is_time = 1) " \
-                          "and coupon.start_time <= %s " \
-                          "and coupon.end_time >= %s)) order by log.id desc" \
-                          % (ucid, now, now)
+    if status == 0:  # 正常的卡券
+        get_user_coupon_total_count_sql = "select count(coupon.id) from zy_coupon_log as log join zy_coupon as coupon " \
+                              "on log.coupon_id=coupon.id where coupon.status='normal' and log.is_used = 0 " \
+                              "and log.ucid=%s " \
+                              "and ((coupon.is_time = 0) or ((coupon.is_time = 1) " \
+                              "and coupon.start_time <= %s " \
+                              "and coupon.end_time >= %s))" \
+                              % (ucid, now, now)
+        get_user_coupon_sql = "select coupon.* from zy_coupon_log as log join zy_coupon as coupon " \
+                              "on log.coupon_id=coupon.id where coupon.status='normal' and log.is_used = 0 " \
+                              "and log.ucid=%s " \
+                              "and ((coupon.is_time = 0) or ((coupon.is_time = 1) " \
+                              "and coupon.start_time <= %s " \
+                              "and coupon.end_time >= %s)) order by log.id desc limit %s, %s" \
+                              % (ucid, now, now, start_index, end_index)
+    else:  # 过期的卡券
+        get_user_coupon_total_count_sql = "select count(coupon.id) from zy_coupon_log as log join zy_coupon as coupon " \
+                              "on log.coupon_id=coupon.id where coupon.status='normal' and log.is_used = 0 " \
+                              "and log.ucid=%s " \
+                              "and ((coupon.is_time = 1) " \
+                              "and coupon.end_time < %s)" \
+                              % (ucid, now)
+        get_user_coupon_sql = "select coupon.* from zy_coupon_log as log join zy_coupon as coupon " \
+                              "on log.coupon_id=coupon.id where coupon.status='normal' and log.is_used = 0 " \
+                              "and log.ucid=%s " \
+                              "and ((coupon.is_time = 1) " \
+                              "and coupon.end_time < %s) order by log.id desc limit %s, %s" \
+                              % (ucid, now, start_index, end_index)
+    user_coupon_count = mysql_session.execute(get_user_coupon_total_count_sql).scalar()
     user_coupon_list = mysql_session.execute(get_user_coupon_sql).fetchall()
     for coupon in user_coupon_list:
         coupon_info = {
@@ -46,7 +73,11 @@ def v4_anfeng_helper_get_user_coupon():
             'specify_user': coupon['specify_user']
         }
         coupon_list.append(coupon_info)
-    return response_data(http_code=200, data=coupon_list)
+    data = {
+        'total_count': user_coupon_count,
+        'data': coupon_list
+    }
+    return response_data(http_code=200, data=data)
 
 
 # 安锋助手用户获取已领礼包列表
