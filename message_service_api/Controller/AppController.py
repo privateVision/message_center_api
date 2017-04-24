@@ -137,7 +137,7 @@ def v4_cms_message_revocation():
 
 # 心跳
 @app_controller.route('/msa/v4/app/heartbeat', methods=['POST'])
-# @sdk_api_request_check
+@sdk_api_request_check
 def v4_sdk_heartbeat():
     from run import app
     if 'num' in request.form:
