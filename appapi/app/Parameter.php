@@ -15,22 +15,22 @@ class Parameter
 		$this->_data[$key] = $value;
 	}
 
-	public function get($key, $type_fun_regex_default = null) {
+	public function get($key, $default = null, $type_fun_regex = null) {
 		$data = @$this->_data[$key];
-		if($data === null) {
-			return $type_fun_regex_default;
+		if($data === null || $data === '') {
+			return $default;
 		}
 
-		if(is_string($type_fun_regex_default) && method_exists($this, $type_fun_regex_default)) {
-			return $this->$type_fun_regex_default($data);
+		if(is_string($type_fun_regex) && method_exists($this, $type_fun_regex)) {
+			return $this->$type_fun_regex($data);
 		}
 
-		if(is_callable($type_fun_regex_default)) {
-			return $type_fun_regex_default($data);
+		if(is_callable($type_fun_regex)) {
+			return $type_fun_regex($data);
 		}
 
-		if(is_string($type_fun_regex_default)) {
-			if(preg_match($type_fun_regex_default, $data)) {
+		if(is_string($type_fun_regex)) {
+			if(preg_match($type_fun_regex, $data)) {
 				return $data;
 			} else {
 				throw new Exception ("参数\"{$key}\"格式不正确", 0);

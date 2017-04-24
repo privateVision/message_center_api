@@ -46,7 +46,12 @@ class UserController extends AuthController
     }
 
     public function BindListAction() {
+        $config = config('common.oauth');
         $data = [];
+
+        foreach($config as $k => $v) {
+            $data[$k]['is_bind'] = false;
+        }
 
         $oauth = UcuserOauth::where('ucid', $this->user->ucid)->pluck('type');
         foreach($oauth as $v) {
@@ -66,7 +71,7 @@ class UserController extends AuthController
         $city = $this->parameter->get('city');
         $address = $this->parameter->get('address');
         $gender = $this->parameter->get('gender');
-        $birthday = $this->parameter->get('birthday', function($v) {
+        $birthday = $this->parameter->get('birthday', null, function($v) {
             if(!preg_match('/^\d{8}$/', $v)) {
                 throw new ApiException(ApiException::Remind, "生日格式不正确，yyyy-mm-dd");
             }
