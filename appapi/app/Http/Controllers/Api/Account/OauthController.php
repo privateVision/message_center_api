@@ -181,19 +181,19 @@ class OauthController extends Controller {
         $user_oauth = null;
 
         if($unionid) {
-            //$user_oauth = UcuserOauth::from_cache_unionid($unionid);
-            $user_oauth = UcuserOauth::where("unionid",$unionid)->first();
+            $user_oauth = UcuserOauth::from_cache_unionid($unionid);
+            //$user_oauth = UcuserOauth::where("unionid",$unionid)->first();
 
         }
 
         if(!$user_oauth) {
-           // $user_oauth = UcuserOauth::from_cache_openid($openid);
-            $user_oauth = UcuserOauth::where("openid",$openid)->first();
+            $user_oauth = UcuserOauth::from_cache_openid($openid);
+            //$user_oauth = UcuserOauth::where("openid",$openid)->first();
         }
 
         if($user_oauth) {
-            //$user = Ucuser::from_cache($user_oauth->ucid);
-            $user = Ucuser::where("ucid",$user_oauth->ucid)->first();
+            $user = Ucuser::from_cache($user_oauth->ucid);
+            //$user = Ucuser::where("ucid",$user_oauth->ucid)->first();
             if($user) return $user;
         }
 
@@ -246,24 +246,23 @@ class OauthController extends Controller {
         $user_oauth = null;
 
         if($unionid) {
-            //$user_oauth = UcuserOauth::from_cache_unionid($unionid);
-            $user_oauth = UcuserOauth::where("unionid",$unionid)->first();
+            $user_oauth = UcuserOauth::from_cache_unionid($unionid);
+            //$user_oauth = UcuserOauth::where("unionid",$unionid)->first();
 
         }
 
         if(!$user_oauth) {
-            $user_oauth = UcuserOauth::where("openid",$openid)->first();
-           // $user_oauth = UcuserOauth::from_cache_openid($openid);
-
+            //$user_oauth = UcuserOauth::where("openid",$openid)->first();
+            $user_oauth = UcuserOauth::from_cache_openid($openid);
         }
         
         if(!$user_oauth) {
             throw new ApiException(ApiException::OauthNotRegister, "尚未注册");
         }
 
-       // $user = Ucuser::from_cache($user_oauth->ucid);
+        $user = Ucuser::from_cache($user_oauth->ucid);
 
-        $user = Ucuser::where("ucid",$user_oauth->ucid)->first();
+        //$user = Ucuser::where("ucid",$user_oauth->ucid)->first();
         return $user;
     }
 }

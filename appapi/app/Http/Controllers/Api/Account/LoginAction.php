@@ -21,6 +21,8 @@ trait LoginAction {
         if(isset($user) && $user->is_freeze) {
             throw new ApiException(ApiException::AccountFreeze, '账号已被冻结，无法登陆');
         }
+
+        // todo: ???
         if(!$user)  throw new ApiException(ApiException::OauthNotRegister, '未注册第三方账号，请注册');
         $user_sub_id = $this->getDefaultUserSubId($user);
 
@@ -85,7 +87,7 @@ trait LoginAction {
         $session->date = date('Ymd');
         $session->save();
         
-        $user->uuid = $session->token; // todo: 兼容旧的自动登陆
+        $user->uuid = $session->token;
         $user->last_login_at = datetime();
         $user->save();
         
