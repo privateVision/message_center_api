@@ -145,7 +145,10 @@ def v4_sdk_heartbeat():
     else:
         num = 1
     refresh_interval = app.config.get('REFRESH_INTERVAL')
-    interval_ms = request.form['interval']
+    if 'interval' in request.form:
+        interval_ms = request.form['interval']
+    else:
+        interval_ms = 2000
     appid = request.form['_appid']
     interval_s = int(interval_ms) / 1000
     freeze = get_user_is_freeze_by_access_token(request.form['_token'])

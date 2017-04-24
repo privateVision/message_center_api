@@ -30,15 +30,12 @@ class HeartBeatTest(unittest.TestCase):
 
     def test_heart_beat_profiling(self):
         body_data = {
-            '_sign': '52faf226df610e21ba5d0b986a7a8ffb',
+            '_sign': '7d1f3d97d52f3958fe5098638ff0bdce',
             '_device_id': '4l8leddgemucg8k0koskc0gc8',
             '_appid': 2,
-            '_rid': 1,
-            '_sign_type': 'md5',
-            '_type': 'json',
             '_timestamp': 1493031607,
             'interval': 2000,
-            '_token': '6as6nxaegn8k8440s40kg4cgs'
+            '_token': 'coa120l2zu0ok08s08k0k484s'
         }
         r = requests.post('http://sdkv4test.qcwanwan.com/msa/v4/app/heartbeat', data=body_data)
         print r.text
