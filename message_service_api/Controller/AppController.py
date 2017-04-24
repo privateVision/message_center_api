@@ -4,7 +4,7 @@ import json
 import time
 
 import datetime
-from flask import Blueprint, app
+from flask import Blueprint
 from flask import request
 from mongoengine import Q
 
@@ -137,13 +137,14 @@ def v4_cms_message_revocation():
 
 # 心跳
 @app_controller.route('/msa/v4/app/heartbeat', methods=['POST'])
-@sdk_api_request_check
+# @sdk_api_request_check
 def v4_sdk_heartbeat():
+    from run import app
     if 'num' in request.form:
         num = get_ucid_by_access_token(request.form['num'])
     else:
         num = 1
-    refresh_interval = int(app.config.get('REFRESH_INTERVAL'))
+    refresh_interval = app.config.get('REFRESH_INTERVAL')
     interval_ms = request.form['interval']
     appid = request.form['_appid']
     interval_s = int(interval_ms) / 1000
@@ -174,6 +175,7 @@ def v4_sdk_heartbeat():
 @app_controller.route('/msa/v4/refresh_heart_beat_data_interval', methods=['POST'])
 @cms_api_request_check
 def v4_cms_update_refresh_heart_beat_data_interval():
+    from run import app
     refresh_interval = int(request.json.get('refresh_interval'))
     app.config['REFRESH_INTERVAL'] = refresh_interval
     return response_data(http_code=200)

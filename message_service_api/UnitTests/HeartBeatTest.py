@@ -16,7 +16,7 @@ class HeartBeatTest(unittest.TestCase):
             'interval': 2000,
             '_token': '5zkefoi6sgg80gkokwsgwck4o'
         }
-        r = requests.post('http://sdkv4test.qcwanwan.com/msa/v4/app/heartbeat', data=body_data)
+        r = requests.post('http://localhost:5000/msa/v4/app/heartbeat', data=body_data)
         print r.text
         self.assertEqual(r.status_code, 200)
 
