@@ -472,7 +472,10 @@ class UserController extends AuthController
             throw new ApiException(ApiException::Remind, "为了防止遗忘账号，请绑定手机或者其他社交账号后再解除绑定");
         }
 
-        UcuserOauth::where('type', $type)->where('ucid', $this->user->ucid)->delete();
+        $user_oauth = UcuserOauth::where('type', $type)->where('ucid', $this->user->ucid)->first();
+        if($user_oauth) {
+            $user_oauth->delete();
+        }
 
         user_log($this->user, $this->procedure, 'unbind_oauth', '【解绑平台帐号】%s', config("common.oauth.{$type}.text", '第三方'));
 
