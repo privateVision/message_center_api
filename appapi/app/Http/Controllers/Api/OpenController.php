@@ -8,6 +8,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Exceptions\ApiException;
+use App\Model\Orders;
 use App\Model\Session;
 
 class OpenController extends OpenBaseController{

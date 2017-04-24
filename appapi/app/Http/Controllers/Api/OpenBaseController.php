@@ -32,13 +32,15 @@ class OpenBaseController extends \App\Controller
                 throw new ApiException(ApiException::Error, "appid not exists:{$_appid}");
             }
 
-            $appkey = $this->procedure->appkey();
+            $appkey = $this->procedure->psingKey;
 
             unset($data['sign']);
-            ksort($data);
-            $sign = md5(http_build_query($data) . '&sign_key=' . $appkey);
+            log_debug('response', http_build_query($data)."&sign_key={$appkey}");
 
-            if($_sign !== $sign) {
+            ksort($data);
+            $sign = md5(http_build_query($data) ."&sign_key={$appkey}");
+            log_debug('response', $sign);
+            if($_sign != $sign) {
                 throw new ApiException(ApiException::Error, "签名验证失败");
             }
             // ------------------------------------

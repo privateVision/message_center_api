@@ -40,7 +40,7 @@ class OrderSuccess extends Job
 
                         $is_s = true;
                         $orderExt = $order->ordersExt;
-                      
+
                         foreach($orderExt as $k => $v) {
                             $fee = intval($v->fee * 100);
                             if($fee <= 0) continue;
