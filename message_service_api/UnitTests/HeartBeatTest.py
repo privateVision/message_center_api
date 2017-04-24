@@ -22,15 +22,25 @@ class HeartBeatTest(unittest.TestCase):
     #                       data=data_json, headers=headers)
     #     print r.text
 
+    # _appid = 2 & _device_id = 4l
+    # 8l
+    # eddgemucg8k0koskc0gc8 & _rid = 1 & _sign_type = md5 & _timestamp = 1493031607 & _token = 4
+    # agr9ryp43c4og4gw8k8g00oo & _type = json & key = ebe89a4c54f35e593d86455aab4343a8
+
 
     def test_heart_beat_profiling(self):
         body_data = {
-            '_sign': 'd0c982b8a953bb657d74d4274b6361ec',
-            '_appid': 778,
+            '_sign': '52faf226df610e21ba5d0b986a7a8ffb',
+            '_device_id': '4l8leddgemucg8k0koskc0gc8',
+            '_appid': 2,
+            '_rid': 1,
+            '_sign_type': 'md5',
+            '_type': 'json',
+            '_timestamp': 1493031607,
             'interval': 2000,
-            '_token': '5zkefoi6sgg80gkokwsgwck4o'
+            '_token': '6as6nxaegn8k8440s40kg4cgs'
         }
-        r = requests.post('http://localhost:5000/msa/v4/app/heartbeat', data=body_data)
+        r = requests.post('http://sdkv4test.qcwanwan.com/msa/v4/app/heartbeat', data=body_data)
         print r.text
         self.assertEqual(r.status_code, 200)
 

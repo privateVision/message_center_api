@@ -141,7 +141,7 @@ def v4_cms_message_revocation():
 def v4_sdk_heartbeat():
     from run import app
     if 'num' in request.form:
-        num = get_ucid_by_access_token(request.form['num'])
+        num = request.form['num']
     else:
         num = 1
     refresh_interval = app.config.get('REFRESH_INTERVAL')
@@ -162,13 +162,12 @@ def v4_sdk_heartbeat():
             data = RedisHandle.get_user_data_mark_in_redis(ucid, appid)
             service_logger.info("%s - %s" % (ucid, json.dumps(data)))
             return response_data(data=data)
-    else:
-        data = {
-            "broadcast": [],
-            "message": 0,
-            "gift_num": 0
-        }
-        return response_data(data=data)
+    data = {
+        "broadcast": [],
+        "message": 0,
+        "gift_num": 0
+    }
+    return response_data(data=data)
 
 
 # CMS 更新心跳数据刷新间隔
