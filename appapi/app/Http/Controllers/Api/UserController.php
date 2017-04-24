@@ -67,6 +67,8 @@ class UserController extends AuthController
         $address = $this->parameter->get('address');
         $gender = $this->parameter->get('gender');
         $birthday = $this->parameter->get('birthday', function($v) {
+            if(empty($v)) return '';
+            
             if(!preg_match('/^\d{8}$/', $v)) {
                 throw new ApiException(ApiException::Remind, "生日格式不正确，yyyy-mm-dd");
             }

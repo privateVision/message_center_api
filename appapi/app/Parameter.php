@@ -17,7 +17,7 @@ class Parameter
 
 	public function get($key, $type_fun_regex_default = null) {
 		$data = @$this->_data[$key];
-		if($data === null) {
+		if($data === null || $data === '') {
 			return $type_fun_regex_default;
 		}
 
