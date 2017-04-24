@@ -17,8 +17,6 @@ use App\Model\ZyCoupon;
 use App\Model\ZyCouponLog;
 use App\Model\OrderExtend;
 
-
-
 class  AppleController extends Controller{
 
     /*

@@ -6,14 +6,69 @@ use Illuminate\Http\Request;
 use App\Parameter;
 use App\Redis;
 use App\Model\ProceduresExtend;
+use App\Model\Procedures;
 use App\Model\UcuserSub;
+use App\Model\ZyGame;
 
 class UserSubController extends AuthController
 {
+    public function GameListAction() {
+        $result = UcuserSub::tableSlice($this->user->ucid)->where('ucid', $this->user->ucid)->orderBy('priority', 'desc')->get();
+
+        $data = [];
+        foreach($result as $v) {
+            $pid = $v->pid;
+
+            if($pid < 100) continue;
+
+            if(!isset($data[$pid])) {
+                $procedure = Procedures::from_cache($pid);
+                if(!$procedure) continue;
+                $game = ZyGame::from_cache($procedure->gameCenterId);
+                if(!$game) continue;
+
+                $data[$pid] = [
+                    'icon' => $game->cover,
+                    'name' => $game->name,
+                    'roles' => [],
+                ];
+            }
+
+            $data[$pid]['role'][] = [
+                'id' => $v->id,
+                'nickname' => $v->name,
+                'is_freeze' => $v->is_freeze,
+            ];
+        }
+
+        return array_values($data);
+    }
+
+    public function SetNicknameAction() {
+        $id = $this->parameter->tough('id');
+        $nickname = $this->parameter->tough('nickname');
+
+        $count = UcuserSub::tableSlice($this->user->ucid)->where('ucid', $this->user->ucid)->where('name', $nickname)->count();
+        if($count) {
+            throw new ApiException(ApiException::Remind, "修改失败，昵称已经存在");
+        }
+
+        $user_sub = UcuserSub::tableSlice($this->user->ucid)->find($id);
+        if(!$user_sub || $user_sub->ucid != $this->user->ucid) {
+            throw new ApiException(ApiException::Remind, "修改失败，小号不存在");
+        }
+
+        $user_sub->name = $nickname;
+        $user_sub->save();
+
+        return ['result' => true];
+    }
+
     public function ListAction() {
         $pid = $this->parameter->tough('_appid');
 
         $data = [];
+
         $user_sub = UcuserSub::tableSlice($this->user->ucid)->where('ucid', $this->user->ucid)->where('pid', $pid)->orderBy('name', 'asc')->get();
         foreach($user_sub as $v) {
             if($v->pid < 100) continue;
@@ -27,7 +82,7 @@ class UserSubController extends AuthController
             ];
         }
 
-         $config = ProceduresExtend::from_cache($pid);
+        $config = ProceduresExtend::from_cache($pid);
 
         return [
             'allow_num' => $config && $config['allow_num'] ? (int)$config['allow_num'] : 1,
