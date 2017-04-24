@@ -17,10 +17,10 @@ anfeng_controller = Blueprint('AnfengController', __name__)
 @anfeng_controller.route('/msa/anfeng_helper/get_user_coupon', methods=['POST'])
 @anfeng_helper_request_check
 def v4_sdk_get_broadcast_list():
-    ucid = get_ucid_by_access_token(request.json.get('_token'))
-    status = int(request.json.get('status'))
-    page = request.json.get('page') if request.json.has_key('page') and request.json.get('page') else 1
-    count = request.json.get('pagesize') if request.json.has_key('pagesize') and request.json.get('pagesize') else 10
+    ucid = get_ucid_by_access_token(request.form['_token'])
+    status = int(request.form['status'])
+    page = request.form['page'] if request.form.has_key('page') and request.form.get('page') else 1
+    count = request.form['pagesize'] if request.form.has_key('pagesize') and request.form.get('pagesize') else 10
     need_total_count = (int(page) * int(count))  # 需要的数据总数
     start_index = (int(page) - 1) * int(count)
     end_index = int(count)

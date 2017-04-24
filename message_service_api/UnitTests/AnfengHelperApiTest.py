@@ -24,9 +24,9 @@ class AnfengHelperApiTest(unittest.TestCase):
             "pagesize": 5,
             "sign": "318072f312a4b2085e115794e52d4ebd"
         }
-        headers = {"Content-Type": "application/json"}
-        data_json = json.dumps(data)
-        r = requests.post("http://localhost:5000/msa/anfeng_helper/get_user_coupon", data=data_json, headers=headers)
+        # headers = {"Content-Type": "application/json"}
+        # data_json = json.dumps(data)
+        r = requests.post("http://localhost:5000/msa/anfeng_helper/get_user_coupon", data=data)
         print r.text
 
     # def test_get_uses_gifts_list(self):
