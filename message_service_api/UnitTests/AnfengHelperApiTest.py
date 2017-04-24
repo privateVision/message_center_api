@@ -22,7 +22,7 @@ class AnfengHelperApiTest(unittest.TestCase):
             "status": 0,
             "page": 1,
             "pagesize": 5,
-            "sign": "318072f312a4b2085e115794e52d4ebd"
+            "_sign": "318072f312a4b2085e115794e52d4ebd"
         }
         # headers = {"Content-Type": "application/json"}
         # data_json = json.dumps(data)
