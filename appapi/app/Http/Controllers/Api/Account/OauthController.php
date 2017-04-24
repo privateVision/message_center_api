@@ -183,7 +183,6 @@ class OauthController extends Controller {
         if($unionid) {
             $user_oauth = UcuserOauth::from_cache_unionid($unionid);
             //$user_oauth = UcuserOauth::where("unionid",$unionid)->first();
-
         }
 
         if(!$user_oauth) {
