@@ -108,10 +108,9 @@ $app->group(['prefix' => 'api'], function () use ($app) {
     $app->post('tool/user/reset_password_page','Api\\Tool\\UserController@ResetPasswordPageAction');        // 获取重设密码页面
     $app->post('tool/user/freeze','Api\\Tool\\UserController@FreezeAction');                                // 冻结用户
 
-    $app->post('tool/user/sign','Api\\Tool\\OpenController@createSign');                                    // 生成测试签名
-    $app->post('v1.0/cp/info/order','Api\\Tool\\OpenController@GetOrderInfoAction');                        //获取订单详情
-    $app->post('v1.0/cp/user/auth','Api\\Tool\\OpenController@AuthLoginAction');                            //获取订单详情
-    $app->post('tool/order/success','Api\\Tool\OpenController@sendOrder');                                  //发送发送订单信息
+    $app->post('v1.0/cp/info/order','Api\\OpenController@GetOrderInfoAction');                              //获取订单详情
+    $app->post('v1.0/cp/user/auth','Api\\OpenController@AuthLoginAction');                                  //获取订单详情
+
 });
 
 // 对内部调用的API接口
