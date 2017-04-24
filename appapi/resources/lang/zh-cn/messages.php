@@ -39,6 +39,7 @@ return [
     "app_param_type_error"          => "您好，传递的参数的格式错误！",
     //loginAction
     "order_info_error"              => "订单信息有误",
-    "param_type_error"              => "参数格式不正确"
+    "param_type_error"              => "参数格式不正确",
+    "product_not_found"             => "您好产品信息未找到" ,
 
 ];

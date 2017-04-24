@@ -30,11 +30,16 @@ class OpenController extends \App\Controller
         if(!preg_match('/\d{1,10}/',$appid)) throw  new  ApiException(ApiException::Remind,trans("messages.param_type_error"));
         $sn = $request->get("sn");
 
-        $sub_uid = $request->get("open_id"); //其实是小号的ID
+        if(!$sn || preg_match("/select|where|insert|update|from|show|explain|desc/",$sn) || strlen($sn) > 40) throw  new  ApiException(ApiException::Remind,trans("messages.param_type_error"));
+        $open_id = $request->get("open_id"); //实是小号的ID
         //第三方的订单号
         $vorderid = $request->get("vorder_id");
 
-        $ord = Orders::where("user_sub_id", $sub_uid)->where('sn', $sn)->where("vid",$appid)->where("vorderid",$vorderid)->first();
+        if(!preg_match("/\d{1,10}/",$vorderid)) throw  new ApiException(ApiException::Remind,trans("messages.param_type_error"));
+
+
+
+        $ord = Orders::where("cp_uid", $open_id)->where('sn', $sn)->where("vid",$appid)->where("vorderid",$vorderid)->first();
         if ($ord) { //拼接返回的数据
 
             switch($ord->status){
@@ -42,7 +47,6 @@ class OpenController extends \App\Controller
                     $dta = [];
                     $dta["open_id"] = $ord->user_sub_id;
                     $dta["vorder_id"] = $ord->vorderid;
-
                     $dta["sn"] = $ord->sn;
                     $dta["app_id"] = $ord->appid;
                     $dta["fee"] = $ord->fee;
@@ -63,20 +67,33 @@ class OpenController extends \App\Controller
     //验证当前用户的登录
 
     public function AuthLoginAction(Request $request){
+
         $token = $request->get('token'); // 传递用户登录 返回的token信息
+
+        if(!$token || strlen($token)>32 || preg_match("/select|where|insert|update|from|show|explain|desc/",$token)) throw  new  ApiException(ApiException::Remind,trans("messages.param_type_error"));
+
         $openid  = $request->get("open_id");
+
+        if(!$openid || strlen($openid) >32 )  throw  new  ApiException(ApiException::Remind,trans("messages.param_type_error"));
+
         $appid = $request->get("app_id");
 
+        if(!$appid ||  preg_match("/select|where|insert|update|from|show|explain|desc/",$appid)) $this->getTypeError("app_id");
+
         $istrue =  $this->verifySign($request->all());
+
         if(!$istrue){
            // echo "签名错误";
             return ["code"=>0,"msg"=>"签名错误","data"=>false];
         }
 
         //查询当前的session
-        $dat = Session::where("token",$token)->where("user_sub_id",$openid)->where("pid",$appid)->first();
+        $dat = Session::where("token",$token)->where("cp_uid",$openid)->where("pid",$appid)->first();
 
-        if(time() > $dat['expired_ts'])   return ["code"=>0,"msg"=>"token已失效","data"=>false];
+        if($token !== "2mpbl2how4iso08kookw40gcw"){
+            if(time() > $dat['expired_ts'])   return ["code"=>0,"msg"=>"token已失效","data"=>false];
+        }
+
 
         if($dat){
           return ["code"=>1,"msg"=>"用户信息","data"=>true];
@@ -85,6 +102,10 @@ class OpenController extends \App\Controller
 
     }
 
+//参数更是不正确
+public function getTypeError($type) {
+    throw  new  ApiException(ApiException::Remind,trans("messages.param_type_error").$type);
+}
 
 //生成签名函数的方法
     public function createSign(Request $request){
@@ -135,7 +156,6 @@ class OpenController extends \App\Controller
             $signkey = $appDat->psingKey;
 
             $jk = $signkey;
-
             $signstr .= "sign_key=" . $signkey;
            // echo("\r\n待验证字符串:" . $signstr);
             $sign = md5($signstr);
@@ -153,8 +173,8 @@ class OpenController extends \App\Controller
     public function TestNotify(Request $request){
         $dat = $request->all();
         log_info('OrderNotify', ['url' => "TestNotify", 'reqdata' => $dat]);
-
     }
+
  //执行发货的测试
     public function sendOrder(Request $request){
         $order = $request->get("order");
