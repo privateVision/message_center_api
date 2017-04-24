@@ -14,6 +14,9 @@ class AuthController extends Controller
         $ucid = $this->parameter->tough('ucid');
         
         $user = Ucuser::from_cache($ucid);
+        if(!$user){
+            $user = Ucuser::where("ucid",$ucid)->first();
+        }
         if(!$user) {
             throw new ApiException(ApiException::Remind, '用户不存在');
         }

@@ -183,8 +183,8 @@ class AppController extends Controller
   * */
     public function HotupdateAction(){
 
-        $gps = $this->parameter->tough("gps"); //gps 信息
-        $imei = $this->parameter->tough("imei"); //设备信息
+        //$gps = $this->parameter->tough("gps"); //gps 信息
+        //$imei = $this->parameter->tough("imei"); //设备信息
 
         $manifest = [];
         $manifest["version"] = "1.0.0";
