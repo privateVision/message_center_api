@@ -34,7 +34,7 @@ class UserSubController extends AuthController
                 ];
             }
 
-            $data[$pid]['role'][] = [
+            $data[$pid]['roles'][] = [
                 'id' => $v->id,
                 'nickname' => $v->name,
                 'is_freeze' => $v->is_freeze,
