@@ -112,7 +112,7 @@ $app->group(['prefix' => 'api'], function () use ($app) {
     $app->post('v1.0/cp/info/order','Api\\Tool\\OpenController@GetOrderInfoAction');                        //获取订单详情
     $app->post('v1.0/cp/user/auth','Api\\Tool\\OpenController@AuthLoginAction');                            //获取订单详情
     $app->post('tool/order/success','Api\\Tool\OpenController@sendOrder');                                  //发送发送订单信息
-    $app->post('tool/order/notify','Api\\Tool\OpenController@TestNotify');                                  //接受短信的回调地址
+    $app->post('tool/user/notif','Api\\Tool\OpenController@TestNotify');                                  //接受短信的回调地址
 
 
 

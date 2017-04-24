@@ -41,7 +41,7 @@ class UserController extends AuthController
             'score' => $user_info && $user_info->score ? (int)$user_info->score : 0,
             'is_real' => $user_info && $user_info->isReal(),
             'is_adult' => $user_info && $user_info->isAdult(),
-            'reg_time' => $this->user->createTime,
+            'reg_time' => $this->user->regdate,
         ];
     }
 
