@@ -89,10 +89,10 @@ $app->group(['prefix' => 'api'], function () use ($app) {
     $app->post('user/set', 'Api\\UserController@SetAction');                                                // 设置用户资料
     $app->post('user/updaterole','Api\\UserController@UpdateRoleAction');                                   // 角色信息日志
 
-
-
     $app->post('user_sub/list', 'Api\\UserSubController@ListAction');                                       // 小号列表
     $app->post('user_sub/new', 'Api\\UserSubController@NewAction');                                         // 添加小号
+    $app->post('user_sub/game_list', 'Api\\UserSubController@GameListAction');                              // 玩家所有游戏的小号列表
+    $app->post('user_sub/set_nickname', 'Api\\UserSubController@SetNicknameAction');                        // 设置小号昵称
 
     $app->post('pay/order/new', 'Api\\Pay\\OrderController@NewAction');                                     // 创建订单
     $app->post('pay/order/f/new', 'Api\\Pay\\FController@NewAction');                                       // 充值F币的订单
@@ -102,7 +102,7 @@ $app->group(['prefix' => 'api'], function () use ($app) {
     $app->post('pay/f/request', 'Api\\Pay\\FController@RequestAction');                                     // 安锋支付，（帐户余额支付）
     $app->post('ios/order/receipt/verify','Api\\Pay\\AppleController@validateReceiptAction');               // 验证苹果支付的信息
     $app->post('ios/order/create','Api\\Pay\\AppleController@OrderCreateAction');                           // 验证苹果支付的信息
-    $app->post('ios/applelimit','Api\\Pay\\AppleController@AppleLimitAction');                              //验证当前是否开启限制
+    $app->post('ios/applelimit','Api\\Pay\\AppleController@AppleLimitAction');                              // 验证当前是否开启限制
 
     $app->post('tool/reset_password/request','Api\\Tool\\ResetPasswordController@RequestAction');           // 通过token用户自行修改密码
     $app->post('tool/user/reset_password_page','Api\\Tool\\UserController@ResetPasswordPageAction');        // 获取重设密码页面
@@ -112,10 +112,6 @@ $app->group(['prefix' => 'api'], function () use ($app) {
     $app->post('v1.0/cp/info/order','Api\\Tool\\OpenController@GetOrderInfoAction');                        //获取订单详情
     $app->post('v1.0/cp/user/auth','Api\\Tool\\OpenController@AuthLoginAction');                            //获取订单详情
     $app->post('tool/order/success','Api\\Tool\OpenController@sendOrder');                                  //发送发送订单信息
-    $app->post('tool/user/notif','Api\\Tool\OpenController@TestNotify');                                  //接受短信的回调地址
-
-
-
 });
 
 // 对内部调用的API接口

@@ -33,7 +33,7 @@ class MobileController extends Controller {
         $user->uid = $username;
         $user->email = $username . "@anfan.com";
         $user->mobile = $mobile;
-        $user->nickname = $mobile;
+        $user->nickname = '未设置';
         $user->setPassword($password);
         $user->regip = $this->request->ip();
         $user->rid = $this->parameter->tough('_rid');

@@ -30,7 +30,7 @@ class GuestController extends Controller {
         $user = new Ucuser;
         $user->uid = $username;
         $user->email = $username . "@anfan.com";
-        $user->nickname = $username;
+        $user->nickname = '未设置';
         $user->setPassword($password);
         $user->regip = $this->request->ip();
         $user->rid = $this->parameter->tough('_rid');

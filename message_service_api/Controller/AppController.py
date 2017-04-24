@@ -4,7 +4,7 @@ import json
 import time
 
 import datetime
-from flask import Blueprint
+from flask import Blueprint, app
 from flask import request
 from mongoengine import Q
 
@@ -139,31 +139,44 @@ def v4_cms_message_revocation():
 @app_controller.route('/msa/v4/app/heartbeat', methods=['POST'])
 @sdk_api_request_check
 def v4_sdk_heartbeat():
-    start_time = time.time()
-    ucid = get_ucid_by_access_token(request.form['_token'])
+    if 'num' in request.form:
+        num = get_ucid_by_access_token(request.form['num'])
+    else:
+        num = 1
+    refresh_interval = int(app.config.get('REFRESH_INTERVAL'))
+    interval_ms = request.form['interval']
     appid = request.form['_appid']
-    if ucid:
-        # 获取用户相关广播和未读消息数
-        data = RedisHandle.get_user_data_mark_in_redis(ucid, appid)
-        service_logger.info("%s - %s" % (ucid, json.dumps(data)))
-        freeze = get_user_is_freeze_by_access_token(request.form['_token'])
-        if freeze is not None:
-            if freeze == 1:
-                return response_data(200, 101, get_tips('heartbeat', 'user_account_freezed'))
-            if freeze == 2:
-                return response_data(200, 108, get_tips('heartbeat', 'sub_user_account_freezed'))
-        end_time = time.time()
-        print (end_time - start_time)
+    interval_s = int(interval_ms) / 1000
+    freeze = get_user_is_freeze_by_access_token(request.form['_token'])
+    if freeze is not None:
+        if freeze == 1:
+            return response_data(200, 101, get_tips('heartbeat', 'user_account_freezed'))
+        if freeze == 2:
+            return response_data(200, 108, get_tips('heartbeat', 'sub_user_account_freezed'))
+    is_need_refresh_data = (num * interval_s) % refresh_interval
+    if is_need_refresh_data == 0:
+        ucid = get_ucid_by_access_token(request.form['_token'])
+        if ucid:
+            # 获取用户相关广播和未读消息数
+            data = RedisHandle.get_user_data_mark_in_redis(ucid, appid)
+            service_logger.info("%s - %s" % (ucid, json.dumps(data)))
+            return response_data(data=data)
+    else:
+        data = {
+            "broadcast": [],
+            "message": 0,
+            "gift_num": 0
+        }
         return response_data(data=data)
 
 
-# 心跳ACK
-@app_controller.route('/msa/v4/app/heartbeat/ack', methods=['POST'])
-@sdk_api_request_check
-def v4_sdk_heartbeat_ack():
-    ucid = get_ucid_by_access_token(request.form['_token'])
-    RedisHandle.clear_user_data_mark_in_redis(ucid, request.form['type'])
-    return response_ok()
+# CMS 更新心跳数据刷新间隔
+@app_controller.route('/msa/v4/refresh_heart_beat_data_interval', methods=['POST'])
+@cms_api_request_check
+def v4_cms_update_refresh_heart_beat_data_interval():
+    refresh_interval = int(request.json.get('refresh_interval'))
+    app.config['REFRESH_INTERVAL'] = refresh_interval
+    return response_data(http_code=200)
 
 
 #  用于监控程序判断该进程是否存在
