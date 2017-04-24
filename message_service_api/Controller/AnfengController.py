@@ -44,15 +44,14 @@ def v4_sdk_get_broadcast_list():
     # 储值卡数据不够，用卡券数据补充
     else:
         left_count = int(need_total_count) - int(value_card_total_count)  # 还缺少的数据量
-        if int(page) == 1:
+        head_count = (value_card_total_count / end_index + 1) * end_index - value_card_total_count
+        tmp_count = left_count / end_index
+        if tmp_count == 0:
             coupon_start_index = 0
             coupon_end_index = left_count
         else:
-            head_count = (value_card_total_count / end_index + 1) * end_index - value_card_total_count
-            coupon_start_index = (left_count / end_index - 1) * end_index + head_count
+            coupon_start_index = (tmp_count - 1) * end_index + head_count
             coupon_end_index = coupon_start_index + end_index
-            # coupon_start_index = (int(page)-1)*int(count) - value_card_total_count
-            # coupon_end_index = end_index
         # 查询用户相关的卡券列表
         coupon_total_count, new_coupon_list = get_user_all_coupons(ucid, status, coupon_start_index, coupon_end_index)
         # 拼接储值卡和卡券列表返回
