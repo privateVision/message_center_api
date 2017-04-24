@@ -118,10 +118,10 @@ abstract class Model extends Eloquent
         });
 
         static::deleting(function($entry) {
-            if($entry->is_cache_save) {
+            //if($entry->is_cache_save) {
                 $rediskey_2 = $entry->table .'_'. $entry->getKey();
                 Redis::del($rediskey_2);
-            }
+            //}
         });
     }
 
