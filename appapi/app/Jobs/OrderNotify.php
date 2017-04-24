@@ -26,8 +26,8 @@ class OrderNotify extends Job
 
         $appkey = $procedures->psingKey;
 
-        $data['openid'] = $order->user_sub_id;
-       // $data['ucid'] = $order->cp_uid ? $order->cp_uid : $order->ucid; // todo: 兼容旧系统
+        $data['openid'] = $order->cp_uid ? $order->cp_uid : $order->ucid;
+        $data['ucid'] = $order->cp_uid ? $order->cp_uid : $order->ucid; // todo: 兼容旧系统
         $data['body'] = $order->body;
         $data['subject'] = $order->subject;
         $data['fee'] = sprintf('%.2f',$order->fee);
