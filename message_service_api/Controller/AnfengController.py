@@ -48,8 +48,11 @@ def v4_sdk_get_broadcast_list():
             coupon_start_index = 0
             coupon_end_index = left_count
         else:
-            coupon_start_index = (int(page)-1)*int(count) - value_card_total_count
-            coupon_end_index = end_index
+            head_count = (value_card_total_count / end_index + 1) * end_index - value_card_total_count
+            coupon_start_index = (left_count / end_index - 1) * end_index + head_count
+            coupon_end_index = coupon_start_index + end_index
+            # coupon_start_index = (int(page)-1)*int(count) - value_card_total_count
+            # coupon_end_index = end_index
         # 查询用户相关的卡券列表
         coupon_total_count, new_coupon_list = get_user_all_coupons(ucid, status, coupon_start_index, coupon_end_index)
         # 拼接储值卡和卡券列表返回

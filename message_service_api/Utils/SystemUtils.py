@@ -7,6 +7,12 @@ def get_current_timestamp():
     return int(time.time())
 
 
+def convert_to_timestamp(date):
+    time_array = time.strptime(date, "%Y-%m-%d %H:%M:%S")
+    timestamp = int(time.mktime(time_array))
+    return timestamp
+
+
 def log_exception(request, exception_message=None):
     from MiddleWare import service_logger
     log_format = "%s - %s - %s" % (request.remote_addr, request.url, exception_message)
