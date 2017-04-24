@@ -78,6 +78,8 @@ class RedisHandle(object):
                 if user_mark['message'] <= 0:
                     user_mark['message'] = get_user_unread_message_count(key_name)
                     RedisHandle.hset(key_name, 'message', user_mark['message'])
+            else:
+                RedisHandle.hset(key_name, 'message', 0)
         else:  # 不存在缓存数据
             user_mark['message'] = get_user_unread_message_count(key_name)
             RedisHandle.hset(key_name, 'message', user_mark['message'])

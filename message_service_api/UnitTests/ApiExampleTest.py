@@ -1,12 +1,13 @@
 # _*_ coding: utf8 _*_
 import hashlib
-import unittest
 import urllib
-
 import requests
 
 
-class ApiExampleTest(unittest.TestCase):
+class ApiExampleTest(object):
+
+    def __init__(self):
+        self.sign_key = '84ee7ad1a1c0e67c02d7c79418e532a0'
 
     # API 请求数据签名
     """
@@ -16,13 +17,13 @@ class ApiExampleTest(unittest.TestCase):
         3. 追加：将第2 步骤的结果末尾追加&signKey=appkey(appkey 由爪游分配)
         4. 加密：将第3 步骤的结果进行 md5 加密(32 位16 进制)，并将结果转换为小写字母，便得到 sign 参数
     """
-    def api_post_data_sign_gen(self, post_data, sign_key):
+    def api_post_data_sign_gen(self, post_data):
         data_str = ''
         for key in sorted(post_data.keys()):
             k = urllib.quote_plus(key)
             v = urllib.quote_plus(str(post_data[key]))
             data_str += "%s=%s&" % (k, v)
-        data_str += "sign_key=%s" % (sign_key,)
+        data_str += "sign_key=%s" % (self.sign_key,)
         m = hashlib.md5()
         m.update(data_str)
         sign = m.hexdigest()
@@ -44,19 +45,19 @@ class ApiExampleTest(unittest.TestCase):
             "data": true
         }
     """
-    # def test_user_login_auth(self):
-    #     api_http_url = 'http://sdkv4.qcwan.com/api/tool/user/auth'
-    #     request_params = {
-    #         'token': '3sxixcko4nc4kkcw44k0o8c0k',
-    #         'open_id': 'ctmlmrm37jks4cs8848ok4804',
-    #         'app_id': 778
-    #     }
-    #     request_data_sign = self.api_post_data_sign_gen(request_params, sign_key='84ee7ad1a1c0e67c02d7c79418e532a0')
-    #     request_params['sign'] = request_data_sign
-    #     response = requests.post(api_http_url, data=request_params)
-    #     print response.text
+    def test_user_login_auth(self):
+        api_http_url = 'http://sdkv4.qcwan.com/api/v1.0/cp/user/auth'
+        request_params = {
+            'token': '3sxixcko4nc4kkcw44k0o8c0k',
+            'open_id': 'ctmlmrm37jks4cs8848ok4804',
+            'app_id': 778
+        }
+        request_data_sign = self.api_post_data_sign_gen(request_params)
+        request_params['sign'] = request_data_sign
+        response = requests.post(api_http_url, data=request_params)
+        print response.text
 
-    # 订单查询 API Example
+    # 支付结果查询 API Example
     """
     请求方式：POST
     请求参数：
@@ -87,20 +88,20 @@ class ApiExampleTest(unittest.TestCase):
         }
     """
     def test_query_order_list(self):
-        api_http_url = 'http://sdkv4.qcwan.com/api/tool/info/order'
+        api_http_url = 'http://sdkv4.qcwan.com/api/v1.0/cp/info/order'
         request_params = {
             'app_id': 778,
             'open_id': 'b7qvattt01wkwc0g080cw0k0k',
             'sn': '170421175437312464423937',
             'vorder_id': '1492768478794'
         }
-        request_sign = self.api_post_data_sign_gen(request_params, sign_key='84ee7ad1a1c0e67c02d7c79418e532a0')
+        request_sign = self.api_post_data_sign_gen(request_params)
         request_params['sign'] = request_sign
         response = requests.post(api_http_url, data=request_params)
         print response.text
 
-
     # 接收发货通知
+    # 请参考实现签名校验逻辑后，再处理自己的业务逻辑
     # @app_controller.route('/msa/v4/notify_test', methods=['POST'])
     # def v4_notify_test():
     #     sign_key = "84ee7ad1a1c0e67c02d7c79418e532a0"
@@ -118,9 +119,13 @@ class ApiExampleTest(unittest.TestCase):
     #     print gen_sign
     #     print request.form['sign']
     #     if gen_sign == request.form['sign']:
+    #         # 处理自己的业务
+              # 发货成功返回 "SUCCESS" 或 "OK"
     #         return response_ok()
     #     else:
     #         return response_exception()
 
 if __name__ == '__main__':
-    unittest.main()
+    api_test = ApiExampleTest()
+    api_test.test_user_login_auth()
+    api_test.test_query_order_list()
