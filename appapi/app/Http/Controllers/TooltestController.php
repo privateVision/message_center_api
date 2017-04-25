@@ -114,6 +114,33 @@ MnZYlexsUywTg9YLnKTOrbqNZxCnonUmUSb3j6p+fMy20xKQmWYFSuVmgK//1J0C
 
     }
 
+    public function Checkf(Request $request){
+                $data = $request->all();
+                $_sign = $data["sign"];
+
+                unset($data["sign"]);
+                 log_info('checkData', ['data' =>$data]);
+
+                 $signkey='84ee7ad1a1c0e67c02d7c79418e532a0';
+
+                ksort($data);
+                $sign = md5(http_build_query($data) ."&sign_key={$signkey}");
+                /*再追加字符串&signKey=signKey（此key值以安锋网向开发商提供）*/
+
+                log_info('checkData', ['data' =>$sign]);
+
+                if($sign == $_sign) return "SUCESS";
+
+                return "FAILED";
+    }
+
+
+    public function SendOrder(Request $request){
+        $order = $request->get("order");
+        order_success($order);
+    }
+
+
 
 
 
