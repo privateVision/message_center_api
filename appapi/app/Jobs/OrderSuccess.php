@@ -25,11 +25,12 @@ class OrderSuccess extends Job
     public function handle() {
         $order = Orders::from_cache($this->order_id);
         if(!$order || $order->status != Orders::Status_WaitPay) {
-            log_debug('OrderSuccessError', ['sn' => $this->order_id], '订单状态已完成');
+            log_debug('OrderSuccessError', ['sn' => $this->order_id], '订单状态已完成，无需处理');
             return;
         }
 
         $rediskey = sprintf('order_lock_%s', $this->order_id);
+        
         $is_mutex = Redis::mutex_lock($rediskey, function() use($order) { // 互斥锁， 防止多次操作
             try {
                 $order->getConnection()->beginTransaction();
@@ -104,12 +105,9 @@ class OrderSuccess extends Job
 
                 $order->status = Orders::Status_Success;
                 $order->save();
-                        Queue::push(new OrderNotify($this->order_id));
-                    }
-                    $order->getConnection()->commit();
-                } catch(\Exception $e) {
-                    log_error('OrderSuccessError', $e->getMessage(), $e->getMessage());
-                    $this->release(5);
+
+                if(!$order->is_f()) {
+                    Queue::push(new OrderNotify($this->order_id));
                 }
 
                 $order->getConnection()->commit();

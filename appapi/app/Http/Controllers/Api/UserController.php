@@ -62,6 +62,7 @@ class UserController extends AuthController
 
         $data['mobile']['is_bind'] = $this->user->mobile ? true : false;
         if($data['mobile']['is_bind']) {
+            $data['mobile']['unionid'] = $this->user->mobile;
             $data['mobile']['openid'] = $this->user->mobile;
         }
 
