@@ -53,13 +53,16 @@ class UserController extends AuthController
             $data[$k]['is_bind'] = false;
         }
 
-        $oauth = UcuserOauth::where('ucid', $this->user->ucid)->pluck('type');
+        $oauth = UcuserOauth::where('ucid', $this->user->ucid)->get();
         foreach($oauth as $v) {
-            $data[$v]['is_bind'] = true;
+            $data[$v->type]['is_bind'] = true;
+            $data[$v->type]['openid'] = $v->openid;
+            $data[$v->type]['unionid'] = $v->unionid;
         }
 
-        if($this->user->mobile) {
-            $data['mobile']['is_bind'] = true;
+        $data['mobile']['is_bind'] = $this->user->mobile ? true : false;
+        if($data['mobile']['is_bind']) {
+            $data['mobile']['openid'] = $this->user->mobile;
         }
 
         return $data;
@@ -418,8 +421,8 @@ class UserController extends AuthController
             throw new ApiException(ApiException::Remind, "账号已经绑定了" . config("common.oauth.{$type}.text", '第三方'));
         }
 
-        $openid = md5($type .'_'. $openid);
-        $unionid = $unionid ? md5($type .'_'. $unionid) : '';
+        $openid = "{$openid}@{$type}";
+        $unionid = $unionid ? "{$unionid}@{$type}" : '';
 
         $user_oauth = null;
 
