@@ -10,12 +10,12 @@ namespace App\Http\Controllers\Api\Pay ;
 use App\Exceptions\ApiException;
 use App\Model\IosOrderExt;
 use App\Model\Orders;
+use App\Model\OrderExtend;
 use App\Model\UcuserInfo;
 use App\Model\UcusersVC;
 use App\Model\VirtualCurrencies;
 use App\Model\ZyCoupon;
 use App\Model\ZyCouponLog;
-use App\Model\OrderExtend;
 
 class  AppleController extends Controller{
 
@@ -135,8 +135,11 @@ class  AppleController extends Controller{
         $uid = $this->user->uid;
         $ucid = $this->user->ucid;
         $vorderid = $this->parameter->tough('vorderid'); //厂家订单id
-        $zone_name = $this->parameter->tough("zone_name");
-        $role_name = $this->parameter->tough('role_name');
+        $zone_id = $this->parameter->get('zone_id');
+        $zone_name = $this->parameter->get('zone_name');
+        $role_id = $this->parameter->get('role_id');
+        $role_level = $this->parameter->get('role_level');
+        $role_name = $this->parameter->get('role_name');
         $product_id = $this->parameter->tough('product_id');
         $appid  = $this->request->input("_appid");
 
@@ -152,7 +155,6 @@ class  AppleController extends Controller{
             $order->getConnection()->beginTransaction();
             $order->ucid = $ucid;
             $order->uid = $uid;
-
             $order->sn = date('ymdHis') . substr(microtime(), 2, 6) . str_pad(rand(0, 999999), 6, '0', STR_PAD_LEFT);
             $order->vid = $this->procedure->pid;
             $order->notify_url = $dat[0]->notify_url;
@@ -164,12 +166,26 @@ class  AppleController extends Controller{
             $order->status = Orders::Status_WaitPay;
             $order->paymentMethod = Orders::Way_Unknow;
             $order->hide = false;
-
             $order->cp_uid = $this->session->cp_uid;
             $order->user_sub_id = $this->session->user_sub_id;
             $order->user_sub_name = $this->session->user_sub_name;
             $order->real_fee = $order->fee;
             $order->save();
+
+            // order_extend;
+            if($zone_id || $zone_name || $role_id || $role_level || $role_name)　{
+                $order_extend = new OrderExtend;
+                $order_extend->oid = $order->id;
+                $order_extend->ucid = $this->user->ucid;
+                $order_extend->pid = $this->procedure->pid;
+                $order_extend->date = date('Ymd');
+                $order_extend->zone_id = $zone_id;
+                $order_extend->zone_name = $zone_name;
+                $order_extend->role_id = $role_id;
+                $order_extend->role_level = $role_level;
+                $order_extend->role_name = $role_name;
+                $order_extend->save();
+            }
 
             $ext = new IosOrderExt;
             $ext->oid = $order->id;
