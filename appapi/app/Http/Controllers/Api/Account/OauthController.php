@@ -175,24 +175,21 @@ class OauthController extends Controller {
             throw new ApiException(ApiException::Error, '未知的第三方登陆类型，type='.$type);
         }
 
-        $openid = md5($type .'_'. $openid);
-        $unionid = $unionid ? md5($type .'_'. $unionid) : '';
+        $openid = "{$openid}@{$type}";
+        $unionid = $unionid ? "{$unionid}@{$type}" : '';
 
         $user_oauth = null;
 
         if($unionid) {
             $user_oauth = UcuserOauth::from_cache_unionid($unionid);
-            //$user_oauth = UcuserOauth::where("unionid",$unionid)->first();
         }
 
         if(!$user_oauth) {
             $user_oauth = UcuserOauth::from_cache_openid($openid);
-            //$user_oauth = UcuserOauth::where("openid",$openid)->first();
         }
 
         if($user_oauth) {
             $user = Ucuser::from_cache($user_oauth->ucid);
-            //$user = Ucuser::where("ucid",$user_oauth->ucid)->first();
             if($user) return $user;
         }
 
@@ -218,7 +215,6 @@ class OauthController extends Controller {
         $user_oauth->openid = $openid;
         $user_oauth->unionid = $unionid;
         $user_oauth->saveAndCache();
-        $user_oauth->updateCache();
 
         $user_info = UcuserInfo::where("ucid",$user->ucid)->first();
 
@@ -239,19 +235,16 @@ class OauthController extends Controller {
         $type = $this->parameter->tough('type');
         $unionid = $this->parameter->get('unionid');
 
-        $openid = md5($type .'_'. $openid);
-        $unionid = $unionid ? md5($type .'_'. $unionid) : '';
+        $openid = "{$openid}@{$type}";;
+        $unionid = $unionid ? "{$unionid}@{$type}" : '';
 
         $user_oauth = null;
 
         if($unionid) {
             $user_oauth = UcuserOauth::from_cache_unionid($unionid);
-            //$user_oauth = UcuserOauth::where("unionid",$unionid)->first();
-
         }
 
         if(!$user_oauth) {
-            //$user_oauth = UcuserOauth::where("openid",$openid)->first();
             $user_oauth = UcuserOauth::from_cache_openid($openid);
         }
         
@@ -261,7 +254,6 @@ class OauthController extends Controller {
 
         $user = Ucuser::from_cache($user_oauth->ucid);
 
-        //$user = Ucuser::where("ucid",$user_oauth->ucid)->first();
         return $user;
     }
 }

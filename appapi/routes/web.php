@@ -13,6 +13,8 @@ use Qiniu\Storage\UploadManager;
 |
 */
 
+use \App\Model\Session;
+
 $app->get('/', function (Illuminate\Http\Request $request) use ($app) {
     $mobile = $request->input('m');
 
@@ -110,6 +112,8 @@ $app->group(['prefix' => 'api'], function () use ($app) {
 
     $app->post('v1.0/cp/info/order','Api\\OpenController@GetOrderInfoAction');                              //获取订单详情
     $app->post('v1.0/cp/user/auth','Api\\OpenController@AuthLoginAction');                                  //获取订单详情
+    $app->post('notify', 'TooltestController@Checkf');    // test
+    $app->post('sendorder', 'TooltestController@SendOrder');    // test
 
 });
 
