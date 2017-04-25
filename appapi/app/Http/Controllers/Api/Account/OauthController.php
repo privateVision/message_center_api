@@ -260,7 +260,6 @@ class OauthController extends Controller {
 
         $user = Ucuser::from_cache($user_oauth->ucid);
 
-        //$user = Ucuser::where("ucid",$user_oauth->ucid)->first();
         return $user;
     }
 }
