@@ -31,11 +31,10 @@ class OpenController extends OpenBaseController{
             }
 
             if($dat){
-                return ["code"=>1,"msg"=>"用户信息","data"=>true];
+                return true;
             }
 
             throw  new ApiException(0,"玩家不存在"); //失败
-
         }
 
 
