@@ -119,15 +119,23 @@ MnZYlexsUywTg9YLnKTOrbqNZxCnonUmUSb3j6p+fMy20xKQmWYFSuVmgK//1J0C
                 $_sign = $data["sign"];
 
                 unset($data["sign"]);
-                 log_info('checkData', ['data' =>$data]);
+                 log_info('接收的数据', ['data' =>$data]);
 
-                 $signkey='84ee7ad1a1c0e67c02d7c79418e532a0';
+             $signkey='84ee7ad1a1c0e67c02d7c79418e532a0';
+             ksort($data);
 
-                ksort($data);
-                $sign = md5(http_build_query($data) ."&sign_key={$signkey}");
+                $str = '';
+                foreach($data as $k => $v) {
+                    $str .= "{$k}={$v}&";
+                }
+
+                $str .= 'sign_key='. $signkey;
+                 log_info('签名字符', ['data' =>$str]);
+                $sign =  md5($str);
+
                 /*再追加字符串&signKey=signKey（此key值以安锋网向开发商提供）*/
 
-                log_info('checkData', ['data' =>$sign]);
+                log_info('签名数据', ['data' =>$sign]);
 
                 if($sign == $_sign) return "SUCESS";
 
