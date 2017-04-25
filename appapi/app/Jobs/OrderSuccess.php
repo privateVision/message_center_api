@@ -24,7 +24,6 @@ class OrderSuccess extends Job
 
     public function handle()
     {
-        log_debug('order_success_01',["mnsg"=>"run here"], '订单成功啦啦');
             $order = Orders::from_cache($this->order_id);
             if(!$order || $order->status != Orders::Status_WaitPay) return;
 
@@ -41,7 +40,7 @@ class OrderSuccess extends Job
 
                         $is_s = true;
                         $orderExt = $order->ordersExt;
-                        log_debug('order_success_01', $orderExt, '订单成功啦啦');
+
                         foreach($orderExt as $k => $v) {
                             $fee = intval($v->fee * 100);
                             if($fee <= 0) continue;
@@ -114,7 +113,6 @@ class OrderSuccess extends Job
 
                         Queue::push(new OrderNotify($this->order_id));
                     }
-
                     $order->getConnection()->commit();
                 } catch(\Exception $e) {
                     log_error('OrderSuccessError', $e->getMessage(), $e->getMessage());

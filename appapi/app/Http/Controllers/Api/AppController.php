@@ -186,6 +186,9 @@ class AppController extends Controller
         //$gps = $this->parameter->tough("gps"); //gps 信息
         //$imei = $this->parameter->tough("imei"); //设备信息
 
+        $sdk_version  = $this->parameter->tough("sdk_version"); //sdk version
+
+        if(!$sdk_version) return ["code"=>0,"msg"=>"参数",data=>""];
         $manifest = [];
         $manifest["version"] = "1.0.0";
         $manifest["bundles"][] = ["type"=>"lib","pkg"=>"com.anfeng.pay"];
