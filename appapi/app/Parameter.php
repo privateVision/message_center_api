@@ -99,7 +99,7 @@ class Parameter
 		$url = trim($url);
 
 		if(!preg_match('/^https*:\/\/.*$/', $url)) {
-			throw new Exception ("\"{$mobile}\" url错误", 0);
+			throw new Exception ("\"{$url}\" url错误", 0);
 		}
 		
 		return $url;

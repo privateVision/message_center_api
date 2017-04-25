@@ -22,6 +22,16 @@ class RedisHandle(object):
             return redis_store.hset(key, field_name, 0)
 
     @staticmethod
+    def set(key_name, field_value):
+        key = "%s%s" % (RedisHandle.common_key_prefix, key_name)
+        return redis_store.set(key, field_value)
+
+    @staticmethod
+    def get(key_name):
+        key = "%s%s" % (RedisHandle.common_key_prefix, key_name)
+        return redis_store.get(key)
+
+    @staticmethod
     def hset(key_name, field_name, field_value):
         key = "%s%s" % (RedisHandle.common_key_prefix, key_name)
         return redis_store.hset(key, field_name, field_value)
@@ -66,43 +76,46 @@ class RedisHandle(object):
         user_mark['broadcast'].extend(broadcast_data)
 
         # 获取用户的未读消息数
+        from Service.UsersService import get_user_unread_message_count
+        user_mark['message'] = get_user_unread_message_count(key_name)
+        RedisHandle.hset(key_name, 'message', user_mark['message'])
+        # from Service.UsersService import get_user_unread_message_count
         # if redis_store.exists(key):
         #     redis_mark_data = redis_store.hgetall(key)
         #     if redis_mark_data.has_key('message'):
         #         user_mark['message'] = int(redis_mark_data['message'])
-        from Service.UsersService import get_user_unread_message_count
-        if redis_store.exists(key):
-            redis_mark_data = redis_store.hgetall(key)
-            if redis_mark_data.has_key('message'):
-                user_mark['message'] = int(redis_mark_data['message'])
-                if user_mark['message'] <= 0:
-                    user_mark['message'] = get_user_unread_message_count(key_name)
-                    RedisHandle.hset(key_name, 'message', user_mark['message'])
-            else:
-                RedisHandle.hset(key_name, 'message', 0)
-        else:  # 不存在缓存数据
-            user_mark['message'] = get_user_unread_message_count(key_name)
-            RedisHandle.hset(key_name, 'message', user_mark['message'])
-            RedisHandle.set_key_exipre(key_name, 14400)
+        #         if user_mark['message'] <= 0:
+        #             user_mark['message'] = get_user_unread_message_count(key_name)
+        #             RedisHandle.hset(key_name, 'message', user_mark['message'])
+        #     else:
+        #         RedisHandle.hset(key_name, 'message', 0)
+        # else:  # 不存在缓存数据
+        #     user_mark['message'] = get_user_unread_message_count(key_name)
+        #     RedisHandle.hset(key_name, 'message', user_mark['message'])
+        #     RedisHandle.set_key_exipre(key_name, 14400)
 
         # 获取用户未领取的礼包数
         from Service.UsersService import get_user_gift_count
-        if RedisHandle.exists(key_name):
-            redis_mark_data = RedisHandle.hgetall(key_name)
-            if redis_mark_data.has_key('gift_num'):
-                gift_num = int(redis_mark_data['gift_num'])
-                if gift_num <= 0:
-                    user_mark['gift_num'] = get_user_gift_count(key_name, appid)
-                    RedisHandle.hset(key_name, 'gift_num', user_mark['gift_num'])
-                else:
-                    user_mark['gift_num'] = gift_num
-            else:
-                user_mark['gift_num'] = get_user_gift_count(key_name, appid)
-                RedisHandle.hset(key_name, 'gift_num', user_mark['gift_num'])
-        else:
-            user_mark['gift_num'] = get_user_gift_count(key_name, appid)
-            RedisHandle.hset(key_name, 'gift_num', user_mark['gift_num'])
-            RedisHandle.set_key_exipre(key_name, 14400)
+        user_mark['gift_num'] = get_user_gift_count(key_name, appid)
+        RedisHandle.hset(key_name, 'gift_num', user_mark['gift_num'])
+        RedisHandle.set_key_exipre(key_name, 14400)
+        # from Service.UsersService import get_user_gift_count
+        # if RedisHandle.exists(key_name):
+        #     redis_mark_data = RedisHandle.hgetall(key_name)
+        #     if redis_mark_data.has_key('gift_num'):
+        #         gift_num = int(redis_mark_data['gift_num'])
+        #         if gift_num <= 0:
+        #             user_mark['gift_num'] = get_user_gift_count(key_name, appid)
+        #             RedisHandle.hset(key_name, 'gift_num', user_mark['gift_num'])
+        #         else:
+        #             user_mark['gift_num'] = gift_num
+        #     else:
+        #         user_mark['gift_num'] = get_user_gift_count(key_name, appid)
+        #         RedisHandle.hset(key_name, 'gift_num', user_mark['gift_num'])
+        # else:
+        #     user_mark['gift_num'] = get_user_gift_count(key_name, appid)
+        #     RedisHandle.hset(key_name, 'gift_num', user_mark['gift_num'])
+        #     RedisHandle.set_key_exipre(key_name, 14400)
 
         return user_mark
 

@@ -139,24 +139,28 @@ def v4_cms_message_revocation():
 @app_controller.route('/msa/v4/app/heartbeat', methods=['POST'])
 @sdk_api_request_check
 def v4_sdk_heartbeat():
-    from run import app
     if 'num' in request.form:
-        num = request.form['num']
+        num = int(request.form['num'])
     else:
         num = 1
-    refresh_interval = app.config.get('REFRESH_INTERVAL')
-    interval_ms = request.form['interval']
+    if RedisHandle.exists('REFRESH_INTERVAL'):
+        refresh_interval = int(RedisHandle.get('REFRESH_INTERVAL'))
+    else:
+        refresh_interval = 60
+    if 'interval' in request.form:
+        interval_ms = int(request.form['interval'])
+    else:
+        interval_ms = 2000
     appid = request.form['_appid']
-    interval_s = int(interval_ms) / 1000
     freeze = get_user_is_freeze_by_access_token(request.form['_token'])
     if freeze is not None:
         if freeze == 1:
             return response_data(200, 101, get_tips('heartbeat', 'user_account_freezed'))
         if freeze == 2:
             return response_data(200, 108, get_tips('heartbeat', 'sub_user_account_freezed'))
-    is_need_refresh_data = (num * interval_s) % refresh_interval
+    is_need_refresh_data = (num * interval_ms) % refresh_interval
+    ucid = get_ucid_by_access_token(request.form['_token'])
     if is_need_refresh_data == 0:
-        ucid = get_ucid_by_access_token(request.form['_token'])
         if ucid:
             # 获取用户相关广播和未读消息数
             data = RedisHandle.get_user_data_mark_in_redis(ucid, appid)
@@ -167,6 +171,12 @@ def v4_sdk_heartbeat():
         "message": 0,
         "gift_num": 0
     }
+    if RedisHandle.exists(ucid):
+        cache_data = RedisHandle.hgetall(ucid)
+        if cache_data.has_key('message'):
+            data['message'] = int(cache_data['message'])
+        if cache_data.has_key('gift_num'):
+            data['gift_num'] = int(cache_data['gift_num'])
     return response_data(data=data)
 
 
@@ -174,9 +184,8 @@ def v4_sdk_heartbeat():
 @app_controller.route('/msa/v4/refresh_heart_beat_data_interval', methods=['POST'])
 @cms_api_request_check
 def v4_cms_update_refresh_heart_beat_data_interval():
-    from run import app
     refresh_interval = int(request.json.get('refresh_interval'))
-    app.config['REFRESH_INTERVAL'] = refresh_interval
+    RedisHandle.set('REFRESH_INTERVAL', refresh_interval)
     return response_data(http_code=200)
 
 
