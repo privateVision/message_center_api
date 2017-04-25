@@ -16,7 +16,7 @@ anfeng_controller = Blueprint('AnfengController', __name__)
 # 安锋助手获取卡券列表
 @anfeng_controller.route('/msa/anfeng_helper/get_user_coupon', methods=['POST'])
 @anfeng_helper_request_check
-def v4_sdk_get_broadcast_list():
+def v4_sdk_get_user_coupon():
     ucid = get_ucid_by_access_token(request.form['_token'])
     status = int(request.form['status'])
     page = request.form['page'] if request.form.has_key('page') and request.form.get('page') else 1
@@ -155,9 +155,9 @@ def v4_anfeng_helper_gifts():
 @anfeng_helper_request_check
 def v4_anfeng_helper_get_user_gifts():
     from run import mysql_cms_session
-    ucid = request.json.get('uid')
-    page = int(request.json.get('page'))
-    count = int(request.json.get('pagesize'))
+    ucid = get_ucid_by_access_token(request.form['_token'])
+    page = request.form['page'] if request.form.has_key('page') and request.form.get('page') else 1
+    count = request.form['pagesize'] if request.form.has_key('pagesize') and request.form.get('pagesize') else 10
     start_index = (page - 1) * count
     end_index = start_index + count
     gift_list = []
@@ -197,8 +197,8 @@ def v4_anfeng_helper_get_user_gifts():
 @anfeng_helper_request_check
 def v4_anfeng_helper_is_user_gift_get():
     from run import mysql_cms_session
-    ucid = request.json.get('ucid')
-    gift_id = request.json.get('gift_id')
+    ucid = get_ucid_by_access_token(request.form['_token'])
+    gift_id = int(request.form['gift_id'])
     is_exist_sql = "select count(*) from cms_gameGiftLog as log where log.status = 'normal'" \
                    " and log.uid = %s and log.giftId = %s " % (ucid, gift_id)
     is_exist = mysql_cms_session.execute(is_exist_sql).scalar()
@@ -208,3 +208,32 @@ def v4_anfeng_helper_is_user_gift_get():
     if is_exist > 0:
         data['is_get'] = True
     return response_data(http_code=200, data=data)
+
+
+# 安锋助手淘号
+@anfeng_controller.route('/msa/anfeng_helper/tao_gift', methods=['POST'])
+@anfeng_helper_request_check
+def v4_anfeng_helper_tao_gift():
+    ucid = get_ucid_by_access_token(request.form['_token'])
+    ip = request.remote_addr  # 请求源ip
+    mac = request.form['_device_id']  # 通用参数中的device_id
+    gift_id = int(request.form['gift_id'])
+    now = int(time.time())
+    for_time = now - 7200
+    if ucid is None:
+        return response_data(200, 0, '用户不存在或未登录')
+    from run import mysql_cms_session
+    tao_gift_sql = "select * from cms_gameGiftLog as log where log.status = 'normal'" \
+                   " and log.platformId = 4 and log.giftId = %s and forTime < %s " \
+                   "order by num limit 1" % (gift_id, for_time)
+    tao_info = mysql_cms_session.execute(tao_gift_sql).fetchone()
+    if tao_info is not None:
+        insert_user_tao_sql = "insert into cms_gameGiftLog(gameId, giftId, platformId, code, uid, username, forTime, " \
+                              "forIp, forMac, type, num) values (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)" \
+                                 % (tao_info['gameId'], tao_info['giftId'], tao_info['platformId'], tao_info['code'],
+                                    ucid, '', now, ip, mac, 1, 1)
+        mysql_cms_session.execute(insert_user_tao_sql)
+        mysql_cms_session.commit()
+        return response_data(200, data=tao_info['code'])
+    return response_data(http_code=200, data='没有礼包可以淘了')
+
