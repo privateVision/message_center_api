@@ -17,7 +17,7 @@ if [ $count -gt 0 ];then
     fi
     echo 'starting main process ...'
     echo "当前启动地址： $1"
-    nohup uwsgi --socket $1 --wsgi-file run.py --callable app --enable-threads --lazy-apps --stats 127.0.0.1:1717 --evil-reload-on-as 1024 --evil-reload-on-rss 512 --listen 12000 --processes 20 --threads 1 &
+    nohup uwsgi --socket $1 --wsgi-file run.py --callable app --enable-threads --lazy-apps --stats 127.0.0.1:1717 --evil-reload-on-as 1024 --evil-reload-on-rss 512 --listen 65535 --processes 10 --threads 1 &
     if [ 0 == $? ];then
         echo "start main process success!"
     else
@@ -25,7 +25,7 @@ if [ $count -gt 0 ];then
     fi
 else
     echo "当前启动地址： $1"
-    nohup uwsgi --socket $1 --wsgi-file run.py --callable app --enable-threads --lazy-apps --stats 127.0.0.1:1717 --evil-reload-on-as 1024 --evil-reload-on-rss 512 --listen 12000 --processes 20 --threads 1 &
+    nohup uwsgi --socket $1 --wsgi-file run.py --callable app --enable-threads --lazy-apps --stats 127.0.0.1:1717 --evil-reload-on-as 1024 --evil-reload-on-rss 512 --listen 65535 --processes 10 --threads 1 &
     if [ 0 == $? ];then
         echo "start main process success!"
     else

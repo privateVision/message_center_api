@@ -139,6 +139,7 @@ def v4_cms_message_revocation():
 @app_controller.route('/msa/v4/app/heartbeat', methods=['POST'])
 @sdk_api_request_check
 def v4_sdk_heartbeat():
+    stime = time.time()
     if 'num' in request.form:
         num = int(request.form['num'])
     else:
@@ -177,6 +178,8 @@ def v4_sdk_heartbeat():
             data['message'] = int(cache_data['message'])
         if cache_data.has_key('gift_num'):
             data['gift_num'] = int(cache_data['gift_num'])
+    etime = time.time()
+    service_logger.info("心跳逻辑处理时间：%s" % (etime-stime,))
     return response_data(data=data)
 
 

@@ -576,7 +576,9 @@ def get_stored_value_card_list(ucid, status=0, start_index=0, end_index=10):
                     item['unlimited_time'] = True
                 if game_info:
                     item['lock_app'] = game_info['pname']
-                value_card_list.append(item)
+                game = get_game_info_by_appid(card['lockApp'])
+                if game is not None:
+                    item['game_id'] = game['id']
     except Exception, err:
         service_logger.error(err.message)
         mysql_session.rollback()
@@ -687,9 +689,6 @@ def get_user_all_coupons(ucid, status=0, start_index=0, end_index=10):
         coupon_info = mysql_session.execute(get_user_coupon_sql).fetchone()
         game = coupon_info['game']
         desc = "所有游戏"
-        game_info = get_game_info_by_appid(game)
-        if game_info is not None:
-            desc = game_info['name']
         if coupon_info is not None:
             info = {
                 'id': coupon_info['id'],
@@ -714,6 +713,10 @@ def get_user_all_coupons(ucid, status=0, start_index=0, end_index=10):
             time_out = False
             if coupon_info['is_time'] == 1 and coupon_info['end_time'] < now:
                 time_out = True
+            game_info = get_game_info_by_appid(game)
+            if game_info is not None:
+                info['desc'] = game_info['name']
+                info['game_id'] = game_info['id']
             info['unlimited_time'] = unlimited_time
             info['time_out'] = time_out
             new_coupon_list.append(info)
