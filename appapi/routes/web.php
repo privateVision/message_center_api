@@ -13,6 +13,8 @@ use Qiniu\Storage\UploadManager;
 |
 */
 
+use \App\Model\Session;
+
 $app->get('/', function (Illuminate\Http\Request $request) use ($app) {
     $mobile = $request->input('m');
 

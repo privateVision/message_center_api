@@ -14,8 +14,7 @@ class OrderNotify extends Job
         $this->order_id = $order_id;
     }
 
-    public function handle()
-    {
+    public function handle() {
         $order = Orders::from_cache($this->order_id);
         if(!$order) return ;
 
@@ -27,7 +26,11 @@ class OrderNotify extends Job
         $appkey = $procedures->psingKey;
 
         $data['openid'] = $order->cp_uid ? $order->cp_uid : $order->ucid;
+<<<<<<< HEAD
+       // $data['ucid'] = $order->cp_uid ? $order->cp_uid : $order->ucid; // todo: 兼容旧系统
+=======
         $data['ucid'] = $order->cp_uid ? $order->cp_uid : $order->ucid; // todo: 兼容旧系统
+>>>>>>> 5be5ab84cdda70aafc2c8322301f3b0210643fe5
         $data['body'] = $order->body;
         $data['subject'] = $order->subject;
         $data['fee'] = sprintf('%.2f',$order->fee);

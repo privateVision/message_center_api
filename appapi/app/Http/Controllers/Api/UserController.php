@@ -170,7 +170,6 @@ class UserController extends AuthController
 
         $data = [];
         foreach($order as $v) {
-            //if($v->is_f()) continue;
             $data[] = [
                 'order_id' => $v->sn,
                 'fee' => $v->fee,
@@ -186,7 +185,13 @@ class UserController extends AuthController
 
     public function HideOrderAction() {
         $sn = $this->parameter->tough('order_id');
-        Orders::where('sn', $sn)->update(['hide' => true]);
+
+        $order = Orders::from_cache($sn);
+        if($order) {
+            $order->hide = true;
+            $order->save();
+        }
+
         return ['result' => true];
     }
 

@@ -13,35 +13,55 @@ abstract class Model extends Eloquent
 
     protected $slice = null;
 
+    /**
+     * 如果值为true，则该类在析构的时候会自动执行一次save
+     * @var boolean
+     */
     protected $is_delay_save = false;
 
+    /**
+     * 如果值为true，则在updated、created时会更新缓存
+     * @var boolean
+     */
     protected $is_cache_save = false;
-/*
-    public function setAttribute($field, $value) {
 
+    protected static $_instances = [];
+
+    /**
+     * Increment a column's value by a given amount.
+     *
+     * @param  string  $column
+     * @param  int  $amount
+     * @param  array  $extra
+     * @return int
+     */
+    protected function increment($column, $amount = 1, array $extra = []) {
+        parent::increment($column, $amount, $extra);
+        $this->updateCache();
+        return $this;
     }
 
-    public function getAttribute($field) {
-        return $this->$field;
+    /**
+     * Decrement a column's value by a given amount.
+     *
+     * @param  string  $column
+     * @param  int  $amount
+     * @param  array  $extra
+     * @return int
+     */
+    protected function decrement($column, $amount = 1, array $extra = [])
+    {
+        parent::decrement($column, $amount, $extra);
+        $this->updateCache();
+        return $this;
     }
-*/
+
     public function __call($method, $parameters) {
         if($method === 'tableSlice') {
             $this->slice = $parameters[0];
             return $this;
         }
-/*
-        if(substr($method, 0, 5) == '_set_') {
-            $field = substr($method, 5);
-            $this->setAttribute($field, $parameters[0]);
-            return $this;
-        }
 
-        if(substr($method, 0, 5) == '_get_') {
-            $field = substr($method, 5);
-            return $this->getAttribute($field);
-        }
-*/
         if(substr($method, 0, 10) === 'from_cache') {
             $value = $parameters[0];
             if($method !== 'from_cache') {
@@ -49,9 +69,9 @@ abstract class Model extends Eloquent
 
                 $rediskey_1 = $this->table .'_'. $field .'_'. $value;
                 $rediskey_2 = Redis::get($rediskey_1);
+                if(isset(static::$_instances[$rediskey_2])) return static::$_instances[$rediskey_2];
 
                 if($rediskey_2) {
-                    $k_2 = true;
                     $data = Redis::get($rediskey_2);
                     if($data) {
                         $data = json_decode($data, true);
@@ -59,6 +79,9 @@ abstract class Model extends Eloquent
                         $this->original = $data;
                         $this->exists = true;
                         $this->is_cache_save = true;
+
+                        static::$_instances[$rediskey_2] = $this;
+
                         return $this;
                     }
                 }
@@ -66,16 +89,19 @@ abstract class Model extends Eloquent
                 $data = $this->newQuery()->where($field, $value)->first();
                 if($data) {
                     $rediskey_2 = $this->table .'_'. $data->getKey();
+
                     Redis::set($rediskey_2, json_encode($data), 'EX', cache_expire_second());
-                    if(!isset($k_2)) {
-                        Redis::set($rediskey_1, $rediskey_2, 'EX', cache_expire_second());
-                    }
+                    Redis::set($rediskey_1, $rediskey_2, 'EX', cache_expire_second());
 
                     $data->is_cache_save = true;
+                    static::$_instances[$rediskey_2] = $data;
+
                     return $data;
                 }
             } else {
                 $rediskey_2 = $this->table .'_'. $value;
+                if(isset(static::$_instances[$rediskey_2])) return static::$_instances[$rediskey_2];
+
                 $data = Redis::get($rediskey_2);
                 if($data) {
                     $data = json_decode($data, true);
@@ -83,6 +109,9 @@ abstract class Model extends Eloquent
                     $this->original = $data;
                     $this->exists = true;
                     $this->is_cache_save = true;
+
+                    static::$_instances[$rediskey_2] = $this;
+
                     return $this;
                 }
 
@@ -90,6 +119,7 @@ abstract class Model extends Eloquent
                 if($data) {
                     Redis::set($rediskey_2, json_encode($data), 'EX', cache_expire_second());
                     $data->is_cache_save = true;
+                    static::$_instances[$rediskey_2] = $data;
                     return $data;
                 }
             }
@@ -104,24 +134,15 @@ abstract class Model extends Eloquent
         parent::boot();
 
         static::created(function($entry) {
-            if($entry->is_cache_save) {
-                $rediskey_2 = $entry->table .'_'. $entry->getKey();
-                Redis::set($rediskey_2, json_encode($entry), 'EX', cache_expire_second());
-            }
+            $entry->updateCache();
         });
     
         static::updated(function($entry) {
-            if($entry->is_cache_save) {
-                $rediskey_2 = $entry->table .'_'. $entry->getKey();
-                Redis::set($rediskey_2, json_encode($entry), 'EX', cache_expire_second());
-            }
+            $entry->updateCache();
         });
 
         static::deleting(function($entry) {
-            //if($entry->is_cache_save) {
-                $rediskey_2 = $entry->table .'_'. $entry->getKey();
-                Redis::del($rediskey_2);
-            //}
+            $entry->deleteCache();
         });
     }
 
@@ -159,13 +180,22 @@ abstract class Model extends Eloquent
         return parent::save($options);
     }
 
-    /**
-     * 解决increment和decrement方法不会触发更新缓存的替代方案
-     * @return [type] [description]
-     */
     public function updateCache() {
+        if($this->is_cache_save) {
+            $rediskey_2 = $this->table .'_'. $this->getKey();
+            Redis::set($rediskey_2, json_encode($this), 'EX', cache_expire_second());
+            static::$_instances[$rediskey_2] = $this;
+        }
+
+        return $this;
+    }
+
+    public function deleteCache() {
         $rediskey_2 = $this->table .'_'. $this->getKey();
-        Redis::set($rediskey_2, json_encode($this));
+        Redis::del($rediskey_2);
+        
+        unset(static::$_instances[$rediskey_2]);
+
         return $this;
     }
 

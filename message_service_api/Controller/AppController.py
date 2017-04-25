@@ -152,16 +152,15 @@ def v4_sdk_heartbeat():
     else:
         interval_ms = 2000
     appid = request.form['_appid']
-    interval_s = int(interval_ms) / 1000
     freeze = get_user_is_freeze_by_access_token(request.form['_token'])
     if freeze is not None:
         if freeze == 1:
             return response_data(200, 101, get_tips('heartbeat', 'user_account_freezed'))
         if freeze == 2:
             return response_data(200, 108, get_tips('heartbeat', 'sub_user_account_freezed'))
-    is_need_refresh_data = (num * interval_s) % refresh_interval
+    is_need_refresh_data = (num * interval_ms) % refresh_interval
+    ucid = get_ucid_by_access_token(request.form['_token'])
     if is_need_refresh_data == 0:
-        ucid = get_ucid_by_access_token(request.form['_token'])
         if ucid:
             # 获取用户相关广播和未读消息数
             data = RedisHandle.get_user_data_mark_in_redis(ucid, appid)
@@ -172,6 +171,12 @@ def v4_sdk_heartbeat():
         "message": 0,
         "gift_num": 0
     }
+    if RedisHandle.exists(ucid):
+        cache_data = RedisHandle.hgetall(ucid)
+        if cache_data.has_key('message'):
+            data['message'] = int(cache_data['message'])
+        if cache_data.has_key('gift_num'):
+            data['gift_num'] = int(cache_data['gift_num'])
     return response_data(data=data)
 
 

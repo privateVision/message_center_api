@@ -3,6 +3,7 @@ namespace App\Http\Controllers\PayCallback;
 
 use Illuminate\Http\Request;
 use App\Model\Orders;
+use App\Model\CallbackLog;
 
 abstract class Controller extends \App\Controller
 {
@@ -10,10 +11,10 @@ abstract class Controller extends \App\Controller
     public function CallbackAction(Request $request) {
         try {
             $data = $this->getData($request);
-
-            log_info('paycallback', ['route' => $request->path(), 'data' => $data]);
-
             $sn = $this->getOrderNo($data); 
+
+            log_info('paycallback', ['route' => $request->path(), 'data' => $data, 'sn' => $sn]);
+
             $order = null;
         
             if($sn) {
@@ -21,18 +22,24 @@ abstract class Controller extends \App\Controller
             }
 
             if(!$order) {
-                log_error('paycallback_order_not_exists', null, '订单不存在');
-                return $this->onComplete($data, null, true);
-            }
-            
-            if($order->status != Orders::Status_WaitPay) {
-                log_error('paycallback_order_status_error', ['sn' => $sn], '订单状态不正确');
+                log_error('paycallback_error', null, '订单不存在');
                 return $this->onComplete($data, null, true);
             }
             
             if(!$this->verifySign($data, $order)) {
-                log_error('paycallback_order_verify_sign_fail', null, '签名验证失败');
+                log_error('paycallback_error', null, '签名验证失败');
                 return $this->onComplete($data, null, false);
+            }
+
+            $callback_log = new CallbackLog;
+            $callback_log->timestamp = date('Y-m-d H:i:s');
+            $callback_log->order_id = $order->sn;
+            $callback_log->postdata = http_build_query($data);
+            $callback_log->asyncSave();
+            
+            if($order->status != Orders::Status_WaitPay) {
+                log_error('paycallback_error', ['sn' => $sn], '订单状态不正确');
+                return $this->onComplete($data, null, true);
             }
 
             $outer_order_no = $this->getTradeOrderNo($data, $order);

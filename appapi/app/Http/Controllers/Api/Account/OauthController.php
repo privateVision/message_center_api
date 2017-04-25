@@ -218,7 +218,6 @@ class OauthController extends Controller {
         $user_oauth->openid = $openid;
         $user_oauth->unionid = $unionid;
         $user_oauth->saveAndCache();
-        $user_oauth->updateCache();
 
         $user_info = UcuserInfo::where("ucid",$user->ucid)->first();
 
