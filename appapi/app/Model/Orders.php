@@ -5,6 +5,7 @@ class Orders extends Model
 {
 	const Status_WaitPay = 0;
 	const Status_Success = 1;
+	const Status_NotifySuccess = 2;
 
 	const Way_Unknow = 0;
 	const Way_Wechat = 1;
