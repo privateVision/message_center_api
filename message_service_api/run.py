@@ -32,11 +32,11 @@ def page_not_found(error):
 def page_not_found(error):
     return 'Server Exception', 500
 
-if __name__ == '__main__':
-    host = app.config.get('HOST')
-    port = app.config.get('PORT')
-    debug = app.config.get('DEBUG')
-    app.run(host=host, port=port, debug=debug)
+# if __name__ == '__main__':
+#     host = app.config.get('HOST')
+#     port = app.config.get('PORT')
+#     debug = app.config.get('DEBUG')
+#     app.run(host=host, port=port, debug=debug)
 
 
 #  uwsgi 启动脚本： uwsgi --socket 127.0.0.1:5000 --wsgi-file run.py --callable app --enable-threads

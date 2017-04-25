@@ -29,15 +29,24 @@ class AnfengHelperApiTest(unittest.TestCase):
     #     r = requests.post("http://localhost:5000/msa/anfeng_helper/get_user_coupon", data=data)
     #     print r.text
 
-    def test_add_coupon(self):
+    # def test_add_coupon(self):
+    #     data = {
+    #         "_token": '1vs54uvt3b8k884k0wogs0k88',
+    #         "coupon_id": 1472,
+    #         "_sign": "f18ad37f62becde929baccf3ed6db312"
+    #     }
+    #     # headers = {"Content-Type": "application/json"}
+    #     # data_json = json.dumps(data)
+    #     r = requests.post("http://localhost:5000/msa/anfeng_helper/coupon", data=data)
+    #     print r.text
+
+    def test_get_all_gift(self):
         data = {
-            "_token": '1vs54uvt3b8k884k0wogs0k88',
-            "coupon_id": 1472,
-            "_sign": "f18ad37f62becde929baccf3ed6db312"
+            "_sign": "7605aa3d5ee3768dc10b6bdb59ee6f00"
         }
         # headers = {"Content-Type": "application/json"}
         # data_json = json.dumps(data)
-        r = requests.post("http://localhost:5000/msa/anfeng_helper/coupon", data=data)
+        r = requests.post("http://localhost:5000/msa/anfeng_helper/gifts", data=data)
         print r.text
 
     # def test_get_uses_gifts_list(self):

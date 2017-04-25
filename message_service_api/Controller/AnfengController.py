@@ -61,7 +61,7 @@ def v4_sdk_get_broadcast_list():
     return response_data(http_code=200, data=data)
 
 
-# 安锋助手获取卡券列表
+# 安锋助手领取卡券
 @anfeng_controller.route('/msa/anfeng_helper/coupon', methods=['POST'])
 @anfeng_helper_request_check
 def v4_sdk_acheive_coupon():
@@ -98,6 +98,56 @@ def v4_sdk_acheive_coupon():
     finally:
         mysql_session.close()
     return response_data(http_code=200)
+
+
+# 安锋助手获取礼包列表
+@anfeng_controller.route('/msa/anfeng_helper/gifts', methods=['POST'])
+@anfeng_helper_request_check
+def v4_anfeng_helper_gifts():
+    page = request.form['page'] if request.form.has_key('page') and request.form.get('page') else 1
+    count = request.form['pagesize'] if request.form.has_key('pagesize') and request.form.get('pagesize') else 10
+    start_index = (int(page) - 1) * int(count)
+    end_index = int(count)
+    from run import mysql_cms_session
+    find_anfeng_helper_total_count = "select count(*) from cms_gameGift as gift join cms_gameGiftAssign" \
+                                     " as assign on gift.id=assign.giftId where assign.platformId = 4 " \
+                                     "and gift.status='normal' and assign.status='normal' "
+    find_anfeng_helper_gift_list = "select gift.*, assign.assignNum as a_assignNum, assign.num as a_num" \
+                                   " from cms_gameGift as gift join cms_gameGiftAssign as assign " \
+                                   "on gift.id=assign.giftId where assign.platformId = 4 and gift.status='normal'" \
+                                   " and assign.status='normal' limit %s, %s " % (start_index, end_index)
+    total_count = mysql_cms_session.execute(find_anfeng_helper_total_count).scalar()
+    data_list = mysql_cms_session.execute(find_anfeng_helper_gift_list).fetchall()
+    gift_list = []
+    for data in data_list:
+        gift = {
+            'id': data['id'],
+            'game_id': data['gameId'],
+            'game_name': data['gameName'],
+            'name': data['name'],
+            'gift': data['gift'],
+            'content': data['content'],
+            'label': data['label'],
+            'total': data['total'],
+            'num': data['num'],
+            'assign_num': data['assignNum'],
+            'publish_time': data['publishTime'],
+            'fail_time': data['failTime'],
+            'create_time': data['createTime'],
+            'is_tao_num': data['isTaoNum'],
+            'is_af_receive': data['isAfReceive'],
+            'is_bind_phone': data['isBindPhone'],
+            'member_level': data['memberLevel'],
+            'is_specify': data['isSpecify'],
+            'a_assign_num': data['a_assignNum'],
+            'a_num': data['a_num']
+        }
+        gift_list.append(gift)
+    data = {
+        'total_count': total_count,
+        'gift_list': gift_list
+    }
+    return response_data(http_code=200, data=data)
 
 
 # 安锋助手用户获取已领礼包列表
