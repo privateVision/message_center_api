@@ -139,14 +139,16 @@ def v4_cms_message_revocation():
 @app_controller.route('/msa/v4/app/heartbeat', methods=['POST'])
 @sdk_api_request_check
 def v4_sdk_heartbeat():
-    from run import app
     if 'num' in request.form:
-        num = request.form['num']
+        num = int(request.form['num'])
     else:
         num = 1
-    refresh_interval = app.config.get('REFRESH_INTERVAL')
+    if RedisHandle.exists('REFRESH_INTERVAL'):
+        refresh_interval = int(RedisHandle.get('REFRESH_INTERVAL'))
+    else:
+        refresh_interval = 60
     if 'interval' in request.form:
-        interval_ms = request.form['interval']
+        interval_ms = int(request.form['interval'])
     else:
         interval_ms = 2000
     appid = request.form['_appid']
@@ -177,9 +179,8 @@ def v4_sdk_heartbeat():
 @app_controller.route('/msa/v4/refresh_heart_beat_data_interval', methods=['POST'])
 @cms_api_request_check
 def v4_cms_update_refresh_heart_beat_data_interval():
-    from run import app
     refresh_interval = int(request.json.get('refresh_interval'))
-    app.config['REFRESH_INTERVAL'] = refresh_interval
+    RedisHandle.set('REFRESH_INTERVAL', refresh_interval)
     return response_data(http_code=200)
 
 
