@@ -61,6 +61,39 @@ def v4_sdk_get_broadcast_list():
     return response_data(http_code=200, data=data)
 
 
+# 安锋助手获取卡券列表
+@anfeng_controller.route('/msa/anfeng_helper/coupon', methods=['POST'])
+@anfeng_helper_request_check
+def v4_sdk_acheive_coupon():
+    ucid = get_ucid_by_access_token(request.form['_token'])
+    if ucid is None:
+        return response_data(200, 0, '用户不存在或未登录')
+    if 'coupon_id' not in request.form:
+        return response_data(200, 0, '参数异常：缺少卡券id')
+    coupon_id = int(request.form['coupon_id'])
+    if coupon_id == 0:
+        return response_data(200, 0, '参数异常：卡券id不能为零')
+    try:
+        from run import mysql_session
+        find_coupon_info_sql = "select id, name, game, is_time, start_time, end_time from zy_coupon" \
+                               " where status = 'normal' and id = %s limit 1" % (coupon_id,)
+        coupon_info = mysql_session.execute(find_coupon_info_sql).fetchone()
+        if coupon_info is None:
+            return response_data(200, 0, '卡券不存在或已经被删除')
+        insert_user_coupon_sql = "insert into zy_coupon_log(ucid, coupon_id, pid, is_time, start_time, end_time)" \
+                                 " values(%s, %s, %s, %s, %s, %s)" \
+                                 % (ucid, coupon_id, coupon_info['game'], coupon_info['is_time'],
+                                    coupon_info['start_time'], coupon_info['end_time'])
+        mysql_session.execute(insert_user_coupon_sql)
+        mysql_session.commit()
+    except Exception, err:
+        service_logger.error("用户领取卡券，存储的mysql发生异常：%s" % (err.message,))
+        mysql_session.rollback()
+    finally:
+        mysql_session.close()
+    return response_data(http_code=200)
+
+
 # 安锋助手用户获取已领礼包列表
 @anfeng_controller.route('/msa/anfeng_helper/get_user_gifts', methods=['POST'])
 @anfeng_helper_request_check
