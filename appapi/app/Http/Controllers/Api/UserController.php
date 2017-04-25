@@ -29,7 +29,7 @@ class UserController extends AuthController
             'email' => $this->user->email,
             'balance' => $this->user->balance,
             'gender' => $user_info && $user_info->gender ? (int)$user_info->gender : 0,
-            'birthday' => $user_info && $user_info->birthday ? (string)$user_info->birthday : "1990-06-01",
+            'birthday' => $user_info && $user_info->birthday ? (string)$user_info->birthday : "",
             'province' => $user_info && $user_info->province ? (string)$user_info->province : "",
             'city' => $user_info && $user_info->city ? (string)$user_info->city : "",
             'address' => $user_info && $user_info->address ? (string)$user_info->address : "",
@@ -472,7 +472,10 @@ class UserController extends AuthController
             throw new ApiException(ApiException::Remind, "为了防止遗忘账号，请绑定手机或者其他社交账号后再解除绑定");
         }
 
-        UcuserOauth::where('type', $type)->where('ucid', $this->user->ucid)->delete();
+        $user_oauth = UcuserOauth::where('type', $type)->where('ucid', $this->user->ucid)->first();
+        if($user_oauth) {
+            $user_oauth->delete();
+        }
 
         user_log($this->user, $this->procedure, 'unbind_oauth', '【解绑平台帐号】%s', config("common.oauth.{$type}.text", '第三方'));
 

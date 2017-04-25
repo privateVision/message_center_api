@@ -22,6 +22,16 @@ class RedisHandle(object):
             return redis_store.hset(key, field_name, 0)
 
     @staticmethod
+    def set(key_name, field_value):
+        key = "%s%s" % (RedisHandle.common_key_prefix, key_name)
+        return redis_store.set(key, field_value)
+
+    @staticmethod
+    def get(key_name):
+        key = "%s%s" % (RedisHandle.common_key_prefix, key_name)
+        return redis_store.get(key)
+
+    @staticmethod
     def hset(key_name, field_name, field_value):
         key = "%s%s" % (RedisHandle.common_key_prefix, key_name)
         return redis_store.hset(key, field_name, field_value)

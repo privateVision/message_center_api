@@ -116,6 +116,13 @@ abstract class Model extends Eloquent
                 Redis::set($rediskey_2, json_encode($entry), 'EX', cache_expire_second());
             }
         });
+
+        static::deleting(function($entry) {
+            //if($entry->is_cache_save) {
+                $rediskey_2 = $entry->table .'_'. $entry->getKey();
+                Redis::del($rediskey_2);
+            //}
+        });
     }
 
     /**

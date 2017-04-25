@@ -4,7 +4,7 @@ import json
 import time
 
 import datetime
-from flask import Blueprint, app
+from flask import Blueprint
 from flask import request
 from mongoengine import Q
 
@@ -140,11 +140,17 @@ def v4_cms_message_revocation():
 @sdk_api_request_check
 def v4_sdk_heartbeat():
     if 'num' in request.form:
-        num = get_ucid_by_access_token(request.form['num'])
+        num = int(request.form['num'])
     else:
         num = 1
-    refresh_interval = int(app.config.get('REFRESH_INTERVAL'))
-    interval_ms = request.form['interval']
+    if RedisHandle.exists('REFRESH_INTERVAL'):
+        refresh_interval = int(RedisHandle.get('REFRESH_INTERVAL'))
+    else:
+        refresh_interval = 60
+    if 'interval' in request.form:
+        interval_ms = int(request.form['interval'])
+    else:
+        interval_ms = 2000
     appid = request.form['_appid']
     interval_s = int(interval_ms) / 1000
     freeze = get_user_is_freeze_by_access_token(request.form['_token'])
@@ -161,13 +167,12 @@ def v4_sdk_heartbeat():
             data = RedisHandle.get_user_data_mark_in_redis(ucid, appid)
             service_logger.info("%s - %s" % (ucid, json.dumps(data)))
             return response_data(data=data)
-    else:
-        data = {
-            "broadcast": [],
-            "message": 0,
-            "gift_num": 0
-        }
-        return response_data(data=data)
+    data = {
+        "broadcast": [],
+        "message": 0,
+        "gift_num": 0
+    }
+    return response_data(data=data)
 
 
 # CMS 更新心跳数据刷新间隔
@@ -175,7 +180,7 @@ def v4_sdk_heartbeat():
 @cms_api_request_check
 def v4_cms_update_refresh_heart_beat_data_interval():
     refresh_interval = int(request.json.get('refresh_interval'))
-    app.config['REFRESH_INTERVAL'] = refresh_interval
+    RedisHandle.set('REFRESH_INTERVAL', refresh_interval)
     return response_data(http_code=200)
 
 

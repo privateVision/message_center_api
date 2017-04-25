@@ -6,35 +6,34 @@ import unittest
 import requests
 import time
 
+from Utils.EncryptUtils import get_cms_md5_sign
+
 
 class HeartBeatTest(unittest.TestCase):
 
+    # def test_set_refresh_data(self):
+    #     body_data = {
+    #         'refresh_interval': 60
+    #     }
+    #     headers = {"Content-Type": "application/json"}
+    #     data_json = json.dumps(body_data)
+    #     sign = get_cms_md5_sign(data_json)
+    #     r = requests.post("http://localhost:5000/msa/v4/refresh_heart_beat_data_interval?sign=%s" % (sign,),
+    #                       data=data_json, headers=headers)
+    #     print r.text
+
     def test_heart_beat_profiling(self):
         body_data = {
-            '_sign': 'd0c982b8a953bb657d74d4274b6361ec',
-            '_appid': 778,
+            '_sign': 'cdc355c1da24481ae9ad0fd92893a443',
+            '_appid': 2,
+            '_timestamp': 1493031607,
             'interval': 2000,
-            '_token': '5zkefoi6sgg80gkokwsgwck4o'
+            '_token': 'b90ezx5h888okc44gcswkoc4k'
         }
-        r = requests.post('http://sdkv4test.qcwanwan.com/msa/v4/app/heartbeat', data=body_data)
+        # sdkv4test.qcwanwan.com
+        r = requests.post('http://localhost:5000/msa/v4/app/heartbeat', data=body_data)
         print r.text
         self.assertEqual(r.status_code, 200)
-
-    # def test_heart_beat_ack(self):
-    #     origin_param = 'token=fd9c69f1fd62f3070aafa5bc210f32ee&type=notice'
-    #     from Utils.EncryptUtils import sdk_api_gen_key
-    #     param = sdk_api_gen_key(778, origin_param)
-    #     print "加密后的参数为：%s" % (param,)
-    #     if param:
-    #         body_data = {
-    #             'appid': 778,
-    #             'param': param
-    #         }
-    #         r = requests.post('http://localhost:5000/v4/app/heartbeat/ack', data=body_data)
-    #         self.assertEqual(r.status_code, 200)
-    #         print r.text
-    #     else:
-    #         print '加密失败'
 
 
 if __name__ == '__main__':

@@ -15,7 +15,7 @@ class FController extends Controller {
     const EnableStoreCard = true;
     const EnableCoupon = true;
     const EnableBalance = true;
-    //const FSIGN = 2;
+    const FSIGN = 2;
 
     /**
      * 使用F币或优惠券支付
