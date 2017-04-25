@@ -173,7 +173,7 @@ class  AppleController extends Controller{
             $order->save();
 
             // order_extend;
-            if($zone_id || $zone_name || $role_id || $role_level || $role_name)　{
+            if($zone_id || $zone_name || $role_id || $role_level || $role_name) {
                 $order_extend = new OrderExtend;
                 $order_extend->oid = $order->id;
                 $order_extend->ucid = $this->user->ucid;
