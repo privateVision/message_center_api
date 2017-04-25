@@ -80,6 +80,12 @@ def v4_sdk_acheive_coupon():
         coupon_info = mysql_session.execute(find_coupon_info_sql).fetchone()
         if coupon_info is None:
             return response_data(200, 0, '卡券不存在或已经被删除')
+        find_is_get_coupon_sql = "select count(*) from zy_coupon_log " \
+                                 " where ucid = %s and coupon_id = %s" % (ucid, coupon_id)
+        is_get = mysql_session.execute(find_is_get_coupon_sql).scalar()
+        if is_get > 0:
+            return response_data(200, 0, '你已经领取过了')
+        coupon_info = mysql_session.execute(find_coupon_info_sql).fetchone()
         insert_user_coupon_sql = "insert into zy_coupon_log(ucid, coupon_id, pid, is_time, start_time, end_time)" \
                                  " values(%s, %s, %s, %s, %s, %s)" \
                                  % (ucid, coupon_id, coupon_info['game'], coupon_info['is_time'],
@@ -109,7 +115,7 @@ def v4_anfeng_helper_get_user_gifts():
                                 " on log.giftId = gift.id where gift.status = 'normal' and " \
                                 "log.status = 'normal' and log.uid = %s " % (ucid,)
     get_user_gift_sql = "select gift.* from cms_gameGiftLog as log join cms_gameGift as gift on log.giftId = gift.id" \
-                        " where gift.status = 'normal' and log.status = 'normal' and log.uid = %s limit %s, %s"\
+                        " where gift.status = 'normal' and log.status = 'normal' and log.uid = %s limit %s, %s" \
                         % (ucid, start_index, end_index)
     total_count = mysql_cms_session.execute(user_gift_total_count_sql).scalar()
     user_gift_list = mysql_cms_session.execute(get_user_gift_sql).fetchall()
