@@ -32,7 +32,6 @@ class NowpayWechatController extends Controller {
         $mht['payChannelType'] = $config['payChannelType'];
         ksort($mht);
 
-
         $mht['mhtSignature'] = md5(static::encode($mht) .'&'. md5($config['secure_key']));
         $mht['mhtSignType'] = $config['mhtSignType'];
 
