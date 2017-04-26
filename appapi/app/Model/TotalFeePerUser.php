@@ -1,9 +1,9 @@
 <?php
 namespace App\Model;
 
-class UcuserTotalPay extends Model
+class TotalFeePerUser extends Model
 {
-    protected $table = 'ucuser_total_pay';
+    protected $table = 'total_fee_per_user';
     protected $primaryKey = 'ucid';
     public $incrementing = false;
 }

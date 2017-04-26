@@ -46,7 +46,7 @@ class UserSubController extends AuthController
 
     public function SetNicknameAction() {
         $id = $this->parameter->tough('id');
-        $nickname = $this->parameter->tough('nickname');
+        $nickname = $this->parameter->tough('nickname', 'sub_nickname');
 
         $count = UcuserSub::tableSlice($this->user->ucid)->where('ucid', $this->user->ucid)->where('name', $nickname)->count();
         if($count) {

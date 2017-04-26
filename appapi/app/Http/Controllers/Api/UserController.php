@@ -2,12 +2,10 @@
 namespace App\Http\Controllers\Api;
 
 use App\Exceptions\ApiException;
-use App\Model\MongoDB\RoleDataLog;
 use Illuminate\Http\Request;
 use App\Parameter;
 use App\Model\Ucuser;
 use App\Model\Orders;
-
 use App\Model\UcuserRole;
 use App\Model\ProceduresZone;
 use App\Model\ProceduresExtend;
@@ -412,7 +410,11 @@ class UserController extends AuthController
     public function BindOauthAction() {
         $openid = $this->parameter->tough('openid');
         $type = $this->parameter->tough('type');
-        $unionid = $this->parameter->get('unionid');
+        $unionid = $this->parameter->get('unionid', "", function($unionid) use($type) {
+            $unionid = trim($unionid);
+            if($type == 'weixin' && $unionid == '') throw new ApiException(ApiException::Error, "unionid不允许为空");
+            return $unionid;
+        });
         $nickname = $this->parameter->get('nickname');
         $avatar = $this->parameter->get('avatar');
         $forced = $this->parameter->get('forced');
@@ -550,7 +552,8 @@ class UserController extends AuthController
     }
 
     public function SetNicknameAction() {
-        $nickname = $this->parameter->tough('nickname');
+        $nickname = $this->parameter->tough('nickname', 'nickname');
+
         $this->user->nickname = $nickname;
         $this->user->save();
 
@@ -566,9 +569,8 @@ class UserController extends AuthController
     /*
      * 用户角色等级信息日志
      */
-
+/*
     public function UpdateRoleAction(){
-
         $zone_id                = $this->parameter->tough('zone_id'); //区服ID
         $zone_name              = $this->parameter->tough('zone_name'); //区服名称
         $role_id                = $this->parameter->tough('role_id');  //游戏
@@ -591,6 +593,5 @@ class UserController extends AuthController
 
         return $logdata->save()?"true":"false";
     }
-
-
+*/
 }

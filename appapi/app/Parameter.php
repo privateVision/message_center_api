@@ -17,9 +17,6 @@ class Parameter
 
 	public function get($key, $default = null, $type_fun_regex = null) {
 		$data = @$this->_data[$key];
-		if($data === null || $data === '') {
-			return $default;
-		}
 
 		if(is_string($type_fun_regex) && method_exists($this, $type_fun_regex)) {
 			return $this->$type_fun_regex($data);
@@ -35,6 +32,10 @@ class Parameter
 			} else {
 				throw new Exception ("参数\"{$key}\"格式不正确", 0);
 			}
+		}
+
+		if($data === null || $data === '') {
+			return $default;
 		}
 
 		return $data;
@@ -66,7 +67,7 @@ class Parameter
 	}
 
 	protected function mobile($mobile) {
-		$mobile = trim($mobile);
+		$mobile = trim($mobile, '　 ');
 
 		if(!preg_match('/^1\d{10}$/', $mobile)) {
 			throw new Exception ("\"{$mobile}\" 不是一个有效的手机号码", 0);
@@ -76,7 +77,7 @@ class Parameter
 	}
 
 	protected function username($username) {
-		$username = trim($username);
+		$username = trim($username, '　 ');
 
 		if(preg_match('/^\d+$/', $username)) {
 			throw new Exception ("用户名错误，不能为纯数字", 0);
@@ -86,7 +87,7 @@ class Parameter
 	}
 
 	protected function smscode($smscode) {
-		$smscode = trim($smscode);
+		$smscode = trim($smscode, '　 ');
 
 		if(strlen($smscode) != 6) {
 			throw new Exception ("验证码错误", 0);
@@ -96,7 +97,7 @@ class Parameter
 	}
 
 	protected function url($url) {
-		$url = trim($url);
+		$url = trim($url, '　 ');
 
 		if(!preg_match('/^https*:\/\/.*$/', $url)) {
 			throw new Exception ("\"{$url}\" url错误", 0);
@@ -106,9 +107,39 @@ class Parameter
 	}
 
 	protected function password($password) {
-		$password = trim($password);
+		$password = trim($password, '　 ');
 		if($password == "") throw new Exception ("密码不能为空", 0);
 
 		return $password;
+	}
+
+	protected function nickname($nickname) {
+		$nickname = trim($nickname, '　 ');
+
+		$len1 = mb_strlen($nickname, 'UTF-8');
+		$len2 = strlen($nickname);
+
+		$len = $len1 + ($len2 - $len1) / 2;
+
+		if($len > 14) {
+			throw new Exception ("昵称长度不能超过14个字符，1个汉字算2个", 0);
+		}
+
+		return $nickname;
+	}
+
+	protected function sub_nickname($nickname) {
+		$nickname = trim($nickname, '　 ');
+
+		$len1 = mb_strlen($nickname, 'UTF-8');
+		$len2 = strlen($nickname);
+
+		$len = $len1 + ($len2 - $len1) / 2;
+
+		if($len > 10) {
+			throw new Exception ("昵称长度不能超过10个字符，1个汉字算2个", 0);
+		}
+
+		return $nickname;
 	}
 }

@@ -88,6 +88,7 @@ trait LoginAction {
         
         $user->uuid = $session->token;
         $user->last_login_at = datetime();
+        $user->last_login_ip = $this->request->ip(); // TODO: 上线后开启
         $user->save();
         
         $login_log = new LoginLog;

@@ -12,6 +12,7 @@ use App\Model\UcusersVC;
 use App\Model\VirtualCurrencies;
 use App\Model\ZyCouponLog;
 use App\Model\ZyCoupon;
+use App\Model\TotalFeePerUser;
 
 class OrderSuccess extends Job
 {
@@ -81,32 +82,47 @@ class OrderSuccess extends Job
                         $order->getConnection()->commit();
                         return;
                     }
-
-                    // 购买F币
-                    if($order->is_f()) {
-                        log_debug('debug', $order->toArray(), '购买F币');
-                        $user->increment('balance', $order->fee); // 原子操作很重要
-                    }
-
-                    $ucuser_total_pay = UcuserTotalPay::from_cache($user->ucid);
-                    if(!$ucuser_total_pay) {
-                        $ucuser_total_pay = new UcuserTotalPay();
-                        $ucuser_total_pay->ucid = $user->ucid;
-                        $ucuser_total_pay->pay_count = 1;
-                        $ucuser_total_pay->pay_total = $order->fee;
-                        $ucuser_total_pay->pay_fee = $order->real_fee / 100;
-                        $ucuser_total_pay->save();
-                    } else {
-                        $ucuser_total_pay->increment('pay_count', 1);
-                        $ucuser_total_pay->increment('pay_total', $order->fee);
-                        $ucuser_total_pay->increment('pay_fee', $order->real_fee / 100);
-                    }
                 } while(false);
+
+                // ucuser_total_pay
+                $ucuser_total_pay = UcuserTotalPay::from_cache($user->ucid);
+                if(!$ucuser_total_pay) {
+                    $ucuser_total_pay = new UcuserTotalPay();
+                    $ucuser_total_pay->ucid = $user->ucid;
+                    $ucuser_total_pay->pay_count = 1;
+                    $ucuser_total_pay->pay_total = $order->fee;
+                    $ucuser_total_pay->pay_fee = $order->real_fee / 100;
+                    $ucuser_total_pay->save();
+                } else {
+                    $ucuser_total_pay->increment('pay_count', 1);
+                    $ucuser_total_pay->increment('pay_total', $order->fee);
+                    $ucuser_total_pay->increment('pay_fee', $order->real_fee / 100);
+                }
+
+                // total_fee_per_user
+                $total_fee_per_user = TotalFeePerUser::where('ucid', $user->ucid)->where('pid', $order->pid)->first();
+                if(!$total_fee_per_user) {
+                    $total_fee_per_user = new TotalFeePerUser();
+                    $ucuser_total_pay->ucid = $user->ucid;
+                    $ucuser_total_pay->pid = $order->pid;
+                    $ucuser_total_pay->oid = $order->id;
+                    $ucuser_total_pay->lastpay_pid = $order->pid;
+                    $ucuser_total_pay->lastpay_time = $order->createTime;
+                    $ucuser_total_pay->playCount = 1;
+                    $ucuser_total_pay->total_fee = $order->real_fee / 100;
+                    $ucuser_total_pay->save();
+                } else {
+                    $ucuser_total_pay->increment('playCount', 1);
+                    $ucuser_total_pay->increment('total_fee', $order->real_fee / 100);
+                }
 
                 $order->status = Orders::Status_Success;
                 $order->save();
 
-                if(!$order->is_f()) {
+                if($order->is_f()) {
+                    log_debug('debug', $order->toArray(), '购买F币');
+                    $user->increment('balance', $order->fee); // 原子操作很重要
+                } else {
                     Queue::push(new OrderNotify($this->order_id));
                 }
 

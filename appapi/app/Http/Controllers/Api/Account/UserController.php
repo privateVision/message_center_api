@@ -81,7 +81,7 @@ class UserController extends Controller {
             }
             // --------- end
 
-            throw new ApiException(ApiException::Remind, "登录失败，用户名或者密码不正确");
+            throw new ApiException(ApiException::Remind, "用户名或者密码不正确");
         }
 
         Redis::del($rediskey_limit);
@@ -102,7 +102,7 @@ class UserController extends Controller {
         $user = new Ucuser;
         $user->uid = $username;
         $user->email = $username . "@anfan.com";
-        $user->nickname = '未设置';
+        $user->nickname = '暂无昵称';
         $user->setPassword($password);
         $user->regip = $this->request->ip();
         $user->rid = $this->parameter->tough('_rid');
