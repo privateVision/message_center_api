@@ -49,24 +49,24 @@ service_logger.addHandler(ch)
 
 
 # 邮件和消息通知
-ADMINS = ['14a1152bf3963d126735637d5e745ae5@mail.bearychat.com']
-server_host_name = socket.getfqdn(socket.gethostname())
-server_ip = socket.gethostbyname(server_host_name)
-mail_handler = SMTPHandler('127.0.0.1', 'server-error@monitor.com', ADMINS,
-                           "%s-%s-Service Exception Report" % (server_host_name, server_ip))
-mail_handler.setFormatter(logging.Formatter('''
-Message type:       %(levelname)s
-Location:           %(pathname)s:%(lineno)d
-Module:             %(module)s
-Function:           %(funcName)s
-Time:               %(asctime)s
-
-Message:
-
-%(message)s
-'''))
-mail_handler.setLevel(logging.ERROR)
-service_logger.addHandler(mail_handler)
+# ADMINS = ['14a1152bf3963d126735637d5e745ae5@mail.bearychat.com']
+# server_host_name = socket.getfqdn(socket.gethostname())
+# server_ip = socket.gethostbyname(server_host_name)
+# mail_handler = SMTPHandler('127.0.0.1', 'server-error@monitor.com', ADMINS,
+#                            "%s-%s-Service Exception Report" % (server_host_name, server_ip))
+# mail_handler.setFormatter(logging.Formatter('''
+# Message type:       %(levelname)s
+# Location:           %(pathname)s:%(lineno)d
+# Module:             %(module)s
+# Function:           %(funcName)s
+# Time:               %(asctime)s
+#
+# Message:
+#
+# %(message)s
+# '''))
+# mail_handler.setLevel(logging.ERROR)
+# service_logger.addHandler(mail_handler)
 
 
 redis_store = FlaskRedis()
@@ -96,11 +96,11 @@ def create_app():
     # kafka_consumer_thread.start()
 
     app.config['SQLALCHEMY_DATABASE_URI'] = app.config.get('SQLALCHEMY_DATABASE_URI')
-    mysql_engine = create_engine(app.config['SQLALCHEMY_DATABASE_URI'], encoding="utf-8", echo=True,
+    mysql_engine = create_engine(app.config['SQLALCHEMY_DATABASE_URI'], encoding="utf-8", echo=False,
                                  pool_recycle=28800, poolclass=SingletonThreadPool)
     mysql_session = sessionmaker(autocommit=False, bind=mysql_engine)
 
-    mysql_cms_engine = create_engine(app.config['SQLALCHEMY_CMS_DATABASE_URI'], encoding="utf-8", echo=True,
+    mysql_cms_engine = create_engine(app.config['SQLALCHEMY_CMS_DATABASE_URI'], encoding="utf-8", echo=False,
                                      pool_recycle=28800, poolclass=SingletonThreadPool)
     mysql_cms_session = sessionmaker(autocommit=False, bind=mysql_cms_engine)
 

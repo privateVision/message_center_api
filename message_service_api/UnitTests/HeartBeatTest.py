@@ -24,7 +24,7 @@ class HeartBeatTest(unittest.TestCase):
 
     def test_heart_beat_profiling(self):
         body_data = {
-            '_sign': 'f42a76aec4a4fae0ff315bb1ea3d083e',
+            '_sign': 'f42a76aec4a4fae0ff315bb1ea3d083',
             '_appid': 2,
             '_timestamp': 1493031607,
             'interval': 2000,
@@ -32,7 +32,7 @@ class HeartBeatTest(unittest.TestCase):
             '_token': '8246cwy9mfc40o0wc0ogggkos'
         }
         # sdkv4test.qcwanwan.com
-        r = requests.post('http://sdkv4test.qcwanwan.com/msa/v4/app/heartbeat', data=body_data)
+        r = requests.post('http://localhost:5000/msa/v4/app/heartbeat', data=body_data)
         print r.text
         self.assertEqual(r.status_code, 200)
 

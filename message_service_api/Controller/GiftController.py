@@ -284,7 +284,11 @@ def v4_sdk_user_get_gift():
                                     mysql_cms_session.commit()
                                     data = {'code': game_gift_code['code']}
                                     # 减少缓存中的未领取的礼包数
-                                    RedisHandle.hdecrby(ucid, 'gift_num')
+                                    if RedisHandle.exists(ucid):
+                                        cache_data = RedisHandle.hgetall(ucid)
+                                        if cache_data.has_key('gift_num'):
+                                            if int(cache_data['gift_num']) > 0:
+                                                RedisHandle.hdecrby(ucid, 'gift_num')
                                     return response_data(200, 1, get_tips('gift', 'get_gift_success'), data)
                             except Exception, err:
                                 service_logger.error(err.message)
