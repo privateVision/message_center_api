@@ -259,6 +259,7 @@ class  AppleController extends Controller{
                 'vip' => $user_info && $user_info->vip ? (int)$user_info->vip : 0,
                 'balance' => $this->user->balance,
                 'coupons' => $list,
+                'package' => $dat[0]->bundle_id,
             ];
         }catch(\Exception $e){
             echo $e->getMessage();
