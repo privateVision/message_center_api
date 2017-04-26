@@ -234,6 +234,9 @@ def v4_anfeng_helper_tao_gift():
                                     ucid, '', now, ip, mac, 1, 1)
         mysql_cms_session.execute(insert_user_tao_sql)
         mysql_cms_session.commit()
-        return response_data(200, data=tao_info['code'])
+        data = {
+            "code": tao_info['code']
+        }
+        return response_data(200, data=data)
     return response_data(http_code=200, data='没有礼包可以淘了')
 
