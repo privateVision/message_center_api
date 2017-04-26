@@ -151,7 +151,7 @@ def sdk_api_check_sign(request):
     service_logger.info("签名校验逻辑耗时：%s" % (etime-stime,) )
     if md5_sign == request.form['_sign']:
         return True
-    service_logger.error("服务端与客户端签名不匹配")
+    service_logger.info("服务端与客户端签名不匹配")
     return False
 
 

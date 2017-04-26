@@ -933,13 +933,6 @@ def sdk_api_request_check(func):
             if 'interval' in request.form:
                 interval = request.form['interval']
             hdfs_logger.info("ucid-%s-uri-%s-interval-%s" % (ucid, request.url, interval))
-            # if ucid:
-            #     if find_user_account_is_freeze(ucid):
-            #         return response_data(200, 101, '账号被冻结')
-            #     hdfs_logger.info("ucid-%s-uri-%s-interval-%s" % (ucid, request.url, interval))
-            # else:
-            #     log_exception(request, "根据token: %s 获取ucid失败" % (request.form['_token'],))
-            #     return response_data(200, 0, '根据token获取ucid失败')
             etime = time.time()
             service_logger.info("通用装饰器处理时间：%s" % (etime - stime,))
             return func(*args, **kwargs)
