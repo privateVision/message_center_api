@@ -153,12 +153,6 @@ def v4_sdk_heartbeat():
     else:
         interval_ms = 2000
     appid = request.form['_appid']
-    freeze = get_user_is_freeze_by_access_token(request.form['_token'])
-    if freeze is not None:
-        if freeze == 1:
-            return response_data(200, 101, get_tips('heartbeat', 'user_account_freezed'))
-        if freeze == 2:
-            return response_data(200, 108, get_tips('heartbeat', 'sub_user_account_freezed'))
     is_need_refresh_data = (num * interval_ms) % refresh_interval
     ucid = get_ucid_by_access_token(request.form['_token'])
     if is_need_refresh_data == 0:

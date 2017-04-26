@@ -8,6 +8,7 @@ from flask import request
 from mongoengine import Q
 
 from Controller.BaseController import response_data
+from LanguageConf import get_tips
 from MiddleWare import service_logger, hdfs_logger
 from MongoModel.AppRulesModel import AppVipRules
 from MongoModel.MessageModel import UsersMessage
@@ -477,10 +478,13 @@ def get_user_can_see_gift_list(ucid=None, game_id=None, start_index=None, end_in
 
 # 检查用户账号是否被冻结
 def find_user_account_is_freeze(ucid=None):
+    stime = time.time()
     find_is_freeze_sql = "select is_freeze from ucusers where ucid = %s" % (ucid,)
     from run import mysql_session
     try:
         user_info = mysql_session.execute(find_is_freeze_sql).first()
+        etime = time.time()
+        service_logger.info("检查账号冻结耗时：%s" % (etime-stime,))
         if user_info is not None:
             if 'is_freeze' in user_info:
                 if user_info['is_freeze'] == 1:
@@ -903,6 +907,7 @@ def sdk_api_request_check(func):
         # finally:
         #     mysql_session.close()
         #     mysql_cms_session.close()
+        stime = time.time()
         from Utils.EncryptUtils import sdk_api_params_check, sdk_api_check_sign
         is_params_checked = sdk_api_params_check(request)
         if is_params_checked is False:
@@ -912,21 +917,35 @@ def sdk_api_request_check(func):
         is_session_expired = is_session_expired_by_access_token(request.form['_token'])
         if is_session_expired:
             return response_data(200, 102, '用户未登录或session已过期')
+
+        # 检查账号冻结
+        freeze = get_user_is_freeze_by_access_token(request.form['_token'])
+        if freeze is not None:
+            if freeze == 1:
+                return response_data(200, 101, get_tips('heartbeat', 'user_account_freezed'))
+            if freeze == 2:
+                return response_data(200, 108, get_tips('heartbeat', 'sub_user_account_freezed'))
+
         is_sign_true = sdk_api_check_sign(request)
         if is_sign_true is True:
             ucid = get_ucid_by_access_token(request.form['_token'])
             interval = 2000
             if 'interval' in request.form:
                 interval = request.form['interval']
-            if ucid:
-                if find_user_account_is_freeze(ucid):
-                    return response_data(200, 101, '账号被冻结')
-                hdfs_logger.info("ucid-%s-uri-%s-interval-%s" % (ucid, request.url, interval))
-            else:
-                log_exception(request, "根据token: %s 获取ucid失败" % (request.form['_token'],))
-                return response_data(200, 0, '根据token获取ucid失败')
+            hdfs_logger.info("ucid-%s-uri-%s-interval-%s" % (ucid, request.url, interval))
+            # if ucid:
+            #     if find_user_account_is_freeze(ucid):
+            #         return response_data(200, 101, '账号被冻结')
+            #     hdfs_logger.info("ucid-%s-uri-%s-interval-%s" % (ucid, request.url, interval))
+            # else:
+            #     log_exception(request, "根据token: %s 获取ucid失败" % (request.form['_token'],))
+            #     return response_data(200, 0, '根据token获取ucid失败')
+            etime = time.time()
+            service_logger.info("通用装饰器处理时间：%s" % (etime - stime,))
             return func(*args, **kwargs)
         else:
+            etime = time.time()
+            service_logger.info("通用装饰器处理时间：%s" % (etime-stime,))
             return response_data(200, 0, '请求校验错误')
 
     return wraper
