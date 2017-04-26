@@ -16,18 +16,20 @@ class AnfengHelperApiTest(unittest.TestCase):
     def setUp(self):
         pass
 
-    # def test_get_coupon(self):
-    #     data = {
-    #         "_token": '5geewyhxot8ggsgkscww4k0c8',
-    #         "status": 0,
-    #         "page": 1,
-    #         "pagesize": 5,
-    #         "_sign": "318072f312a4b2085e115794e52d4ebd"
-    #     }
-    #     # headers = {"Content-Type": "application/json"}
-    #     # data_json = json.dumps(data)
-    #     r = requests.post("http://localhost:5000/msa/anfeng_helper/get_user_coupon", data=data)
-    #     print r.text
+    def test_get_coupon(self):
+        data = {
+            "_token": '21a1bb65drk048ckcg8osccsk',
+            "status": 1,
+            "page": 1,
+            "pagesize": 10,
+            "_appid": 6,
+            "_rid": 1,
+            "_sign": "03b09812487467069d4fb5a74118d541"
+        }
+        # headers = {"Content-Type": "application/json"}
+        # data_json = json.dumps(data)
+        r = requests.post("http://sdkv4test.qcwanwan.com/msa/anfeng_helper/get_user_coupon", data=data)
+        print r.text
 
     # def test_add_coupon(self):
     #     data = {
@@ -40,14 +42,14 @@ class AnfengHelperApiTest(unittest.TestCase):
     #     r = requests.post("http://localhost:5000/msa/anfeng_helper/coupon", data=data)
     #     print r.text
 
-    def test_get_all_gift(self):
-        data = {
-            "_sign": "7605aa3d5ee3768dc10b6bdb59ee6f00"
-        }
-        # headers = {"Content-Type": "application/json"}
-        # data_json = json.dumps(data)
-        r = requests.post("http://localhost:5000/msa/anfeng_helper/gifts", data=data)
-        print r.text
+    # def test_get_all_gift(self):
+    #     data = {
+    #         "_sign": "7605aa3d5ee3768dc10b6bdb59ee6f00"
+    #     }
+    #     # headers = {"Content-Type": "application/json"}
+    #     # data_json = json.dumps(data)
+    #     r = requests.post("http://localhost:5000/msa/anfeng_helper/gifts", data=data)
+    #     print r.text
 
     # def test_get_uses_gifts_list(self):
     #     data = {
