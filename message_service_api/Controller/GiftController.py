@@ -22,6 +22,7 @@ gift_controller = Blueprint('GiftController', __name__)
 @gift_controller.route('/msa/v4/gifts', methods=['POST'])
 @sdk_api_request_check
 def v4_sdk_get_gifts_list():
+    stime = time.time()
     from run import mysql_cms_session
     from run import SDK_PLATFORM_ID
     if 'platform_id' in request.form:
@@ -151,6 +152,8 @@ def v4_sdk_get_gifts_list():
         "gift_count": unget_gifts_count,
         "data": data_list
     }
+    etime = time.time()
+    service_logger.info("获取礼包列表时间：%s" % (etime - stime,))
     return response_data(http_code=200, data=data)
 
 
