@@ -147,7 +147,7 @@ def v4_sdk_heartbeat():
     if RedisHandle.exists('REFRESH_INTERVAL'):
         refresh_interval = int(RedisHandle.get('REFRESH_INTERVAL'))
     else:
-        refresh_interval = 60
+        refresh_interval = 60000
     if 'interval' in request.form:
         interval_ms = int(request.form['interval'])
     else:
