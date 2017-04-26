@@ -140,32 +140,24 @@ def v4_cms_message_revocation():
 @sdk_api_request_check
 def v4_sdk_heartbeat():
     stime = time.time()
-    if 'num' in request.form:
-        num = int(request.form['num'])
-    else:
-        num = 1
-    if RedisHandle.exists('REFRESH_INTERVAL'):
-        refresh_interval = int(RedisHandle.get('REFRESH_INTERVAL'))
-    else:
-        refresh_interval = 60000
-    if 'interval' in request.form:
-        interval_ms = int(request.form['interval'])
-    else:
-        interval_ms = 2000
+    num = int(request.form['num']) if 'num' in request.form else 1
+    refresh_interval = int(RedisHandle.get('REFRESH_INTERVAL')) if RedisHandle.exists('REFRESH_INTERVAL') else 60000
+    interval_ms = int(request.form['interval']) if 'interval' in request.form else 2000
     appid = request.form['_appid']
-    is_need_refresh_data = (num * interval_ms) % refresh_interval
-    ucid = get_ucid_by_access_token(request.form['_token'])
-    if is_need_refresh_data == 0:
-        if ucid:
-            # 获取用户相关广播和未读消息数
-            data = RedisHandle.get_user_data_mark_in_redis(ucid, appid)
-            service_logger.info("%s - %s" % (ucid, json.dumps(data)))
-            return response_data(data=data)
     data = {
         "broadcast": [],
         "message": 0,
         "gift_num": 0
     }
+    ucid = get_ucid_by_access_token(request.form['_token'])
+    is_need_refresh_data = (num * interval_ms) % refresh_interval
+    if is_need_refresh_data == 0:
+        if ucid is not None:
+            # 获取用户相关广播和未读消息数
+            data = RedisHandle.get_user_data_mark_in_redis(ucid, appid)
+            service_logger.info("%s - %s" % (ucid, json.dumps(data)))
+            return response_data(data=data)
+    #  不刷新数据
     if RedisHandle.exists(ucid):
         cache_data = RedisHandle.hgetall(ucid)
         if cache_data.has_key('message'):
