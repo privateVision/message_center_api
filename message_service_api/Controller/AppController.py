@@ -156,6 +156,8 @@ def v4_sdk_heartbeat():
             # 获取用户相关广播和未读消息数
             data = RedisHandle.get_user_data_mark_in_redis(ucid, appid)
             service_logger.info("%s - %s" % (ucid, json.dumps(data)))
+            etime = time.time()
+            service_logger.info("心跳逻辑处理时间：%s" % (etime - stime,))
             return response_data(data=data)
     #  不刷新数据
     if RedisHandle.exists(ucid):
