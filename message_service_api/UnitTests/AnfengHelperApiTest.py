@@ -16,20 +16,20 @@ class AnfengHelperApiTest(unittest.TestCase):
     def setUp(self):
         pass
 
-    def test_get_coupon(self):
-        data = {
-            "_token": '21a1bb65drk048ckcg8osccsk',
-            "status": 1,
-            "page": 1,
-            "pagesize": 10,
-            "_appid": 6,
-            "_rid": 1,
-            "_sign": "03b09812487467069d4fb5a74118d541"
-        }
-        # headers = {"Content-Type": "application/json"}
-        # data_json = json.dumps(data)
-        r = requests.post("http://sdkv4test.qcwanwan.com/msa/anfeng_helper/get_user_coupon", data=data)
-        print r.text
+    # def test_get_coupon(self):
+    #     data = {
+    #         "_token": '21a1bb65drk048ckcg8osccsk',
+    #         "status": 1,
+    #         "page": 1,
+    #         "pagesize": 10,
+    #         "_appid": 6,
+    #         "_rid": 1,
+    #         "_sign": "03b09812487467069d4fb5a74118d541"
+    #     }
+    #     # headers = {"Content-Type": "application/json"}
+    #     # data_json = json.dumps(data)
+    #     r = requests.post("http://sdkv4test.qcwanwan.com/msa/anfeng_helper/get_user_coupon", data=data)
+    #     print r.text
 
     # def test_add_coupon(self):
     #     data = {
@@ -50,6 +50,16 @@ class AnfengHelperApiTest(unittest.TestCase):
     #     # data_json = json.dumps(data)
     #     r = requests.post("http://localhost:5000/msa/anfeng_helper/gifts", data=data)
     #     print r.text
+
+    def test_tao_gift(self):
+        data = {
+            "_token": "19p4kqw0cgskkswgw44gcckwo",
+            "_device_id": "asdfasgasgfgaf",
+            "gift_id": 128,
+            "_sign": "d73137f62a6a6958aa18add2cef8674a"
+        }
+        r = requests.post("http://sdkv4test.qcwanwan.com/msa/anfeng_helper/tao_gift", data=data)
+        print r.text
 
     # def test_get_uses_gifts_list(self):
     #     data = {

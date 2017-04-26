@@ -7,8 +7,9 @@ from flask import request
 
 from Controller.BaseController import response_data
 from MiddleWare import service_logger
+from MysqlModel.GameGiftLog import GameGiftLog
 from Service.UsersService import get_game_info_by_gameid, anfeng_helper_request_check, get_game_info_by_appid, \
-    get_ucid_by_access_token, get_stored_value_card_list, get_user_all_coupons
+    get_ucid_by_access_token, get_stored_value_card_list, get_user_all_coupons, get_username_by_ucid
 
 anfeng_controller = Blueprint('AnfengController', __name__)
 
@@ -223,16 +224,18 @@ def v4_anfeng_helper_tao_gift():
     if ucid is None:
         return response_data(200, 0, '用户不存在或未登录')
     from run import mysql_cms_session
-    tao_gift_sql = "select * from cms_gameGiftLog as log where log.status = 'normal'" \
-                   " and log.platformId = 4 and log.giftId = %s and forTime < %s " \
-                   "order by num limit 1" % (gift_id, for_time)
+    tao_gift_sql = "select log.* from cms_gameGiftLog as log join cms_gameGift as gift on log.giftId = gift.id" \
+                   " where log.status = 'normal' and gift.status = 'normal' and gift.isTaoNum = 1 " \
+                   " and log.platformId = 4 and log.giftId = %s and forTime < %s and log.uid != %s " \
+                   "order by num limit 1" % (gift_id, for_time, ucid)
     tao_info = mysql_cms_session.execute(tao_gift_sql).fetchone()
     if tao_info is not None:
-        insert_user_tao_sql = "insert into cms_gameGiftLog(gameId, giftId, platformId, code, uid, username, forTime, " \
-                              "forIp, forMac, type, num) values (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)" \
-                                 % (tao_info['gameId'], tao_info['giftId'], tao_info['platformId'], tao_info['code'],
-                                    ucid, '', now, ip, mac, 1, 1)
-        mysql_cms_session.execute(insert_user_tao_sql)
+        username = get_username_by_ucid(ucid)
+        game_gift_log = GameGiftLog(gameId=tao_info['gameId'], giftId=int(tao_info['giftId']),
+                                    platformId=tao_info['platformId'], code=tao_info['code'],
+                                    uid=ucid, username=username, forTime=now,
+                                    forIp=ip, forMac=mac, type=1)
+        mysql_cms_session.add(game_gift_log)
         mysql_cms_session.commit()
         data = {
             "code": tao_info['code']
