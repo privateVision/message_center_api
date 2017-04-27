@@ -255,6 +255,7 @@ def get_user_gift_count(ucid=None, appid=None):
         return 0
 
     # 找到用户已经领取的礼包，需要排除掉
+
     find_user_already_get_gift_id_sql = "select distinct(giftId) from cms_gameGiftLog where gameId = %s" \
                                         " and status = 'normal' and uid = %s " % (game['id'], ucid)
     gift_id_list = mysql_cms_session.execute(find_user_already_get_gift_id_sql).fetchall()
@@ -757,14 +758,20 @@ def user_get_coupon(ucid=None, coupon_id=None, app_id=None):
     get_coupon_info_sql = "select game, users_type, vip_user, specify_user from zy_coupon where status = 'normal' " \
                           "and ( (is_time=0) or (is_time=1 and start_time <= %s and end_time >= %s) ) and id = %s " \
                           % (now, now, coupon_id)
-    coupon_info = mysql_session.execute(get_coupon_info_sql).fetchone()
-    if coupon_info is not None:
-        if coupon_info['game'] == 0:  # 卡券适用全部游戏
-            pass
-        else:
-            if coupon_info['game'] == app_id:
+    try:
+        coupon_info = mysql_session.execute(get_coupon_info_sql).fetchone()
+        if coupon_info is not None:
+            if coupon_info['game'] == 0:  # 卡券适用全部游戏
                 pass
-            return False
+            else:
+                if coupon_info['game'] == app_id:
+                    pass
+                return False
+    except Exception, err:
+        service_logger.error("用户领取卡券的逻辑发生异常：%s" % (err.message,))
+        mysql_session.rollback()
+    finally:
+        mysql_session.close()
     return False
 
 
@@ -773,13 +780,19 @@ def get_game_info_by_appid(appid=None):
     from run import mysql_session
     find_game_info_sql = "select p.gameCenterId as id, game.name, game.cover from procedures as p, zy_game as game " \
                          "where p.gameCenterId = game.id and p.pid= %s limit 1" % (appid,)
-    game_info = mysql_session.execute(find_game_info_sql).fetchone()
-    game = {}
-    if game_info is not None:
-        game['id'] = game_info['id']
-        game['name'] = game_info['name']
-        game['cover'] = game_info['cover']
-        return game
+    try:
+        game_info = mysql_session.execute(find_game_info_sql).fetchone()
+        game = {}
+        if game_info is not None:
+            game['id'] = game_info['id']
+            game['name'] = game_info['name']
+            game['cover'] = game_info['cover']
+            return game
+    except Exception, err:
+        service_logger.error("根据appid获取游戏信息发生异常：%s" % (err.message,))
+        mysql_session.rollback()
+    finally:
+        mysql_session.close()
     return None
 
 
@@ -787,13 +800,19 @@ def get_game_info_by_gameid(gameid=None):
     from run import mysql_session
     find_game_info_sql = "select id, name, cover from zy_game " \
                          "where id = %s limit 1" % (gameid,)
-    game_info = mysql_session.execute(find_game_info_sql).fetchone()
-    game = {}
-    if game_info is not None:
-        game['id'] = game_info['id']
-        game['name'] = game_info['name']
-        game['cover'] = game_info['cover']
-        return game
+    try:
+        game_info = mysql_session.execute(find_game_info_sql).fetchone()
+        game = {}
+        if game_info is not None:
+            game['id'] = game_info['id']
+            game['name'] = game_info['name']
+            game['cover'] = game_info['cover']
+            return game
+    except Exception, err:
+        service_logger.error("根据gameid获取游戏信息发生异常：%s" % (err.message,))
+        mysql_session.rollback()
+    finally:
+        mysql_session.close()
     return None
 
 
@@ -802,13 +821,19 @@ def get_user_current_game_and_area_by_token(token=None):
     from run import mysql_session
     find_user_current_game_area_info_sql = "select s.token, s.zone_id, s.zone_name from session as s " \
                                            "where s.token = %s limit 1" % (token,)
-    game_info = mysql_session.execute(find_user_current_game_area_info_sql).fetchone()
-    game = {}
-    if game_info is not None:
-        game['token'] = game_info['token']
-        game['zone_id'] = game_info['zone_id']
-        game['zone_name'] = game_info['zone_name']
-        return game
+    try:
+        game_info = mysql_session.execute(find_user_current_game_area_info_sql).fetchone()
+        game = {}
+        if game_info is not None:
+            game['token'] = game_info['token']
+            game['zone_id'] = game_info['zone_id']
+            game['zone_name'] = game_info['zone_name']
+            return game
+    except Exception, err:
+        service_logger.error("根据token获取用户所在区服发生异常：%s" % (err.message,))
+        mysql_session.rollback()
+    finally:
+        mysql_session.close()
     return None
 
 
@@ -882,12 +907,18 @@ def get_user_user_type_and_vip_and_uid_by_ucid(ucid=None):
     from run import mysql_session
     find_users_type_info_sql = "select u.ucid, u.uid, r.rtype from ucusers as u, retailers as r where u.rid = r.rid " \
                                "and u.ucid = %s" % (ucid,)
-    user_type_info = mysql_session.execute(find_users_type_info_sql).fetchone()
-    if user_type_info is not None:
-        find_users_vip_info_sql = "select vip from ucuser_info as u where u.ucid = %s" % (ucid,)
-        user_vip_info = mysql_session.execute(find_users_vip_info_sql).fetchone()
-        if user_vip_info is not None:
-            return user_type_info['rtype'], user_vip_info['vip'], user_type_info['uid']
+    try:
+        user_type_info = mysql_session.execute(find_users_type_info_sql).fetchone()
+        if user_type_info is not None:
+            find_users_vip_info_sql = "select vip from ucuser_info as u where u.ucid = %s" % (ucid,)
+            user_vip_info = mysql_session.execute(find_users_vip_info_sql).fetchone()
+            if user_vip_info is not None:
+                return user_type_info['rtype'], user_vip_info['vip'], user_type_info['uid']
+    except Exception, err:
+        service_logger.error("根据ucid获取用户类型和vip信息发生异常：%s" % (err.message,))
+        mysql_session.rollback()
+    finally:
+        mysql_session.close()
     return None
 
 

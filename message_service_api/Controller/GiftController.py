@@ -356,28 +356,35 @@ def v4_sdk_user_get_recommend_game_list():
     end_index = int(count)
     service_logger.info("用户：%s 获取推荐游戏列表，数据从%s到%s" % (ucid, start_index, end_index))
     from run import mysql_session
-    find_game_count_sql = "select count(*) from zy_gameRecom where status = 'normal' "
-    game_count = mysql_session.execute(find_game_count_sql).scalar()
-    find_game_info_sql = "select * from zy_gameRecom where status = 'normal' order by sort asc " \
-                         "limit %s, %s" % (start_index, end_index)
-    game_info_list = mysql_session.execute(find_game_info_sql).fetchall()
     game_list = []
-    for game in game_info_list:
-        game = {
-            'id': game['game_id'],
-            'name': game['name'],
-            'down_url': game['down_url'],
-            'package_name': game['package_name'],
-            'filesize': game['filesize'] * 1024,
-            'description': game['description'],
-            'cover': 'http://sdkadm.zhuayou.com' + game['cover'],
-            'category_name': game['category_name'],
-            'run_status_name': game['run_status_name'],
-            'publish_time': int(time.time()),
-            'version': '',
-            'sort': game['sort']
-        }
-        game_list.append(game)
+    game_count = 0
+    try:
+        find_game_count_sql = "select count(*) from zy_gameRecom where status = 'normal' "
+        game_count = mysql_session.execute(find_game_count_sql).scalar()
+        find_game_info_sql = "select * from zy_gameRecom where status = 'normal' order by sort asc " \
+                             "limit %s, %s" % (start_index, end_index)
+        game_info_list = mysql_session.execute(find_game_info_sql).fetchall()
+        for game in game_info_list:
+            game = {
+                'id': game['game_id'],
+                'name': game['name'],
+                'down_url': game['down_url'],
+                'package_name': game['package_name'],
+                'filesize': game['filesize'] * 1024,
+                'description': game['description'],
+                'cover': 'http://sdkadm.zhuayou.com' + game['cover'],
+                'category_name': game['category_name'],
+                'run_status_name': game['run_status_name'],
+                'publish_time': int(time.time()),
+                'version': '',
+                'sort': game['sort']
+            }
+            game_list.append(game)
+    except Exception, err:
+        service_logger.error("根据appid获取游戏信息发生异常：%s" % (err.message,))
+        mysql_session.rollback()
+    finally:
+        mysql_session.close()
     data = {
         'total_count': game_count,
         'game': game_list
