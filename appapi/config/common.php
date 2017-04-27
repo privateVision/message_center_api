@@ -89,5 +89,13 @@ return [
             'payChannelType' => '13',
             'mhtSignType' => 'MD5',
         ],
+
+        'wechat' => [
+            'appid' => 'wx873090ec90259693',
+            'mch_id' => '1265654801',
+            'key' => 'cf281b632d1671ed2a94d8f7cdfe2ff0',
+            'pemfile_key' => __DIR__ . '/wechat_key.pem',
+            'pemfile_cert' => __DIR__ . '/wechat_cert.pem',
+        ],
     ],
 ];
