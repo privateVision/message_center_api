@@ -263,6 +263,17 @@ def v4_sdk_user_get_gift():
                     if game_gift_code:
                         if game_gift_code['code'] is not None and game_gift_code['code'] != '':
                             try:
+                                #  检查该礼包码是否被该用户领取过了
+                                find_is_user_get_the_code_sql = "select count(*) from cms_gameGiftLog" \
+                                                                " where status = 'normal' and platformId = %s and " \
+                                                          " gameId= %s and giftId = %s and code = '%s' and uid = %s " \
+                                                          % (SDK_PLATFORM_ID, game_id, gift_id, game_gift_code['code'],
+                                                             ucid)
+                                is_user_get_the_code_count = mysql_cms_session.execute(find_is_user_get_the_code_sql)\
+                                    .scalar()
+                                if is_user_get_the_code_count > 0:
+                                    return response_data(200, 0, get_tips('gift', 'already_get_gift'))
+
                                 update_gift_code_sql = "update cms_gameGiftCode_%s set status=1, uid=%s, username='%s'," \
                                                        " forTime=%s, platformId=%s where id=%s " \
                                                        % (table_num, ucid, username, int(time.time()),
