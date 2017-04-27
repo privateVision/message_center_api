@@ -26,7 +26,7 @@ class OrderSuccess extends Job
     public function handle() {
         $order = Orders::from_cache($this->order_id);
         if(!$order || $order->status != Orders::Status_WaitPay) {
-            log_debug('OrderSuccessError', ['sn' => $this->order_id], '订单状态已完成，无需处理');
+            log_debug('OrderSuccessError', ['order_id' => $this->order_id], '订单状态已完成，无需处理');
             return;
         }
 
@@ -100,20 +100,20 @@ class OrderSuccess extends Job
                 }
 
                 // total_fee_per_user
-                $total_fee_per_user = TotalFeePerUser::where('ucid', $user->ucid)->where('pid', $order->pid)->first();
+                $total_fee_per_user = TotalFeePerUser::where('ucid', $user->ucid)->where('pid', $order->vid)->first();
                 if(!$total_fee_per_user) {
                     $total_fee_per_user = new TotalFeePerUser();
-                    $ucuser_total_pay->ucid = $user->ucid;
-                    $ucuser_total_pay->pid = $order->pid;
-                    $ucuser_total_pay->oid = $order->id;
-                    $ucuser_total_pay->lastpay_pid = $order->pid;
-                    $ucuser_total_pay->lastpay_time = $order->createTime;
-                    $ucuser_total_pay->playCount = 1;
-                    $ucuser_total_pay->total_fee = $order->real_fee / 100;
-                    $ucuser_total_pay->save();
+                    $total_fee_per_user->ucid = $user->ucid;
+                    $total_fee_per_user->pid = $order->vid;
+                    $total_fee_per_user->oid = $order->id;
+                    $total_fee_per_user->lastpay_pid = $order->vid;
+                    $total_fee_per_user->lastpay_time = $order->createTime;
+                    $total_fee_per_user->playCount = 1;
+                    $total_fee_per_user->total_fee = $order->real_fee / 100;
+                    $total_fee_per_user->save();
                 } else {
-                    $ucuser_total_pay->increment('playCount', 1);
-                    $ucuser_total_pay->increment('total_fee', $order->real_fee / 100);
+                    $total_fee_per_user->increment('playCount', 1);
+                    $total_fee_per_user->increment('total_fee', $order->real_fee / 100);
                 }
 
                 $order->status = Orders::Status_Success;

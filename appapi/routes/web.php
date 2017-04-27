@@ -36,8 +36,9 @@ $app->get('test', 'TooltestController@iosTestAction');    // test
 // 支付回调相关
 $app->group(['prefix' => 'pay_callback'], function () use ($app) {
     $app->post('nowpay_wechat', 'PayCallback\\NowpayWechatController@CallbackAction');                      // 现代支付，微信支付回调
-    $app->post('alipay', 'PayCallback\\AlipayController@CallbackAction');                                   // 现代支付，支付宝支付回调
-    $app->post('unionpay', 'PayCallback\\UnionpayController@CallbackAction');                               // 现代支付，银联支付回调
+    $app->post('alipay', 'PayCallback\\AlipayController@CallbackAction');                                   // 支付宝支付回调
+    $app->post('unionpay', 'PayCallback\\UnionpayController@CallbackAction');                               // 银联支付回调
+    $app->post('wechat', 'PayCallback\\WechatController@CallbackAction');                                   // 微信支付回调
 });
 
 // 对外公开（无限制的）功能（杂项）
