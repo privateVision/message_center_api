@@ -412,7 +412,7 @@ def get_user_can_see_gift_list(ucid=None, game_id=None, start_index=None, end_in
     if len(already_get_gift_id_list) > 0:
         if len(specify_user_gift_id_list) > 0:
             unget_gifts_page_list_sql = "select * from (select a.id,a.gameId,a.gameName,a.name,a.gift," \
-                                        "a.isAfReceive, a.isBindPhone," \
+                                        "a.isAfReceive, a.isBindPhone, c.forTime as forTime," \
                                         "a.content,a.label,a.uid,a.publishTime,a.failTime,a.status," \
                                         "b.num, b.assignNum, ifnull(c.code,'') as code,if(c.code<>'', 1, 0) " \
                                         "as is_get from cms_gameGift as a join cms_gameGiftAssign as b " \
@@ -422,13 +422,14 @@ def get_user_can_see_gift_list(ucid=None, game_id=None, start_index=None, end_in
                                         "and a.status='normal' and b.status='normal' " \
                                         "and ((a.assignNum > 0 and b.assignNum > 0) " \
                                         "and ((a.isSpecify=1 and a.id in (%s)) or (a.isSpecify=0)) or a.id in (%s) ) " \
-                                        "order by is_get asc , c.forTime desc, a.id desc) as d " \
-                                        "where d.code<>'' or (d.assignNum>0 and d.code='') limit %s, %s " \
+                                        ") as d " \
+                                        "where d.code<>'' or (d.assignNum>0 and d.code='')" \
+                                        " order by d.is_get asc , d.forTime desc, d.id desc limit %s, %s " \
                                         % (ucid, game_id, now, SDK_PLATFORM_ID, specify_user_gift_id_list_str,
                                            already_get_gift_id_list_str, start_index, end_index)
         else:
             unget_gifts_page_list_sql = "select * from (select a.id,a.gameId,a.gameName,a.name,a.gift," \
-                                        "a.isAfReceive, a.isBindPhone," \
+                                        "a.isAfReceive, a.isBindPhone, c.forTime as forTime," \
                                         "a.content,a.label,a.uid,a.publishTime,a.failTime,a.status," \
                                         "b.num, b.assignNum, ifnull(c.code,'') as code,if(c.code<>'', 1, 0) " \
                                         "as is_get from cms_gameGift as a join cms_gameGiftAssign as b " \
@@ -438,14 +439,15 @@ def get_user_can_see_gift_list(ucid=None, game_id=None, start_index=None, end_in
                                         "and a.status='normal' and b.status='normal' " \
                                         "and ((a.assignNum > 0 and b.assignNum > 0) " \
                                         "and (a.isSpecify=0) or a.id in (%s) ) " \
-                                        "order by is_get asc , c.forTime desc, a.id desc) as d " \
-                                        "where d.code<>'' or (d.assignNum>0 and d.code='') limit %s, %s " \
+                                        ") as d " \
+                                        "where d.code<>'' or (d.assignNum>0 and d.code='')" \
+                                        " order by d.is_get asc , d.forTime desc, d.id desc limit %s, %s " \
                                         % (ucid, game_id, now, SDK_PLATFORM_ID,
                                            already_get_gift_id_list_str, start_index, end_index)
     else:
         if len(specify_user_gift_id_list) > 0:
             unget_gifts_page_list_sql = "select * from (select a.id,a.gameId,a.gameName,a.name,a.gift," \
-                                        "a.isAfReceive, a.isBindPhone," \
+                                        "a.isAfReceive, a.isBindPhone, c.forTime as forTime," \
                                         "a.content,a.label,a.uid,a.publishTime,a.failTime,a.status," \
                                         "b.num, b.assignNum, ifnull(c.code,'') as code,if(c.code<>'', 1, 0) " \
                                         "as is_get from cms_gameGift as a join cms_gameGiftAssign as b " \
@@ -455,13 +457,14 @@ def get_user_can_see_gift_list(ucid=None, game_id=None, start_index=None, end_in
                                         "and a.gameId=%s and a.failTime > %s and b.platformId=%s " \
                                         "and a.status='normal' and b.status='normal' " \
                                         "and (a.assignNum > 0 and b.assignNum > 0) " \
-                                        "order by is_get asc , c.forTime desc, a.id desc) as d " \
-                                        "where d.code<>'' or (d.assignNum>0 and d.code='') limit %s, %s " \
+                                        ") as d " \
+                                        "where d.code<>'' or (d.assignNum>0 and d.code='')" \
+                                        " order by d.is_get asc , d.forTime desc, d.id desc limit %s, %s " \
                                         % (ucid, specify_user_gift_id_list_str, game_id, now, SDK_PLATFORM_ID,
                                            start_index, end_index)
         else:
             unget_gifts_page_list_sql = "select * from (select a.id,a.gameId,a.gameName,a.name,a.gift," \
-                                        "a.isAfReceive, a.isBindPhone," \
+                                        "a.isAfReceive, a.isBindPhone, c.forTime as forTime," \
                                         "a.content,a.label,a.uid,a.publishTime,a.failTime,a.status," \
                                         "b.num, b.assignNum, ifnull(c.code,'') as code,if(c.code<>'', 1, 0) " \
                                         "as is_get from cms_gameGift as a join cms_gameGiftAssign as b " \
@@ -471,8 +474,9 @@ def get_user_can_see_gift_list(ucid=None, game_id=None, start_index=None, end_in
                                         "and a.gameId=%s and a.failTime > %s and b.platformId=%s " \
                                         "and a.status='normal' and b.status='normal' " \
                                         "and (a.assignNum > 0 and b.assignNum > 0) " \
-                                        "order by is_get asc , c.forTime desc, a.id desc) as d " \
-                                        "where d.code<>'' or (d.assignNum>0 and d.code='') limit %s, %s " \
+                                        ") as d " \
+                                        "where d.code<>'' or (d.assignNum>0 and d.code='')" \
+                                        " order by d.is_get asc , d.forTime desc, d.id desc limit %s, %s " \
                                         % (ucid, game_id, now, SDK_PLATFORM_ID, start_index, end_index)
     unget_gifts_page_list = mysql_cms_session.execute(unget_gifts_page_list_sql).fetchall()
     return unget_gifts_page_list
