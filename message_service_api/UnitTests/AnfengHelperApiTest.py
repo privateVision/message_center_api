@@ -51,15 +51,15 @@ class AnfengHelperApiTest(unittest.TestCase):
     #     r = requests.post("http://localhost:5000/msa/anfeng_helper/gifts", data=data)
     #     print r.text
 
-    def test_tao_gift(self):
-        data = {
-            "_token": "19p4kqw0cgskkswgw44gcckwo",
-            "_device_id": "asdfasgasgfgaf",
-            "gift_id": 128,
-            "_sign": "d73137f62a6a6958aa18add2cef8674a"
-        }
-        r = requests.post("http://sdkv4test.qcwanwan.com/msa/anfeng_helper/tao_gift", data=data)
-        print r.text
+    # def test_tao_gift(self):
+    #     data = {
+    #         "_token": "19p4kqw0cgskkswgw44gcckwo",
+    #         "_device_id": "asdfasgasgfgaf",
+    #         "gift_id": 128,
+    #         "_sign": "d73137f62a6a6958aa18add2cef8674a"
+    #     }
+    #     r = requests.post("http://sdkv4test.qcwanwan.com/msa/anfeng_helper/tao_gift", data=data)
+    #     print r.text
 
     # def test_get_uses_gifts_list(self):
     #     data = {
@@ -85,6 +85,14 @@ class AnfengHelperApiTest(unittest.TestCase):
     #     r = requests.post("http://localhost:5000/msa/anfeng_helper/is_gift_get", data=data_json, headers=headers)
     #     self.assertEqual(r.status_code, 200)
     #     print r.text
+
+    def test_gifts_real_time_count(self):
+        data = {
+            "gift_ids": 128,
+            "_sign": "656d7ba1563af918415708578455dbfb"
+        }
+        r = requests.post("http://localhost:5000/msa/anfeng_helper/gifts_real_time_count", data=data)
+        print r.text
 
     def tearDown(self):
         pass

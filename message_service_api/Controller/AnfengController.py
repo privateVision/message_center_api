@@ -151,6 +151,31 @@ def v4_anfeng_helper_gifts():
     return response_data(http_code=200, data=data)
 
 
+# 安锋助手获取礼包的实时数量
+@anfeng_controller.route('/msa/anfeng_helper/gifts_real_time_count', methods=['POST'])
+@anfeng_helper_request_check
+def v4_anfeng_helper_gifts_real_time_count():
+    if 'gift_ids' not in request.form:
+        return response_data(200, 0, '礼包id不能为空')
+    gift_ids = request.form['gift_ids']
+    ids_list = gift_ids.split('|')
+    ids_list_str = ",".join(ids_list)
+    from run import mysql_cms_session
+    find_gift_info_sql = "select giftId, assignNum, num from cms_gameGiftAssign where platformId = 4 " \
+                         "and giftId in (%s)" % (ids_list_str,)
+    gift_info_list = mysql_cms_session.execute(find_gift_info_sql).fetchall()
+    data_list = []
+    for data in gift_info_list:
+        count_info = {
+            'gift_id': data['giftId'],
+            'assign_num': data['assignNum'],
+            'num': data['num']
+        }
+        print data['giftId']
+        data_list.append(count_info)
+    return response_data(http_code=200, data=data_list)
+
+
 # 安锋助手用户获取已领礼包列表
 @anfeng_controller.route('/msa/anfeng_helper/get_user_gifts', methods=['POST'])
 @anfeng_helper_request_check
@@ -242,4 +267,3 @@ def v4_anfeng_helper_tao_gift():
         }
         return response_data(200, data=data)
     return response_data(http_code=200, data='没有礼包可以淘了')
-
