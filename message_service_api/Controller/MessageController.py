@@ -1,6 +1,7 @@
 # _*_ coding: utf-8 _*_
 import json
 
+import time
 from flask import Blueprint
 from flask import request
 from mongoengine import Q
@@ -63,6 +64,7 @@ def v4_cms_delete_post_broadcast():
 @message_controller.route('/msa/v4/messages', methods=['POST'])
 @sdk_api_request_check
 def v4_sdk_get_message_list():
+    stime = time.time()
     ucid = get_ucid_by_access_token(request.form['_token'])
     page = request.form['page'] if request.form.has_key('page') and request.form['page'] else 1
     count = request.form['count'] if request.form.has_key('count') and request.form['count'] else 10
@@ -103,4 +105,6 @@ def v4_sdk_get_message_list():
             if 'url' in message_info:
                 message_resp['url'] = message_info['url']
             data_list.append(message_resp)
+    etime = time.time()
+    service_logger.info("消息列表耗时：%s" % (etime-stime,))
     return response_data(http_code=200, data=data_list)
