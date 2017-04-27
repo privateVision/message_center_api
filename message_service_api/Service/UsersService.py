@@ -336,6 +336,7 @@ def get_user_gift_count(ucid=None, appid=None):
         specify_count = mysql_cms_session.execute(get_specify_user_gift_count_sql).scalar()
     else:
         specify_count = 0
+    mysql_cms_session.close()
     return not_specify_count + specify_count
 
 
