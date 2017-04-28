@@ -91,7 +91,8 @@ class AnfengHelperApiTest(unittest.TestCase):
             "gift_ids": 128,
             "_sign": "656d7ba1563af918415708578455dbfb"
         }
-        r = requests.post("http://localhost:5000/msa/anfeng_helper/gifts_real_time_count", data=data)
+        # sdkv4test.qcwanwan.com
+        r = requests.post("http://sdkv4test.qcwanwan.com/msa/anfeng_helper/gifts_real_time_count", data=data)
         print r.text
 
     def tearDown(self):

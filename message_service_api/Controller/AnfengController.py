@@ -9,7 +9,8 @@ from Controller.BaseController import response_data
 from MiddleWare import service_logger
 from MysqlModel.GameGiftLog import GameGiftLog
 from Service.UsersService import get_game_info_by_gameid, anfeng_helper_request_check, get_game_info_by_appid, \
-    get_ucid_by_access_token, get_stored_value_card_list, get_user_all_coupons, get_username_by_ucid
+    get_ucid_by_access_token, get_stored_value_card_list, get_user_all_coupons, get_username_by_ucid, \
+    get_user_tao_gift_total_count
 
 anfeng_controller = Blueprint('AnfengController', __name__)
 
@@ -262,8 +263,10 @@ def v4_anfeng_helper_tao_gift():
                                     forIp=ip, forMac=mac, type=1)
         mysql_cms_session.add(game_gift_log)
         mysql_cms_session.commit()
+        tao_gift_total_count = get_user_tao_gift_total_count(ucid)
         data = {
-            "code": tao_info['code']
+            "code": tao_info['code'],
+            "tao_gift_total_count": tao_gift_total_count
         }
         return response_data(200, data=data)
     return response_data(http_code=200, data='没有礼包可以淘了')

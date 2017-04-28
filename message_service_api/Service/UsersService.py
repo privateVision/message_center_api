@@ -800,6 +800,22 @@ def get_game_info_by_appid(appid=None):
     return None
 
 
+#  获取用户淘号的总次数
+def get_user_tao_gift_total_count(ucid=None, platform_id=4):
+    from run import mysql_cms_session
+    find_tao_gift_total_count_sql = "select count(*) from cms_gameGiftLog where status = 'normal'" \
+                                    " platformId = %s and type = 1 and uid = %s " % (platform_id, ucid)
+    try:
+        total_count = mysql_cms_session.execute(find_tao_gift_total_count_sql).scalar()
+        return total_count
+    except Exception, err:
+        service_logger.error("获取用户淘号总次数发生异常：%s" % (err.message,))
+        mysql_cms_session.rollback()
+    finally:
+        mysql_cms_session.close()
+    return 0
+
+
 def get_game_info_by_gameid(gameid=None):
     from run import mysql_session
     find_game_info_sql = "select id, name, cover from zy_game " \
@@ -821,7 +837,7 @@ def get_game_info_by_gameid(gameid=None):
 
 
 # 根据token获取用户当前所在的区服
-def get_user_current_game_and_area_by_token(token=None):
+def get_user_current_gasme_and_area_by_token(token=None):
     from run import mysql_session
     find_user_current_game_area_info_sql = "select s.token, s.zone_id, s.zone_name from session as s " \
                                            "where s.token = %s limit 1" % (token,)
