@@ -132,6 +132,16 @@ def get_coupon_message_detail_info(msg_id=None):
     return UsersMessage.objects(Q(type='coupon') & Q(mysql_id=msg_id)).first()
 
 
+def is_user_in_apks(appid=0, app_list=None):
+    if app_list is not None:
+        for app in app_list:
+            if app['apk_id'] == 'all':
+                return True
+            if int(app['apk_id']) == appid:
+                return True
+    return False
+
+
 def get_ucid_by_access_token(access_token=None):
     ucid = RedisHandle.get_ucid_from_redis_by_token(access_token)
     if ucid is not None:
@@ -168,6 +178,11 @@ def get_username_by_ucid(ucid=None):
 
 
 def is_session_expired_by_access_token(access_token=None):
+    from run import mysql_session
+    find_is_valid_sql = "select count(*) from ucusers where uuid = '%s'" % (access_token,)
+    is_valid = mysql_session.execute(find_is_valid_sql).scalar()
+    if is_valid == 0:
+        return True
     expired_ts = RedisHandle.get_expired_ts_from_redis_by_token(access_token)
     now = int(time.time())
     if expired_ts is not None:
@@ -176,7 +191,6 @@ def is_session_expired_by_access_token(access_token=None):
         else:
             return False
     find_expired_ts_sql = "select expired_ts from session where token = '%s'" % (access_token,)
-    from run import mysql_session
     try:
         user_info = mysql_session.execute(find_expired_ts_sql).first()
         if user_info is not None:

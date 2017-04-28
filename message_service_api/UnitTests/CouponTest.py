@@ -81,7 +81,7 @@ class CouponFunctionTest(unittest.TestCase):
             '_token': 'baqycky5i08og8okoggwskkwg',
             '_appid': 778,
             'page': 1,
-            'count': 5
+            'count': 10
         }
         r = requests.post('http://sdkv4test.qcwanwan.com/msa/v4/coupons', data=body_data)
         print r.text
