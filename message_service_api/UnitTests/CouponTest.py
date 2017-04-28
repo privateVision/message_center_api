@@ -77,11 +77,11 @@ class CouponFunctionTest(unittest.TestCase):
 
     def test_get_coupon_list(self):
         body_data = {
-            '_sign': '1587095501f9d74d763307165e4e61f8',
-            '_token': '50w7jtvbqa88kcgk0c88s884s',
+            '_sign': '1782d3e2be950dc66aaa04d7e31f6d2e',
+            '_token': 'baqycky5i08og8okoggwskkwg',
             '_appid': 778,
             'page': 1,
-            'count': 10
+            'count': 5
         }
         r = requests.post('http://sdkv4test.qcwanwan.com/msa/v4/coupons', data=body_data)
         print r.text

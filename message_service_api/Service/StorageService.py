@@ -5,6 +5,8 @@ import threading
 import time
 
 import datetime
+
+import requests
 from mongoengine import Q
 
 from MiddleWare import service_logger
@@ -654,3 +656,20 @@ def system_rebate_persist(data_json=None, update_user_message=True):
             service_logger.error("mongodb保存优惠券异常：%s" % (err.message,))
         if update_user_message:
             add_to_every_related_users_message_list(users_message)
+
+
+#  卡券领取通知回调
+def coupon_notify_callback(data_json=None):
+    if data_json is not None:
+        data = {
+            "task_id": data_json['order_id'],
+            "ucid": data_json['ucid'],
+            "vcid": data_json['coupon_id'],
+            "status": 1
+        }
+        response = requests.post(data_json['notify_url'], data=data)
+        if response.status_code != 200:
+            service_logger.info("卡券通知回调成功：%s" % (response.text,))
+        else:
+            service_logger.info("卡券通知回调异常：%s" % (response.text,))
+

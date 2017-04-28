@@ -9,7 +9,8 @@ from Controller.BaseController import response_data
 from MiddleWare import service_logger
 from MysqlModel.GameGiftLog import GameGiftLog
 from Service.UsersService import get_game_info_by_gameid, anfeng_helper_request_check, get_game_info_by_appid, \
-    get_ucid_by_access_token, get_stored_value_card_list, get_user_all_coupons, get_username_by_ucid
+    get_ucid_by_access_token, get_stored_value_card_list, get_user_all_coupons, get_username_by_ucid, \
+    get_user_tao_gift_total_count, get_gift_real_time_count
 
 anfeng_controller = Blueprint('AnfengController', __name__)
 
@@ -66,9 +67,12 @@ def v4_sdk_get_user_coupon():
 @anfeng_controller.route('/msa/anfeng_helper/coupon', methods=['POST'])
 @anfeng_helper_request_check
 def v4_sdk_acheive_coupon():
-    ucid = get_ucid_by_access_token(request.form['_token'])
-    if ucid is None:
-        return response_data(200, 0, '用户不存在或未登录')
+    if 'ucid' not in request.form:
+        return response_data(200, 0, 'ucid参数不能为空')
+    ucid = request.form['ucid']
+    order_id = request.form['order_id']
+    notify_url = request.form['notify_url']
+    channel = request.form['channel']
     if 'coupon_id' not in request.form:
         return response_data(200, 0, '参数异常：缺少卡券id')
     coupon_id = int(request.form['coupon_id'])
@@ -93,12 +97,27 @@ def v4_sdk_acheive_coupon():
                                     coupon_info['start_time'], coupon_info['end_time'])
         mysql_session.execute(insert_user_coupon_sql)
         mysql_session.commit()
+        message_info = {
+            "type": "coupon_notify",
+            "message": {
+                'order_id': order_id,
+                'notify_url': notify_url,
+                'channel': channel,
+                'ucid': ucid,
+                'coupon_id': coupon_id
+            }
+        }
+        message_str = json.dumps(message_info)
+        service_logger.info("发送领取卡券回调到队列：%s" % (message_str,))
+        from run import kafka_producer
+        kafka_producer.send('message-service', message_str)
+        return response_data(200, 1, '领取成功')
     except Exception, err:
         service_logger.error("用户领取卡券，存储的mysql发生异常：%s" % (err.message,))
         mysql_session.rollback()
     finally:
         mysql_session.close()
-    return response_data(http_code=200)
+    return response_data(200, 0, '领取失败')
 
 
 # 安锋助手获取礼包列表
@@ -149,6 +168,31 @@ def v4_anfeng_helper_gifts():
         'gift_list': gift_list
     }
     return response_data(http_code=200, data=data)
+
+
+# 安锋助手获取礼包的实时数量
+@anfeng_controller.route('/msa/anfeng_helper/gifts_real_time_count', methods=['POST'])
+@anfeng_helper_request_check
+def v4_anfeng_helper_gifts_real_time_count():
+    if 'gift_ids' not in request.form:
+        return response_data(200, 0, '礼包id不能为空')
+    gift_ids = request.form['gift_ids']
+    ids_list = gift_ids.split('|')
+    ids_list_str = ",".join(ids_list)
+    from run import mysql_cms_session
+    find_gift_info_sql = "select giftId, assignNum, num from cms_gameGiftAssign where platformId = 4 " \
+                         "and giftId in (%s)" % (ids_list_str,)
+    gift_info_list = mysql_cms_session.execute(find_gift_info_sql).fetchall()
+    data_list = []
+    for data in gift_info_list:
+        count_info = {
+            'gift_id': data['giftId'],
+            'assign_num': data['assignNum'],
+            'num': data['num']
+        }
+        print data['giftId']
+        data_list.append(count_info)
+    return response_data(http_code=200, data=data_list)
 
 
 # 安锋助手用户获取已领礼包列表
@@ -203,11 +247,19 @@ def v4_anfeng_helper_is_user_gift_get():
     is_exist_sql = "select count(*) from cms_gameGiftLog as log where log.status = 'normal'" \
                    " and log.uid = %s and log.giftId = %s " % (ucid, gift_id)
     is_exist = mysql_cms_session.execute(is_exist_sql).scalar()
+    find_code_sql = "select code from cms_gameGiftLog as log where log.status = 'normal'" \
+                    " and log.uid = %s and log.giftId = %s limit 1" % (ucid, gift_id)
+    code_info = mysql_cms_session.execute(find_code_sql).fetchone()
+    assign_num, num = get_gift_real_time_count(4, gift_id)
     data = {
-        'is_get': False
+        'is_get': False,
+        'code': '',
+        'assign_num': assign_num,
+        'num': num
     }
     if is_exist > 0:
         data['is_get'] = True
+        data['code'] = code_info['code']
     return response_data(http_code=200, data=data)
 
 
@@ -237,9 +289,10 @@ def v4_anfeng_helper_tao_gift():
                                     forIp=ip, forMac=mac, type=1)
         mysql_cms_session.add(game_gift_log)
         mysql_cms_session.commit()
+        tao_gift_total_count = get_user_tao_gift_total_count(ucid)
         data = {
-            "code": tao_info['code']
+            "code": tao_info['code'],
+            "tao_gift_total_count": tao_gift_total_count
         }
         return response_data(200, data=data)
     return response_data(http_code=200, data='没有礼包可以淘了')
-
