@@ -19,7 +19,13 @@ anfeng_controller = Blueprint('AnfengController', __name__)
 @anfeng_controller.route('/msa/anfeng_helper/get_user_coupon', methods=['POST'])
 @anfeng_helper_request_check
 def v4_sdk_get_user_coupon():
-    ucid = get_ucid_by_access_token(request.form['_token'])
+    if 'ucid' not in request.form and 'token' not in request.form:
+        response_data(200, 0, 'ucid和token不能同时为空')
+    ucid = 0
+    if 'ucid' in request.form:
+        ucid = request.form['ucid']
+    if ucid == 0 and 'token' in request.form:
+        ucid = get_ucid_by_access_token(request.form['_token'])
     status = int(request.form['status'])
     page = request.form['page'] if request.form.has_key('page') and request.form.get('page') else 1
     count = request.form['pagesize'] if request.form.has_key('pagesize') and request.form.get('pagesize') else 10
@@ -67,9 +73,13 @@ def v4_sdk_get_user_coupon():
 @anfeng_controller.route('/msa/anfeng_helper/coupon', methods=['POST'])
 @anfeng_helper_request_check
 def v4_sdk_acheive_coupon():
-    if 'ucid' not in request.form:
-        return response_data(200, 0, 'ucid参数不能为空')
-    ucid = request.form['ucid']
+    if 'ucid' not in request.form and 'token' not in request.form:
+        response_data(200, 0, 'ucid和token不能同时为空')
+    ucid = 0
+    if 'ucid' in request.form:
+        ucid = request.form['ucid']
+    if ucid == 0 and 'token' in request.form:
+        ucid = get_ucid_by_access_token(request.form['_token'])
     order_id = request.form['order_id']
     notify_url = request.form['notify_url']
     channel = request.form['channel']
@@ -199,11 +209,17 @@ def v4_anfeng_helper_gifts_real_time_count():
 @anfeng_helper_request_check
 def v4_anfeng_helper_get_user_gifts():
     from run import mysql_cms_session
-    ucid = get_ucid_by_access_token(request.form['_token'])
+    if 'ucid' not in request.form and 'token' not in request.form:
+        response_data(200, 0, 'ucid和token不能同时为空')
+    ucid = 0
+    if 'ucid' in request.form:
+        ucid = request.form['ucid']
+    if ucid == 0 and 'token' in request.form:
+        ucid = get_ucid_by_access_token(request.form['_token'])
     page = request.form['page'] if request.form.has_key('page') and request.form.get('page') else 1
     count = request.form['pagesize'] if request.form.has_key('pagesize') and request.form.get('pagesize') else 10
-    start_index = (page - 1) * count
-    end_index = start_index + count
+    start_index = (int(page) - 1) * int(count)
+    end_index = start_index + int(count)
     gift_list = []
     user_gift_total_count_sql = "select count(gift.id) from cms_gameGiftLog as log join cms_gameGift as gift" \
                                 " on log.giftId = gift.id where gift.status = 'normal' and " \
@@ -245,7 +261,13 @@ def v4_anfeng_helper_get_user_gifts():
 @anfeng_helper_request_check
 def v4_anfeng_helper_is_user_gift_get():
     from run import mysql_cms_session
-    ucid = get_ucid_by_access_token(request.form['_token'])
+    if 'ucid' not in request.form and 'token' not in request.form:
+        response_data(200, 0, 'ucid和token不能同时为空')
+    ucid = 0
+    if 'ucid' in request.form:
+        ucid = request.form['ucid']
+    if ucid == 0 and 'token' in request.form:
+        ucid = get_ucid_by_access_token(request.form['_token'])
     gift_id = int(request.form['gift_id'])
     is_exist_sql = "select count(*) from cms_gameGiftLog as log where log.status = 'normal'" \
                    " and log.uid = %s and log.giftId = %s " % (ucid, gift_id)
@@ -270,7 +292,13 @@ def v4_anfeng_helper_is_user_gift_get():
 @anfeng_controller.route('/msa/anfeng_helper/tao_gift', methods=['POST'])
 @anfeng_helper_request_check
 def v4_anfeng_helper_tao_gift():
-    ucid = get_ucid_by_access_token(request.form['_token'])
+    if 'ucid' not in request.form and 'token' not in request.form:
+        response_data(200, 0, 'ucid和token不能同时为空')
+    ucid = 0
+    if 'ucid' in request.form:
+        ucid = request.form['ucid']
+    if ucid == 0 and 'token' in request.form:
+        ucid = get_ucid_by_access_token(request.form['_token'])
     ip = request.remote_addr  # 请求源ip
     mac = request.form['_device_id']  # 通用参数中的device_id
     gift_id = int(request.form['gift_id'])
