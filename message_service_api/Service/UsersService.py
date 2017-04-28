@@ -803,7 +803,7 @@ def get_game_info_by_appid(appid=None):
 #  获取用户淘号的总次数
 def get_user_tao_gift_total_count(ucid=None, platform_id=4):
     from run import mysql_cms_session
-    find_tao_gift_total_count_sql = "select count(*) from cms_gameGiftLog where status = 'normal'" \
+    find_tao_gift_total_count_sql = "select count(*) from cms_gameGiftLog where status = 'normal' and " \
                                     " platformId = %s and type = 1 and uid = %s " % (platform_id, ucid)
     try:
         total_count = mysql_cms_session.execute(find_tao_gift_total_count_sql).scalar()

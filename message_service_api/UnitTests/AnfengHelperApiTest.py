@@ -51,15 +51,15 @@ class AnfengHelperApiTest(unittest.TestCase):
     #     r = requests.post("http://localhost:5000/msa/anfeng_helper/gifts", data=data)
     #     print r.text
 
-    # def test_tao_gift(self):
-    #     data = {
-    #         "_token": "19p4kqw0cgskkswgw44gcckwo",
-    #         "_device_id": "asdfasgasgfgaf",
-    #         "gift_id": 128,
-    #         "_sign": "d73137f62a6a6958aa18add2cef8674a"
-    #     }
-    #     r = requests.post("http://sdkv4test.qcwanwan.com/msa/anfeng_helper/tao_gift", data=data)
-    #     print r.text
+    def test_tao_gift(self):
+        data = {
+            "_token": "19p4kqw0cgskkswgw44gcckwo",
+            "_device_id": "asdfasgasgfgaf",
+            "gift_id": 128,
+            "_sign": "d73137f62a6a6958aa18add2cef8674a"
+        }
+        r = requests.post("http://sdkv4test.qcwanwan.com/msa/anfeng_helper/tao_gift", data=data)
+        print r.text
 
     # def test_get_uses_gifts_list(self):
     #     data = {
@@ -96,24 +96,24 @@ class AnfengHelperApiTest(unittest.TestCase):
     #     print r.text
 
 
-    def test_lingqu_coupon(self):
-        data = {
-            "_appid": 6,
-            "_rid": 1,
-            "_sign_type": "md5",
-            "_timestamp": 1493349963,
-            "_token": '',
-            "_type": "json",
-            "channel": 4,
-            "coupon_id": 1460,
-            "notify_url": "http://appi.anfeng.cn/api/coupon/notify",
-            "order_id": 400057207,
-            "ucid": 1573396,
-            "_sign": "0787cebdd2755e07a18db401d8ea797b"
-        }
-        # sdkv4test.qcwanwan.com
-        r = requests.post("http://localhost:5000/msa/anfeng_helper/coupon", data=data)
-        print r.text
+    # def test_lingqu_coupon(self):
+    #     data = {
+    #         "_appid": 6,
+    #         "_rid": 1,
+    #         "_sign_type": "md5",
+    #         "_timestamp": 1493349963,
+    #         "_token": '',
+    #         "_type": "json",
+    #         "channel": 4,
+    #         "coupon_id": 1460,
+    #         "notify_url": "http://appi.anfeng.cn/api/coupon/notify",
+    #         "order_id": 400057207,
+    #         "ucid": 1573396,
+    #         "_sign": "0787cebdd2755e07a18db401d8ea797b"
+    #     }
+    #     # sdkv4test.qcwanwan.com
+    #     r = requests.post("http://localhost:5000/msa/anfeng_helper/coupon", data=data)
+    #     print r.text
 
     def tearDown(self):
         pass
