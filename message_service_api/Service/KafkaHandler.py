@@ -38,7 +38,7 @@ def consume_handler(message=None):
     elif message_info['type'] == 'rebate':  # 优惠券
         system_rebate_persist(message_info['message'])
     elif message_info['type'] == 'coupon_notify':
-        coupon_notify_callback(message_info['message'])
+        coupon_notify_callback(message_info['message'], message.offset)
     else:
         service_logger.warn("丢弃未处理的消息类型-%s-" % (message_info['type'],))
 

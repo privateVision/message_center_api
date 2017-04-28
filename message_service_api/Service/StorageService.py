@@ -661,7 +661,7 @@ def system_rebate_persist(data_json=None, update_user_message=True):
 
 
 #  卡券领取通知回调
-def coupon_notify_callback(data_json=None):
+def coupon_notify_callback(data_json=None, offset=None):
     if data_json is not None:
         data = {
             "task_id": data_json['order_id'],

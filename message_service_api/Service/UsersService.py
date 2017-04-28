@@ -589,8 +589,10 @@ def get_stored_value_card_list(ucid, status=0, start_index=0, end_index=10):
                 game = get_game_info_by_appid(card['lockApp'])
                 if game is not None:
                     item['game_id'] = game['id']
+                    item['cover'] = game['cover']
                 else:
                     item['game_id'] = 0
+                    item['cover'] = ''
                 value_card_list.append(item)
     except Exception, err:
         service_logger.error(err.message)
@@ -730,6 +732,7 @@ def get_user_all_coupons(ucid, status=0, start_index=0, end_index=10):
             if game_info is not None:
                 info['desc'] = game_info['name']
                 info['game_id'] = game_info['id']
+                info['cover'] = game_info['cover']
             info['unlimited_time'] = unlimited_time
             info['time_out'] = time_out
             new_coupon_list.append(info)
