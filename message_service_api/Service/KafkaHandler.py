@@ -7,7 +7,7 @@ from MiddleWare import service_logger
 from MongoModel.MessageRevocationModel import MessageRevocation
 from Service.NotifyEmail import send_notify
 from Service.StorageService import system_notices_persist, system_broadcast_persist, system_message_persist, \
-    system_coupon_persist, system_rebate_persist
+    system_coupon_persist, system_rebate_persist, coupon_notify_callback
 
 
 def kafka_consume_func(kafka_consumer):
@@ -36,6 +36,8 @@ def consume_handler(message=None):
         system_coupon_persist(message_info['message'])
     elif message_info['type'] == 'rebate':  # 优惠券
         system_rebate_persist(message_info['message'])
+    elif message_info['type'] == 'coupon_notify':
+        coupon_notify_callback(message_info['message'])
     else:
         service_logger.warn("丢弃未处理的消息类型-%s-" % (message_info['type'],))
 

@@ -67,9 +67,12 @@ def v4_sdk_get_user_coupon():
 @anfeng_controller.route('/msa/anfeng_helper/coupon', methods=['POST'])
 @anfeng_helper_request_check
 def v4_sdk_acheive_coupon():
-    ucid = get_ucid_by_access_token(request.form['_token'])
-    if ucid is None:
-        return response_data(200, 0, '用户不存在或未登录')
+    if 'ucid' not in request.form:
+        return response_data(200, 0, 'ucid参数不能为空')
+    ucid = request.form['ucid']
+    order_id = request.form['order_id']
+    notify_url = request.form['notify_url']
+    channel = request.form['channel']
     if 'coupon_id' not in request.form:
         return response_data(200, 0, '参数异常：缺少卡券id')
     coupon_id = int(request.form['coupon_id'])
@@ -94,12 +97,27 @@ def v4_sdk_acheive_coupon():
                                     coupon_info['start_time'], coupon_info['end_time'])
         mysql_session.execute(insert_user_coupon_sql)
         mysql_session.commit()
+        message_info = {
+            "type": "coupon_notify",
+            "message": {
+                'order_id': order_id,
+                'notify_url': notify_url,
+                'channel': channel,
+                'ucid': ucid,
+                'coupon_id': coupon_id
+            }
+        }
+        message_str = json.dumps(message_info)
+        service_logger.info("发送领取卡券回调到队列：%s" % (message_str,))
+        from run import kafka_producer
+        kafka_producer.send('message-service', message_str)
+        return response_data(200, 1, '领取成功')
     except Exception, err:
         service_logger.error("用户领取卡券，存储的mysql发生异常：%s" % (err.message,))
         mysql_session.rollback()
     finally:
         mysql_session.close()
-    return response_data(http_code=200)
+    return response_data(200, 0, '领取失败')
 
 
 # 安锋助手获取礼包列表
