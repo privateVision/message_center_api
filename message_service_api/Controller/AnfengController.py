@@ -246,7 +246,9 @@ def v4_anfeng_helper_get_user_gifts():
             'assignNum': gift['assignNum'],
             'code': gift['code'],
             'for_time': gift['forTime'],
-            'type': gift['type']
+            'type': gift['type'],
+            'publish_time': gift['publishTime'],
+            'fail_time': gift['failTime']
         }
         gift_list.append(gift_info)
     data = {
