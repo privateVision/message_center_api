@@ -23,10 +23,12 @@ class ProcedureController extends Controller
             $data[$k]['pid'] = $v->pid;
             $data[$k]['pname'] = $v->pname;
             $data[$k]['icon'] = '';
+            $data[$k]['game_id'] = '';
 
             $game = ZyGame::from_cache($v->gameCenterId);
             if($game) {
                 $data[$k]['icon'] = $game->cover;
+                $data[$k]['game_id'] = $game->id;
             }
         }
 

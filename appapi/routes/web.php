@@ -97,6 +97,7 @@ $app->group(['prefix' => 'api'], function () use ($app) {
     $app->post('user_sub/set_nickname', 'Api\\UserSubController@SetNicknameAction');                        // 设置小号昵称
 
     $app->post('pay/order/new', 'Api\\Pay\\OrderController@NewAction');                                     // 创建订单
+    $app->post('pay/order/info', 'Api\\Pay\\OrderController@InfoAction');                                   // 获取订单信息
     $app->post('pay/order/f/new', 'Api\\Pay\\FController@NewAction');                                       // 充值F币的订单
     $app->post('pay/nowpay_wechat/request', 'Api\\Pay\\NowpayWechatController@RequestAction');              // 现在支付，微信
     $app->post('pay/wechat/request', 'Api\\Pay\\WechatController@RequestAction');                           // 微信
