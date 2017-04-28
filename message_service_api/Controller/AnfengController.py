@@ -208,7 +208,8 @@ def v4_anfeng_helper_get_user_gifts():
     user_gift_total_count_sql = "select count(gift.id) from cms_gameGiftLog as log join cms_gameGift as gift" \
                                 " on log.giftId = gift.id where gift.status = 'normal' and " \
                                 "log.status = 'normal' and log.uid = %s " % (ucid,)
-    get_user_gift_sql = "select gift.* from cms_gameGiftLog as log join cms_gameGift as gift on log.giftId = gift.id" \
+    get_user_gift_sql = "select gift.*, log.code, log.forTime, log.type from cms_gameGiftLog as log join " \
+                        "cms_gameGift as gift on log.giftId = gift.id" \
                         " where gift.status = 'normal' and log.status = 'normal' and log.uid = %s limit %s, %s" \
                         % (ucid, start_index, end_index)
     total_count = mysql_cms_session.execute(user_gift_total_count_sql).scalar()
@@ -226,7 +227,10 @@ def v4_anfeng_helper_get_user_gifts():
             'label': gift['label'],
             'total': gift['total'],
             'num': gift['num'],
-            'assignNum': gift['assignNum']
+            'assignNum': gift['assignNum'],
+            'code': gift['code'],
+            'for_time': gift['forTime'],
+            'type': gift['type']
         }
         gift_list.append(gift_info)
     data = {

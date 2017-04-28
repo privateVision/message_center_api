@@ -51,20 +51,20 @@ class AnfengHelperApiTest(unittest.TestCase):
     #     r = requests.post("http://localhost:5000/msa/anfeng_helper/gifts", data=data)
     #     print r.text
 
-    def test_tao_gift(self):
-        data = {
-            "_appid": 6,
-            "_rid": 1,
-            "_sign_type": "md5",
-            "_timestamp": 1493358344,
-            "_token": "16zvo3flixy8c0o0s4ckckock",
-            "_device_id": "123123124",
-            "_type": "json",
-            "gift_id": 4740,
-            "_sign": "dfa9d11046c5b030e34bd80494a78ae0"
-        }
-        r = requests.post("http://sdkv4test.qcwanwan.com/msa/anfeng_helper/tao_gift", data=data)
-        print r.text
+    # def test_tao_gift(self):
+    #     data = {
+    #         "_appid": 6,
+    #         "_rid": 1,
+    #         "_sign_type": "md5",
+    #         "_timestamp": 1493358344,
+    #         "_token": "16zvo3flixy8c0o0s4ckckock",
+    #         "_device_id": "123123124",
+    #         "_type": "json",
+    #         "gift_id": 4740,
+    #         "_sign": "dfa9d11046c5b030e34bd80494a78ae0"
+    #     }
+    #     r = requests.post("http://sdkv4test.qcwanwan.com/msa/anfeng_helper/tao_gift", data=data)
+    #     print r.text
 
     # def test_get_uses_gifts_list(self):
     #     data = {
@@ -101,24 +101,24 @@ class AnfengHelperApiTest(unittest.TestCase):
     #     print r.text
 
 
-    # def test_lingqu_coupon(self):
-    #     data = {
-    #         "_appid": 6,
-    #         "_rid": 1,
-    #         "_sign_type": "md5",
-    #         "_timestamp": 1493349963,
-    #         "_token": '',
-    #         "_type": "json",
-    #         "channel": 4,
-    #         "coupon_id": 1460,
-    #         "notify_url": "http://appi.anfeng.cn/api/coupon/notify",
-    #         "order_id": 400057207,
-    #         "ucid": 1573396,
-    #         "_sign": "0787cebdd2755e07a18db401d8ea797b"
-    #     }
-    #     # sdkv4test.qcwanwan.com
-    #     r = requests.post("http://localhost:5000/msa/anfeng_helper/coupon", data=data)
-    #     print r.text
+    def test_lingqu_coupon(self):
+        data = {
+            "_appid": 6,
+            "_rid": 1,
+            "_sign_type": "md5",
+            "_timestamp": 1493359837,
+            "_token": '',
+            "_type": "json",
+            "channel": 4,
+            "coupon_id": 1514,
+            "notify_url": "http%3A%2F%2Fzsv4test.qcwanwan.com%2Fapi%2Fcoupon%2Fnotify",
+            "order_id": 400057209,
+            "ucid": 104449,
+            "_sign": "e7e23c173f0f713e12f3084e4d56707a"
+        }
+        # sdkv4test.qcwanwan.coms
+        r = requests.post("http://sdkv4test.qcwanwan.com/msa/anfeng_helper/coupon", data=data)
+        print r.text
 
     def tearDown(self):
         pass
