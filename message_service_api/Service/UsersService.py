@@ -181,6 +181,7 @@ def is_session_expired_by_access_token(access_token=None):
     from run import mysql_session
     find_is_valid_sql = "select count(*) from ucusers where uuid = '%s'" % (access_token,)
     is_valid = mysql_session.execute(find_is_valid_sql).scalar()
+    service_logger.info('token_uuid 查找结果：%s' % (is_valid,))
     if is_valid == 0:
         return True
     expired_ts = RedisHandle.get_expired_ts_from_redis_by_token(access_token)
