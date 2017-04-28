@@ -30,10 +30,9 @@ class HeartBeatTest(unittest.TestCase):
             # 'num': 5,
             '_token': 'bc218n1t9b4k408c0g0s8o004'
         }
-        # sdkv4test.qcwanwan.com
-        r = requests.post('http://sdkv4test.qcwanwan.com/msa/v4/app/heartbeat', data=body_data)
-        print r.text
-        self.assertEqual(r.status_code, 200)
+        # sdkv4test.qcwanwan.coms
+        r = requests.post('http://127.0.0.1:8888/msa/v4/app/heartbeat', data=body_data)
+        print r.texts
 
 
 if __name__ == '__main__':
