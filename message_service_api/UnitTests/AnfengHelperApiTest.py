@@ -53,10 +53,15 @@ class AnfengHelperApiTest(unittest.TestCase):
 
     def test_tao_gift(self):
         data = {
-            "_token": "19p4kqw0cgskkswgw44gcckwo",
-            "_device_id": "asdfasgasgfgaf",
-            "gift_id": 128,
-            "_sign": "d73137f62a6a6958aa18add2cef8674a"
+            "_appid": 6,
+            "_rid": 1,
+            "_sign_type": "md5",
+            "_timestamp": 1493358344,
+            "_token": "16zvo3flixy8c0o0s4ckckock",
+            "_device_id": "123123124",
+            "_type": "json",
+            "gift_id": 4740,
+            "_sign": "dfa9d11046c5b030e34bd80494a78ae0"
         }
         r = requests.post("http://sdkv4test.qcwanwan.com/msa/anfeng_helper/tao_gift", data=data)
         print r.text

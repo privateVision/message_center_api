@@ -154,6 +154,7 @@ def v4_sdk_get_gifts_list():
     }
     etime = time.time()
     service_logger.info("获取礼包列表时间：%s" % (etime - stime,))
+    mysql_cms_session.close()
     return response_data(http_code=200, data=data)
 
 
