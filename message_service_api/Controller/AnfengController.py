@@ -10,7 +10,7 @@ from MiddleWare import service_logger
 from MysqlModel.GameGiftLog import GameGiftLog
 from Service.UsersService import get_game_info_by_gameid, anfeng_helper_request_check, get_game_info_by_appid, \
     get_ucid_by_access_token, get_stored_value_card_list, get_user_all_coupons, get_username_by_ucid, \
-    get_user_tao_gift_total_count
+    get_user_tao_gift_total_count, get_gift_real_time_count
 
 anfeng_controller = Blueprint('AnfengController', __name__)
 
@@ -229,11 +229,19 @@ def v4_anfeng_helper_is_user_gift_get():
     is_exist_sql = "select count(*) from cms_gameGiftLog as log where log.status = 'normal'" \
                    " and log.uid = %s and log.giftId = %s " % (ucid, gift_id)
     is_exist = mysql_cms_session.execute(is_exist_sql).scalar()
+    find_code_sql = "select code from cms_gameGiftLog as log where log.status = 'normal'" \
+                    " and log.uid = %s and log.giftId = %s limit 1" % (ucid, gift_id)
+    code_info = mysql_cms_session.execute(find_code_sql).fetchone()
+    assign_num, num = get_gift_real_time_count(4, gift_id)
     data = {
-        'is_get': False
+        'is_get': False,
+        'code': '',
+        'assign_num': assign_num,
+        'num': num
     }
     if is_exist > 0:
         data['is_get'] = True
+        data['code'] = code_info['code']
     return response_data(http_code=200, data=data)
 
 
