@@ -10,7 +10,7 @@ from MysqlModel.GameGiftLog import GameGiftLog
 from Service.StorageService import get_uid_by_ucid
 from Service.UsersService import get_ucid_by_access_token, sdk_api_request_check, get_username_by_ucid, \
     get_game_info_by_appid, get_user_gift_count, get_user_can_see_gift_count, get_user_can_see_gift_list, \
-    get_user_already_get_and_today_publish_gift_id_list, get_gift_real_time_count
+    get_user_already_get_and_today_publish_gift_id_list, get_gift_real_time_count, get_game_info_by_gameid
 from Utils.RedisUtil import RedisHandle
 from Utils.SystemUtils import log_exception
 import math
@@ -180,7 +180,12 @@ def v4_sdk_user_get_gift():
     # 查询游戏信息
     game = get_game_info_by_appid(appid)
     if game is None:
-        return response_data(200, 0, get_tips('gift', 'game_not_found'))
+        if 'game_id' in request.form:
+            game = get_game_info_by_gameid(request.form['game_id'])
+            if game is None:
+                return response_data(200, 0, get_tips('gift', 'game_not_found'))
+        else:
+            return response_data(200, 0, get_tips('gift', 'game_not_found'))
     game_id = game['id']
     find_game_gift_info_sql = "select * from cms_gameGift where id= %s limit 1" % (gift_id,)
     game_gift_info = mysql_cms_session.execute(find_game_gift_info_sql).fetchone()

@@ -803,6 +803,26 @@ def get_game_info_by_appid(appid=None):
     return None
 
 
+def get_game_info_by_gameid(game_id=0):
+    from run import mysql_session
+    find_game_info_sql = "select game.id, game.name, game.cover from zy_game as game " \
+                         "where game.id= %s limit 1" % (game_id,)
+    try:
+        game_info = mysql_session.execute(find_game_info_sql).fetchone()
+        game = {}
+        if game_info is not None:
+            game['id'] = game_info['id']
+            game['name'] = game_info['name']
+            game['cover'] = game_info['cover']
+            return game
+    except Exception, err:
+        service_logger.error("根据gameid获取游戏信息发生异常：%s" % (err.message,))
+        mysql_session.rollback()
+    finally:
+        mysql_session.close()
+    return None
+
+
 #  获取用户淘号的总次数
 def get_user_tao_gift_total_count(ucid=None, platform_id=4):
     from run import mysql_cms_session
