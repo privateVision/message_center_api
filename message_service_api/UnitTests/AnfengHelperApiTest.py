@@ -86,13 +86,33 @@ class AnfengHelperApiTest(unittest.TestCase):
     #     self.assertEqual(r.status_code, 200)
     #     print r.text
 
-    def test_gifts_real_time_count(self):
+    # def test_gifts_real_time_count(self):
+    #     data = {
+    #         "gift_ids": '128|129',
+    #         "_sign": "753628f844a137b8ea05da198b55bb29"
+    #     }
+    #     # sdkv4test.qcwanwan.com
+    #     r = requests.post("http://sdkv4test.qcwanwan.com/msa/anfeng_helper/gifts_real_time_count", data=data)
+    #     print r.text
+
+
+    def test_lingqu_coupon(self):
         data = {
-            "gift_ids": '128|129',
-            "_sign": "753628f844a137b8ea05da198b55bb29"
+            "_appid": 6,
+            "_rid": 1,
+            "_sign_type": "md5",
+            "_timestamp": 1493349963,
+            "_token": '',
+            "_type": "json",
+            "channel": 4,
+            "coupon_id": 1460,
+            "notify_url": "http://appi.anfeng.cn/api/coupon/notify",
+            "order_id": 400057207,
+            "ucid": 1573396,
+            "_sign": "0787cebdd2755e07a18db401d8ea797b"
         }
         # sdkv4test.qcwanwan.com
-        r = requests.post("http://sdkv4test.qcwanwan.com/msa/anfeng_helper/gifts_real_time_count", data=data)
+        r = requests.post("http://localhost:5000/msa/anfeng_helper/coupon", data=data)
         print r.text
 
     def tearDown(self):
