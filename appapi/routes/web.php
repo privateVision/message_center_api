@@ -36,8 +36,9 @@ $app->get('test', 'TooltestController@iosTestAction');    // test
 // 支付回调相关
 $app->group(['prefix' => 'pay_callback'], function () use ($app) {
     $app->post('nowpay_wechat', 'PayCallback\\NowpayWechatController@CallbackAction');                      // 现代支付，微信支付回调
-    $app->post('alipay', 'PayCallback\\AlipayController@CallbackAction');                                   // 现代支付，支付宝支付回调
-    $app->post('unionpay', 'PayCallback\\UnionpayController@CallbackAction');                               // 现代支付，银联支付回调
+    $app->post('alipay', 'PayCallback\\AlipayController@CallbackAction');                                   // 支付宝支付回调
+    $app->post('unionpay', 'PayCallback\\UnionpayController@CallbackAction');                               // 银联支付回调
+    $app->post('wechat', 'PayCallback\\WechatController@CallbackAction');                                   // 微信支付回调
 });
 
 // 对外公开（无限制的）功能（杂项）
@@ -96,6 +97,7 @@ $app->group(['prefix' => 'api'], function () use ($app) {
     $app->post('user_sub/set_nickname', 'Api\\UserSubController@SetNicknameAction');                        // 设置小号昵称
 
     $app->post('pay/order/new', 'Api\\Pay\\OrderController@NewAction');                                     // 创建订单
+    $app->post('pay/order/info', 'Api\\Pay\\OrderController@InfoAction');                                   // 获取订单信息
     $app->post('pay/order/f/new', 'Api\\Pay\\FController@NewAction');                                       // 充值F币的订单
     $app->post('pay/nowpay_wechat/request', 'Api\\Pay\\NowpayWechatController@RequestAction');              // 现在支付，微信
     $app->post('pay/wechat/request', 'Api\\Pay\\WechatController@RequestAction');                           // 微信

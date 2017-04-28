@@ -41,10 +41,6 @@ class WechatController extends Controller {
         return $sign === $_sign;
     }
     
-    protected function handler($data, $order){
-        return true;
-    }
-    
     protected function handler($data, $order) {
         return $data['result_code'] == 'SUCCESS';
     }

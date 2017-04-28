@@ -3,22 +3,35 @@ namespace App\Http\Controllers\Api\Tool;
 
 use App\Exceptions\ApiException;
 use App\Model\Procedures;
+use App\Model\ZyGame;
 
 class ProcedureController extends Controller
 {
     public function QueryAction() {
-        $pname = $this->parameter->tough('pname');
+        $pname = $this->parameter->get('pname');
 
-        $isWhere = false;
-        $procedure = Procedures::select('pid', 'pname');
+        $procedure = Procedures::select('pid', 'pname', 'gameCenterId');
 
         if($pname) {
-            $isWhere = true;
             $procedure = $procedure->where('pname', 'like', "%{$pname}%");
         }
 
-        if(!$isWhere) return [];
+        $result = $procedure->orderBy('pname', 'asc')->get();
 
-        return $procedure->orderBy('pname', 'asc')->get();
+        $data = [];
+        foreach($result as $k => $v) {
+            $data[$k]['pid'] = $v->pid;
+            $data[$k]['pname'] = $v->pname;
+            $data[$k]['icon'] = '';
+            $data[$k]['game_id'] = '';
+
+            $game = ZyGame::from_cache($v->gameCenterId);
+            if($game) {
+                $data[$k]['icon'] = $game->cover;
+                $data[$k]['game_id'] = $game->id;
+            }
+        }
+
+        return array_values($data);
     }
 }
