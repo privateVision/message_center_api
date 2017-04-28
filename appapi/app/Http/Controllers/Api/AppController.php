@@ -194,7 +194,7 @@ class AppController extends Controller
 
         $updates = [];
         $updates["pkg"] = "com.anfeng.pay";
-        $updates["version"] = 4;
+        $updates["version"] = 410;
         $updates["url"] = "http://afsdkup.qcwan.com/down/com.anfeng.pay.apk";
 
         return ["manifest"=>$manifest,"updates"=>[$updates]];
