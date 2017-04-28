@@ -10,7 +10,7 @@ from MysqlModel.GameGiftLog import GameGiftLog
 from Service.StorageService import get_uid_by_ucid
 from Service.UsersService import get_ucid_by_access_token, sdk_api_request_check, get_username_by_ucid, \
     get_game_info_by_appid, get_user_gift_count, get_user_can_see_gift_count, get_user_can_see_gift_list, \
-    get_user_already_get_and_today_publish_gift_id_list
+    get_user_already_get_and_today_publish_gift_id_list, get_gift_real_time_count, get_game_info_by_gameid
 from Utils.RedisUtil import RedisHandle
 from Utils.SystemUtils import log_exception
 import math
@@ -22,6 +22,7 @@ gift_controller = Blueprint('GiftController', __name__)
 @gift_controller.route('/msa/v4/gifts', methods=['POST'])
 @sdk_api_request_check
 def v4_sdk_get_gifts_list():
+    stime = time.time()
     from run import mysql_cms_session
     from run import SDK_PLATFORM_ID
     if 'platform_id' in request.form:
@@ -151,6 +152,9 @@ def v4_sdk_get_gifts_list():
         "gift_count": unget_gifts_count,
         "data": data_list
     }
+    etime = time.time()
+    service_logger.info("获取礼包列表时间：%s" % (etime - stime,))
+    mysql_cms_session.close()
     return response_data(http_code=200, data=data)
 
 
@@ -176,7 +180,12 @@ def v4_sdk_user_get_gift():
     # 查询游戏信息
     game = get_game_info_by_appid(appid)
     if game is None:
-        return response_data(200, 0, get_tips('gift', 'game_not_found'))
+        if 'game_id' in request.form:
+            game = get_game_info_by_gameid(request.form['game_id'])
+            if game is None:
+                return response_data(200, 0, get_tips('gift', 'game_not_found'))
+        else:
+            return response_data(200, 0, get_tips('gift', 'game_not_found'))
     game_id = game['id']
     find_game_gift_info_sql = "select * from cms_gameGift where id= %s limit 1" % (gift_id,)
     game_gift_info = mysql_cms_session.execute(find_game_gift_info_sql).fetchone()
@@ -260,6 +269,17 @@ def v4_sdk_user_get_gift():
                     if game_gift_code:
                         if game_gift_code['code'] is not None and game_gift_code['code'] != '':
                             try:
+                                #  检查该礼包码是否被该用户领取过了
+                                find_is_user_get_the_code_sql = "select count(*) from cms_gameGiftLog" \
+                                                                " where status = 'normal' and platformId = %s and " \
+                                                          " gameId= %s and giftId = %s and code = '%s' and uid = %s " \
+                                                          % (SDK_PLATFORM_ID, game_id, gift_id, game_gift_code['code'],
+                                                             ucid)
+                                is_user_get_the_code_count = mysql_cms_session.execute(find_is_user_get_the_code_sql)\
+                                    .scalar()
+                                if is_user_get_the_code_count > 0:
+                                    return response_data(200, 0, get_tips('gift', 'already_get_gift'))
+
                                 update_gift_code_sql = "update cms_gameGiftCode_%s set status=1, uid=%s, username='%s'," \
                                                        " forTime=%s, platformId=%s where id=%s " \
                                                        % (table_num, ucid, username, int(time.time()),
@@ -282,9 +302,18 @@ def v4_sdk_user_get_gift():
                                     mysql_cms_session.execute(update_gift_assign_count_sql)
                                     mysql_cms_session.execute(update_gift_count_sql)
                                     mysql_cms_session.commit()
-                                    data = {'code': game_gift_code['code']}
+                                    assign_num, num = get_gift_real_time_count(SDK_PLATFORM_ID, gift_id)
+                                    data = {
+                                        'code': game_gift_code['code'],
+                                        'assign_num': assign_num,
+                                        'num': num
+                                    }
                                     # 减少缓存中的未领取的礼包数
-                                    RedisHandle.hdecrby(ucid, 'gift_num')
+                                    if RedisHandle.exists(ucid):
+                                        cache_data = RedisHandle.hgetall(ucid)
+                                        if cache_data.has_key('gift_num'):
+                                            if int(cache_data['gift_num']) > 0:
+                                                RedisHandle.hdecrby(ucid, 'gift_num')
                                     return response_data(200, 1, get_tips('gift', 'get_gift_success'), data)
                             except Exception, err:
                                 service_logger.error(err.message)
@@ -349,28 +378,35 @@ def v4_sdk_user_get_recommend_game_list():
     end_index = int(count)
     service_logger.info("用户：%s 获取推荐游戏列表，数据从%s到%s" % (ucid, start_index, end_index))
     from run import mysql_session
-    find_game_count_sql = "select count(*) from zy_gameRecom where status = 'normal' "
-    game_count = mysql_session.execute(find_game_count_sql).scalar()
-    find_game_info_sql = "select * from zy_gameRecom where status = 'normal' order by sort asc " \
-                         "limit %s, %s" % (start_index, end_index)
-    game_info_list = mysql_session.execute(find_game_info_sql).fetchall()
     game_list = []
-    for game in game_info_list:
-        game = {
-            'id': game['game_id'],
-            'name': game['name'],
-            'down_url': game['down_url'],
-            'package_name': game['package_name'],
-            'filesize': game['filesize'] * 1024,
-            'description': game['description'],
-            'cover': 'http://sdkadm.zhuayou.com' + game['cover'],
-            'category_name': game['category_name'],
-            'run_status_name': game['run_status_name'],
-            'publish_time': int(time.time()),
-            'version': '',
-            'sort': game['sort']
-        }
-        game_list.append(game)
+    game_count = 0
+    try:
+        find_game_count_sql = "select count(*) from zy_gameRecom where status = 'normal' "
+        game_count = mysql_session.execute(find_game_count_sql).scalar()
+        find_game_info_sql = "select * from zy_gameRecom where status = 'normal' order by sort asc " \
+                             "limit %s, %s" % (start_index, end_index)
+        game_info_list = mysql_session.execute(find_game_info_sql).fetchall()
+        for game in game_info_list:
+            game = {
+                'id': game['game_id'],
+                'name': game['name'],
+                'down_url': game['down_url'],
+                'package_name': game['package_name'],
+                'filesize': game['filesize'] * 1024,
+                'description': game['description'],
+                'cover': 'http://sdkadm.zhuayou.com' + game['cover'],
+                'category_name': game['category_name'],
+                'run_status_name': game['run_status_name'],
+                'publish_time': int(time.time()),
+                'version': '',
+                'sort': game['sort']
+            }
+            game_list.append(game)
+    except Exception, err:
+        service_logger.error("根据appid获取游戏信息发生异常：%s" % (err.message,))
+        mysql_session.rollback()
+    finally:
+        mysql_session.close()
     data = {
         'total_count': game_count,
         'game': game_list

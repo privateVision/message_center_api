@@ -76,7 +76,7 @@ class AppController extends Controller
             $update = array(
                 'down_url' => $update_apks->down_uri,
                 'version' => $update_apks->version,
-                'force_update' => $update_apks->force_update,
+                'force_update' => env('APP_DEBUG') ? false : $update_apks->force_update,
             );
         }
 

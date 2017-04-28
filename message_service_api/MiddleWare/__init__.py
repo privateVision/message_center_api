@@ -49,24 +49,24 @@ service_logger.addHandler(ch)
 
 
 # 邮件和消息通知
-ADMINS = ['14a1152bf3963d126735637d5e745ae5@mail.bearychat.com']
-server_host_name = socket.getfqdn(socket.gethostname())
-server_ip = socket.gethostbyname(server_host_name)
-mail_handler = SMTPHandler('127.0.0.1', 'server-error@monitor.com', ADMINS,
-                           "%s-%s-Service Exception Report" % (server_host_name, server_ip))
-mail_handler.setFormatter(logging.Formatter('''
-Message type:       %(levelname)s
-Location:           %(pathname)s:%(lineno)d
-Module:             %(module)s
-Function:           %(funcName)s
-Time:               %(asctime)s
-
-Message:
-
-%(message)s
-'''))
-mail_handler.setLevel(logging.ERROR)
-service_logger.addHandler(mail_handler)
+# ADMINS = ['14a1152bf3963d126735637d5e745ae5@mail.bearychat.com']
+# server_host_name = socket.getfqdn(socket.gethostname())
+# server_ip = socket.gethostbyname(server_host_name)
+# mail_handler = SMTPHandler('127.0.0.1', 'server-error@monitor.com', ADMINS,
+#                            "%s-%s-Service Exception Report" % (server_host_name, server_ip))
+# mail_handler.setFormatter(logging.Formatter('''
+# Message type:       %(levelname)s
+# Location:           %(pathname)s:%(lineno)d
+# Module:             %(module)s
+# Function:           %(funcName)s
+# Time:               %(asctime)s
+#
+# Message:
+#
+# %(message)s
+# '''))
+# mail_handler.setLevel(logging.ERROR)
+# service_logger.addHandler(mail_handler)
 
 
 redis_store = FlaskRedis()

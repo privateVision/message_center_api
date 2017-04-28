@@ -25,4 +25,18 @@ class OrderController extends Controller {
         $order->subject = $subject;
         $order->body = $body;
     }
+
+    public function InfoAction() {
+        $sn = $this->parameter->tough('order_id');
+
+        $order = Orders::from_cache_sn($sn);
+
+        if($order) {
+            return [
+                'status' => $order->status
+            ];
+        }
+
+        return [];
+    }
 }

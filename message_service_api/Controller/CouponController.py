@@ -97,6 +97,7 @@ def v4_user_get_coupon():
 @coupon_controller.route('/msa/v4/coupons', methods=['POST'])
 @sdk_api_request_check
 def v4_sdk_get_broadcast_list():
+    stime = time.time()
     ucid = get_ucid_by_access_token(request.form['_token'])
     game_id = int(request.form['_appid'])
     page = request.form['page'] if request.form.has_key('page') and request.form['page'] else 1
@@ -129,4 +130,6 @@ def v4_sdk_get_broadcast_list():
         new_coupon_list = get_user_coupons_by_game(ucid, game_id, coupon_start_index, coupon_end_index)
         # 拼接储值卡和卡券列表返回
         value_card_list.extend(new_coupon_list)
+        etime = time.time()
+        service_logger.info("卡券列表耗时: %s" % (etime-stime,))
         return response_data(http_code=200, data=value_card_list)

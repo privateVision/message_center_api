@@ -36,8 +36,9 @@ $app->get('test', 'TooltestController@iosTestAction');    // test
 // 支付回调相关
 $app->group(['prefix' => 'pay_callback'], function () use ($app) {
     $app->post('nowpay_wechat', 'PayCallback\\NowpayWechatController@CallbackAction');                      // 现代支付，微信支付回调
-    $app->post('alipay', 'PayCallback\\AlipayController@CallbackAction');                                   // 现代支付，支付宝支付回调
-    $app->post('unionpay', 'PayCallback\\UnionpayController@CallbackAction');                               // 现代支付，银联支付回调
+    $app->post('alipay', 'PayCallback\\AlipayController@CallbackAction');                                   // 支付宝支付回调
+    $app->post('unionpay', 'PayCallback\\UnionpayController@CallbackAction');                               // 银联支付回调
+    $app->post('wechat', 'PayCallback\\WechatController@CallbackAction');                                   // 微信支付回调
 });
 
 // 对外公开（无限制的）功能（杂项）
@@ -89,7 +90,6 @@ $app->group(['prefix' => 'api'], function () use ($app) {
     $app->post('user/set_nickname', 'Api\\UserController@SetNicknameAction');                               // 设置nickname
     $app->post('user/bind_list', 'Api\\UserController@BindListAction');                                     // 获取用户绑定了哪些平台、邮箱、手机
     $app->post('user/set', 'Api\\UserController@SetAction');                                                // 设置用户资料
-    $app->post('user/updaterole','Api\\UserController@UpdateRoleAction');                                   // 角色信息日志
 
     $app->post('user_sub/list', 'Api\\UserSubController@ListAction');                                       // 小号列表
     $app->post('user_sub/new', 'Api\\UserSubController@NewAction');                                         // 添加小号
@@ -97,8 +97,10 @@ $app->group(['prefix' => 'api'], function () use ($app) {
     $app->post('user_sub/set_nickname', 'Api\\UserSubController@SetNicknameAction');                        // 设置小号昵称
 
     $app->post('pay/order/new', 'Api\\Pay\\OrderController@NewAction');                                     // 创建订单
+    $app->post('pay/order/info', 'Api\\Pay\\OrderController@InfoAction');                                   // 获取订单信息
     $app->post('pay/order/f/new', 'Api\\Pay\\FController@NewAction');                                       // 充值F币的订单
     $app->post('pay/nowpay_wechat/request', 'Api\\Pay\\NowpayWechatController@RequestAction');              // 现在支付，微信
+    $app->post('pay/wechat/request', 'Api\\Pay\\WechatController@RequestAction');                           // 微信
     $app->post('pay/alipay/request', 'Api\\Pay\\AlipayController@RequestAction');                           // 现在支付，支付宝
     $app->post('pay/unionpay/request', 'Api\\Pay\\UnionpayController@RequestAction');                       // 现在支付，银联
     $app->post('pay/f/request', 'Api\\Pay\\FController@RequestAction');                                     // 安锋支付，（帐户余额支付）
@@ -109,6 +111,7 @@ $app->group(['prefix' => 'api'], function () use ($app) {
     $app->post('tool/reset_password/request','Api\\Tool\\ResetPasswordController@RequestAction');           // 通过token用户自行修改密码
     $app->post('tool/user/reset_password_page','Api\\Tool\\UserController@ResetPasswordPageAction');        // 获取重设密码页面
     $app->post('tool/user/freeze','Api\\Tool\\UserController@FreezeAction');                                // 冻结用户
+    $app->post('tool/procedure/query','Api\\Tool\\ProcedureController@QueryAction');                        // 通过包名查询procedure
 
     $app->post('v1.0/cp/info/order','Api\\OpenController@GetOrderInfoAction');                              //获取订单详情
     $app->post('v1.0/cp/user/auth','Api\\OpenController@AuthLoginAction');                                  //获取订单详情

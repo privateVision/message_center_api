@@ -20,3 +20,4 @@ class GameGiftLog(Base):
     forTime = Column(Integer)
     forIp = Column(String)
     forMac = Column(String)
+    type = Column(Integer, default=0)
