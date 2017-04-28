@@ -88,8 +88,8 @@ class AnfengHelperApiTest(unittest.TestCase):
 
     def test_gifts_real_time_count(self):
         data = {
-            "gift_ids": 128,
-            "_sign": "656d7ba1563af918415708578455dbfb"
+            "gift_ids": '128|129',
+            "_sign": "753628f844a137b8ea05da198b55bb29"
         }
         # sdkv4test.qcwanwan.com
         r = requests.post("http://sdkv4test.qcwanwan.com/msa/anfeng_helper/gifts_real_time_count", data=data)

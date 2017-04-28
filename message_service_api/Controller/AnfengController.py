@@ -190,7 +190,6 @@ def v4_anfeng_helper_gifts_real_time_count():
             'assign_num': data['assignNum'],
             'num': data['num']
         }
-        print data['giftId']
         data_list.append(count_info)
     return response_data(http_code=200, data=data_list)
 
