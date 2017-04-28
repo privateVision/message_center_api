@@ -490,7 +490,7 @@ def find_user_account_is_freeze(ucid=None):
     try:
         user_info = mysql_session.execute(find_is_freeze_sql).first()
         etime = time.time()
-        service_logger.info("检查账号冻结耗时：%s" % (etime-stime,))
+        service_logger.info("检查账号冻结耗时：%s" % (etime - stime,))
         if user_info is not None:
             if 'is_freeze' in user_info:
                 if user_info['is_freeze'] == 1:
@@ -667,12 +667,12 @@ def get_user_all_coupons(ucid, status=0, start_index=0, end_index=10):
     if status == 0:  # 正常数据
         get_user_coupon_total_count_sql = "select count(distinct(log.coupon_id)) from zy_coupon_log" \
                                           " as log join zy_coupon as coupon " \
-                              "on log.coupon_id=coupon.id where coupon.status='normal' and log.is_used = 0 " \
-                              "and log.ucid=%s " \
-                              "and ((coupon.is_time = 0) or ((coupon.is_time = 1) " \
-                              "and coupon.start_time <= %s " \
-                              "and coupon.end_time >= %s ))" \
-                              % (ucid, now, now)
+                                          "on log.coupon_id=coupon.id where coupon.status='normal' and log.is_used = 0 " \
+                                          "and log.ucid=%s " \
+                                          "and ((coupon.is_time = 0) or ((coupon.is_time = 1) " \
+                                          "and coupon.start_time <= %s " \
+                                          "and coupon.end_time >= %s ))" \
+                                          % (ucid, now, now)
         get_user_coupon_sql = "select distinct(log.coupon_id) from zy_coupon_log as log join zy_coupon as coupon " \
                               "on log.coupon_id=coupon.id where coupon.status='normal' and log.is_used = 0 " \
                               "and log.ucid=%s " \
@@ -683,11 +683,11 @@ def get_user_all_coupons(ucid, status=0, start_index=0, end_index=10):
     else:  # 过期数据
         get_user_coupon_total_count_sql = "select count(distinct(log.coupon_id)) from zy_coupon_log " \
                                           "as log join zy_coupon as coupon " \
-                              "on log.coupon_id=coupon.id where coupon.status='normal' and log.is_used = 0 " \
-                              "and log.ucid=%s " \
-                              "and ((coupon.is_time = 1) " \
-                              "and coupon.end_time < %s)" \
-                              % (ucid, now)
+                                          "on log.coupon_id=coupon.id where coupon.status='normal' and log.is_used = 0 " \
+                                          "and log.ucid=%s " \
+                                          "and ((coupon.is_time = 1) " \
+                                          "and coupon.end_time < %s)" \
+                                          % (ucid, now)
         get_user_coupon_sql = "select distinct(log.coupon_id) from zy_coupon_log as log join zy_coupon as coupon " \
                               "on log.coupon_id=coupon.id where coupon.status='normal' and log.is_used = 0 " \
                               "and log.ucid=%s " \
@@ -814,6 +814,22 @@ def get_user_tao_gift_total_count(ucid=None, platform_id=4):
     finally:
         mysql_cms_session.close()
     return 0
+
+
+# 获取礼包的实时数量
+def get_gift_real_time_count(platform_id=4, gift_id=0):
+    from run import mysql_cms_session
+    find_count_sql = "select assignNum, num from cms_gameGiftAssign" \
+                     " where platformId = %s and giftId = %s" % (platform_id, gift_id)
+    try:
+        count_info = mysql_cms_session.execute(find_count_sql).fetchone()
+        return count_info['assignNum'], count_info['num']
+    except Exception, err:
+        service_logger.error("获取用户淘号总次数发生异常：%s" % (err.message,))
+        mysql_cms_session.rollback()
+    finally:
+        mysql_cms_session.close()
+    return 0, 0
 
 
 def get_game_info_by_gameid(gameid=None):
@@ -990,7 +1006,7 @@ def sdk_api_request_check(func):
             return func(*args, **kwargs)
         else:
             etime = time.time()
-            service_logger.info("通用装饰器处理时间：%s" % (etime-stime,))
+            service_logger.info("通用装饰器处理时间：%s" % (etime - stime,))
             return response_data(200, 0, '请求校验错误')
 
     return wraper

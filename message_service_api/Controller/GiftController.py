@@ -10,7 +10,7 @@ from MysqlModel.GameGiftLog import GameGiftLog
 from Service.StorageService import get_uid_by_ucid
 from Service.UsersService import get_ucid_by_access_token, sdk_api_request_check, get_username_by_ucid, \
     get_game_info_by_appid, get_user_gift_count, get_user_can_see_gift_count, get_user_can_see_gift_list, \
-    get_user_already_get_and_today_publish_gift_id_list
+    get_user_already_get_and_today_publish_gift_id_list, get_gift_real_time_count
 from Utils.RedisUtil import RedisHandle
 from Utils.SystemUtils import log_exception
 import math
@@ -296,7 +296,12 @@ def v4_sdk_user_get_gift():
                                     mysql_cms_session.execute(update_gift_assign_count_sql)
                                     mysql_cms_session.execute(update_gift_count_sql)
                                     mysql_cms_session.commit()
-                                    data = {'code': game_gift_code['code']}
+                                    assign_num, num = get_gift_real_time_count(SDK_PLATFORM_ID, gift_id)
+                                    data = {
+                                        'code': game_gift_code['code'],
+                                        'assign_num': assign_num,
+                                        'num': num
+                                    }
                                     # 减少缓存中的未领取的礼包数
                                     if RedisHandle.exists(ucid):
                                         cache_data = RedisHandle.hgetall(ucid)
