@@ -4,6 +4,7 @@
 # Description: message service uwsgi server manager
 ##################################################
 
+start_ports=$1
 count=$(ps -ef|grep uwsgi|grep -v grep|wc -l)
 if [ $count -gt 0 ];then
     echo 'stop main process ...'
@@ -16,7 +17,7 @@ if [ $count -gt 0 ];then
         exit
     fi
     echo 'starting main process ...'
-    for port in ${ start_ports[@] };
+    for port in ${start_ports[*]};
     do
         echo "当前启动端口： $port"
         nohup uwsgi --buffer-size 32768 --socket 127.0.0.1:$port --wsgi-file run.py --callable app  --enable-threads --lazy-apps --evil-reload-on-as 1024 --evil-reload-on-rss 512 --listen 65535 --processes 2 --threads 1  &
@@ -29,7 +30,7 @@ if [ $count -gt 0 ];then
     echo 'all process started!'
 else
     echo 'starting main process ...'
-    for port in ${ start_ports[@] };
+    for port in ${start_ports[*]};
     do
         echo "当前启动端口： $port"
         nohup uwsgi --buffer-size 32768 --socket 127.0.0.1:$port --wsgi-file run.py --callable app  --enable-threads --lazy-apps --evil-reload-on-as 1024 --evil-reload-on-rss 512 --listen 65535 --processes 2 --threads 1  &
