@@ -177,13 +177,10 @@ def get_username_by_ucid(ucid=None):
     return ''
 
 
-def is_session_expired_by_access_token(access_token=None):
-    from run import mysql_session
-    find_is_valid_sql = "select count(*) from ucusers where uuid = '%s'" % (access_token,)
-    is_valid = mysql_session.execute(find_is_valid_sql).scalar()
-    mysql_session.commit()
-    service_logger.info('token_uuid 查找结果：%s' % (is_valid,))
-    if is_valid == 0:
+def is_session_expired_by_access_token(appid=None, access_token=None):
+    if check_user_multi_point_login_token(appid, access_token):
+        return True
+    if get_token_is_expired(access_token):
         return True
     expired_ts = RedisHandle.get_expired_ts_from_redis_by_token(access_token)
     now = int(time.time())
@@ -192,6 +189,7 @@ def is_session_expired_by_access_token(access_token=None):
             return True
         else:
             return False
+    from run import mysql_session
     find_expired_ts_sql = "select expired_ts from session where token = '%s'" % (access_token,)
     try:
         user_info = mysql_session.execute(find_expired_ts_sql).first()
@@ -225,6 +223,50 @@ def get_user_is_freeze_by_access_token(access_token=None):
     finally:
         mysql_session.close()
     return None
+
+
+#  检查用户多点登录的token是否有效
+def check_user_multi_point_login_token(appid=None, token=None):
+    ucuser_session_key = RedisHandle.get_ucuser_session_id_by_token(token)
+    if ucuser_session_key is None:
+        return check_user_multi_point_login_token_in_db(appid, token)
+    else:
+        ucuser_session_info = RedisHandle.get_ucuser_session_info_by_id(ucuser_session_key)
+        if ucuser_session_info is None:
+            return check_user_multi_point_login_token_in_db(appid, token)
+        else:
+            if token != ucuser_session_info['session_token']:
+                return True
+    return False
+
+
+#  访问 DB 检查用户多点登录的token是否有效
+def check_user_multi_point_login_token_in_db(appid=None, token=None):
+    type = min(int(appid), 100)
+    from run import mysql_session
+    find_valid_sql = "select count(*) from ucuser_session where type = %s and session_token = '%s'" % (type, token)
+    try:
+        is_valid = mysql_session.execute(find_valid_sql).scalar()
+        if is_valid > 0:  # token 有效
+            return False
+    except Exception, err:
+        service_logger.error(err.message)
+        mysql_session.rollback()
+    finally:
+        mysql_session.close()
+    return True
+
+
+#  获取token是否过期
+def get_token_is_expired(access_token=None):
+    from run import mysql_session
+    find_is_valid_sql = "select count(*) from ucusers where uuid = '%s'" % (access_token,)
+    is_valid = mysql_session.execute(find_is_valid_sql).scalar()
+    mysql_session.commit()
+    service_logger.info('token_uuid 查找结果：%s' % (is_valid,))
+    if is_valid == 0:
+        return True
+    return False
 
 
 # 根据用户id获取广播列表
@@ -1021,7 +1063,7 @@ def sdk_api_request_check(func):
             log_exception(request, '客户端请求错误-appid或sign或token为空')
             return response_data(200, 0, '客户端参数错误')
         # 会话是否过期判断
-        is_session_expired = is_session_expired_by_access_token(request.form['_token'])
+        is_session_expired = is_session_expired_by_access_token(request.form['_appid'], request.form['_token'])
         if is_session_expired:
             return response_data(200, 102, '用户未登录或session已过期')
 

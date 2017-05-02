@@ -143,3 +143,19 @@ class RedisHandle(object):
             return None
         user_info = json.loads(user_info_str)
         return user_info['freeze']
+
+    @staticmethod
+    def get_ucuser_session_id_by_token(token=None):
+        get_key = "ucuser_session_session_token_%s" % (token,)
+        get_token_value = redis_store.get(get_key)
+        if get_token_value is None:
+            return None
+        return get_token_value
+
+    @staticmethod
+    def get_ucuser_session_info_by_id(ucuser_session_key=None):
+        get_token_value = redis_store.get(ucuser_session_key)
+        if get_token_value is None:
+            return None
+        session_info = json.loads(get_token_value)
+        return session_info

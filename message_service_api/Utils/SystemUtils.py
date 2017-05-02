@@ -17,3 +17,10 @@ def log_exception(request, exception_message=None):
     from MiddleWare import service_logger
     log_format = "%s - %s - %s" % (request.remote_addr, request.url, exception_message)
     service_logger.error(log_format)
+
+
+class KafkaConsumeError(Exception):
+    def __init__(self, message, status):
+        super.__init__(message, status)
+        self.message = message
+        self.status = status

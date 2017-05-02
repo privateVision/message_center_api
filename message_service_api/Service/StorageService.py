@@ -42,6 +42,9 @@ from Utils.RedisUtil import RedisHandle
 
 
 #  目标用户太多，改成分批发送
+from Utils.SystemUtils import KafkaConsumeError
+
+
 def add_message_to_user_message_list(game, users_type, vip_user, specify_user, type, msg_id,
                                      start_time, end_time, is_time):
     if users_type is not None:
@@ -684,4 +687,5 @@ def coupon_notify_callback(data_json=None, offset=None):
             service_logger.info("卡券通知回调成功：%s" % (response.text,))
         else:
             service_logger.info("卡券通知回调异常：%s" % (response.text,))
+            raise KafkaConsumeError('kafka 消费异常', 1001)
 
