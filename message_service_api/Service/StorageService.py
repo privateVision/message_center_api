@@ -234,7 +234,7 @@ def check_user_type_and_vip(ucid=None, user_type=None, vip=None):
             is_vip_exist = mysql_session.execute(find_users_by_vip_sql).scalar()
             service_logger.info("用户vip匹配查找结果：%s" % (is_vip_exist,))
             if is_vip_exist == 0:
-                service_logger.info("检查是否vip等级为0：%s" % (vip,))
+                service_logger.info("检查是否vip等级是否为0，用户等级为：%s" % (vip,))
                 if int(vip) == 0:
                     return True
                 else:
