@@ -42,6 +42,10 @@ abstract class Controller extends \App\Controller
                 return $this->onComplete($data, null, true);
             }
 
+            //open_online: 线上没这个字段
+            //$order->callback_ts = time();
+            //$order->save();
+
             $outer_order_no = $this->getTradeOrderNo($data, $order);
 
             if(!$this->handler($data, $order)) {

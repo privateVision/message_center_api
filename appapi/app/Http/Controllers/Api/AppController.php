@@ -76,7 +76,7 @@ class AppController extends Controller
             $update = array(
                 'down_url' => $update_apks->down_uri,
                 'version' => $update_apks->version,
-                'force_update' => env('APP_DEBUG') ? false : $update_apks->force_update,
+                'force_update' => false,// open_online:env('APP_DEBUG') ? false : $update_apks->force_update,
             );
         }
 
@@ -178,33 +178,49 @@ class AppController extends Controller
     }
 */
 
- /*
-  * 热更新信息
-  * */
-    public function HotupdateAction(){
+    /*
+     * 热更新信息
+    **/
+    public function HotupdateAction() {
+        if($this->parameter->get('_appid') == '846') {
+            //$gps = $this->parameter->tough("gps"); //gps 信息
+            //$imei = $this->parameter->tough("imei"); //设备信息
+
+            $sdk_version  = $this->parameter->get("sdk_version"); //sdk version
+
+            if(!$sdk_version) return ["code"=>0,"msg"=>"参数",data=>""];
+
+            $manifest = [];
+            $manifest["version"] = "1.0.0";
+            $manifest["bundles"][] = ["type"=>"lib","pkg"=>"com.anfeng.pay"];
+
+            $updates = [];
+            $updates["pkg"] = "com.anfeng.pay";
+            $updates["version"] = 410;
+            $updates['use_version'] = 410; // 回退版本，默认与version一致
+            $updates["url"] = "http://afsdkup.qcwan.com/down/com.anfeng.pay.apk";
+
+            return ["manifest"=>$manifest, "updates"=>[$updates]];
+        }
 
         //$gps = $this->parameter->tough("gps"); //gps 信息
         //$imei = $this->parameter->tough("imei"); //设备信息
 
-        $sdk_version  = $this->parameter->tough("sdk_version"); //sdk version
+        $sdk_version  = $this->parameter->get("sdk_version"); //sdk version
 
         if(!$sdk_version) return ["code"=>0,"msg"=>"参数",data=>""];
+
         $manifest = [];
         $manifest["version"] = "1.0.0";
         $manifest["bundles"][] = ["type"=>"lib","pkg"=>"com.anfeng.pay"];
 
         $updates = [];
         $updates["pkg"] = "com.anfeng.pay";
-        $updates["version"] = 4;
+        $updates["version"] = 40;
+        $updates['use_version'] = 40; // 回退版本，默认与version一致
         $updates["url"] = "http://afsdkup.qcwan.com/down/com.anfeng.pay.apk";
 
-        return ["manifest"=>$manifest,"updates"=>[$updates]];
+        return ["manifest"=>$manifest, "updates"=>[$updates]];
     }
-
-
-
-
-
-
 
 }

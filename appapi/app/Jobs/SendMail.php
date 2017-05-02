@@ -12,8 +12,12 @@ class SendMail extends Job
 
     public function __construct($subject, $to, $content)
     {
+        if(!is_array($to)) {
+            $to = [$to];
+        }
+
         $this->subject = $subject;
-        $this->to = $to;
+        $this->to = array_filter($to);
         $this->content = $content;
     }
 
@@ -24,8 +28,10 @@ class SendMail extends Job
      */
     public function handle()
     {
-        Mail::raw($this->content, function($mailer) {
-            $mailer->to($this->to)->subject($this->subject);
-        });
+        if(count($this->to)) {
+            Mail::raw($this->content, function($mailer) {
+                $mailer->to($this->to)->subject($this->subject);
+            });
+        }
     }
 }

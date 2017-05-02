@@ -74,7 +74,7 @@ class Controller extends \App\Controller
 			return array('code' => ApiException::Success, 'msg' => null, 'data' => $response);
 		} catch (ApiException $e) {
 			log_warning('ApiException', ['code' => $e->getCode()], $e->getMessage());
-			return array('code' => $e->getCode(), 'msg' => $e->getMessage(), 'data' => null);
+			return array('code' => $e->getCode(), 'msg' => $e->getMessage(), 'data' => $e->getData());
 		} catch (\App\Exceptions\Exception $e) {
 			log_warning('Exception', ['code' => $e->getCode()], $e->getMessage());
 			return array('code' => ApiException::Remind, 'msg' => $e->getMessage(), 'data' => null);

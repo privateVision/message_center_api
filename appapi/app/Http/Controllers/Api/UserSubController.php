@@ -110,20 +110,22 @@ class UserSubController extends AuthController
                 throw new ApiException(ApiException::Remind, "小号创建数量已达上限");
             }
 
+            $user_sub_num++;
+
             $user_sub = UcuserSub::tableSlice($this->user->ucid);
             $user_sub->id = uuid($this->user->ucid);
             $user_sub->ucid = $this->user->ucid;
             $user_sub->pid = $pid;
             $user_sub->rid = $rid;
             $user_sub->old_rid = $rid;
-            $user_sub->cp_uid = uuid();
-            $user_sub->name = "小号" . sprintf('%02d', $user_sub_num + 1);
+            $user_sub->cp_uid = $this->user->ucid . sprintf('%05d%02d', $pid, $user_sub_num);
+            $user_sub->name = "小号" . ($user_sub_num);
             $user_sub->priority = 0;
             $user_sub->last_login_at = null;
             $user_sub->save();
 
             if(isset($reset)) {
-                Redis::hset('user_sub_num', $redisfield, $user_sub_num + 1);
+                Redis::hset('user_sub_num', $redisfield, $user_sub_num);
             } else {
                 Redis::hincrby('user_sub_num', $redisfield, 1);
             }

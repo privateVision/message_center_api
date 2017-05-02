@@ -7,7 +7,7 @@ class ApiException extends \Exception
     const Success = 1;              // 成功
     const Remind = 0;               // 逻辑错误，该错误返回的msg消息可以直接反馈给用户
     const Error = 100;              // 错误，系统错误
-    const Expire = 102;             // 会话已过期，遇到这个错误应该将玩家引导到登陆界面
+    const Expire = 102;             // 会话已失效，需重新登陆
 
     // 以下错误码在登陆时会返回
     const AccountFreeze = 101;      // 帐号被冻结
@@ -24,9 +24,14 @@ class ApiException extends \Exception
     //订单验证
     const WAITED_PAY = 110; //验证等待支付
 
+    protected $data = null;
 
-
-	public function __construct($code, $message) {
+	public function __construct($code, $message, $data = null) {
 		parent::__construct($message, $code);
+        $this->data = $data;
 	}
+
+    public function getData() {
+        return $this->data;
+    }
 }

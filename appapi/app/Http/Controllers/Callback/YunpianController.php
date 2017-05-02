@@ -8,7 +8,6 @@ use Illuminate\Support\Facades\Config;
 class YunpianController extends \App\Controller
 {
     public function RequestAction(Request $request) {
-
         try {
 
             $sms_reply = $request->input('sms_reply');
@@ -28,17 +27,16 @@ class YunpianController extends \App\Controller
             foreach ( $sms_reply as $k=>$v){
                 $dat[$k] = trim(urldecode($v)," ");
             }
-           $dat[] = config('common.smsconfig.apikey');
+
+            $dat[] = config('common.smsconfig.apikey');
 
             // todo: 这里要改...
             $str = implode(',', $dat);
-            log_info('YunpianCallback', $str."_____".strtolower(md5($str))."====".$sign);
 
             if($sign !== md5($str)) {
                 return 'FAILURE';
             }
 
-            log_info('YunpianCallback', $sms_reply);
             $yunpiansms = new YunpianCallback;
             $yunpiansms->yid = $sms_reply['id'];
             $yunpiansms->mobile = $sms_reply['mobile'];

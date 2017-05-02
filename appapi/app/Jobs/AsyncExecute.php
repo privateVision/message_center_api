@@ -5,6 +5,7 @@ use App\Redis;
 use App\Model\UcuserRole;
 use App\Model\ProceduresZone;
 use App\Model\Log\UserRoleLog;
+use App\Model\Session;
 
 class AsyncExecute extends Job
 {
@@ -18,15 +19,23 @@ class AsyncExecute extends Job
         $this->arguments = $arguments;
     }
 
-    public function handle()
-    {
+    public function handle() {
         $method = $this->method;
         $arguments = $this->arguments;
         $this->$method(...$arguments);
     }
 
+    public function expire_session($ucid) {
+        // todo: 没有锁，防止前脚delete后脚save
+        $session = Session::where('ucid', $ucid)->get();
+        foreach($session as $v) {
+            $v->deleteCache();
+            $v->delete();
+        }
+    }
+
     public function report_role($ucid, $pid, $user_sub_id, $zone_id, $zone_name, $role_id, $role_name, $role_level) {
-        // 非线程安全，无法保证顺序执行
+        // todo: 非进程安全，无法保证顺序执行
         $user_role_uuid = joinkey($pid, $ucid, $user_sub_id, $zone_id, $role_id);
         $user_role = UcuserRole::tableSlice($pid)->from_cache($user_role_uuid);
         if(!$user_role) {

@@ -4,13 +4,17 @@ namespace App\Http\Controllers\Api\Tool;
 use App\Exceptions\ApiException;
 use App\Model\Procedures;
 use App\Model\ZyGame;
+use App\Model\SignAPK;
 
 class ProcedureController extends Controller
 {
     public function QueryAction() {
+        $rid = $this->parameter->tough('rid');
         $pname = $this->parameter->get('pname');
 
-        $procedure = Procedures::select('pid', 'pname', 'gameCenterId');
+        $ps = SignAPK::where('rid', $rid)->groupBy('pid')->pluck('pid');
+
+        $procedure = Procedures::select('pid', 'pname', 'gameCenterId')->whereIn('pid', $ps);
 
         if($pname) {
             $procedure = $procedure->where('pname', 'like', "%{$pname}%");

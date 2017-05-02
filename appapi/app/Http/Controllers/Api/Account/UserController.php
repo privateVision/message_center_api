@@ -154,6 +154,7 @@ class UserController extends Controller {
 
         $user->setPassword($new_password);
         $user->save();
+        $user->updateCache();
         
         user_log($user, $this->procedure, 'reset_password', '【重置密码】通过手机验证码重置，手机号码{%s}，旧密码[%s]，新密码[%s]', $mobile, $old_password, $user->password);
 

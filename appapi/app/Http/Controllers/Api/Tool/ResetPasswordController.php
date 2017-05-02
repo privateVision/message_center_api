@@ -31,8 +31,12 @@ class ResetPasswordController extends Controller
             throw new ApiException(ApiException::Error, "用户不存在");
         }
 
+        $old_password = $user->password;
         $user->setPassword($password);
         $user->save();
+
+        async_execute('expire_session', $user->ucid);
+        user_log($this->user, $this->procedure, 'reset_password', '【重置用户密码】通过自助页面，旧密码[%s]，新密码[%s]', $old_password, $this->user->password);
 
         return ['result' => true];
     }

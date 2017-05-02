@@ -56,18 +56,18 @@ class Orders extends Model
 	 * @return boolean [description]
 	 */
 	public function is_f() {
-		return $this->vid < 100 || !$this->notify_url;
+		return $this->vid < 100;
 	}
 
 	public static function whereIsF() {
 		return static::where(function($query) {
-			$query->where('vid', '<', 100)->orWhere('notify_url', '=', '');
+			$query->where('vid', '<', 100);
 		});
 	}
 
 	public static function whereIsNotF() {
 		return static::where(function($query) {
-			$query->where('vid', '>=', 100)->where('notify_url', '!=', '');
+			$query->where('vid', '>=', 100);
 		});
 	}
 }
