@@ -26,6 +26,7 @@ if [ $count -gt 0 ];then
         else
             echo "start process $port failed"
         fi
+        sleep 0.1
     done
     echo 'all process started!'
 else
@@ -39,6 +40,7 @@ else
         else
             echo "start process $port failed"
         fi
+        sleep 0.1
     done
     echo 'all process started!'
 fi
