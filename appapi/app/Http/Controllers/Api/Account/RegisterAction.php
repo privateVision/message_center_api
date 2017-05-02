@@ -9,6 +9,7 @@ use App\Model\UcuserSub;
 use App\Model\Session;
 use App\Model\LoginLog;
 use App\Model\UcuserInfo;
+use App\Model\UcuserSession;
 
 trait RegisterAction {
     
@@ -34,7 +35,7 @@ trait RegisterAction {
             $user_sub->rid = $rid;
             $user_sub->old_rid = $rid;
             $user_sub->cp_uid = $user->ucid;
-            $user_sub->name = '小号01';
+            $user_sub->name = '小号1';
             $user_sub->priority = time();
             $user_sub->last_login_at = datetime();
             $user_sub->save();
@@ -44,6 +45,7 @@ trait RegisterAction {
         $user_sub->last_login_at = datetime();
         $user_sub->save();
 
+        // session
         $session = new Session;
         $session->pid = $pid;
         $session->rid = $rid;
@@ -54,11 +56,28 @@ trait RegisterAction {
         $session->expired_ts = time() + 2592000; // 1个月有效期
         $session->date = date('Ymd');
         $session->save();
+
+        // ucuser_session
+        $usession_uuid = md5_36($user->ucid . min($pid, 100));
+        $usession = UcuserSession::from_cache_uuid($usession_uuid);
+        if(!$usession) { 
+            $usession = new UcuserSession;
+            $usession->uuid = $usession_uuid;
+            $usession->type = min($pid, 100);
+            $usession->ucid = $user->ucid;
+        }
+        $usession->session_token = $session->token;
+        $usession->saveAndCache();
         
-        $user->uuid = $session->token; // todo: 兼容旧的自动登陆
+        // ucuser
+        $user->uuid = $session->token;
         $user->last_login_at = datetime();
+        //open_online: 线上没这个字段
+        //$user->last_login_ip = $this->request->ip();
         $user->save();
+        $user->updateCache();
         
+        // login_log
         $login_log = new LoginLog;
         $login_log->ucid = $user->ucid;
         $login_log->pid = $pid;

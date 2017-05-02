@@ -68,12 +68,14 @@ class UserController extends AuthController
     }
 
     public function SetAction() {
-        $nickname = $this->parameter->get('nickname');
+        $nickname = $this->parameter->get('nickname', null, 'nickname');
         $province = $this->parameter->get('province');
         $city = $this->parameter->get('city');
         $address = $this->parameter->get('address');
         $gender = $this->parameter->get('gender');
         $birthday = $this->parameter->get('birthday', null, function($v) {
+            if(empty($v)) return null;
+
             if(!preg_match('/^\d{8}$/', $v)) {
                 throw new ApiException(ApiException::Remind, "生日格式不正确，yyyy-mm-dd");
             }
@@ -113,11 +115,11 @@ class UserController extends AuthController
             $user_info->city = $city;
         }
 
-        if($address) {
+        if($address !== null) {
             $user_info->address = $address;
         }
 
-        if($gender) {
+        if($gender === '0' || $gender === '1' || $gender === '2') {
             $user_info->gender = $gender;
         }
 
@@ -166,6 +168,7 @@ class UserController extends AuthController
         $order = $order->where('ucid', $this->user->ucid);
         $order = $order->where('hide', 0);
         $order = $order->where('status', '!=', Orders::Status_WaitPay);
+        
         $count = $order->count();
         $order = $order->orderBy('id', 'desc');
         $order = $order->take($limit)->skip($offset)->get();
@@ -213,6 +216,7 @@ class UserController extends AuthController
         $this->user->setPassword($new_password);
         $this->user->save();
 
+        async_execute('expire_session', $this->user->ucid);
         user_log($this->user, $this->procedure, 'reset_password', '【重置用户密码】通过旧密码，旧密码[%s]，新密码[%s]', $old_password, $this->user->password);
 
         return ['result' => true];
@@ -358,6 +362,7 @@ class UserController extends AuthController
         $this->user->setPassword($password);
         $this->user->save();
 
+        async_execute('expire_session', $this->user->ucid);
         user_log($this->user, $this->procedure, 'reset_password', '【重置密码】通过手机验证码重置，手机号码{%s}，旧密码[%s]，新密码[%s]', $mobile, $old_password, $this->user->password);
 
         return ['result' => true];

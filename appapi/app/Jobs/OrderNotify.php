@@ -57,6 +57,8 @@ class OrderNotify extends Job
             return $this->retry();
         }
 
+        //open_online: 线上没这个字段
+        //$order->notify_ts = time();
         $order->status = Orders::Status_NotifySuccess;
         $order->save();
     }

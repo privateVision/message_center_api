@@ -37,6 +37,9 @@ class OpenBaseController extends \App\Controller
             unset($data['sign']);
             log_debug('response', http_build_query($data)."&sign_key={$appkey}");
 
+            // ksort($data);
+            //  $sign = md5(http_build_query($data) ."&sign_key={$appkey}");
+
             ksort($data);
             $sign = md5(http_build_query($data) ."&sign_key={$appkey}");
             log_debug('response', $sign);

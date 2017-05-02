@@ -1,5 +1,6 @@
 <?php
 namespace App\Model;
+use App\Redis;
 
 class Ucuser extends Model
 {

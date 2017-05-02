@@ -34,7 +34,7 @@ class OnekeyController extends Controller {
         // 注册
         $username = username();
         $password = rand(100000, 999999);
-        
+
         $user = new Ucuser;
         $user->uid = $username;
         $user->email = $username . "@anfan.com";

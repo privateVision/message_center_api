@@ -196,7 +196,11 @@ function username() {
  * @return [type]         [description]
  */
 function uuid($prefix = "") {
-    return base_convert(md5($prefix . uniqid(mt_rand(), true) . microtime() . mt_rand()), 16, 36);
+    return md5_36($prefix . uniqid(mt_rand(), true) . microtime() . mt_rand());
+}
+
+function md5_36($str) {
+    return base_convert(md5($str), 16, 36);
 }
 
 /**
