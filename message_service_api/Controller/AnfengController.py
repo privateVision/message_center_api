@@ -44,6 +44,7 @@ def v4_sdk_get_user_coupon():
         coupon_total_count, new_coupon_list = get_user_all_coupons(ucid, status, start_index, end_index)
         data['total_count'] = coupon_total_count
         data['coupon_list'] = new_coupon_list
+        return response_data(http_code=200, data=data)
     # 储值卡数据足够一页数据
     if value_card_total_count >= need_total_count:
         coupon_total_count, new_coupon_list = get_user_all_coupons(ucid, status, start_index, end_index)

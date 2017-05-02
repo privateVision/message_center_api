@@ -196,6 +196,7 @@ def is_session_expired_by_access_token(appid=None, access_token=None):
         if user_info is not None:
             if 'expired_ts' in user_info:
                 if user_info['expired_ts'] < now:
+                    service_logger.info("token_102_session_expired_ts_now")
                     return True
                 return False
     except Exception, err:
@@ -236,6 +237,7 @@ def check_user_multi_point_login_token(appid=None, token=None):
             return check_user_multi_point_login_token_in_db(appid, token)
         else:
             if token != ucuser_session_info['session_token']:
+                service_logger.info("token_102_ucuser_session_redis_token_数据不匹配")
                 return True
     return False
 
@@ -249,6 +251,7 @@ def check_user_multi_point_login_token_in_db(appid=None, token=None):
         is_valid = mysql_session.execute(find_valid_sql).scalar()
         if is_valid > 0:  # token 有效
             return False
+        service_logger.info("token_102_ucuser_session_db_token_数据找不到")
     except Exception, err:
         service_logger.error(err.message)
         mysql_session.rollback()
@@ -264,6 +267,7 @@ def get_token_is_expired(access_token=None):
     is_valid = mysql_session.execute(find_is_valid_sql).scalar()
     mysql_session.commit()
     service_logger.info('token_uuid 查找结果：%s' % (is_valid,))
+    service_logger.info("token_102_ucusers_uuid_token: %s" % (is_valid,))
     if is_valid == 0:
         return True
     return False
@@ -1043,19 +1047,6 @@ def get_user_user_type_and_vip_and_uid_by_ucid(ucid=None):
 def sdk_api_request_check(func):
     @wraps(func)
     def wraper(*args, **kwargs):
-        # 数据库连接状态检测
-        # from run import mysql_session
-        # from run import mysql_cms_session
-        # try:
-        #     mysql_session.execute('select 1').scalar()
-        #     mysql_cms_session.execute('select 1').scalar()
-        # except Exception, err:
-        #     mysql_session.rollback()
-        #     mysql_cms_session.rollback()
-        #     service_logger.error(err.message)
-        # finally:
-        #     mysql_session.close()
-        #     mysql_cms_session.close()
         stime = time.time()
         from Utils.EncryptUtils import sdk_api_params_check, sdk_api_check_sign
         is_params_checked = sdk_api_params_check(request)
