@@ -180,8 +180,8 @@ def get_username_by_ucid(ucid=None):
 def is_session_expired_by_access_token(appid=None, access_token=None):
     if check_user_multi_point_login_token(appid, access_token):
         return True
-    if get_token_is_expired(access_token):
-        return True
+    # if get_token_is_expired(access_token):
+    #     return True
     expired_ts = RedisHandle.get_expired_ts_from_redis_by_token(access_token)
     now = int(time.time())
     if expired_ts is not None:
@@ -261,16 +261,16 @@ def check_user_multi_point_login_token_in_db(appid=None, token=None):
 
 
 #  获取token是否过期
-def get_token_is_expired(access_token=None):
-    from run import mysql_session
-    find_is_valid_sql = "select count(*) from ucusers where uuid = '%s'" % (access_token,)
-    is_valid = mysql_session.execute(find_is_valid_sql).scalar()
-    mysql_session.commit()
-    service_logger.info('token_uuid 查找结果：%s' % (is_valid,))
-    service_logger.info("token_102_ucusers_uuid_token: %s" % (is_valid,))
-    if is_valid == 0:
-        return True
-    return False
+# def get_token_is_expired(access_token=None):
+#     from run import mysql_session
+#     find_is_valid_sql = "select count(*) from ucusers where uuid = '%s'" % (access_token,)
+#     is_valid = mysql_session.execute(find_is_valid_sql).scalar()
+#     mysql_session.commit()
+#     service_logger.info('token_uuid 查找结果：%s' % (is_valid,))
+#     service_logger.info("token_102_ucusers_uuid_token: %s" % (is_valid,))
+#     if is_valid == 0:
+#         return True
+#     return False
 
 
 # 根据用户id获取广播列表
