@@ -145,9 +145,9 @@ class  AppleController extends Controller{
 
         $ord = Orders::where("ucid",$ucid)->where('vorderid',$vorderid)->get();
 
-        if(count($ord)) return ; //限制关闭
+        if(count($ord)) return trans("messages.order_info_error") ; //限制关闭
         try {
-            $sql = "select p.fee,p.product_name,con.notify_url,con.iap from ios_products as p LEFT JOIN ios_application_config as con ON p.app_id = con.app_id WHERE p.product_id = '{$product_id}' AND p.app_id = {$appid}";
+            $sql = "select p.fee,p.product_name,con.notify_url,con.iap,con.bundle_id from ios_products as p LEFT JOIN ios_application_config as con ON p.app_id = con.app_id WHERE p.product_id = '{$product_id}' AND p.app_id = {$appid}";
             $dat = app('db')->select($sql);
             if(count($dat) == 0) throw new ApiException(ApiException::Remind,trans("messages.product_not_found"));
 

@@ -119,8 +119,9 @@ class UserController extends Controller {
         $mobile = $this->parameter->tough('mobile', 'mobile');
 
         $user = Ucuser::where('uid', $mobile)->orWhere('mobile', $mobile)->first();
-        if(!$user) {
-            throw new ApiException(ApiException::Remind, '手机号码尚未注册');
+    
+        if(!$user || $user->mobile =="") {
+            throw new ApiException(ApiException::Remind, '手机号码尚未绑定');
         }
 
         $code = smscode();

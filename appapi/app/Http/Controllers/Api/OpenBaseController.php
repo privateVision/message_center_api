@@ -41,16 +41,7 @@ class OpenBaseController extends \App\Controller
             //  $sign = md5(http_build_query($data) ."&sign_key={$appkey}");
 
             ksort($data);
-            $str = '';
-            foreach($data as $k => $v) {
-                $str .= "{$k}={$v}&";
-            }
-            $str .= 'sign_key='. $appkey;
-            log_info('签名字符', ['data' =>$str]);
-            $sign =  md5($str);
-
-
-
+            $sign = md5(http_build_query($data) ."&sign_key={$appkey}");
             log_debug('response', $sign);
             if($_sign != $sign) {
                 throw new ApiException(ApiException::Error, "签名验证失败");

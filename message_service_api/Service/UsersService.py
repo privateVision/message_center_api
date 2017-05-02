@@ -132,6 +132,16 @@ def get_coupon_message_detail_info(msg_id=None):
     return UsersMessage.objects(Q(type='coupon') & Q(mysql_id=msg_id)).first()
 
 
+def is_user_in_apks(appid=0, app_list=None):
+    if app_list is not None:
+        for app in app_list:
+            if app['apk_id'] == 'all':
+                return True
+            if int(app['apk_id']) == appid:
+                return True
+    return False
+
+
 def get_ucid_by_access_token(access_token=None):
     ucid = RedisHandle.get_ucid_from_redis_by_token(access_token)
     if ucid is not None:
@@ -168,6 +178,13 @@ def get_username_by_ucid(ucid=None):
 
 
 def is_session_expired_by_access_token(access_token=None):
+    from run import mysql_session
+    find_is_valid_sql = "select count(*) from ucusers where uuid = '%s'" % (access_token,)
+    is_valid = mysql_session.execute(find_is_valid_sql).scalar()
+    mysql_session.commit()
+    service_logger.info('token_uuid 查找结果：%s' % (is_valid,))
+    if is_valid == 0:
+        return True
     expired_ts = RedisHandle.get_expired_ts_from_redis_by_token(access_token)
     now = int(time.time())
     if expired_ts is not None:
@@ -176,7 +193,6 @@ def is_session_expired_by_access_token(access_token=None):
         else:
             return False
     find_expired_ts_sql = "select expired_ts from session where token = '%s'" % (access_token,)
-    from run import mysql_session
     try:
         user_info = mysql_session.execute(find_expired_ts_sql).first()
         if user_info is not None:
@@ -589,8 +605,10 @@ def get_stored_value_card_list(ucid, status=0, start_index=0, end_index=10):
                 game = get_game_info_by_appid(card['lockApp'])
                 if game is not None:
                     item['game_id'] = game['id']
+                    item['cover'] = game['cover']
                 else:
                     item['game_id'] = 0
+                    item['cover'] = ''
                 value_card_list.append(item)
     except Exception, err:
         service_logger.error(err.message)
@@ -730,6 +748,7 @@ def get_user_all_coupons(ucid, status=0, start_index=0, end_index=10):
             if game_info is not None:
                 info['desc'] = game_info['name']
                 info['game_id'] = game_info['id']
+                info['cover'] = game_info['cover']
             info['unlimited_time'] = unlimited_time
             info['time_out'] = time_out
             new_coupon_list.append(info)
@@ -800,10 +819,30 @@ def get_game_info_by_appid(appid=None):
     return None
 
 
+def get_game_info_by_gameid(game_id=0):
+    from run import mysql_session
+    find_game_info_sql = "select game.id, game.name, game.cover from zy_game as game " \
+                         "where game.id= %s limit 1" % (game_id,)
+    try:
+        game_info = mysql_session.execute(find_game_info_sql).fetchone()
+        game = {}
+        if game_info is not None:
+            game['id'] = game_info['id']
+            game['name'] = game_info['name']
+            game['cover'] = game_info['cover']
+            return game
+    except Exception, err:
+        service_logger.error("根据gameid获取游戏信息发生异常：%s" % (err.message,))
+        mysql_session.rollback()
+    finally:
+        mysql_session.close()
+    return None
+
+
 #  获取用户淘号的总次数
 def get_user_tao_gift_total_count(ucid=None, platform_id=4):
     from run import mysql_cms_session
-    find_tao_gift_total_count_sql = "select count(*) from cms_gameGiftLog where status = 'normal'" \
+    find_tao_gift_total_count_sql = "select count(*) from cms_gameGiftLog where status = 'normal' and " \
                                     " platformId = %s and type = 1 and uid = %s " % (platform_id, ucid)
     try:
         total_count = mysql_cms_session.execute(find_tao_gift_total_count_sql).scalar()

@@ -225,8 +225,8 @@ class UserController extends AuthController
     public function SMSBindPhoneAction() {
         $mobile = $this->parameter->tough('mobile', 'mobile');
 
-        $user = Ucuser::where('uid', $mobile)->orWhere('mobile', $mobile)->first();
-        if($user) {
+        $user = Ucuser::where('uid', $this->user->uid)->first();
+        if($user && $user->mobile == $mobile) {
             if($user->ucid != $this->user->ucid) {
                 throw new ApiException(ApiException::Remind, "手机号码已经绑定了其它账号");
             } else {

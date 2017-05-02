@@ -18,16 +18,17 @@ class AnfengHelperApiTest(unittest.TestCase):
 
     # def test_get_coupon(self):
     #     data = {
-    #         "_token": '21a1bb65drk048ckcg8osccsk',
+    #         "_token": 'umnp8q73gq8sg44sggw8ko84',
     #         "status": 1,
     #         "page": 1,
     #         "pagesize": 10,
+    #         "_type": "json",
     #         "_appid": 6,
     #         "_rid": 1,
-    #         "_sign": "03b09812487467069d4fb5a74118d541"
+    #         "_sign_type": "md5",
+    #         "_timestamp": 1493366352,
+    #         "_sign": "940c760f64d14bcf5567092641802959"
     #     }
-    #     # headers = {"Content-Type": "application/json"}
-    #     # data_json = json.dumps(data)
     #     r = requests.post("http://sdkv4test.qcwanwan.com/msa/anfeng_helper/get_user_coupon", data=data)
     #     print r.text
 
@@ -53,10 +54,15 @@ class AnfengHelperApiTest(unittest.TestCase):
 
     # def test_tao_gift(self):
     #     data = {
-    #         "_token": "19p4kqw0cgskkswgw44gcckwo",
-    #         "_device_id": "asdfasgasgfgaf",
-    #         "gift_id": 128,
-    #         "_sign": "d73137f62a6a6958aa18add2cef8674a"
+    #         "_appid": 6,
+    #         "_rid": 1,
+    #         "_sign_type": "md5",
+    #         "_timestamp": 1493358344,
+    #         "_token": "16zvo3flixy8c0o0s4ckckock",
+    #         "_device_id": "123123124",
+    #         "_type": "json",
+    #         "gift_id": 4740,
+    #         "_sign": "dfa9d11046c5b030e34bd80494a78ae0"
     #     }
     #     r = requests.post("http://sdkv4test.qcwanwan.com/msa/anfeng_helper/tao_gift", data=data)
     #     print r.text
@@ -68,10 +74,7 @@ class AnfengHelperApiTest(unittest.TestCase):
     #         "count": 10,
     #         "sign": "41ba43912bf98cbc752763ec584d6230"
     #     }
-    #     headers = {"Content-Type": "application/json"}
-    #     data_json = json.dumps(data)
-    #     r = requests.post("http://localhost:5000/msa/anfeng_helper/get_user_gifts", data=data_json, headers=headers)
-    #     self.assertEqual(r.status_code, 200)
+    #     r = requests.post("http://sdkv4test.qcwanwan.com/msa/anfeng_helper/get_user_gifts", data=data)
     #     print r.text
     #
     # def test_is_gift_get(self):
@@ -86,14 +89,34 @@ class AnfengHelperApiTest(unittest.TestCase):
     #     self.assertEqual(r.status_code, 200)
     #     print r.text
 
-    def test_gifts_real_time_count(self):
-        data = {
-            "gift_ids": 128,
-            "_sign": "656d7ba1563af918415708578455dbfb"
-        }
-        # sdkv4test.qcwanwan.com
-        r = requests.post("http://sdkv4test.qcwanwan.com/msa/anfeng_helper/gifts_real_time_count", data=data)
-        print r.text
+    # def test_gifts_real_time_count(self):
+    #     data = {
+    #         "gift_ids": '128|129',
+    #         "_sign": "753628f844a137b8ea05da198b55bb29"
+    #     }
+    #     # sdkv4test.qcwanwan.com
+    #     r = requests.post("http://sdkv4test.qcwanwan.com/msa/anfeng_helper/gifts_real_time_count", data=data)
+    #     print r.text
+
+
+    # def test_lingqu_coupon(self):
+    #     data = {
+    #         "_appid": 6,
+    #         "_rid": 1,
+    #         "_sign_type": "md5",
+    #         "_timestamp": 1493359837,
+    #         "_token": '',
+    #         "_type": "json",
+    #         "channel": 4,
+    #         "coupon_id": 1514,
+    #         "notify_url": "http%3A%2F%2Fzsv4test.qcwanwan.com%2Fapi%2Fcoupon%2Fnotify",
+    #         "order_id": 400057209,
+    #         "ucid": 104449,
+    #         "_sign": "e7e23c173f0f713e12f3084e4d56707a"
+    #     }
+    #     # sdkv4test.qcwanwan.coms
+    #     r = requests.post("http://sdkv4test.qcwanwan.com/msa/anfeng_helper/coupon", data=data)
+    #     print r.text
 
     def tearDown(self):
         pass

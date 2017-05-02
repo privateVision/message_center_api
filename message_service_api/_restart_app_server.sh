@@ -4,7 +4,6 @@
 # Description: message service uwsgi server manager
 ##################################################
 
-start_ports=$1
 count=$(ps -ef|grep uwsgi|grep -v grep|wc -l)
 if [ $count -gt 0 ];then
     echo 'stop main process ...'
@@ -17,30 +16,21 @@ if [ $count -gt 0 ];then
         exit
     fi
     echo 'starting main process ...'
-    for port in ${start_ports[*]};
-    do
-        echo "当前启动端口： $port"
-        nohup uwsgi --buffer-size 32768 --socket 127.0.0.1:$port --wsgi-file run.py --callable app  --enable-threads --lazy-apps --evil-reload-on-as 1024 --evil-reload-on-rss 512 --listen 65535 --processes 2 --threads 1  &
-        if [ 0 == $? ];then
-            echo "start process $port success!"
-        else
-            echo "start process $port failed"
-        fi
-    done
-    echo 'all process started!'
+    echo "当前启动地址： $1"
+    nohup uwsgi --socket $1 --wsgi-file run.py --callable app --enable-threads --lazy-apps --stats 127.0.0.1:1717 --evil-reload-on-as 1024 --evil-reload-on-rss 512 --listen 65535 --processes 10 --threads 1 &
+    if [ 0 == $? ];then
+        echo "start main process success!"
+    else
+        echo "start main process failed"
+    fi
 else
-    echo 'starting main process ...'
-    for port in ${start_ports[*]};
-    do
-        echo "当前启动端口： $port"
-        nohup uwsgi --buffer-size 32768 --socket 127.0.0.1:$port --wsgi-file run.py --callable app  --enable-threads --lazy-apps --evil-reload-on-as 1024 --evil-reload-on-rss 512 --listen 65535 --processes 2 --threads 1  &
-        if [ 0 == $? ];then
-            echo "start process $port success!"
-        else
-            echo "start process $port failed"
-        fi
-    done
-    echo 'all process started!'
+    echo "当前启动地址： $1"
+    nohup uwsgi --socket $1 --wsgi-file run.py --callable app --enable-threads --lazy-apps --stats 127.0.0.1:1717 --evil-reload-on-as 1024 --evil-reload-on-rss 512 --listen 65535 --processes 10 --threads 1 &
+    if [ 0 == $? ];then
+        echo "start main process success!"
+    else
+        echo "start main process failed"
+    fi
 fi
 
 

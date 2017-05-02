@@ -36,14 +36,15 @@ class OrderNotify extends Job
         $data['create_time'] = strval($order->createTime);
         ksort($data);
 
+        /*
         $str = '';
         foreach($data as $k => $v) {
             $str .= "{$k}={$v}&";
         }
 
         $str .= 'sign_key='. $appkey;
-
-        $data['sign'] =  md5($str);
+        */
+        $data['sign'] =  md5(http_build_query($data) ."&sign_key={$appkey}");;
 
         $res = http_request($order->notify_url, $data);
 
