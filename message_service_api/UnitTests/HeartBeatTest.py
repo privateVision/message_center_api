@@ -29,7 +29,7 @@ class HeartBeatTest(unittest.TestCase):
             'interval': 2000,
             '_token': 'cwsv3fdnni0wwock4gg0gow4k'
         }
-        # sdkv4test.qcwanwan.coms
+        # sdkv4test.qcwanwan.com
         r = requests.post('http://sdkv4test.qcwanwan.com/msa/v4/app/heartbeat', data=body_data)
         print r.text
 

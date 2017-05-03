@@ -1,9 +1,10 @@
 # _*_ coding: utf-8 _*_
-import tornado
 from flask_mongoengine import MongoEngine
-from tornado import httpserver
-from tornado import ioloop
-from tornado import wsgi
+from tornado import netutil
+from tornado import process
+from tornado.httpserver import HTTPServer
+from tornado.ioloop import IOLoop
+from tornado.wsgi import WSGIContainer
 
 from MiddleWare import create_app
 import sys
@@ -42,10 +43,11 @@ def page_not_found(error):
 #     debug = app.config.get('DEBUG')
 #     app.run(host=host, port=port, debug=debug)
 
-# container = wsgi.WSGIContainer(app)
-# http_server = httpserver.HTTPServer(container)
-# http_server.listen(8888)
-# ioloop.IOLoop.current().start()
-
-#  uwsgi 启动脚本： uwsgi --socket 127.0.0.1:5000 --wsgi-file run.py --callable app --enable-threads
-#                       --lazy-apps --processes 4 --threads 2
+if __name__ == '__main__':
+    container = WSGIContainer(app)
+    http_server = HTTPServer(container)
+    # process.fork_processes(0)
+    for port in range(5000, 5016, 1):
+        sockets = netutil.bind_sockets(port)
+        http_server.add_sockets(sockets)
+    IOLoop.current().start()
