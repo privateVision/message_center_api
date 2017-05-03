@@ -246,10 +246,10 @@ def check_user_multi_point_login_token(appid=None, token=None):
 def check_user_multi_point_login_token_in_db(appid=None, token=None):
     type = min(int(appid), 100)
     from run import mysql_session
-    find_valid_sql = "select count(id) from ucuser_session where type = %s and session_token = '%s'" % (type, token)
+    find_valid_sql = "select id from ucuser_session where type = %s and session_token = '%s' limit 1" % (type, token)
     try:
-        is_valid = mysql_session.execute(find_valid_sql).scalar()
-        if is_valid > 0:  # token 有效
+        is_valid = mysql_session.execute(find_valid_sql).fetchone()
+        if is_valid is not None:  # token 有效
             return False
         service_logger.info("token_102_ucuser_session_db_token_数据找不到")
     except Exception, err:
