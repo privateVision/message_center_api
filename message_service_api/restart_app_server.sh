@@ -49,6 +49,7 @@ fi
 consume_count=$(ps -ef|grep consume|grep -v grep|wc -l)
 if [ $consume_count -gt 0 ];then
     ps -ef|grep consume|grep -v grep|awk '{print $2}'|xargs kill -9
+    rm -f kafka_consume.log
     nohup python consume.py > kafka_consume.log 2>&1 &
     if [ 0 == $? ];then
         echo "kafka 消费进程启动【成功】!"

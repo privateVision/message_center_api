@@ -14,6 +14,6 @@ if __name__ == '__main__':
     for msg in kafka_consumer:
         try:
             consume_handler(msg)
-            kafka_consumer.commit(msg.offset)  # 手动提交offset
+            kafka_consumer.commit()  # 手动提交offset
         except Exception, err:
             service_logger.error("处理kafka消息异常：%s" % (err.message,))
