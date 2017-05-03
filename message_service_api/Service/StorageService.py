@@ -206,11 +206,17 @@ def add_user_messsage(ucid, type, msg_id, is_time, start_time, end_time, game):
         if game[0]['apk_id'] != 'all':
             pid = game[0]['apk_id']
         try:
-            insert_user_coupon_sql = "insert into zy_coupon_log(ucid, coupon_id, pid, is_time, start_time, end_time)" \
-                                     " values(%s, %s, %s, %s, %s, %s)" \
-                                     % (ucid, msg_id, pid, is_time, start_time, end_time)
-            mysql_session.execute(insert_user_coupon_sql)
-            mysql_session.commit()
+            find_is_user_get_the_coupon_sql = "select count(*) from zy_coupon_log where ucid = %s" \
+                                              " and coupon_id = %s and pid = %s " % (ucid, msg_id, pid)
+            is_user_get_the_coupon = mysql_session.execute(find_is_user_get_the_coupon_sql).scalar()
+            if is_user_get_the_coupon == 0:
+                insert_user_coupon_sql = "insert into zy_coupon_log(ucid, coupon_id, pid, is_time, start_time, " \
+                                         "end_time) values(%s, %s, %s, %s, %s, %s)" \
+                                         % (ucid, msg_id, pid, is_time, start_time, end_time)
+                mysql_session.execute(insert_user_coupon_sql)
+                mysql_session.commit()
+            else:
+                service_logger.info("用户: %s 已经领取过pid：%s 的卡券：%s, 这次不再分发！" % (ucid, pid, msg_id))
         except Exception, err:
             service_logger.error("添加卡券到每个用户的mysql列表发生异常：%s" % (err.message,))
             mysql_session.rollback()
