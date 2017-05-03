@@ -45,3 +45,4 @@ xattr==0.6.4
 zope.interface==4.1.1
 flask-limiter==0.9.3
 limits==1.2.1
+kafka-logger==0.3.0

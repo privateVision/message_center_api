@@ -8,6 +8,7 @@ from flask import Flask
 from flask_redis import FlaskRedis
 from kafka import KafkaConsumer
 from kafka import KafkaProducer
+from kafka_logger.handler import KafkaLoggingHandler
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.pool import NullPool, SingletonThreadPool
@@ -17,22 +18,22 @@ from config.config import config
 
 import logging
 
-# hdfs 待分析日志记录
-hdfs_logger = logging.getLogger('hdfs_log_service')
-hdfs_logger.setLevel(logging.DEBUG)
-hdfs_fh = TimedRotatingFileHandler('./logs/message_service_hdfs.log',
+# hdfs 待分析日志记录 (输出到本地文件)
+hdfs_logger = logging.getLogger('message_service_heartbeat')
+hdfs_logger.setLevel(logging.INFO)
+hdfs_fh = TimedRotatingFileHandler('./logs/message_service_heartbeat.log',
                                    when="d",
                                    interval=1,
                                    backupCount=10)
 hdfs_fh.suffix = "%Y%m%d.log"
 hdfs_fh.setLevel(logging.DEBUG)
-formatter = logging.Formatter('%(asctime)s - %(message)s')
-hdfs_fh.setFormatter(formatter)
+local_hdfs_logger_formatter = logging.Formatter('%(asctime)s - %(message)s')
+hdfs_fh.setFormatter(local_hdfs_logger_formatter)
 hdfs_logger.addHandler(hdfs_fh)
 
-# 后台业务日志
+# 后台业务日志 (输出到本地文件)
 service_logger = logging.getLogger('message_service')
-service_logger.setLevel(logging.DEBUG)
+service_logger.setLevel(logging.INFO)
 fh = TimedRotatingFileHandler('./logs/message_service_api.log',
                               when="d",
                               interval=1,
@@ -41,32 +42,35 @@ fh.suffix = "%Y%m%d.log"
 fh.setLevel(logging.DEBUG)
 ch = logging.StreamHandler()
 ch.setLevel(logging.INFO)
-formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s - [%(filename)s:%(lineno)s]')
-fh.setFormatter(formatter)
-ch.setFormatter(formatter)
+local_service_logger_formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s '
+                                                   '- %(message)s - [%(filename)s:%(lineno)s]')
+fh.setFormatter(local_service_logger_formatter)
+ch.setFormatter(local_service_logger_formatter)
 service_logger.addHandler(fh)
 service_logger.addHandler(ch)
 
+# Kafka Broker
+kafka_server = "10.13.92.24:9092"
 
-# 邮件和消息通知
-# ADMINS = ['14a1152bf3963d126735637d5e745ae5@mail.bearychat.com']
-# server_host_name = socket.getfqdn(socket.gethostname())
-# server_ip = socket.gethostbyname(server_host_name)
-# mail_handler = SMTPHandler('127.0.0.1', 'server-error@monitor.com', ADMINS,
-#                            "%s-%s-Service Exception Report" % (server_host_name, server_ip))
-# mail_handler.setFormatter(logging.Formatter('''
-# Message type:       %(levelname)s
-# Location:           %(pathname)s:%(lineno)d
-# Module:             %(module)s
-# Function:           %(funcName)s
-# Time:               %(asctime)s
-#
-# Message:
-#
-# %(message)s
-# '''))
-# mail_handler.setLevel(logging.ERROR)
-# service_logger.addHandler(mail_handler)
+# 心跳日志输出到 kafka
+# hdfs_logger = logging.getLogger('message_service_heartbeat')
+# hdfs_logger.setLevel(logging.DEBUG)
+# heartbeat_logger_producer = KafkaProducer(bootstrap_servers=kafka_server)
+# kafka_heartbeat_handler = KafkaLoggingHandler(heartbeat_logger_producer, 'message-service-heartbeat')
+# heartbeat_logger_formatter = logging.Formatter('%(asctime)s - %(message)s')
+# kafka_heartbeat_handler.setFormatter(heartbeat_logger_formatter)
+# hdfs_logger.addHandler(kafka_heartbeat_handler)
+
+
+# 后台业务日志输出到 kafka
+# service_logger = logging.getLogger('message_service')
+# service_logger.setLevel(logging.INFO)
+# message_service_logger_producer = KafkaProducer(bootstrap_servers=kafka_server)
+# kafka_handler = KafkaLoggingHandler(message_service_logger_producer, 'message-service-log')
+# message_service_logger_formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s -'
+#                                                      ' %(message)s - [%(filename)s:%(lineno)s]')
+# kafka_handler.setFormatter(message_service_logger_formatter)
+# service_logger.addHandler(kafka_handler)
 
 
 redis_store = FlaskRedis()
