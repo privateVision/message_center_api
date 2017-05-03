@@ -32,7 +32,7 @@ if [ $count -gt 0 ];then
 else
     echo '开始启动 uwsgi 各进程 ... '
     for port in ${start_ports[*]};
-    dos
+    do
         echo "当前启动端口： $port"
         nohup uwsgi --buffer-size 32768 --socket 127.0.0.1:$port --wsgi-file run.py --callable app  --enable-threads --lazy-apps --evil-reload-on-as 1024 --evil-reload-on-rss 512 --listen 65535 --processes 2 --threads 1  &
         if [ 0 == $? ];then
