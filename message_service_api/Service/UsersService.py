@@ -146,18 +146,6 @@ def get_ucid_by_access_token(access_token=None):
     ucid = RedisHandle.get_ucid_from_redis_by_token(access_token)
     if ucid is not None:
         return ucid
-    find_ucid_sql = "select ucid from session where token = '%s'" % (access_token,)
-    from run import mysql_session
-    try:
-        user_info = mysql_session.execute(find_ucid_sql).first()
-        if user_info is not None:
-            if 'ucid' in user_info:
-                return user_info['ucid']
-    except Exception, err:
-        service_logger.error(err.message)
-        mysql_session.rollback()
-    finally:
-        mysql_session.close()
     return None
 
 
@@ -180,30 +168,9 @@ def get_username_by_ucid(ucid=None):
 def is_session_expired_by_access_token(appid=None, access_token=None):
     if check_user_multi_point_login_token(appid, access_token):
         return True
-    # if get_token_is_expired(access_token):
-    #     return True
-    expired_ts = RedisHandle.get_expired_ts_from_redis_by_token(access_token)
-    now = int(time.time())
-    if expired_ts is not None:
-        if expired_ts < now:
-            return True
-        else:
-            return False
-    from run import mysql_session
-    find_expired_ts_sql = "select expired_ts from session where token = '%s'" % (access_token,)
-    try:
-        user_info = mysql_session.execute(find_expired_ts_sql).first()
-        if user_info is not None:
-            if 'expired_ts' in user_info:
-                if user_info['expired_ts'] < now:
-                    service_logger.info("token_102_session_expired_ts_now")
-                    return True
-                return False
-    except Exception, err:
-        service_logger.error(err.message)
-        mysql_session.rollback()
-    finally:
-        mysql_session.close()
+    expired = RedisHandle.get_is_expired_from_redis_by_token(access_token)
+    if expired is not None:
+        return False
     return True
 
 
@@ -211,18 +178,6 @@ def get_user_is_freeze_by_access_token(access_token=None):
     freeze = RedisHandle.get_user_is_freeze_from_redis_by_token(access_token)
     if freeze is not None:
         return freeze
-    find_freeze_sql = "select freeze from session where token = '%s'" % (access_token,)
-    from run import mysql_session
-    try:
-        user_info = mysql_session.execute(find_freeze_sql).first()
-        if user_info is not None:
-            if 'freeze' in user_info:
-                return user_info['freeze']
-    except Exception, err:
-        service_logger.error(err.message)
-        mysql_session.rollback()
-    finally:
-        mysql_session.close()
     return None
 
 
@@ -258,19 +213,6 @@ def check_user_multi_point_login_token_in_db(appid=None, token=None):
     finally:
         mysql_session.close()
     return True
-
-
-#  获取token是否过期
-# def get_token_is_expired(access_token=None):
-#     from run import mysql_session
-#     find_is_valid_sql = "select count(*) from ucusers where uuid = '%s'" % (access_token,)
-#     is_valid = mysql_session.execute(find_is_valid_sql).scalar()
-#     mysql_session.commit()
-#     service_logger.info('token_uuid 查找结果：%s' % (is_valid,))
-#     service_logger.info("token_102_ucusers_uuid_token: %s" % (is_valid,))
-#     if is_valid == 0:
-#         return True
-#     return False
 
 
 # 根据用户id获取广播列表
@@ -937,27 +879,6 @@ def get_game_info_by_gameid(gameid=None):
     return None
 
 
-# 根据token获取用户当前所在的区服
-def get_user_current_gasme_and_area_by_token(token=None):
-    from run import mysql_session
-    find_user_current_game_area_info_sql = "select s.token, s.zone_id, s.zone_name from session as s " \
-                                           "where s.token = %s limit 1" % (token,)
-    try:
-        game_info = mysql_session.execute(find_user_current_game_area_info_sql).fetchone()
-        game = {}
-        if game_info is not None:
-            game['token'] = game_info['token']
-            game['zone_id'] = game_info['zone_id']
-            game['zone_name'] = game_info['zone_name']
-            return game
-    except Exception, err:
-        service_logger.error("根据token获取用户所在区服发生异常：%s" % (err.message,))
-        mysql_session.rollback()
-    finally:
-        mysql_session.close()
-    return None
-
-
 # 从mysql中查看是否有用户相关的公告
 def get_user_notice_from_mysql(username=None, rtype=None, vip=None, appid=None, cur_zone=None):
     now = int(time.time())
@@ -1055,15 +976,15 @@ def sdk_api_request_check(func):
             return response_data(200, 0, '客户端参数错误')
         # 会话是否过期判断
         is_session_expired = is_session_expired_by_access_token(request.form['_appid'], request.form['_token'])
-        if is_session_expired:
-            return response_data(200, 102, '用户未登录或session已过期')
+        # if is_session_expired:
+        #     return response_data(200, 102, '用户未登录或session已过期')
 
         # 检查账号冻结
         freeze = get_user_is_freeze_by_access_token(request.form['_token'])
         if freeze is not None:
-            if freeze == 1:
+            if int(freeze) == 1:
                 return response_data(200, 101, get_tips('heartbeat', 'user_account_freezed'))
-            if freeze == 2:
+            if int(freeze) == 2:
                 return response_data(200, 108, get_tips('heartbeat', 'sub_user_account_freezed'))
 
         is_sign_true = sdk_api_check_sign(request)

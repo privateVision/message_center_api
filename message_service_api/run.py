@@ -1,4 +1,5 @@
 # _*_ coding: utf-8 _*_
+from flask_limiter import Limiter
 from flask_mongoengine import MongoEngine
 from tornado import netutil
 from tornado import process

@@ -110,39 +110,31 @@ class RedisHandle(object):
 
     @staticmethod
     def get_ucid_from_redis_by_token(token=None):
-        get_token_key = 'session_token_%s' % (token,)
-        get_token_value = redis_store.get(get_token_key)
+        get_token_key = 's_%s' % (token,)
+        get_token_value = redis_store.hgetall(get_token_key)
         if get_token_value is None:
-            return None
-        user_info_str = redis_store.get(get_token_value)
-        if user_info_str is None:
-            return None
-        user_info = json.loads(user_info_str)
-        return user_info['ucid']
+            return 0
+        if get_token_value.has_key('ucid'):
+            return int(get_token_value['ucid'])
+        return 0
 
     @staticmethod
-    def get_expired_ts_from_redis_by_token(token=None):
-        get_token_key = 'session_token_%s' % (token,)
-        get_token_value = redis_store.get(get_token_key)
+    def get_is_expired_from_redis_by_token(token=None):
+        get_token_key = 's_%s' % (token,)
+        get_token_value = redis_store.hgetall(get_token_key)
         if get_token_value is None:
             return None
-        user_info_str = redis_store.get(get_token_value)
-        if user_info_str is None:
-            return None
-        user_info = json.loads(user_info_str)
-        return user_info['expired_ts']
+        return get_token_value
 
     @staticmethod
     def get_user_is_freeze_from_redis_by_token(token=None):
-        get_token_key = 'session_token_%s' % (token,)
-        get_token_value = redis_store.get(get_token_key)
+        get_token_key = 's_%s' % (token,)
+        get_token_value = redis_store.hgetall(get_token_key)
         if get_token_value is None:
             return None
-        user_info_str = redis_store.get(get_token_value)
-        if user_info_str is None:
-            return None
-        user_info = json.loads(user_info_str)
-        return user_info['freeze']
+        if get_token_value.has_key('freeze'):
+            return get_token_value['freeze']
+        return None
 
     @staticmethod
     def get_ucuser_session_id_by_token(token=None):

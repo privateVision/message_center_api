@@ -15,8 +15,7 @@ from MongoModel.AppRulesModel import AppVipRules
 from MongoModel.MessageModel import UsersMessage
 from MongoModel.MessageRevocationModel import MessageRevocation
 from MongoModel.UserMessageModel import UserMessage
-from Service.UsersService import get_ucid_by_access_token, sdk_api_request_check, cms_api_request_check, \
-    get_user_is_freeze_by_access_token
+from Service.UsersService import get_ucid_by_access_token, sdk_api_request_check, cms_api_request_check
 from Utils.RedisUtil import RedisHandle
 from Utils.SystemUtils import log_exception
 
