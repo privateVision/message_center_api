@@ -9,7 +9,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Exceptions\ApiException;
 use App\Model\Orders;
-use App\Model\Session;
+use App\Session;
 
 class OpenController extends OpenBaseController{
 
@@ -17,24 +17,17 @@ class OpenController extends OpenBaseController{
      * 验证当前的用户信息
      * */
 
-        public function AuthLoginAction(){
-
+        public function AuthLoginAction() {
             $token = $this->parameter->tough("token");
             $openid = $this->parameter->tough("open_id");
             $appid = $this->parameter->tough("app_id");
 
             //查询当前的session
-            $dat = Session::where("token",$token)->where("cp_uid",$openid)->where("pid",$appid)->first();
-
-            if($token !== "2mpbl2how4iso08kookw40gcw"){
-                if(time() > $dat['expired_ts']) throw  new ApiException(0,"token 失效"); //失败
-            }
-
-            if($dat){
+            if(!$token || $session->cp_uid !== $openid || $session->pid !== $appid){
+                 throw new ApiException(0, "token失效");
+            } else {
                 return true;
             }
-
-            throw  new ApiException(0,"玩家不存在"); //失败
         }
 
 

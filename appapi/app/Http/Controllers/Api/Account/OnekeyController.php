@@ -12,6 +12,8 @@ class OnekeyController extends Controller {
 
     use LoginAction;
 
+    const Type = 4;
+
     public function getLoginUser() {
         $pid = $this->parameter->tough('_appid');
         $rid = $this->parameter->tough('_rid');
@@ -41,6 +43,7 @@ class OnekeyController extends Controller {
         $user->mobile = $mobile;
         $user->nickname = '暂无昵称';
         $user->setPassword($password);
+        $user->regtype = static::Type;
         $user->regip = $this->request->ip();
         $user->rid = $this->parameter->tough('_rid');
         $user->pid = $this->parameter->tough('_appid');

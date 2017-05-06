@@ -143,6 +143,13 @@ class  AppleController extends Controller{
         $product_id = $this->parameter->tough('product_id');
         $appid  = $this->request->input("_appid");
 
+        if(env('realname')) {
+            $user_info = UcuserInfo::from_cache($this->user->ucid);
+            if(!$user_info || !$user_info->card_no) {
+                throw new ApiException(ApiException::NotRealName, '帐号未实名制，无法支付，请先实名后再操作');
+            }
+        }
+
         $ord = Orders::where("ucid",$ucid)->where('vorderid',$vorderid)->get();
 
         if(count($ord)) return trans("messages.order_info_error") ; //限制关闭

@@ -2,11 +2,12 @@
 namespace App\Http\Controllers\Api\Tool;
 
 use App\Exceptions\ApiException;
-use App\Model\Orders;
 use Illuminate\Http\Request;
+use App\Session;
+use App\Model\Orders;
 use App\Parameter;
 use App\Model\Ucuser;
-use App\Model\Session;
+use App\Model\UcuserSession;
 
 class UserController extends AuthController
 {
@@ -36,18 +37,20 @@ class UserController extends AuthController
         $this->user->save();
 
         if($is_freeze) {
-            $session = Session::from_cache_token($this->user->uuid);
-            if($session) {
-                $session->freeze = $is_freeze ? 1 : 0;
-                $session->save();
-            }
-
             user_log($this->user, $this->procedure, 'freeze', '【冻结账号】%s，由%s操作', $comment, $admin_user);
         } else {
             user_log($this->user, $this->procedure, 'unfreeze', '【解冻账号】由%s操作', $admin_user);
         }
 
+        $usession = UcuserSession::where('ucid', $this->user->ucid)->get();
+        foreach($usession as $v) {
+            $s = Session::find($v->session_token);
+            if($s) {
+                $s->freeze = $is_freeze ? 1 : 0;
+                $s->save();
+            }
+        }
+
         return ['result' => true];
     }
-
 }

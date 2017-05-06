@@ -187,7 +187,7 @@ class AppController extends Controller
 
         $sdk_version  = $this->parameter->get("sdk_version"); //sdk version
 
-        if(!$sdk_version) return ["code"=>0,"msg"=>"参数",data=>""];
+        if(!$sdk_version) return ["code"=>0,"msg"=>"参数","data"=>""];
 
         if($this->parameter->get('_appid') == '846') {
             $manifest = [];

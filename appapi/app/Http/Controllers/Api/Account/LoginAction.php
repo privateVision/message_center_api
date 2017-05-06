@@ -4,10 +4,10 @@ namespace App\Http\Controllers\Api\Account;
 use App\Exceptions\ApiException;
 use Illuminate\Http\Request;
 use App\Parameter;
+use App\Session;
 use App\Model\Ucuser;
 use App\Model\UcuserSubService;
 use App\Model\UcuserSub;
-use App\Model\Session;
 use App\Model\UcuserSession;
 use App\Model\LoginLog;
 use App\Model\UcuserInfo;
@@ -23,31 +23,31 @@ trait LoginAction {
             throw new ApiException(ApiException::AccountFreeze, '账号已被冻结，无法登录', ['ucid' => $user->ucid]);
         }
 
-        //if(!$user)  throw new ApiException(ApiException::OauthNotRegister, '登陆失败，请先注册');
+        //if(!$user)  throw new ApiException(ApiException::OauthNotRegister, '登录失败，请先注册');
         $user_sub_id = $this->getDefaultUserSubId($user);
 
         $user_sub = null;
         if($user_sub_id) {
             $user_sub = UcuserSub::tableSlice($user->ucid)->from_cache($user_sub_id);
             if(!$user_sub || $user_sub->ucid != $user->ucid || $user_sub->pid != $pid) {
-                throw new ApiException(ApiException::Remind, "角色不存在，无法登陆");
+                throw new ApiException(ApiException::Remind, "角色不存在，无法登录");
             }
 
             if($user_sub->is_freeze) {
-                throw new ApiException(ApiException::UserSubFreeze, '子账号已被冻结，无法登陆');
+                throw new ApiException(ApiException::UserSubFreeze, '子账号已被冻结，无法登录');
             }
         }
 
         $is_service = false;
         
         if(!$user_sub) {
-            // 客服登陆用户的小号
+            // 客服登录用户的小号
             $user_sub_service = UcuserSubService::where('ucid', $user->ucid)->where('pid', $pid)->where('status', UcuserSubService::Status_Normal)->orderBy('id', 'desc')->first();
             if($user_sub_service) {
                 $user_sub = UcuserSub::tableSlice($user_sub_service->src_ucid)->from_cache($user_sub_service->user_sub_id);
             }
 
-            // 查找最近一次登陆的小号
+            // 查找最近一次登录的小号
             if(!$user_sub) {
                 $user_sub = UcuserSub::tableSlice($user->ucid)->where('ucid', $user->ucid)->where('pid', $pid)->where('is_freeze', false)->orderBy('priority', 'desc')->first();
                 $is_service = true;
@@ -76,20 +76,19 @@ trait LoginAction {
         }
 
         // session
-        $session = new Session;
+        $session = new Session(uuid($user->ucid));
         $session->pid = $pid;
         $session->rid = $rid;
         $session->ucid = $user->ucid;
         $session->user_sub_id = $user_sub->id;
         $session->user_sub_name = $user_sub->name;
         $session->cp_uid = $user_sub->cp_uid;
-        $session->token = uuid($user->ucid);
-        $session->expired_ts = time() + 2592000; // 1个月有效期
-        $session->date = date('Ymd');
         $session->save();
+        
+        log_debug('session', ['ucid' => $user->ucid, 'pid' => $pid, 'at' => microtime(true), 'token' => $session->token]);
 
         // ucuser_session
-        $usession_uuid = md5_36($user->ucid . min($pid, 100));
+        $usession_uuid = joinkey($user->ucid, min($pid, 100));
         $usession = UcuserSession::from_cache_uuid($usession_uuid);
         if(!$usession) { 
             $usession = new UcuserSession;
@@ -102,8 +101,7 @@ trait LoginAction {
         
         $user->uuid = $session->token;
         $user->last_login_at = datetime();
-        //open_online: 线上没这个字段
-        //$user->last_login_ip = $this->request->ip();
+        $user->last_login_ip = $this->request->ip();
         $user->save();
         $user->updateCache();
 
@@ -122,7 +120,7 @@ trait LoginAction {
             'sub_nickname' => strval($user_sub->name),
             'uid' => $user->ucid,
             'username' => $user->uid,
-            'nickname' => $user->nickname?$user->nickname:"",
+            'nickname' => $user->nickname ? $user->nickname : '',
             'mobile' => strval($user->mobile),
             'avatar' => $user_info && $user_info->avatar ? (string)$user_info->avatar : env('default_avatar'),
             'is_real' => $user_info && $user_info->isReal(),
@@ -130,11 +128,13 @@ trait LoginAction {
             'vip' => $user_info && $user_info->vip ? (int)$user_info->vip : 0,
             'token' => $session->token,
             'balance' => $user->balance,
+            'real_name' => $user_info && $user_info->real_name ? (string)$user_info->real_name : "",
+            'card_no' => $user_info && $user_info->card_no ? (string)$user_info->card_no : "",
         ];
     }
 
     /**
-     * 获取登陆的用户
+     * 获取登录的用户
      * @return [type]               [description]
      */
     abstract public function getLoginUser();

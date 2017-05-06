@@ -291,7 +291,7 @@ function order_success($order_id) {
 function send_sms($mobile, $pid, $template_id, $repalce, $code = '') {
     $smsconfig = config('common.smsconfig');
 
-    if(!env('APP_DEBUG') && Redis::exists(sprintf('sms_%s_60s', $mobile))) {
+    if(!env('APP_DEBUG') && Redis::exists(sprintf('sms_%s_%s_60s', $template_id, $mobile))) {
         throw new \App\Exceptions\Exception('短信发送过于频繁');
     }
 
@@ -349,7 +349,7 @@ function log_debug ($keyword, $content, $desc = '') {
         'level' => 'DEBUG', 
         'ip' => $app->request->ip(),
         'pid' => getmypid(),
-        'datetime' =>datetime(),
+        'datetime' =>datetime() .'.'. substr(microtime(), 2, 6),
         'content' => $content,
     ]));
 }
@@ -366,7 +366,7 @@ function log_info ($keyword, $content, $desc = '') {
         'level' => 'INFO', 
         'ip' => $app->request->ip(),
         'pid' => getmypid(),
-        'datetime' =>datetime(),
+        'datetime' =>datetime() .'.'. substr(microtime(), 2, 6),
         'content' => $content,
     ]));
 }
@@ -383,7 +383,7 @@ function log_warning ($keyword, $content, $desc = '') {
         'level' => 'WARNING', 
         'ip' => $app->request->ip(),
         'pid' => getmypid(),
-        'datetime' =>datetime(),
+        'datetime' =>datetime() .'.'. substr(microtime(), 2, 6),
         'content' => $content,
     ]));
 }
@@ -398,7 +398,7 @@ function log_error ($keyword, $content, $desc = '') {
         'level' => 'ERROR', 
         'ip' => $app->request->ip(),
         'pid' => getmypid(),
-        'datetime' =>datetime(),
+        'datetime' =>datetime() .'.'. substr(microtime(), 2, 6),
         'content' => $content,
     ]));
 }

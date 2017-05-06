@@ -2,6 +2,7 @@
 use Qiniu\Auth;
 use Qiniu\Storage\BucketManager;
 use Qiniu\Storage\UploadManager;
+use App\Redis;
 /*
 |--------------------------------------------------------------------------
 | Application Routes
@@ -14,6 +15,31 @@ use Qiniu\Storage\UploadManager;
 */
 
 $app->get('/', function (Illuminate\Http\Request $request) use ($app) {
+	$sms_reply= '%7B%22id%22%3A%22a21fcb033ff64604b0938404ee2d0fa8%22%2C%22mobile%22%3A%2218376253747%22%2C%22text%22%3A%22%EF%BC%8C%22%2C%22reply_time%22%3A%222017-05-06+13%3A45%3A10%22%2C%22extend%22%3A%22%22%2C%22base_extend%22%3A%22126170%22%2C%22_sign%22%3A%2269d9ce4e37c150a9e95562e55361b1b2%22%7D';
+
+	$sms_reply = @json_decode(urldecode($sms_reply), true);
+	if(!$sms_reply) {
+		return 'FAILURE';
+	}
+	
+	$sign = $sms_reply['_sign'];
+	unset($sms_reply['_sign']);
+	ksort($sms_reply);
+	
+	$data = [];
+	foreach ($sms_reply as $k=>$v){var_dump($k, $v);
+		$data[] = trim($v, ' ');
+	}
+	
+	$data[] = config('common.smsconfig.apikey');
+	
+	// TODO 这里要改...
+	$str = implode(',', $data);
+
+	if($sign !== md5($str)) {
+		return 'FAILURE';
+	}
+	exit;
     $mobile = $request->input('m');
 
     if($mobile) {
@@ -111,8 +137,9 @@ $app->group(['prefix' => 'api'], function () use ($app) {
     $app->post('tool/user/freeze','Api\\Tool\\UserController@FreezeAction');                                // 冻结用户
     $app->post('tool/procedure/query','Api\\Tool\\ProcedureController@QueryAction');                        // 通过包名查询procedure
 
-    $app->post('v1.0/cp/info/order','Api\\OpenController@GetOrderInfoAction');                              //获取订单详情
-    $app->post('v1.0/cp/user/auth','Api\\OpenController@AuthLoginAction');                                  //获取订单详情
+    $app->post('v1.0/cp/info/order','Api\\CP\\OrderController@GetOrderInfoAction');                          //获取订单信息
+    $app->post('v1.0/cp/user/auth','Api\\CP\\UserController@CheckAuthAction');                               //验证登陆是否有效
+
     $app->post('notify', 'TooltestController@Checkf');    // test
     $app->post('sendorder', 'TooltestController@SendOrder');    // test
 

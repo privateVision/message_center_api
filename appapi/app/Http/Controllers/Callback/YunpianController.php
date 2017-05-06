@@ -18,20 +18,21 @@ class YunpianController extends \App\Controller
             if(!$sms_reply) {
                 return 'FAILURE';
             }
+            
+            log_info('YunpianCallback', $sms_reply);
 
             $sign = $sms_reply['_sign'];
             unset($sms_reply['_sign']);
             ksort($sms_reply);
 
-            $dat = [];
-            foreach ( $sms_reply as $k=>$v){
-                $dat[$k] = trim(urldecode($v)," ");
+            $data = [];
+            foreach ($sms_reply as $k=>$v){
+            	$data[] = trim($v, ' ');
             }
 
-            $dat[] = config('common.smsconfig.apikey');
+            $data[] = config('common.smsconfig.apikey');
 
-            // todo: 这里要改...
-            $str = implode(',', $dat);
+            $str = implode(',', $data);
 
             if($sign !== md5($str)) {
                 return 'FAILURE';

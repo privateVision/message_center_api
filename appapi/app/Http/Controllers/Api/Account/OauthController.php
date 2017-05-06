@@ -12,6 +12,8 @@ use App\Model\UcuserInfo;
 class OauthController extends Controller {
 
     use LoginAction, RegisterAction;
+
+    const Type = 3;
 /*
     public function SMSBindAction() {
         $mobile = $this->parameter->tough('mobile', 'mobile');
@@ -177,7 +179,7 @@ class OauthController extends Controller {
 
         $ctype = config("common.oauth.{$type}", false);
         if(!$ctype) {
-            throw new ApiException(ApiException::Error, '未知的第三方登陆类型，type='.$type);
+            throw new ApiException(ApiException::Error, '未知的第三方登录类型，type='.$type);
         }
 
         $openid = "{$openid}@{$type}";
@@ -208,6 +210,7 @@ class OauthController extends Controller {
         $user->mobile = '';
         $user->nickname = $nickname ?: $username;
         $user->setPassword($password);
+        $user->regtype = static::Type;
         $user->regip = $this->request->ip();
         $user->rid = $this->parameter->tough('_rid');
         $user->pid = $this->parameter->tough('_appid');

@@ -134,7 +134,7 @@ class UserSubController extends AuthController
                 'id' => $user_sub->id,
                 'openid' => $user_sub->cp_uid,
                 'name' => $user_sub->name,
-                'status' => 0,
+                'status' => 2,
                 'is_default' => false,
                 'last_login_at' => "",
             ];

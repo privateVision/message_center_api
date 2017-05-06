@@ -11,6 +11,8 @@ class GuestController extends Controller {
 
     use LoginAction;
 
+    const Type = 1;
+
     public function getLoginUser() {
         $password = $this->parameter->get('password');
         $uuid = $this->parameter->tough('_device_id');
@@ -32,6 +34,7 @@ class GuestController extends Controller {
         $user->email = $username . "@anfan.com";
         $user->nickname = '暂无昵称';
         $user->setPassword($password);
+        $user->regtype = static::Type;
         $user->regip = $this->request->ip();
         $user->rid = $this->parameter->tough('_rid');
         $user->pid = $this->parameter->tough('_appid');
@@ -39,7 +42,7 @@ class GuestController extends Controller {
         $user->device_uuid = $uuid;
         $user->save();
 
-        user_log($user, $this->procedure, 'register', '【注册】通过“游客登陆”注册，用户名(%s)，密码[%s]', $username, $user->password);
+        user_log($user, $this->procedure, 'register', '【注册】通过“游客登录”注册，用户名(%s)，密码[%s]', $username, $user->password);
 
         return $user;
     }

@@ -79,7 +79,7 @@ class UserController extends AuthController
             if(!preg_match('/^\d{8}$/', $v)) {
                 throw new ApiException(ApiException::Remind, "生日格式不正确，yyyy-mm-dd");
             }
-
+/*
             $y = substr($v, 0, 4);
             $m = substr($v, 4, 2);
             $d = substr($v, 6, 2);
@@ -89,7 +89,7 @@ class UserController extends AuthController
             if(@$interval->y > 80 || $interval->y < 1) {
                 throw new ApiException(ApiException::Remind, "生日不是一个有效的日期");
             }
-
+*/
             return $v;
         });
 
@@ -149,7 +149,7 @@ class UserController extends AuthController
                 'order_id' => $v->sn,
                 'fee' => $v->fee,
                 'subject' => $v->subject,
-                'otype' => 0, // todo: 这是什么鬼？
+                'otype' => 0, 
                 'createTime' => strtotime($v->createTime),
                 'status' => $v->status,
             ];
@@ -225,11 +225,12 @@ class UserController extends AuthController
     public function SMSBindPhoneAction() {
         $mobile = $this->parameter->tough('mobile', 'mobile');
 
-        $user = Ucuser::where('uid', $this->user->uid)->first();
-        if($user && $user->mobile == $mobile) {
+        $user = Ucuser::where('uid', $mobile)->orWhere('mobile', $mobile)->first();
+
+        if($user) {
             if($user->ucid != $this->user->ucid) {
                 throw new ApiException(ApiException::Remind, "手机号码已经绑定了其它账号");
-            } else {
+            } elseif($this->user->mobile == $mobile) {
                 throw new ApiException(ApiException::Remind, "该账号已经绑定了这个手机号码");
             }
         }
@@ -253,6 +254,7 @@ class UserController extends AuthController
         if(preg_match('/^[\w\d\-\_\.]+@\w+(\.\w+)+$/', $mobile)) {
             throw new ApiException(ApiException::Remind, "该功能已停用");
         }
+
         // ---- end ----
 
         $mobile = $this->parameter->tough('mobile', 'mobile');
@@ -270,6 +272,9 @@ class UserController extends AuthController
         if($user) {
             if($user->ucid != $this->user->ucid) {
                 throw new ApiException(ApiException::Remind, "手机号码已经绑定了其它账号");
+            } elseif(empty($this->user->mobile)) {
+                $this->user->mobile = $mobile;
+                $this->user->save();
             }
         } else {
             $this->user->mobile = $mobile;
@@ -405,7 +410,7 @@ class UserController extends AuthController
         $user_info->card_no = $card_no;
         $user_info->birthday = $card_info['birthday'];
         $user_info->gender = $card_info['gender'];
-        $user_info->asyncSave();
+        $user_info->save();
 
         user_log($this->user, $this->procedure, 'real_name_attest', '【实名认证】姓名:%s，身份证号码:%s', $name, $card_no);
 
@@ -484,7 +489,7 @@ class UserController extends AuthController
         $type = $this->parameter->tough('type');
 
         $count = UcuserOauth::where('type', '!=', $type)->where('ucid', $this->user->ucid)->count();
-        if($count == 0 && $this->user->mobile == "") {
+        if($count == 0 && $this->user->mobile == "" && $this->user->regtype != 6) {
             throw new ApiException(ApiException::Remind, "为了防止遗忘账号，请绑定手机或者其他社交账号后再解除绑定");
         }
 
@@ -569,7 +574,6 @@ class UserController extends AuthController
         $event = $this->parameter->tough('event');
         return ['result' => true];
     }
-
 
     /*
      * 用户角色等级信息日志

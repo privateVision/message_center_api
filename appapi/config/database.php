@@ -47,11 +47,20 @@ return [
     'connections' => [
         'default' => [
             'driver'    => 'mysql',
-            'host'      => env('DB_HOST'),
-            'port'      => env('DB_PORT'),
-            'database'  => env('DB_DATABASE'),
-            'username'  => env('DB_USERNAME'),
-            'password'  => env('DB_PASSWORD'),
+        	'read' => [
+        		'host'      => env('DBR_HOST'),
+        		'port'      => env('DBR_PORT'),
+        		'database'  => env('DBR_DATABASE'),
+        		'username'  => env('DBR_USERNAME'),
+        		'password'  => env('DBR_PASSWORD'),
+        	],
+        	'write' => [
+        		'host'      => env('DBW_HOST'),
+        		'port'      => env('DBW_PORT'),
+        		'database'  => env('DBW_DATABASE'),
+        		'username'  => env('DBW_USERNAME'),
+        		'password'  => env('DBW_PASSWORD'),
+        	],
             'charset'   => env('DB_CHARSET', 'utf8'),
             'collation' => env('DB_COLLATION', 'utf8_unicode_ci'),
             'prefix'    => env('DB_PREFIX'),
@@ -61,11 +70,21 @@ return [
 
         '56gamebbs' => [
             'driver'    => 'mysql',
-            'host'      => env('DB_56GAMEBBS_HOST'),
-            'port'      => env('DB_56GAMEBBS_PORT'),
-            'database'  => env('DB_56GAMEBBS_DATABASE'),
-            'username'  => env('DB_56GAMEBBS_USERNAME'),
-            'password'  => env('DB_56GAMEBBS_PASSWORD'),
+        	'read' => [
+        		'host'      => env('DBR_56GAMEBBS_HOST'),
+        		'port'      => env('DBR_56GAMEBBS_PORT'),
+        		'database'  => env('DBR_56GAMEBBS_DATABASE'),
+        		'username'  => env('DBR_56GAMEBBS_USERNAME'),
+        		'password'  => env('DBR_56GAMEBBS_PASSWORD'),
+        	],
+        	'write' => [
+        		'host'      => env('DBW_56GAMEBBS_HOST'),
+        		'port'      => env('DBW_56GAMEBBS_PORT'),
+        		'database'  => env('DBW_56GAMEBBS_DATABASE'),
+        		'username'  => env('DBW_56GAMEBBS_USERNAME'),
+        		'password'  => env('DBW_56GAMEBBS_PASSWORD'),
+        	],
+            
             'charset'   => env('DB_56GAMEBBS_CHARSET', 'utf8'),
             'collation' => env('DB_56GAMEBBS_COLLATION', 'utf8_unicode_ci'),
             'prefix'    => env('DB_56GAMEBBS_PREFIX'),

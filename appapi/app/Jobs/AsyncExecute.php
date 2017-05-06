@@ -26,16 +26,18 @@ class AsyncExecute extends Job
     }
 
     public function expire_session($ucid) {
-        // todo: 没有锁，防止前脚delete后脚save
-        $session = Session::where('ucid', $ucid)->get();
-        foreach($session as $v) {
-            $v->deleteCache();
-            $v->delete();
+        $hkey = 'us_' . $ucid;
+        $keys = Redis::SMEMBERS($hkey);
+        if(!is_array($keys)) return;
+        foreach($keys as $v) {
+            Redis::del($v);
         }
+
+        Redis::del($hkey);
     }
 
     public function report_role($ucid, $pid, $user_sub_id, $zone_id, $zone_name, $role_id, $role_name, $role_level) {
-        // todo: 非进程安全，无法保证顺序执行
+        // TODO 非进程安全，无法保证顺序执行
         $user_role_uuid = joinkey($pid, $ucid, $user_sub_id, $zone_id, $role_id);
         $user_role = UcuserRole::tableSlice($pid)->from_cache($user_role_uuid);
         if(!$user_role) {
@@ -64,6 +66,7 @@ class AsyncExecute extends Job
         $user_role_log->pid = $pid;
         $user_role_log->ucid = $ucid;
         $user_role_log->user_sub_id = $user_sub_id;
+        $user_role_log->created_ts = time();
         $user_role_log->save();
 
         $procedures_zone_uuid = joinkey($pid, $zone_id);

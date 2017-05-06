@@ -11,6 +11,8 @@ class MobileController extends Controller {
 
     use LoginAction;
 
+    const Type = 2;
+
     public function getLoginUser() {
         $mobile = $this->parameter->tough('mobile', 'mobile');
         $code = $this->parameter->tough('code', 'smscode');
@@ -35,6 +37,7 @@ class MobileController extends Controller {
         $user->mobile = $mobile;
         $user->nickname = '暂无昵称';
         $user->setPassword($password);
+        $user->regtype = static::Type;
         $user->regip = $this->request->ip();
         $user->rid = $this->parameter->tough('_rid');
         $user->pid = $this->parameter->tough('_appid');
@@ -47,6 +50,7 @@ class MobileController extends Controller {
         try {
             send_sms($mobile, 0, 'mobile_register', ['#username#' => $username, '#password#' => $password]);
         } catch (\App\Exceptions\Exception $e) {
+            log_warning('sendsms', $e->getMessage());
             // throw new ApiException(ApiException::Remind, $e->getMessage());
         }
 
