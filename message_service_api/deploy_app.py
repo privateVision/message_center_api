@@ -6,9 +6,12 @@ from fabric.api import env
 from fabric.api import run
 from fabric.context_managers import cd, settings
 
-env.hosts = "192.168.1.246"
-env.user = "root"
-env.password = "123456"
+env.hosts = [
+    'root@192.168.1.246:22'
+]
+env.passwords = {
+    'root@192.168.1.246:22': '123456'
+}
 local_dir = "../message_service_api"
 local_app_name = "message_service_api"
 remote_dir = "/tmp/"
