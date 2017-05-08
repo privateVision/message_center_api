@@ -166,17 +166,17 @@ def get_username_by_ucid(ucid=None):
 
 
 def is_session_expired_by_access_token(appid=None, access_token=None):
-    # if check_user_multi_point_login_token(appid, access_token):
-    #     expired = RedisHandle.get_is_expired_from_redis_by_token(access_token)
-    #     if expired is not None:
-    #         return False
-    # return True
-    if check_user_multi_point_login_token(appid, access_token):
-        return True
-    expired = RedisHandle.get_is_expired_from_redis_by_token(access_token)
-    if expired is not None:
-        return False
+    if check_user_multi_point_login_token(appid, access_token) is False:  # db token 有效
+        expired = RedisHandle.get_is_expired_from_redis_by_token(access_token)
+        if expired is not None:
+            return False
     return True
+    # if check_user_multi_point_login_token(appid, access_token):
+    #     return True
+    # expired = RedisHandle.get_is_expired_from_redis_by_token(access_token)
+    # if expired is not None:
+    #     return False
+    # return True
 
 
 def get_user_is_freeze_by_access_token(access_token=None):
