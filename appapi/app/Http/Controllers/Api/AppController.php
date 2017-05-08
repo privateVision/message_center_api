@@ -20,7 +20,7 @@ class AppController extends Controller
         $apps = $this->parameter->get('device_apps');
         $info = $this->parameter->tough('device_info');
         $app_version = $this->parameter->tough('app_version');
-        $os = $this->parameter->tough('_os');
+        $os = $this->parameter->get('_os');
 
         if($apps) {
             $_apps = json_decode($apps, true);
@@ -79,7 +79,7 @@ class AppController extends Controller
             $update = array(
                 'down_url' => $update_apks->down_uri,
                 'version' => $update_apks->version,
-                'force_update' => false,// open_online:env('APP_DEBUG') ? false : $update_apks->force_update,
+                'force_update' => env('APP_DEBUG') ? false : $update_apks->force_update,
             );
         }
 

@@ -80,13 +80,17 @@ class Parameter
 		$username = trim($username, '　 ');
 
 		if(preg_match('/^\d+$/', $username)) {
-			throw new Exception ("用户名错误，不能为纯数字", 0);
-		}
-
-		if(strlen($username) < 6 || strlen($username) > 15) {
-			throw new Exception ("用户名长度在6-15位之间", 0);
+		    throw new Exception ("用户名错误，不能为纯数字", 0);
 		}
 		
+		if(strlen($username) < 6 || strlen($username) > 15) {
+		    throw new Exception ("用户名长度在6-15位之间", 0);
+		}
+		
+		if(preg_match('/[^a-zA-Z0-9]+/', $username)) {
+		    throw new Exception ("用户名只能由数字和字母组成", 0);
+		}
+
 		return $username;
 	}
 
