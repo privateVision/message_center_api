@@ -968,7 +968,6 @@ def get_user_user_type_and_vip_and_uid_by_ucid(ucid=None):
 def sdk_api_request_check(func):
     @wraps(func)
     def wraper(*args, **kwargs):
-        stime = time.time()
         from Utils.EncryptUtils import sdk_api_params_check, sdk_api_check_sign
         is_params_checked = sdk_api_params_check(request)
         if is_params_checked is False:
@@ -994,12 +993,8 @@ def sdk_api_request_check(func):
             if 'interval' in request.form:
                 interval = request.form['interval']
             hdfs_logger.info("ucid-%s-uri-%s-interval-%s" % (ucid, request.url, interval))
-            etime = time.time()
-            service_logger.info("通用装饰器处理时间：%s" % (etime - stime,))
             return func(*args, **kwargs)
         else:
-            etime = time.time()
-            service_logger.info("通用装饰器处理时间：%s" % (etime - stime,))
             return response_data(200, 0, '请求校验错误')
 
     return wraper
