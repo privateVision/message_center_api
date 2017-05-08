@@ -7,6 +7,8 @@ use App\Parameter;
 use App\Model\ProceduresExtend;
 use App\Model\Log\DeviceApps;
 use App\Model\Log\DeviceInfo;
+use App\Model\IosApplicationConfig;
+use App\Model\ZyGame;
 
 class AppController extends Controller
 {
@@ -18,6 +20,7 @@ class AppController extends Controller
         $apps = $this->parameter->get('device_apps');
         $info = $this->parameter->tough('device_info');
         $app_version = $this->parameter->tough('app_version');
+        $os = $this->parameter->tough('_os');
 
         if($apps) {
             $_apps = json_decode($apps, true);
@@ -28,7 +31,7 @@ class AppController extends Controller
                 $device_apps->apps = $_apps;
                 $device_apps->asyncSave();
             } else {
-                log_('report_device_apps_parse_error', null, '上报的DeviceApps格式无法解析');
+                log_error('report_device_apps_parse_error', null, '上报的DeviceApps格式无法解析');
             }
         }
 
@@ -87,6 +90,20 @@ class AppController extends Controller
         $oauth_weixin .= (strpos($oauth_weixin, '?') === false ? '?' : '&') . $oauth_params;
         $oauth_weibo = env('oauth_url_weibo');
         $oauth_weibo .= (strpos($oauth_weibo, '?') === false ? '?' : '&') . $oauth_params;
+        
+        // ios
+        $ios_app_config = new \stdClass();
+        if($os == 1) {
+        	$game = ZyGame::find($this->procedure->gameCenterId);
+        	$application_config = IosApplicationConfig::find($pid);
+        	if($application_config) {
+        		$ios_app_config = [
+        			'bundle_id' => $application_config->bundle_id,
+        			'apple_id' => $application_config->apple_id,
+        			'name' => $game ? $game->name : '',
+        		];
+        	}
+        }
 
         return [
             'allow_sub_num' => $config->allow_num,
@@ -122,7 +139,9 @@ class AppController extends Controller
             'real_name' => [
                 'need' => $config->real_name_need,
                 'enforce' => $config->real_name_enforce,
-            ]
+            ],
+            
+            'ios_app_config' => $ios_app_config,
         ];
     }
 

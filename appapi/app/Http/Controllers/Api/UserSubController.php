@@ -112,13 +112,14 @@ class UserSubController extends AuthController
 
             $user_sub_num++;
 
+            $cp_uid = $this->user->ucid . sprintf('%05d%02d', $pid, $user_sub_num);
             $user_sub = UcuserSub::tableSlice($this->user->ucid);
-            $user_sub->id = uuid($this->user->ucid);
+            $user_sub->id = $cp_uid;
             $user_sub->ucid = $this->user->ucid;
             $user_sub->pid = $pid;
             $user_sub->rid = $rid;
             $user_sub->old_rid = $rid;
-            $user_sub->cp_uid = $this->user->ucid . sprintf('%05d%02d', $pid, $user_sub_num);
+            $user_sub->cp_uid = $cp_uid;
             $user_sub->name = "小号" . ($user_sub_num);
             $user_sub->priority = 0;
             $user_sub->last_login_at = null;

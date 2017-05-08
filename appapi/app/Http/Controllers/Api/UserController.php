@@ -63,6 +63,8 @@ class UserController extends AuthController
             $data['mobile']['unionid'] = $this->user->mobile;
             $data['mobile']['openid'] = $this->user->mobile;
         }
+        
+        $data['password']['is_bind'] = $this->user->regtype == 6;// TODO App\Http\Controllers\Api\Account\UserController::Type;
 
         return $data;
     }
