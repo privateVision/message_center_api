@@ -263,9 +263,12 @@ def v4_sdk_user_get_gift():
             if game_gift_assign_info:
                 if game_gift_info['assignNum'] >= 1 and game_gift_assign_info['assignNum'] >= 1:
                     # 抽取礼包代码
+                    # find_game_gift_code_sql = "select id, code from cms_gameGiftCode_%s where status = 0 and" \
+                    #                           " gameId= %s and giftId = %s order by id asc limit 1" \
+                    #                           % (table_num, game_id, gift_id)
                     find_game_gift_code_sql = "select id, code from cms_gameGiftCode_%s where status = 0 and" \
-                                              " gameId= %s and giftId = %s order by id asc limit 1" \
-                                              % (table_num, game_id, gift_id)
+                                              " giftId = %s order by id asc limit 1" \
+                                              % (table_num, gift_id)
                     game_gift_code = mysql_cms_session.execute(find_game_gift_code_sql).fetchone()
                     if game_gift_code:
                         if game_gift_code['code'] is not None and game_gift_code['code'] != '':
