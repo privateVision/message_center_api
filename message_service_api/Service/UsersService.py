@@ -982,7 +982,10 @@ def sdk_api_request_check(func):
         # 会话是否过期判断
         is_session_expired = is_session_expired_by_access_token(request.form['_appid'], request.form['_token'])
         if is_session_expired:
-            return response_data(200, 102, '用户未登录或session已过期')
+            data = {
+                '_token': request.form['_token']
+            }
+            return response_data(200, 102, '用户未登录或session已过期', data)
 
         # 检查账号冻结
         freeze = get_user_is_freeze_by_access_token(request.form['_token'])
