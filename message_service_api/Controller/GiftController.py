@@ -378,7 +378,7 @@ def v4_sdk_user_get_recommend_game_list():
     ucid = get_ucid_by_access_token(request.form['_token'])
     os_type = 0
     if '_os' in request.form:
-        os_type = int(request.form)
+        os_type = int(request.form['_os'])
     page = request.form['page'] if request.form.has_key('page') and request.form['page'] else 1
     count = request.form['count'] if request.form.has_key('count') and request.form['count'] else 10
     start_index = (int(page) - 1) * int(count)
