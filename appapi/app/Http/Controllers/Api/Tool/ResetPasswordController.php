@@ -36,7 +36,7 @@ class ResetPasswordController extends Controller
         $user->save();
 
         async_execute('expire_session', $user->ucid);
-        user_log($this->user, $this->procedure, 'reset_password', '【重置用户密码】通过自助页面，旧密码[%s]，新密码[%s]', $old_password, $this->user->password);
+        user_log($user, $this->procedure, 'reset_password', '【重置用户密码】通过自助页面，旧密码[%s]，新密码[%s]', $old_password, $user->password);
 
         return ['result' => true];
     }

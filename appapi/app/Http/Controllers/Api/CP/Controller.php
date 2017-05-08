@@ -1,13 +1,12 @@
 <?php
-
-namespace App\Http\Controllers\Api;
+namespace App\Http\Controllers\Api\CP;
 
 use Illuminate\Http\Request;
 use App\Exceptions\ApiException;
 use App\Parameter;
 use App\Model\Procedures;
 
-class OpenBaseController extends \App\Controller
+class Controller extends \App\Controller
 {
     protected $procedure = null;
     protected $request = null;
@@ -20,33 +19,32 @@ class OpenBaseController extends \App\Controller
             log_info('request', $data, $request->path());
 
             $this->parameter = new Parameter($data);
+
             $_appid = $this->parameter->tough('app_id');
             $_sign = $this->parameter->tough('sign');
-            $open_id = $this->parameter->tough('open_id');
 
             $this->procedure = Procedures::from_cache($_appid);
-            if(!$this->procedure){
-                $this->procedure = Procedures::where("pid",$_appid)->first();
-            }
             if (!$this->procedure) {
-                throw new ApiException(ApiException::Error, "appid not exists:{$_appid}");
+                throw new ApiException(ApiException::Error, '"_appid" not exists:' . $_appid);
             }
 
-            $appkey = $this->procedure->psingKey;
+            $appkey1 = $this->procedure->psingKey;
+            $appkey2 = $this->procedure->appkey();
 
             unset($data['sign']);
-            log_debug('response', http_build_query($data)."&sign_key={$appkey}");
-
-            // ksort($data);
-            //  $sign = md5(http_build_query($data) ."&sign_key={$appkey}");
-
             ksort($data);
-            $sign = md5(http_build_query($data) ."&sign_key={$appkey}");
-            log_debug('response', $sign);
-            if($_sign != $sign) {
+
+            $str = '';
+            foreach($data as $k => $v) {
+                $str .= "{$k}={$v}&";
+            }
+
+            if($_sign !== md5("{$str}sign_key={$appkey1}") && $_sign !== md5("{$str}sign_key={$appkey2}")) {
                 throw new ApiException(ApiException::Error, "签名验证失败");
             }
+
             // ------------------------------------
+
             $this->request = $request;
             $this->before(...array_values($parameters));
             $response = $this->$action(...array_values($parameters));
@@ -54,13 +52,16 @@ class OpenBaseController extends \App\Controller
 
             log_debug('response', $response);
 
-            return array('code' => ApiException::Success, 'msg' => null, 'data' => $response);
+            return array('code' => 0, 'msg' => null, 'data' => $response);
         } catch (ApiException $e) {
-            log_warning('ApiException', ['code' => $e->getCode()], $e->getMessage());
-            return array('code' => $e->getCode(), 'msg' => $e->getMessage(), 'data' => null);
+            $code = $e->getCode();
+            $code = $code == 0 ? 1 : $code;
+
+            log_warning('ApiException', ['code' => $code], $e->getMessage());
+            return array('code' => $code, 'msg' => $e->getMessage(), 'data' => null);
         } catch (\App\Exceptions\Exception $e) {
             log_warning('Exception', ['code' => $e->getCode()], $e->getMessage());
-            return array('code' => ApiException::Remind, 'msg' => $e->getMessage(), 'data' => null);
+            return array('code' => 1, 'msg' => $e->getMessage(), 'data' => null);
         } catch(\Exception $e) {
             log_error('error', ['message' => $e->getMessage(), 'code' => $e->getCode(), 'file' => $e->getFile(), 'line' => $e->getLine()]);
             return array('code' => ApiException::Error, 'msg' => 'system error', 'data' => null);

@@ -32,7 +32,7 @@ class OrderSuccess extends Job
 
         $rediskey = sprintf('order_lock_%s', $this->order_id);
         
-        $is_mutex = Redis::mutex_lock($rediskey, function() use($order) { // 互斥锁， 防止多次操作
+        Redis::mutex_lock($rediskey, function() use($order) { // 互斥锁， 防止多次操作
             try {
                 $order->getConnection()->beginTransaction();
 
@@ -120,7 +120,7 @@ class OrderSuccess extends Job
                 $order->save();
 
                 if($order->is_f()) {
-                    log_debug('debug', $order->toArray(), '购买F币');
+                    log_debug('OrderSuccess', $order->toArray(), '购买F币');
                     $user->increment('balance', $order->fee); // 原子操作很重要
                 } else {
                     Queue::push(new OrderNotify($this->order_id));
@@ -131,10 +131,8 @@ class OrderSuccess extends Job
                 log_error('OrderSuccessError', $e->getMessage(), $e->getMessage());
                 $this->release(5);
             }
-        });
-
-        if($is_mutex) {
+        }, function() {
             $this->release(5);
-        }
+        });
     }
 }

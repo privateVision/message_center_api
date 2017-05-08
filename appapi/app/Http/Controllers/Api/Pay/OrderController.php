@@ -7,6 +7,7 @@ use App\Parameter;
 use App\Model\Orders;
 use App\Model\OrdersExt;
 use App\Model\OrderExtend;
+use App\Model\UcuserInfo;
 
 class OrderController extends Controller {
 
@@ -18,6 +19,13 @@ class OrderController extends Controller {
         $subject = $this->parameter->tough('subject');
         $vorderid = $this->parameter->tough('vorderid');
         $notify_url = $this->parameter->tough('notify_url');
+
+        if(env('realname')) {
+            $user_info = UcuserInfo::from_cache($this->user->ucid);
+            if(!$user_info || !$user_info->card_no) {
+                throw new ApiException(ApiException::NotRealName, '帐号未实名制，无法支付，请先实名后再操作');
+            }
+        }
 
         $order->notify_url = $notify_url;
         $order->vorderid = $vorderid;

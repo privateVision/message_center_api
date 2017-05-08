@@ -13,12 +13,14 @@ class UserController extends Controller {
 
     use LoginAction, RegisterAction;
 
+    const Type = 6;
+
     public function getLoginUser() {
         $username = $this->parameter->tough('username');
         $password = $this->parameter->tough('password', 'password');
         $device_id = $this->parameter->get('_device_id');
 
-        // --------- 登陆错误限制
+        // --------- 登录错误限制
         $key = $device_id;
         if(!$key) {
             $key = $this->request->ip();
@@ -104,6 +106,7 @@ class UserController extends Controller {
         $user->email = $username . "@anfan.com";
         $user->nickname = '暂无昵称';
         $user->setPassword($password);
+        $user->regtype = static::Type;
         $user->regip = $this->request->ip();
         $user->rid = $this->parameter->tough('_rid');
         $user->pid = $this->parameter->tough('_appid');
@@ -157,6 +160,7 @@ class UserController extends Controller {
         $user->save();
         $user->updateCache();
         
+        async_execute('expire_session', $user->ucid);
         user_log($user, $this->procedure, 'reset_password', '【重置密码】通过手机验证码重置，手机号码{%s}，旧密码[%s]，新密码[%s]', $mobile, $old_password, $user->password);
 
         return ['result' => true];

@@ -19,20 +19,18 @@ class Controller extends \App\Controller
 			$data = $request->all();
 
 			log_info('request', $data, $request->path());
+			
+			$s = microtime(true);
 
 			$this->parameter = new Parameter($data);
 			$_appid = $this->parameter->tough('_appid');
 			$_sign = $this->parameter->tough('_sign');
 
 			$this->procedure = Procedures::from_cache($_appid);
-			 if(!$this->procedure){
-				 $this->procedure = Procedures::where("pid",$_appid)->first();
-			 }
 			if (!$this->procedure) {
-				throw new ApiException(ApiException::Error, "appid not exists:{$_appid}");
+				throw new ApiException(ApiException::Error, '"_appid" not exists:' . $_appid);
 			}
 
-			//$this->procedure = $procedure;
 			$appkey = $this->procedure->appkey();
 			
 			unset($data['_sign']);
@@ -43,7 +41,7 @@ class Controller extends \App\Controller
 				throw new ApiException(ApiException::Error, "签名验证失败");
 			}
 
-			// --------- 平台登陆特殊处理 ---------
+			// --------- 平台登录特殊处理 ---------
 			$__appid = $this->parameter->get('__appid');
 			if($__appid) {
 				$this->procedure = Procedures::from_cache($__appid);
@@ -68,18 +66,20 @@ class Controller extends \App\Controller
 			$this->before(...array_values($parameters));
 			$response = $this->$action(...array_values($parameters));
 			$this->after(...array_values($parameters));
+			
+			$e = microtime(true);
 
-			log_debug('response', $response);
+			log_debug('response', ['path' => $request->path(), 'reqdata' => $request->all(), 'resdata' => $response], bcsub($e, $s, 5));
 
 			return array('code' => ApiException::Success, 'msg' => null, 'data' => $response);
 		} catch (ApiException $e) {
-			log_warning('ApiException', ['code' => $e->getCode()], $e->getMessage());
+			log_warning('ApiException', ['code' => $e->getCode(), 'path' => $request->path(), 'reqdata' => $request->all()], $e->getMessage());
 			return array('code' => $e->getCode(), 'msg' => $e->getMessage(), 'data' => $e->getData());
 		} catch (\App\Exceptions\Exception $e) {
-			log_warning('Exception', ['code' => $e->getCode()], $e->getMessage());
+			log_warning('Exception', ['code' => $e->getCode(), 'path' => $request->path(), 'reqdata' => $request->all()], $e->getMessage());
 			return array('code' => ApiException::Remind, 'msg' => $e->getMessage(), 'data' => null);
 		} catch(\Exception $e) {
-			log_error('error', ['message' => $e->getMessage(), 'code' => $e->getCode(), 'file' => $e->getFile(), 'line' => $e->getLine()]);
+			log_error('error', ['message' => $e->getMessage(), 'code' => $e->getCode(), 'file' => $e->getFile(), 'line' => $e->getLine(), 'path' => $request->path(), 'reqdata' => $request->all()]);
 			return array('code' => ApiException::Error, 'msg' => 'system error', 'data' => null);
 		}
 /*

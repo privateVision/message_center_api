@@ -25,8 +25,8 @@ class OrderNotify extends Job
 
         $appkey = $procedures->psingKey;
 
-        $data['openid'] = $order->cp_uid ? $order->cp_uid : $order->ucid;
-       // $data['ucid'] = $order->cp_uid ? $order->cp_uid : $order->ucid; // todo: 兼容旧系统
+        $data['open_id'] = $order->cp_uid ? $order->cp_uid : $order->ucid;
+        // $data['ucid'] = $order->cp_uid ? $order->cp_uid : $order->ucid; // todo: 兼容旧系统
         $data['body'] = $order->body;
         $data['subject'] = $order->subject;
         $data['fee'] = sprintf('%.2f',$order->fee);
@@ -36,19 +36,19 @@ class OrderNotify extends Job
         $data['create_time'] = strval($order->createTime);
         ksort($data);
 
-        /*
         $str = '';
         foreach($data as $k => $v) {
             $str .= "{$k}={$v}&";
         }
 
         $str .= 'sign_key='. $appkey;
-        */
-        $data['sign'] =  md5(http_build_query($data) ."&sign_key={$appkey}");;
+        $data['sign'] = md5($str);
+        
+        //$data['sign'] =  md5(http_build_query($data) ."&sign_key={$appkey}");
 
         $res = http_request($order->notify_url, $data);
 
-        log_info('OrderNotify', ['url' => $order->notify_url, 'reqdata' => $data, 'resdata' => $res]);
+        log_info('OrderNotify', ['url' => $order->notify_url, 'reqdata' => $data, 'resdata' => $res, 'signstr' => $str]);
 
         if(!$res) return $this->retry();
 
