@@ -108,7 +108,6 @@ def sdk_api_params_check(request):
 
 
 def sdk_api_check_sign(request):
-    stime = time.time()
     data_str = ""
     request_data = request.form.copy()
     del request_data['_sign']
@@ -147,8 +146,6 @@ def sdk_api_check_sign(request):
     md5_sign = m.hexdigest()
     service_logger.info("客户端sign为：%s" % (request.form['_sign'],))
     service_logger.info("服务器运算生成sign为：%s" % (md5_sign,))
-    etime = time.time()
-    service_logger.info("签名校验逻辑耗时：%s" % (etime-stime,) )
     if md5_sign == request.form['_sign']:
         return True
     service_logger.info("服务端与客户端签名不匹配")

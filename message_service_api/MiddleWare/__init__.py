@@ -85,6 +85,8 @@ def create_app():
         'db': app.config.get('MONGODB_DATABASE_NAME'),
         'host': app.config.get('MONGODB_DATABASE_HOST'),
         'port': app.config.get('MONGODB_DATABASE_PORT'),
+        'username': app.config.get('MONGODB_DATABASE_USERNAME'),
+        'password': app.config.get('MONGODB_DATABASE_PASSWORD')
     }
 
     init_blueprint(app)  # 注册蓝图模块

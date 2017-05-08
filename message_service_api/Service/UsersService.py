@@ -166,12 +166,17 @@ def get_username_by_ucid(ucid=None):
 
 
 def is_session_expired_by_access_token(appid=None, access_token=None):
-    if check_user_multi_point_login_token(appid, access_token):
-        return True
-    expired = RedisHandle.get_is_expired_from_redis_by_token(access_token)
-    if expired is not None:
-        return False
+    if check_user_multi_point_login_token(appid, access_token) is False:  # db token 有效
+        expired = RedisHandle.get_is_expired_from_redis_by_token(access_token)
+        if expired is not None:
+            return False
     return True
+    # if check_user_multi_point_login_token(appid, access_token):
+    #     return True
+    # expired = RedisHandle.get_is_expired_from_redis_by_token(access_token)
+    # if expired is not None:
+    #     return False
+    # return True
 
 
 def get_user_is_freeze_by_access_token(access_token=None):
@@ -183,18 +188,19 @@ def get_user_is_freeze_by_access_token(access_token=None):
 
 #  检查用户多点登录的token是否有效
 def check_user_multi_point_login_token(appid=None, token=None):
-    ucuser_session_key = RedisHandle.get_ucuser_session_id_by_token(token)
-    if ucuser_session_key is None:
-        return check_user_multi_point_login_token_in_db(appid, token)
-    else:
-        ucuser_session_info = RedisHandle.get_ucuser_session_info_by_id(ucuser_session_key)
-        if ucuser_session_info is None:
-            return check_user_multi_point_login_token_in_db(appid, token)
-        else:
-            if token != ucuser_session_info['session_token']:
-                service_logger.info("token_102_ucuser_session_redis_token_数据不匹配")
-                return True
-    return False
+    return check_user_multi_point_login_token_in_db(appid, token)
+    # ucuser_session_key = RedisHandle.get_ucuser_session_id_by_token(token)
+    # if ucuser_session_key is None:
+    #     return check_user_multi_point_login_token_in_db(appid, token)
+    # else:
+    #     ucuser_session_info = RedisHandle.get_ucuser_session_info_by_id(ucuser_session_key)
+    #     if ucuser_session_info is None:
+    #         return check_user_multi_point_login_token_in_db(appid, token)
+    #     else:
+    #         if token != ucuser_session_info['session_token']:
+    #             service_logger.info("token_102_ucuser_session_redis_token_数据不匹配")
+    #             return True
+    # return False
 
 
 #  访问 DB 检查用户多点登录的token是否有效
@@ -968,7 +974,6 @@ def get_user_user_type_and_vip_and_uid_by_ucid(ucid=None):
 def sdk_api_request_check(func):
     @wraps(func)
     def wraper(*args, **kwargs):
-        stime = time.time()
         from Utils.EncryptUtils import sdk_api_params_check, sdk_api_check_sign
         is_params_checked = sdk_api_params_check(request)
         if is_params_checked is False:
@@ -977,7 +982,10 @@ def sdk_api_request_check(func):
         # 会话是否过期判断
         is_session_expired = is_session_expired_by_access_token(request.form['_appid'], request.form['_token'])
         if is_session_expired:
-            return response_data(200, 102, '用户未登录或session已过期')
+            data = {
+                '_token': request.form['_token']
+            }
+            return response_data(200, 102, '用户未登录或session已过期', data)
 
         # 检查账号冻结
         freeze = get_user_is_freeze_by_access_token(request.form['_token'])
@@ -994,12 +1002,8 @@ def sdk_api_request_check(func):
             if 'interval' in request.form:
                 interval = request.form['interval']
             hdfs_logger.info("ucid-%s-uri-%s-interval-%s" % (ucid, request.url, interval))
-            etime = time.time()
-            service_logger.info("通用装饰器处理时间：%s" % (etime - stime,))
             return func(*args, **kwargs)
         else:
-            etime = time.time()
-            service_logger.info("通用装饰器处理时间：%s" % (etime - stime,))
             return response_data(200, 0, '请求校验错误')
 
     return wraper
