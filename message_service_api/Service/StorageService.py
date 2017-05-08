@@ -533,6 +533,7 @@ def system_message_persist(data_json=None, update_user_message=True):
             users_message.start_time = int(time.time())
         else:
             users_message.start_time = data_json['send_time']
+            users_message.create_timestamp = data_json['send_time']
         users_message.sys = data_json['sys']
         users_message.users = None
         if 'specify_user' in data_json and data_json['specify_user'] is not None:
