@@ -190,7 +190,8 @@ def v4_sdk_user_get_gift():
     find_game_gift_info_sql = "select * from cms_gameGift where id= %s limit 1" % (gift_id,)
     game_gift_info = mysql_cms_session.execute(find_game_gift_info_sql).fetchone()
     if game_gift_info is not None:
-        if game_gift_info['gameId'] != game_id or game_gift_info['status'] != 'normal':
+        # if game_gift_info['gameId'] != game_id or game_gift_info['status'] != 'normal':
+        if game_gift_info['status'] != 'normal':
             return response_data(200, 0, get_tips('gift', 'gift_not_exist_or_out_of_date'))
         if game_gift_info['assignNum'] < 1:
             return response_data(200, 0, get_tips('gift', 'gift_pool_is_empty'))
