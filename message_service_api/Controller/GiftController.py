@@ -394,7 +394,7 @@ def v4_sdk_user_get_recommend_game_list():
                 'package_name': game['package_name'],
                 'filesize': game['filesize'] * 1024,
                 'description': game['description'],
-                'cover': 'http://sdkadm.zhuayou.com' + game['cover'],
+                'cover': game['cover'],
                 'category_name': game['category_name'],
                 'run_status_name': game['run_status_name'],
                 'publish_time': int(time.time()),
