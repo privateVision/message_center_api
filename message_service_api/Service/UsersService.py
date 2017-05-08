@@ -166,6 +166,11 @@ def get_username_by_ucid(ucid=None):
 
 
 def is_session_expired_by_access_token(appid=None, access_token=None):
+    # if check_user_multi_point_login_token(appid, access_token):
+    #     expired = RedisHandle.get_is_expired_from_redis_by_token(access_token)
+    #     if expired is not None:
+    #         return False
+    # return True
     if check_user_multi_point_login_token(appid, access_token):
         return True
     expired = RedisHandle.get_is_expired_from_redis_by_token(access_token)
@@ -183,18 +188,19 @@ def get_user_is_freeze_by_access_token(access_token=None):
 
 #  检查用户多点登录的token是否有效
 def check_user_multi_point_login_token(appid=None, token=None):
-    ucuser_session_key = RedisHandle.get_ucuser_session_id_by_token(token)
-    if ucuser_session_key is None:
-        return check_user_multi_point_login_token_in_db(appid, token)
-    else:
-        ucuser_session_info = RedisHandle.get_ucuser_session_info_by_id(ucuser_session_key)
-        if ucuser_session_info is None:
-            return check_user_multi_point_login_token_in_db(appid, token)
-        else:
-            if token != ucuser_session_info['session_token']:
-                service_logger.info("token_102_ucuser_session_redis_token_数据不匹配")
-                return True
-    return False
+    return check_user_multi_point_login_token_in_db(appid, token)
+    # ucuser_session_key = RedisHandle.get_ucuser_session_id_by_token(token)
+    # if ucuser_session_key is None:
+    #     return check_user_multi_point_login_token_in_db(appid, token)
+    # else:
+    #     ucuser_session_info = RedisHandle.get_ucuser_session_info_by_id(ucuser_session_key)
+    #     if ucuser_session_info is None:
+    #         return check_user_multi_point_login_token_in_db(appid, token)
+    #     else:
+    #         if token != ucuser_session_info['session_token']:
+    #             service_logger.info("token_102_ucuser_session_redis_token_数据不匹配")
+    #             return True
+    # return False
 
 
 #  访问 DB 检查用户多点登录的token是否有效

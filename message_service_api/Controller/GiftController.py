@@ -372,6 +372,9 @@ def v4_sdk_user_unget_gift():
 @sdk_api_request_check
 def v4_sdk_user_get_recommend_game_list():
     ucid = get_ucid_by_access_token(request.form['_token'])
+    os_type = 0
+    if '_os' in request.form:
+        os_type = int(request.form)
     page = request.form['page'] if request.form.has_key('page') and request.form['page'] else 1
     count = request.form['count'] if request.form.has_key('count') and request.form['count'] else 10
     start_index = (int(page) - 1) * int(count)
@@ -381,16 +384,24 @@ def v4_sdk_user_get_recommend_game_list():
     game_list = []
     game_count = 0
     try:
-        find_game_count_sql = "select count(*) from zy_gameRecom where status = 'normal' "
+        if os_type == 0:  # android
+            find_game_count_sql = "select count(*) from zy_gameRecom where status = 'normal'" \
+                                  " and down_url is not null "
+            find_game_info_sql = "select * from zy_gameRecom where status = 'normal' and down_url is not null" \
+                                 " order by sort asc limit %s, %s" % (start_index, end_index)
+        else:  # 1 -> ios
+            find_game_count_sql = "select count(*) from zy_gameRecom where status = 'normal'" \
+                                  " and down_url_ios is not null "
+            find_game_info_sql = "select * from zy_gameRecom where status = 'normal' and down_url_ios is not null" \
+                                 " order by sort asc limit %s, %s" % (start_index, end_index)
         game_count = mysql_session.execute(find_game_count_sql).scalar()
-        find_game_info_sql = "select * from zy_gameRecom where status = 'normal' order by sort asc " \
-                             "limit %s, %s" % (start_index, end_index)
         game_info_list = mysql_session.execute(find_game_info_sql).fetchall()
         for game in game_info_list:
             game = {
                 'id': game['game_id'],
                 'name': game['name'],
                 'down_url': game['down_url'],
+                'down_url_ios': game['down_url_ios'],
                 'package_name': game['package_name'],
                 'filesize': game['filesize'] * 1024,
                 'description': game['description'],
