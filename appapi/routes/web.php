@@ -15,31 +15,6 @@ use App\Redis;
 */
 
 $app->get('/', function (Illuminate\Http\Request $request) use ($app) {
-	$sms_reply= '%7B%22id%22%3A%22a21fcb033ff64604b0938404ee2d0fa8%22%2C%22mobile%22%3A%2218376253747%22%2C%22text%22%3A%22%EF%BC%8C%22%2C%22reply_time%22%3A%222017-05-06+13%3A45%3A10%22%2C%22extend%22%3A%22%22%2C%22base_extend%22%3A%22126170%22%2C%22_sign%22%3A%2269d9ce4e37c150a9e95562e55361b1b2%22%7D';
-
-	$sms_reply = @json_decode(urldecode($sms_reply), true);
-	if(!$sms_reply) {
-		return 'FAILURE';
-	}
-	
-	$sign = $sms_reply['_sign'];
-	unset($sms_reply['_sign']);
-	ksort($sms_reply);
-	
-	$data = [];
-	foreach ($sms_reply as $k=>$v){var_dump($k, $v);
-		$data[] = trim($v, ' ');
-	}
-	
-	$data[] = config('common.smsconfig.apikey');
-	
-	// TODO 这里要改...
-	$str = implode(',', $data);
-
-	if($sign !== md5($str)) {
-		return 'FAILURE';
-	}
-	exit;
     $mobile = $request->input('m');
 
     if($mobile) {

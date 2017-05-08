@@ -5,6 +5,7 @@ use App\Redis;
 use App\Model\UcuserRole;
 use App\Model\ProceduresZone;
 use App\Model\Log\UserRoleLog;
+use App\Model\UcuserSession;
 use App\Model\Session;
 
 class AsyncExecute extends Job
@@ -34,6 +35,8 @@ class AsyncExecute extends Job
         }
 
         Redis::del($hkey);
+
+        UcuserSession::where('ucid', $ucid)->update(['session_token' => '']);
     }
 
     public function report_role($ucid, $pid, $user_sub_id, $zone_id, $zone_name, $role_id, $role_name, $role_level) {
