@@ -205,7 +205,7 @@ function md5_36($str) {
 
 /**
  * 主要用于生成多联的KEY，24~25位36进制
- * @return [type] [description]
+ * @return string md5 to 36
  */
 function joinkey() {
     $key = implode('_', func_get_args());

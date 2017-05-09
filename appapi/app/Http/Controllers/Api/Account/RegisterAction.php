@@ -30,7 +30,7 @@ trait RegisterAction {
         // 用户没有可用的小号，创建
         if(!$user_sub) {
             $user_sub = UcuserSub::tableSlice($user->ucid);
-            $user_sub->id = uuid($user->ucid);
+            $user_sub->id = $user->ucid . sprintf('%05d01', $pid);
             $user_sub->ucid = $user->ucid;
             $user_sub->pid = $pid;
             $user_sub->rid = $rid;
@@ -39,7 +39,6 @@ trait RegisterAction {
             $user_sub->name = '小号1';
             $user_sub->priority = time();
             $user_sub->last_login_at = datetime();
-            $user_sub->save();
         }
 
         $user_sub->priority = time();
@@ -47,7 +46,7 @@ trait RegisterAction {
         $user_sub->save();
 
         // session
-        $session = new Session(uuid($user->ucid));
+        $session = new Session(joinkey($user->ucid, $pid, $rid, $user_sub->id));
         $session->pid = $pid;
         $session->rid = $rid;
         $session->ucid = $user->ucid;
@@ -55,7 +54,7 @@ trait RegisterAction {
         $session->user_sub_name = $user_sub->name;
         $session->cp_uid = $user_sub->cp_uid;
         $session->save();
-        
+
         log_debug('session', ['ucid' => $user->ucid, 'pid' => $pid, 'at' => microtime(true), 'token' => $session->token]);
 
         // ucuser_session

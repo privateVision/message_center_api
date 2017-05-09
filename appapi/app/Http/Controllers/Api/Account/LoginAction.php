@@ -23,7 +23,6 @@ trait LoginAction {
             throw new ApiException(ApiException::AccountFreeze, '账号已被冻结，无法登录', ['ucid' => $user->ucid]);
         }
 
-        //if(!$user)  throw new ApiException(ApiException::OauthNotRegister, '登录失败，请先注册');
         $user_sub_id = $this->getDefaultUserSubId($user);
 
         $user_sub = null;
@@ -34,7 +33,7 @@ trait LoginAction {
             }
 
             if($user_sub->is_freeze) {
-                throw new ApiException(ApiException::UserSubFreeze, '子账号已被冻结，无法登录');
+                throw new ApiException(ApiException::UserSubFreeze, '角色已被冻结，无法登录');
             }
         }
 
@@ -45,18 +44,18 @@ trait LoginAction {
             $user_sub_service = UcuserSubService::where('ucid', $user->ucid)->where('pid', $pid)->where('status', UcuserSubService::Status_Normal)->orderBy('id', 'desc')->first();
             if($user_sub_service) {
                 $user_sub = UcuserSub::tableSlice($user_sub_service->src_ucid)->from_cache($user_sub_service->user_sub_id);
+                $is_service = $user_sub != null;
             }
 
             // 查找最近一次登录的小号
             if(!$user_sub) {
                 $user_sub = UcuserSub::tableSlice($user->ucid)->where('ucid', $user->ucid)->where('pid', $pid)->where('is_freeze', false)->orderBy('priority', 'desc')->first();
-                $is_service = true;
             }
 
             // 用户没有可用的小号，创建
             if(!$user_sub) {
                 $user_sub = UcuserSub::tableSlice($user->ucid);
-                $user_sub->id = uuid($user->ucid);
+                $user_sub->id = $user->ucid . sprintf('%05d01', $pid);
                 $user_sub->ucid = $user->ucid;
                 $user_sub->pid = $pid;
                 $user_sub->rid = $rid;
@@ -65,7 +64,6 @@ trait LoginAction {
                 $user_sub->name = '小号1';
                 $user_sub->priority = time();
                 $user_sub->last_login_at = datetime();
-                $user_sub->save();
             }
         }
 
@@ -76,7 +74,7 @@ trait LoginAction {
         }
 
         // session
-        $session = new Session(uuid($user->ucid));
+        $session = new Session(joinkey($user->ucid, $pid, $rid, $user_sub->id));
         $session->pid = $pid;
         $session->rid = $rid;
         $session->ucid = $user->ucid;

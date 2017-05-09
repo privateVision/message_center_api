@@ -4,8 +4,6 @@ namespace App;
 use App\Redis;
 
 class Session {
-
-
     protected $data = [];
     protected $_data = [];
     protected $exists = false;
@@ -44,15 +42,11 @@ class Session {
             $_params[] = $v;
         }
 
-        if(!$this->exists) {
-            $_params[] = 'created_at';
-            $_params[] = date('Y-m-d H:i:s');
-        }
-
         Redis::HMSET($this->rediskey, ...$_params);
         if($this->exists == false) {
             Redis::SADD('us_' . $this->data['ucid'], $this->rediskey);
-            Redis::EXPIRE($this->rediskey, 2592000);
+            // 3天过期，防止大量垃圾数据堆积
+            Redis::EXPIRE($this->rediskey, 259200);
         }
     }
 
