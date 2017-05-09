@@ -12,7 +12,7 @@ from Service.UsersService import get_ucid_by_access_token, sdk_api_request_check
     get_game_info_by_appid, get_user_gift_count, get_user_can_see_gift_count, get_user_can_see_gift_list, \
     get_user_already_get_and_today_publish_gift_id_list, get_gift_real_time_count, get_game_info_by_gameid
 from Utils.RedisUtil import RedisHandle
-from Utils.SystemUtils import log_exception
+from Utils.SystemUtils import log_exception, remove_html_tags
 import math
 
 gift_controller = Blueprint('GiftController', __name__)
@@ -135,7 +135,7 @@ def v4_sdk_get_gifts_list():
             'game_id': gift['gameId'],
             'game_name': gift['gameName'],
             'gift': gift['gift'],
-            'content': gift['content'],
+            'content': remove_html_tags(gift['content']),
             'publish_time': gift['publishTime'],
             'fail_time': gift['failTime'],
             'code': gift['code'],
