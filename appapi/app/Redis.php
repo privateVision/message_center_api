@@ -1,5 +1,6 @@
 <?php
 namespace App;
+
 use Illuminate\Support\Facades\Redis as BaseRedis;
 
 class Redis extends BaseRedis {
