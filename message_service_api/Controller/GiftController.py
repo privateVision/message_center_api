@@ -12,7 +12,7 @@ from Service.UsersService import get_ucid_by_access_token, sdk_api_request_check
     get_game_info_by_appid, get_user_gift_count, get_user_can_see_gift_count, get_user_can_see_gift_list, \
     get_user_already_get_and_today_publish_gift_id_list, get_gift_real_time_count, get_game_info_by_gameid
 from Utils.RedisUtil import RedisHandle
-from Utils.SystemUtils import log_exception
+from Utils.SystemUtils import log_exception, remove_html_tags
 import math
 
 gift_controller = Blueprint('GiftController', __name__)
@@ -135,7 +135,7 @@ def v4_sdk_get_gifts_list():
             'game_id': gift['gameId'],
             'game_name': gift['gameName'],
             'gift': gift['gift'],
-            'content': gift['content'],
+            'content': remove_html_tags(gift['content']),
             'publish_time': gift['publishTime'],
             'fail_time': gift['failTime'],
             'code': gift['code'],
@@ -263,9 +263,12 @@ def v4_sdk_user_get_gift():
             if game_gift_assign_info:
                 if game_gift_info['assignNum'] >= 1 and game_gift_assign_info['assignNum'] >= 1:
                     # 抽取礼包代码
+                    # find_game_gift_code_sql = "select id, code from cms_gameGiftCode_%s where status = 0 and" \
+                    #                           " gameId= %s and giftId = %s order by id asc limit 1" \
+                    #                           % (table_num, game_id, gift_id)
                     find_game_gift_code_sql = "select id, code from cms_gameGiftCode_%s where status = 0 and" \
-                                              " gameId= %s and giftId = %s order by id asc limit 1" \
-                                              % (table_num, game_id, gift_id)
+                                              " giftId = %s order by id asc limit 1" \
+                                              % (table_num, gift_id)
                     game_gift_code = mysql_cms_session.execute(find_game_gift_code_sql).fetchone()
                     if game_gift_code:
                         if game_gift_code['code'] is not None and game_gift_code['code'] != '':
@@ -375,7 +378,7 @@ def v4_sdk_user_get_recommend_game_list():
     ucid = get_ucid_by_access_token(request.form['_token'])
     os_type = 0
     if '_os' in request.form:
-        os_type = int(request.form)
+        os_type = int(request.form['_os'])
     page = request.form['page'] if request.form.has_key('page') and request.form['page'] else 1
     count = request.form['count'] if request.form.has_key('count') and request.form['count'] else 10
     start_index = (int(page) - 1) * int(count)

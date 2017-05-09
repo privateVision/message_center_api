@@ -141,11 +141,11 @@ def v4_anfeng_helper_gifts():
     end_index = int(count)
     from run import mysql_cms_session
     find_anfeng_helper_total_count = "select count(*) from cms_gameGift as gift join cms_gameGiftAssign" \
-                                     " as assign on gift.id=assign.giftId where assign.platformId = 4 " \
+                                     " as assign on gift.id=assign.giftId where assign.platformId = 3 " \
                                      "and gift.status='normal' and assign.status='normal' "
     find_anfeng_helper_gift_list = "select gift.*, assign.assignNum as a_assignNum, assign.num as a_num" \
                                    " from cms_gameGift as gift join cms_gameGiftAssign as assign " \
-                                   "on gift.id=assign.giftId where assign.platformId = 4 and gift.status='normal'" \
+                                   "on gift.id=assign.giftId where assign.platformId = 3 and gift.status='normal'" \
                                    " and assign.status='normal' limit %s, %s " % (start_index, end_index)
     total_count = mysql_cms_session.execute(find_anfeng_helper_total_count).scalar()
     data_list = mysql_cms_session.execute(find_anfeng_helper_gift_list).fetchall()
@@ -188,10 +188,12 @@ def v4_anfeng_helper_gifts_real_time_count():
     if 'gift_ids' not in request.form:
         return response_data(200, 0, '礼包id不能为空')
     gift_ids = request.form['gift_ids']
+    if gift_ids == '' or gift_ids is None:
+        return response_data(http_code=200, code=0, message='gift_ids不能为空')
     ids_list = gift_ids.split('|')
     ids_list_str = ",".join(ids_list)
     from run import mysql_cms_session
-    find_gift_info_sql = "select giftId, assignNum, num from cms_gameGiftAssign where platformId = 4 " \
+    find_gift_info_sql = "select giftId, assignNum, num from cms_gameGiftAssign where platformId = 3 " \
                          "and giftId in (%s)" % (ids_list_str,)
     gift_info_list = mysql_cms_session.execute(find_gift_info_sql).fetchall()
     data_list = []
@@ -312,7 +314,7 @@ def v4_anfeng_helper_tao_gift():
     from run import mysql_cms_session
     tao_gift_sql = "select log.* from cms_gameGiftLog as log join cms_gameGift as gift on log.giftId = gift.id" \
                    " where log.status = 'normal' and gift.status = 'normal' and gift.isTaoNum = 1 " \
-                   " and log.platformId = 4 and log.giftId = %s and forTime < %s and log.uid != %s " \
+                   " and log.platformId = 3 and log.giftId = %s and forTime < %s and log.uid != %s " \
                    "order by num limit 1" % (gift_id, for_time, ucid)
     tao_info = mysql_cms_session.execute(tao_gift_sql).fetchone()
     if tao_info is not None:
