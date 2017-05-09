@@ -74,7 +74,7 @@ trait LoginAction {
         }
 
         // session
-        $session = new Session(joinkey($user->ucid, $pid, $rid, $user_sub->id));
+        $session = new Session(uuid($user->ucid));
         $session->pid = $pid;
         $session->rid = $rid;
         $session->ucid = $user->ucid;
