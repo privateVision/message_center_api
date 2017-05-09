@@ -89,8 +89,8 @@ def v4_sdk_acheive_coupon():
     coupon_id = int(request.form['coupon_id'])
     if coupon_id == 0:
         return response_data(200, 0, '参数异常：卡券id不能为零')
+    from run import mysql_session
     try:
-        from run import mysql_session
         find_coupon_info_sql = "select id, name, game, is_time, start_time, end_time from zy_coupon" \
                                " where status = 'normal' and id = %s limit 1" % (coupon_id,)
         coupon_info = mysql_session.execute(find_coupon_info_sql).fetchone()
@@ -195,15 +195,20 @@ def v4_anfeng_helper_gifts_real_time_count():
     from run import mysql_cms_session
     find_gift_info_sql = "select giftId, assignNum, num from cms_gameGiftAssign where platformId = 3 " \
                          "and giftId in (%s)" % (ids_list_str,)
-    gift_info_list = mysql_cms_session.execute(find_gift_info_sql).fetchall()
-    data_list = []
-    for data in gift_info_list:
-        count_info = {
-            'gift_id': data['giftId'],
-            'assign_num': data['assignNum'],
-            'num': data['num']
-        }
-        data_list.append(count_info)
+    try:
+        gift_info_list = mysql_cms_session.execute(find_gift_info_sql).fetchall()
+        data_list = []
+        for data in gift_info_list:
+            count_info = {
+                'gift_id': data['giftId'],
+                'assign_num': data['assignNum'],
+                'num': data['num']
+            }
+            data_list.append(count_info)
+    except Exception, err:
+        mysql_cms_session.rollback()
+    finally:
+        mysql_cms_session.close()
     return response_data(http_code=200, data=data_list)
 
 
@@ -224,6 +229,10 @@ def v4_anfeng_helper_get_user_gifts():
     start_index = (int(page) - 1) * int(count)
     end_index = start_index + int(count)
     gift_list = []
+    data = {
+        'total_count': 0,
+        'gift_list': []
+    }
     user_gift_total_count_sql = "select count(gift.id) from cms_gameGiftLog as log join cms_gameGift as gift" \
                                 " on log.giftId = gift.id where gift.status = 'normal' and " \
                                 "log.status = 'normal' and log.uid = %s " % (ucid,)
@@ -231,33 +240,36 @@ def v4_anfeng_helper_get_user_gifts():
                         "cms_gameGift as gift on log.giftId = gift.id" \
                         " where gift.status = 'normal' and log.status = 'normal' and log.uid = %s limit %s, %s" \
                         % (ucid, start_index, end_index)
-    total_count = mysql_cms_session.execute(user_gift_total_count_sql).scalar()
-    user_gift_list = mysql_cms_session.execute(get_user_gift_sql).fetchall()
-    for gift in user_gift_list:
-        game = get_game_info_by_gameid(gift['gameId'])
-        gift_info = {
-            'id': gift['id'],
-            'gameId': gift['gameId'],
-            'gameName': gift['gameName'],
-            'gameCover': game['cover'],
-            'name': gift['name'],
-            'gift': gift['gift'],
-            'content': gift['content'],
-            'label': gift['label'],
-            'total': gift['total'],
-            'num': gift['num'],
-            'assignNum': gift['assignNum'],
-            'code': gift['code'],
-            'for_time': gift['forTime'],
-            'type': gift['type'],
-            'publish_time': gift['publishTime'],
-            'fail_time': gift['failTime']
-        }
-        gift_list.append(gift_info)
-    data = {
-        'total_count': total_count,
-        'gift_list': gift_list
-    }
+    try:
+        total_count = mysql_cms_session.execute(user_gift_total_count_sql).scalar()
+        user_gift_list = mysql_cms_session.execute(get_user_gift_sql).fetchall()
+        for gift in user_gift_list:
+            game = get_game_info_by_gameid(gift['gameId'])
+            gift_info = {
+                'id': gift['id'],
+                'gameId': gift['gameId'],
+                'gameName': gift['gameName'],
+                'gameCover': game['cover'],
+                'name': gift['name'],
+                'gift': gift['gift'],
+                'content': gift['content'],
+                'label': gift['label'],
+                'total': gift['total'],
+                'num': gift['num'],
+                'assignNum': gift['assignNum'],
+                'code': gift['code'],
+                'for_time': gift['forTime'],
+                'type': gift['type'],
+                'publish_time': gift['publishTime'],
+                'fail_time': gift['failTime']
+            }
+            gift_list.append(gift_info)
+        data['total_count'] = total_count
+        data['gift_list'] = gift_list
+    except Exception, err:
+        mysql_cms_session.rollback()
+    finally:
+        mysql_cms_session.close()
     return response_data(http_code=200, data=data)
 
 
@@ -274,22 +286,29 @@ def v4_anfeng_helper_is_user_gift_get():
     if ucid == 0 and '_token' in request.form:
         ucid = get_ucid_by_access_token(request.form['_token'])
     gift_id = int(request.form['gift_id'])
-    is_exist_sql = "select count(*) from cms_gameGiftLog as log where log.status = 'normal'" \
-                   " and log.uid = %s and log.giftId = %s " % (ucid, gift_id)
-    is_exist = mysql_cms_session.execute(is_exist_sql).scalar()
-    find_code_sql = "select code from cms_gameGiftLog as log where log.status = 'normal'" \
-                    " and log.uid = %s and log.giftId = %s limit 1" % (ucid, gift_id)
-    code_info = mysql_cms_session.execute(find_code_sql).fetchone()
-    assign_num, num = get_gift_real_time_count(4, gift_id)
     data = {
         'is_get': False,
         'code': '',
-        'assign_num': assign_num,
-        'num': num
+        'assign_num': 0,
+        'num': 0
     }
-    if is_exist > 0:
-        data['is_get'] = True
-        data['code'] = code_info['code']
+    try:
+        is_exist_sql = "select count(*) from cms_gameGiftLog as log where log.status = 'normal'" \
+                       " and log.uid = %s and log.giftId = %s " % (ucid, gift_id)
+        is_exist = mysql_cms_session.execute(is_exist_sql).scalar()
+        find_code_sql = "select code from cms_gameGiftLog as log where log.status = 'normal'" \
+                        " and log.uid = %s and log.giftId = %s limit 1" % (ucid, gift_id)
+        code_info = mysql_cms_session.execute(find_code_sql).fetchone()
+        assign_num, num = get_gift_real_time_count(3, gift_id)
+        data['assign_num'] = assign_num
+        data['num'] = num
+        if is_exist > 0:
+            data['is_get'] = True
+            data['code'] = code_info['code']
+    except Exception, err:
+        mysql_cms_session.rollback()
+    finally:
+        mysql_cms_session.close()
     return response_data(http_code=200, data=data)
 
 
