@@ -188,6 +188,8 @@ def v4_anfeng_helper_gifts_real_time_count():
     if 'gift_ids' not in request.form:
         return response_data(200, 0, '礼包id不能为空')
     gift_ids = request.form['gift_ids']
+    if gift_ids == '' or gift_ids is None:
+        return response_data(http_code=200, code=0, message='gift_ids不能为空')
     ids_list = gift_ids.split('|')
     ids_list_str = ",".join(ids_list)
     from run import mysql_cms_session
