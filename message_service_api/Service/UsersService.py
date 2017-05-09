@@ -850,7 +850,7 @@ def get_user_tao_gift_total_count(ucid=None, platform_id=4):
 
 
 # 获取礼包的实时数量
-def get_gift_real_time_count(platform_id=4, gift_id=0):
+def get_gift_real_time_count(platform_id=3, gift_id=0):
     from run import mysql_cms_session
     find_count_sql = "select assignNum, num from cms_gameGiftAssign" \
                      " where platformId = %s and giftId = %s" % (platform_id, gift_id)
