@@ -143,7 +143,8 @@ def v4_sdk_get_gifts_list():
             'total': int(gift['assignNum']) + int(gift['num']),
             'is_get': gift['is_get'],
             'is_af_receive': gift['isAfReceive'],
-            'is_bind_phone': gift['isBindPhone']
+            'is_bind_phone': gift['isBindPhone'],
+            'is_verified': gift['isVerified']
         }
         data_list.append(info)
     data = {
