@@ -1,8 +1,4 @@
 <?php
-use Qiniu\Auth;
-use Qiniu\Storage\BucketManager;
-use Qiniu\Storage\UploadManager;
-use App\Redis;
 /*
 |--------------------------------------------------------------------------
 | Application Routes
@@ -15,18 +11,18 @@ use App\Redis;
 */
 
 $app->get('/', function (Illuminate\Http\Request $request) use ($app) {
-    $mobile = $request->input('m');
-
-    if($mobile) {
-        $data = \App\Model\SMSRecord::where('mobile', $mobile)->orderBy('created_at', 'desc')->limit(50)->get();
-    } else {
-        $data = \App\Model\SMSRecord::orderBy('created_at', 'desc')->limit(50)->get();
-    }
-
-    foreach($data as $v) {
-        //if($v->code) {
-        echo $v->mobile ."&nbsp;&nbsp;&nbsp;". $v->created_at ."&nbsp;&nbsp;&nbsp;". $v->content . "<br/>";
-        //}
+    if(env('APP_DEBUG')) {
+        $mobile = $request->input('m');
+    
+        if($mobile) {
+            $data = \App\Model\SMSRecord::where('mobile', $mobile)->orderBy('created_at', 'desc')->limit(50)->get();
+        } else {
+            $data = \App\Model\SMSRecord::orderBy('created_at', 'desc')->limit(50)->get();
+        }
+    
+        foreach($data as $v) {
+            echo $v->mobile ."&nbsp;&nbsp;&nbsp;". $v->created_at ."&nbsp;&nbsp;&nbsp;". $v->content . "<br/>";
+        }
     }
 });
 
@@ -40,7 +36,7 @@ $app->group(['prefix' => 'pay_callback'], function () use ($app) {
     $app->post('wechat', 'PayCallback\\WechatController@CallbackAction');                                   // 微信支付回调
 });
 
-// 对外公开（无限制的）功能（杂项）
+// 接收各种回调
 $app->group(['prefix' => 'callback'], function () use ($app) {
     $app->post('yunpian/request', 'Callback\\YunpianController@RequestAction');                             // 云片手机短信回调
 });

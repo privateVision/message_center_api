@@ -168,11 +168,9 @@ class OauthController extends Controller {
     public function getRegisterUser() {
         $openid = $this->parameter->tough('openid');
         $type = $this->parameter->tough('type');
-        $unionid = $this->parameter->get('unionid', "", function($unionid) use($type) {
-            $unionid = trim($unionid);
-            if($type == 'weixin' && $unionid == '') throw new ApiException(ApiException::Error, "unionid不允许为空");
-            return $unionid;
-        });
+        $unionid = $this->parameter->get('unionid', "");
+        
+        if($type == 'weixin' && $unionid == '') throw new ApiException(ApiException::Error, "unionid不允许为空");
 
         $nickname = $this->parameter->get('nickname');
         $avatar = $this->parameter->get('avatar');
@@ -241,11 +239,9 @@ class OauthController extends Controller {
     public function getLoginUser() {
         $openid = $this->parameter->tough('openid');
         $type = $this->parameter->tough('type');
-        $unionid = $this->parameter->get('unionid', "", function($unionid) use($type) {
-            $unionid = trim($unionid);
-            if($type == 'weixin' && $unionid == '') throw new ApiException(ApiException::Error, "unionid不允许为空");
-            return $unionid;
-        });
+        $unionid = $this->parameter->get('unionid', "");
+        
+        if($type == 'weixin' && $unionid == '') throw new ApiException(ApiException::Error, "unionid不允许为空");
 
         $openid = "{$openid}@{$type}";;
         $unionid = $unionid ? "{$unionid}@{$type}" : '';

@@ -75,25 +75,11 @@ class UserController extends AuthController
         $city = $this->parameter->get('city');
         $address = $this->parameter->get('address');
         $gender = $this->parameter->get('gender');
-        $birthday = $this->parameter->get('birthday', null, function($v) {
-            if(empty($v)) return null;
-
-            if(!preg_match('/^\d{8}$/', $v)) {
-                throw new ApiException(ApiException::Remind, "生日格式不正确，yyyy-mm-dd");
-            }
-/*
-            $y = substr($v, 0, 4);
-            $m = substr($v, 4, 2);
-            $d = substr($v, 6, 2);
-
-            $interval = date_diff(date_create("{$y}-{$m}-{$d}"), date_create(date('Y-m-d')));
-
-            if(@$interval->y > 80 || $interval->y < 1) {
-                throw new ApiException(ApiException::Remind, "生日不是一个有效的日期");
-            }
-*/
-            return $v;
-        });
+        $birthday = $this->parameter->get('birthday', '');
+        
+        if(!preg_match('/^\d{8}$/', $birthday)) {
+            throw new ApiException(ApiException::Remind, "生日格式不正确，yyyymmdd");
+        }
 
         $user_info = UcuserInfo::from_cache($this->user->ucid);
         if(!$user_info) {
@@ -310,6 +296,7 @@ class UserController extends AuthController
 
     public function UnbindPhoneAction() {
         $code = $this->parameter->tough('code', 'smscode');
+        $username = $this->parameter->get('username', null, 'username'); // 解绑可以同时设置uid
 
         if($this->user->mobile) {
             $mobile = $this->user->mobile;
@@ -317,7 +304,19 @@ class UserController extends AuthController
             if(!verify_sms($mobile, $code)) {
                 throw new ApiException(ApiException::Remind, "手机号码解绑失败，验证码不正确，或已过期");
             }
-            
+
+            if($this->user->mobile == $this->user->uid) {
+                if(!$username) {
+                    throw new ApiException(ApiException::Remind, "您必需重设您的用户名才能解绑");
+                }
+
+                $_user = Ucuser::where('uid', $username)->orWhere('mobile', $username)->orWhere('email', $username)->first();
+                if(!$_user || $_user->ucid == $this->user->ucid) {
+                    $this->user->uid = $username;
+                } else {
+                    throw new ApiException(ApiException::Remind, "解绑失败，用户名已被占用");
+                }
+            }
             $this->user->mobile = '';
             $this->user->save();
 
@@ -422,14 +421,12 @@ class UserController extends AuthController
     public function BindOauthAction() {
         $openid = $this->parameter->tough('openid');
         $type = $this->parameter->tough('type');
-        $unionid = $this->parameter->get('unionid', "", function($unionid) use($type) {
-            $unionid = trim($unionid);
-            if($type == 'weixin' && $unionid == '') throw new ApiException(ApiException::Error, "unionid不允许为空");
-            return $unionid;
-        });
+        $unionid = $this->parameter->get('unionid', "");
         $nickname = $this->parameter->get('nickname');
         $avatar = $this->parameter->get('avatar');
         $forced = $this->parameter->get('forced');
+        
+        if($type == 'weixin' && $unionid == '') throw new ApiException(ApiException::Error, "unionid不允许为空");
 
         $count = UcuserOauth::where('type', $type)->where('ucid', $this->user->ucid)->count();
         if($count > 0) {

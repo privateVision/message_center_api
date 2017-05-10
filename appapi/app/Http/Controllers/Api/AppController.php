@@ -132,15 +132,17 @@ class AppController extends Controller
                 'af_download' => env('af_download')
             ],
             'bind_phone' => [
-                'need' => $config->bind_phone_need,
-                'enforce' => $config->bind_phone_enforce,
+                'need' => ($config->enable & 0x00000010) == 0x00000010,
+                'enforce' => ($config->enable & 0x00000030) == 0x00000030,
                 'interval' => $config->bind_phone_interval,
             ],
             'real_name' => [
-                'need' => $config->real_name_need,
-                'enforce' => $config->real_name_enforce,
+                'need' => ($config->enable & 0x00000002) == 0x00000002,
+                'enforce' => ($config->enable & 0x00000003) == 0x00000003,
+                'pay_need' => ($config->enable & 0x00000008) == 0x00000008,
+                'pay_enforce' => ($config->enable & 0x0000000C) == 0x0000000C,
             ],
-            
+
             'ios_app_config' => $ios_app_config,
         ];
     }

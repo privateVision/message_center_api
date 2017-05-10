@@ -17,6 +17,11 @@ class Parameter
 
 	public function get($key, $default = null, $type_fun_regex = null) {
 		$data = @$this->_data[$key];
+		
+
+		if($data === null || $data === '') {
+			return $default;
+		}
 
 		if(is_string($type_fun_regex) && method_exists($this, $type_fun_regex)) {
 			return $this->$type_fun_regex($data);
@@ -32,10 +37,6 @@ class Parameter
 			} else {
 				throw new Exception ("参数\"{$key}\"格式不正确", 0);
 			}
-		}
-
-		if($data === null || $data === '') {
-			return $default;
 		}
 
 		return $data;
