@@ -59,8 +59,8 @@ return [
         'redis' => [
             'driver' => 'redis',
             'connection' => 'default',
-            'queue' => 'sdkapi_appapi',
-            'retry_after' => 60,
+            'queue' => 'default',
+            'retry_after' => 90,
         ],
 
     ],
@@ -77,8 +77,8 @@ return [
     */
 
     'failed' => [
-        'database' => env('DB_CONNECTION', 'mysql'),
-        'table' => env('QUEUE_FAILED_TABLE', 'failed_jobs'),
+        'database' => 'default',
+        'table' => 'failed_jobs',
     ],
 
 ];
