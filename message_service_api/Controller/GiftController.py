@@ -165,7 +165,12 @@ def v4_sdk_get_gifts_list():
 def v4_sdk_user_get_gift():
     from run import mysql_cms_session
     from run import SDK_PLATFORM_ID
-    ucid = get_ucid_by_access_token(request.form['_token'])
+    if '_token' not in request.form and 'uid' not in request.form:
+        return response_data(200, 0, 'token和uid不能同时为空')
+    if '_token' in request.form:
+        ucid = get_ucid_by_access_token(request.form['_token'])
+    if 'uid' in request.form:
+        ucid = request.form['uid']
     appid = int(request.form['_appid'])  # 根据appid来获取游戏id
     gift_id = request.form['gift_id']
     table_num = int(gift_id) % 10  # 获取分表名

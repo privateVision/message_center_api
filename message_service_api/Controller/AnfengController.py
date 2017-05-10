@@ -195,9 +195,9 @@ def v4_anfeng_helper_gifts_real_time_count():
     from run import mysql_cms_session
     find_gift_info_sql = "select giftId, assignNum, num from cms_gameGiftAssign where platformId = 3 " \
                          "and giftId in (%s)" % (ids_list_str,)
+    data_list = []
     try:
         gift_info_list = mysql_cms_session.execute(find_gift_info_sql).fetchall()
-        data_list = []
         for data in gift_info_list:
             count_info = {
                 'gift_id': data['giftId'],
