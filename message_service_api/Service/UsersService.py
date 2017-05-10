@@ -607,6 +607,7 @@ def get_stored_value_card_list(ucid, status=0, start_index=0, end_index=10):
     except Exception, err:
         service_logger.error(err.message)
         mysql_session.rollback()
+        return get_stored_value_card_list(ucid, status, start_index, end_index)
     finally:
         mysql_session.close()
     return total_count, value_card_list
