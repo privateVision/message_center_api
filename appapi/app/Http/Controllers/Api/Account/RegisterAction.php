@@ -46,7 +46,7 @@ trait RegisterAction {
         $user_sub->save();
 
         // session
-        $session = new Session(joinkey($user->ucid, $pid, $rid, $user_sub->id));
+        $session = new Session(uuid($user->ucid));
         $session->pid = $pid;
         $session->rid = $rid;
         $session->ucid = $user->ucid;
@@ -54,7 +54,7 @@ trait RegisterAction {
         $session->user_sub_name = $user_sub->name;
         $session->cp_uid = $user_sub->cp_uid;
         $session->save();
-
+        
         log_debug('session', ['ucid' => $user->ucid, 'pid' => $pid, 'at' => microtime(true), 'token' => $session->token]);
 
         // ucuser_session
