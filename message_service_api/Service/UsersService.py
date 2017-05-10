@@ -952,6 +952,22 @@ def set_message_readed(ucid=None, message_type=None, message_id=None):
         user_read_message_log.save()
 
 
+def check_is_user_shiming(ucid=0):
+    from run import mysql_session
+    find_users_info_sql = "select card_no from ucuser_info where ucid = %s limit 1" % (ucid,)
+    try:
+        user_info = mysql_session.execute(find_users_info_sql).fetchone()
+        if user_info is not None:
+            if user_info['card_no'] is not None and user_info['card_no'] != '':
+                return True
+    except Exception, err:
+        service_logger.error("根据ucid获取用户实名信息异常：%s" % (err.message,))
+        mysql_session.rollback()
+    finally:
+        mysql_session.close()
+    return False
+
+
 def get_user_user_type_and_vip_and_uid_by_ucid(ucid=None):
     from run import mysql_session
     find_users_type_info_sql = "select u.ucid, u.uid, r.rtype from ucusers as u, retailers as r where u.rid = r.rid " \
