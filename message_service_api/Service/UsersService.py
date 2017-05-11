@@ -750,6 +750,82 @@ def get_user_all_coupons(ucid, status=0, start_index=0, end_index=10):
     return coupon_total_count, new_coupon_list
 
 
+def anfeng_helper_get_user_all_coupons(ucid, status=0, start_index=0, end_index=10):
+    from run import mysql_session
+    now = int(time.time())
+    if status == 0:  # 正常数据
+        get_user_coupon_total_count_sql = "select count(log.coupon_id) from zy_coupon_log" \
+                                          " as log join zy_coupon as coupon " \
+                                          "on log.coupon_id=coupon.id where coupon.status='normal' and log.is_used = 0 " \
+                                          "and log.ucid=%s " \
+                                          "and ((coupon.is_time = 0) or ((coupon.is_time = 1) " \
+                                          "and coupon.start_time <= %s " \
+                                          "and coupon.end_time >= %s ))" \
+                                          % (ucid, now, now)
+        get_user_coupon_sql = "select log.coupon_id from zy_coupon_log as log join zy_coupon as coupon " \
+                              "on log.coupon_id=coupon.id where coupon.status='normal' and log.is_used = 0 " \
+                              "and log.ucid=%s " \
+                              "and ((coupon.is_time = 0) or ((coupon.is_time = 1) " \
+                              "and coupon.start_time <= %s " \
+                              "and coupon.end_time >= %s )) order by log.id desc limit %s, %s" \
+                              % (ucid, now, now, start_index, end_index)
+    else:  # 过期数据
+        get_user_coupon_total_count_sql = "select count(log.coupon_id) from zy_coupon_log " \
+                                          "as log join zy_coupon as coupon " \
+                                          "on log.coupon_id=coupon.id where coupon.status='normal' and log.is_used = 0 " \
+                                          "and log.ucid=%s " \
+                                          "and ((coupon.is_time = 1) " \
+                                          "and coupon.end_time < %s)" \
+                                          % (ucid, now)
+        get_user_coupon_sql = "select log.coupon_id from zy_coupon_log as log join zy_coupon as coupon " \
+                              "on log.coupon_id=coupon.id where coupon.status='normal' and log.is_used = 0 " \
+                              "and log.ucid=%s " \
+                              "and ((coupon.is_time = 1) " \
+                              "and coupon.end_time < %s) order by log.id desc limit %s, %s" \
+                              % (ucid, now, start_index, end_index)
+    coupon_total_count = mysql_session.execute(get_user_coupon_total_count_sql).scalar()
+    coupon_list = mysql_session.execute(get_user_coupon_sql).fetchall()
+    new_coupon_list = []
+    for coupon in coupon_list:
+        get_user_coupon_sql = "select * from zy_coupon where id=%s limit 1" % (coupon['coupon_id'])
+        coupon_info = mysql_session.execute(get_user_coupon_sql).fetchone()
+        game = coupon_info['game']
+        desc = "所有游戏"
+        if coupon_info is not None:
+            info = {
+                'id': coupon_info['id'],
+                'name': coupon_info['name'],
+                'type': 2,
+                'start_time': coupon_info['start_time'],
+                'end_time': coupon_info['end_time'],
+                'desc': desc,
+                'fee': coupon_info['money'],
+                'method': coupon_info['method'],
+                'user_condition': "满%s可用" % (coupon_info['full'] / 100,),
+                'lock_app': '',
+                'supportDivide': 0
+            }
+            if coupon_info['full'] == 0:
+                info['user_condition'] = '通用'
+            if coupon_info['is_first'] == 1:
+                info['user_condition'] = '首充券'
+            unlimited_time = True
+            if coupon_info['is_time'] == 1:
+                unlimited_time = False
+            time_out = False
+            if coupon_info['is_time'] == 1 and coupon_info['end_time'] < now:
+                time_out = True
+            game_info = get_game_info_by_appid(game)
+            if game_info is not None:
+                info['desc'] = game_info['name']
+                info['game_id'] = game_info['id']
+                info['cover'] = game_info['cover']
+            info['unlimited_time'] = unlimited_time
+            info['time_out'] = time_out
+            new_coupon_list.append(info)
+    return coupon_total_count, new_coupon_list
+
+
 #  获取用户首充之后，剩下的首充券的id
 def get_first_coupon_id_list(ucid=None, pid=None):
     from run import mysql_session

@@ -9,7 +9,7 @@ from Controller.BaseController import response_data
 from MiddleWare import service_logger
 from MysqlModel.GameGiftLog import GameGiftLog
 from Service.UsersService import get_game_info_by_gameid, anfeng_helper_request_check, get_game_info_by_appid, \
-    get_ucid_by_access_token, get_stored_value_card_list, get_user_all_coupons, get_username_by_ucid, \
+    get_ucid_by_access_token, get_stored_value_card_list, anfeng_helper_get_user_all_coupons, get_username_by_ucid, \
     get_user_tao_gift_total_count, get_gift_real_time_count
 
 anfeng_controller = Blueprint('AnfengController', __name__)
@@ -41,13 +41,13 @@ def v4_sdk_get_user_coupon():
     value_card_total_count, value_card_list = get_stored_value_card_list(ucid, status, start_index, end_index)
     # 储值卡没有数据,直接拿卡券的数据
     if value_card_total_count == 0:
-        coupon_total_count, new_coupon_list = get_user_all_coupons(ucid, status, start_index, end_index)
+        coupon_total_count, new_coupon_list = anfeng_helper_get_user_all_coupons(ucid, status, start_index, end_index)
         data['total_count'] = coupon_total_count
         data['coupon_list'] = new_coupon_list
         return response_data(http_code=200, data=data)
     # 储值卡数据足够一页数据
     if value_card_total_count >= need_total_count:
-        coupon_total_count, new_coupon_list = get_user_all_coupons(ucid, status, start_index, end_index)
+        coupon_total_count, new_coupon_list = anfeng_helper_get_user_all_coupons(ucid, status, start_index, end_index)
         data['total_count'] = value_card_total_count + coupon_total_count
         data['coupon_list'] = value_card_list
     # 储值卡数据不够，用卡券数据补充
@@ -62,7 +62,7 @@ def v4_sdk_get_user_coupon():
             coupon_start_index = (tmp_count - 1) * end_index + head_count
             coupon_end_index = coupon_start_index + end_index
         # 查询用户相关的卡券列表
-        coupon_total_count, new_coupon_list = get_user_all_coupons(ucid, status, coupon_start_index, coupon_end_index)
+        coupon_total_count, new_coupon_list = anfeng_helper_get_user_all_coupons(ucid, status, coupon_start_index, coupon_end_index)
         # 拼接储值卡和卡券列表返回
         value_card_list.extend(new_coupon_list)
         data['total_count'] = value_card_total_count + coupon_total_count
