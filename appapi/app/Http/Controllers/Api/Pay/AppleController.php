@@ -153,125 +153,126 @@ class  AppleController extends Controller{
 
         $ord = Orders::where("ucid",$ucid)->where('vorderid',$vorderid)->get();
 
-        if(count($ord)) return trans("messages.order_info_error") ; //限制关闭
-        try {
-            $sql = "select p.fee,p.product_name,con.notify_url,con.iap,con.bundle_id from ios_products as p LEFT JOIN ios_application_config as con ON p.app_id = con.app_id WHERE p.product_id = '{$product_id}' AND p.app_id = {$appid}";
-            $dat = app('db')->select($sql);
-            if(count($dat) == 0) throw new ApiException(ApiException::Remind,trans("messages.product_not_found"));
+        if(count($ord)) throw new ApiException(ApiException::Remind,"未找到订单"); //限制关闭
 
-            $order = new Orders;
-            $order->getConnection()->beginTransaction();
-            $order->ucid = $ucid;
-            $order->uid = $uid;
-            $order->sn = date('ymdHis') . substr(microtime(), 2, 6) . str_pad(rand(0, 999999), 6, '0', STR_PAD_LEFT);
-            $order->vid = $this->procedure->pid;
-            $order->notify_url = $dat[0]->notify_url;
-            $order->vorderid = $vorderid;
-            $order->fee = $dat[0]->fee;
-            $order->subject = $dat[0]->product_name;
-            $order->body = "role_name:" . $role_name . "zone_name:" . $zone_name;
-            $order->createIP = $this->request->ip();
-            $order->status = Orders::Status_WaitPay;
-            $order->paymentMethod = Orders::Way_Unknow;
-            $order->hide = false;
-            $order->cp_uid = $this->session->cp_uid;
-            $order->user_sub_id = $this->session->user_sub_id;
-            $order->user_sub_name = $this->session->user_sub_name;
-            $order->real_fee = $order->fee;
-            $order->save();
+        $sql = "select p.fee,p.product_name,con.notify_url,con.iap,con.bundle_id from ios_products as p INNER JOIN ios_application_config as con ON p.app_id = con.app_id WHERE p.product_id = '{$product_id}' AND p.app_id = {$appid}";
+        $dat = app('db')->select($sql);
+        if(count($dat) == 0) throw new ApiException(ApiException::Remind,"未找到相关的商品");
+        //验证当前的发货信息
+        if(!check_url($dat[0]->notify_url)) throw new ApiException(ApiException::Remind,"请填写正确的通知地址");
+        if($dat[0]->bundle_id =='' || $dat[0]->iap =='') throw new ApiException(ApiException::Remind,"bundle_id 或iap 不存在");
+        //验证信息结束
+        $order = new Orders;
+        $order->getConnection()->beginTransaction();
+        $order->ucid = $ucid;
+        $order->uid = $uid;
+        $order->sn = date('ymdHis') . substr(microtime(), 2, 6) . str_pad(rand(0, 999999), 6, '0', STR_PAD_LEFT);
+        $order->vid = $this->procedure->pid;
+        $order->notify_url = $dat[0]->notify_url;
+        $order->vorderid = $vorderid;
+        $order->fee = $dat[0]->fee;
+        $order->subject = $dat[0]->product_name;
+        $order->body = "role_name:" . $role_name . "zone_name:" . $zone_name;
+        $order->createIP = $this->request->ip();
+        $order->status = Orders::Status_WaitPay;
+        $order->paymentMethod = Orders::Way_Unknow;
+        $order->hide = false;
+        $order->cp_uid = $this->session->cp_uid;
+        $order->user_sub_id = $this->session->user_sub_id;
+        $order->user_sub_name = $this->session->user_sub_name;
+        $order->real_fee = $order->fee;
+        $order->save();
 
-            // order_extend;
-            if($zone_id || $zone_name || $role_id || $role_level || $role_name) {
-                $order_extend = new OrderExtend;
-                $order_extend->oid = $order->id;
-                $order_extend->ucid = $this->user->ucid;
-                $order_extend->pid = $this->procedure->pid;
-                $order_extend->date = date('Ymd');
-                $order_extend->zone_id = $zone_id;
-                $order_extend->zone_name = $zone_name;
-                $order_extend->role_id = $role_id;
-                $order_extend->role_level = $role_level;
-                $order_extend->role_name = $role_name;
-                $order_extend->save();
-            }
-
-            $ext = new IosOrderExt;
-            $ext->oid = $order->id;
-            $ext->product_id = $product_id;
-            $ext->zone_name = $zone_name;
-            $ext->role_name = $role_name;
-            $ext->transaction_id = time();
-            $ext->save();
-
-            $order->getConnection()->commit();
-            $order_is_first = $order->is_first();
-
-            $pay_type = $dat[0]->iap;
-            //查看当前的充值总金额
-            if($pay_type == 1){
-                $sum = Orders::where("ucid",$ucid)->where("status",1)->sum('fee');
-                //获取限额
-                $sl = "select id,appids,fee from force_close_iaps where closed=0 AND {$appid} IN (appids)";
-                $d = app('db')->select($sl);
-                if(count($d)){
-                    $pay_type =  ($sum > $d[0]->fee)?0:1;
-                }
-            }
-
-
-            // 储值卡，优惠券
-            $list = [];
-            $result = UcusersVC::where('ucid', $this->user->ucid)->get();
-            foreach($result as $v) {
-                $fee = $v->balance * 100;
-                if(!$fee) continue;
-
-                $rule = VirtualCurrencies::from_cache($v->vcid);
-                if(!$rule) continue;
-
-                $e = $rule->is_valid($pid);
-                if($e === false) continue;
-
-                $list[] = [
-                    'id' => encrypt3des(json_encode(['oid' => $order->id, 'type' => 1, 'fee' => $fee, 'id' => $v->vcid, 'e' => $e])),
-                    'fee' => $fee,
-                    'name' => $rule->vcname,
-                ];
-            }
-
-            $result = ZyCouponLog::where('ucid', $this->user->ucid)->where('is_used', false)->whereIn('pid', [0, $pid])->get();
-            foreach($result as $v) {
-                $rule = ZyCoupon::from_cache($v->coupon_id);
-                if(!$rule) continue;
-
-                $fee = $rule->money;
-                if(!$fee) continue;
-
-                $e = $rule->is_valid($pid, $order->fee, $order_is_first);
-                if($e === false) continue;
-
-                $list[] = [
-                    'id' => encrypt3des(json_encode(['oid' => $order->id, 'type' => 2, 'fee' => $fee, 'id' => $v->id, 'e' => $e])),
-                    'fee' => $fee,
-                    'name' => $rule->name,
-                ];
-            }
-            $user_info = UcuserInfo::from_cache($this->user->ucid);
-
-            return [
-                'order_id' => $order->sn,
-                'id'      =>$order->id,//返回当前的订单
-                'fee' => $dat[0]->fee,
-                "iap" =>$pay_type ,//支付的方式1 ios 0为第三方支付
-                'way' => [1, 2, 3],
-                'vip' => $user_info && $user_info->vip ? (int)$user_info->vip : 0,
-                'balance' => $this->user->balance,
-                'coupons' => $list,
-                'package' => $dat[0]->bundle_id,
-            ];
-        }catch(\Exception $e){
-            echo $e->getMessage();
+        // order_extend;
+        if($zone_id || $zone_name || $role_id || $role_level || $role_name) {
+            $order_extend = new OrderExtend;
+            $order_extend->oid = $order->id;
+            $order_extend->ucid = $this->user->ucid;
+            $order_extend->pid = $this->procedure->pid;
+            $order_extend->date = date('Ymd');
+            $order_extend->zone_id = $zone_id;
+            $order_extend->zone_name = $zone_name;
+            $order_extend->role_id = $role_id;
+            $order_extend->role_level = $role_level;
+            $order_extend->role_name = $role_name;
+            $order_extend->save();
         }
+
+        $ext = new IosOrderExt;
+        $ext->oid = $order->id;
+        $ext->product_id = $product_id;
+        $ext->zone_name = $zone_name;
+        $ext->role_name = $role_name;
+        $ext->transaction_id = time();
+        $ext->save();
+
+        $order->getConnection()->commit();
+        $order_is_first = $order->is_first();
+
+        $pay_type = $dat[0]->iap;
+        //查看当前的充值总金额
+        if($pay_type == 1){
+            $sum = Orders::where("ucid",$ucid)->where("status",1)->sum('fee');
+            //获取限额
+            $sl = "select id,appids,fee from force_close_iaps where closed=0 AND {$appid} IN (appids)";
+            $d = app('db')->select($sl);
+            if(count($d)){
+                $pay_type =  ($sum > $d[0]->fee)?0:1;
+            }
+        }
+
+
+        // 储值卡，优惠券
+        $list = [];
+        $result = UcusersVC::where('ucid', $this->user->ucid)->get();
+        foreach($result as $v) {
+            $fee = $v->balance * 100;
+            if(!$fee) continue;
+
+            $rule = VirtualCurrencies::from_cache($v->vcid);
+            if(!$rule) continue;
+
+            $e = $rule->is_valid($pid);
+            if($e === false) continue;
+
+            $list[] = [
+                'id' => encrypt3des(json_encode(['oid' => $order->id, 'type' => 1, 'fee' => $fee, 'id' => $v->vcid, 'e' => $e])),
+                'fee' => $fee,
+                'name' => $rule->vcname,
+            ];
+        }
+
+        $result = ZyCouponLog::where('ucid', $this->user->ucid)->where('is_used', false)->whereIn('pid', [0, $pid])->get();
+        foreach($result as $v) {
+            $rule = ZyCoupon::from_cache($v->coupon_id);
+            if(!$rule) continue;
+
+            $fee = $rule->money;
+            if(!$fee) continue;
+
+            $e = $rule->is_valid($pid, $order->fee, $order_is_first);
+            if($e === false) continue;
+
+            $list[] = [
+                'id' => encrypt3des(json_encode(['oid' => $order->id, 'type' => 2, 'fee' => $fee, 'id' => $v->id, 'e' => $e])),
+                'fee' => $fee,
+                'name' => $rule->name,
+            ];
+        }
+        $user_info = UcuserInfo::from_cache($this->user->ucid);
+
+        return [
+            'order_id' => $order->sn,
+            'id'      =>$order->id,//返回当前的订单
+            'fee' => $dat[0]->fee,
+            "iap" =>$pay_type ,//支付的方式1 ios 0为第三方支付
+            'way' => [1, 2, 3],
+            'vip' => $user_info && $user_info->vip ? (int)$user_info->vip : 0,
+            'balance' => $this->user->balance,
+            'coupons' => $list,
+            'package' => $dat[0]->bundle_id,
+        ];
+
 
     }
 
