@@ -9,7 +9,7 @@ from Controller.BaseController import response_data
 from MiddleWare import service_logger
 from MysqlModel.GameGiftLog import GameGiftLog
 from Service.UsersService import get_game_info_by_gameid, anfeng_helper_request_check, get_game_info_by_appid, \
-    get_ucid_by_access_token, get_stored_value_card_list, get_user_all_coupons, get_username_by_ucid, \
+    get_ucid_by_access_token, get_stored_value_card_list, anfeng_helper_get_user_all_coupons, get_username_by_ucid, \
     get_user_tao_gift_total_count, get_gift_real_time_count
 
 anfeng_controller = Blueprint('AnfengController', __name__)
@@ -41,13 +41,13 @@ def v4_sdk_get_user_coupon():
     value_card_total_count, value_card_list = get_stored_value_card_list(ucid, status, start_index, end_index)
     # 储值卡没有数据,直接拿卡券的数据
     if value_card_total_count == 0:
-        coupon_total_count, new_coupon_list = get_user_all_coupons(ucid, status, start_index, end_index)
+        coupon_total_count, new_coupon_list = anfeng_helper_get_user_all_coupons(ucid, status, start_index, end_index)
         data['total_count'] = coupon_total_count
         data['coupon_list'] = new_coupon_list
         return response_data(http_code=200, data=data)
     # 储值卡数据足够一页数据
     if value_card_total_count >= need_total_count:
-        coupon_total_count, new_coupon_list = get_user_all_coupons(ucid, status, start_index, end_index)
+        coupon_total_count, new_coupon_list = anfeng_helper_get_user_all_coupons(ucid, status, start_index, end_index)
         data['total_count'] = value_card_total_count + coupon_total_count
         data['coupon_list'] = value_card_list
     # 储值卡数据不够，用卡券数据补充
@@ -62,7 +62,7 @@ def v4_sdk_get_user_coupon():
             coupon_start_index = (tmp_count - 1) * end_index + head_count
             coupon_end_index = coupon_start_index + end_index
         # 查询用户相关的卡券列表
-        coupon_total_count, new_coupon_list = get_user_all_coupons(ucid, status, coupon_start_index, coupon_end_index)
+        coupon_total_count, new_coupon_list = anfeng_helper_get_user_all_coupons(ucid, status, coupon_start_index, coupon_end_index)
         # 拼接储值卡和卡券列表返回
         value_card_list.extend(new_coupon_list)
         data['total_count'] = value_card_total_count + coupon_total_count
@@ -96,12 +96,11 @@ def v4_sdk_acheive_coupon():
         coupon_info = mysql_session.execute(find_coupon_info_sql).fetchone()
         if coupon_info is None:
             return response_data(200, 0, '卡券不存在或已经被删除')
-        find_is_get_coupon_sql = "select count(*) from zy_coupon_log " \
-                                 " where ucid = %s and coupon_id = %s" % (ucid, coupon_id)
-        is_get = mysql_session.execute(find_is_get_coupon_sql).scalar()
-        if is_get > 0:
-            return response_data(200, 0, '你已经领取过了')
-        coupon_info = mysql_session.execute(find_coupon_info_sql).fetchone()
+        # find_is_get_coupon_sql = "select count(*) from zy_coupon_log " \
+        #                          " where ucid = %s and coupon_id = %s" % (ucid, coupon_id)
+        # is_get = mysql_session.execute(find_is_get_coupon_sql).scalar()
+        # if is_get > 0:
+        #     return response_data(200, 0, '你已经领取过了')
         insert_user_coupon_sql = "insert into zy_coupon_log(ucid, coupon_id, pid, is_time, start_time, end_time)" \
                                  " values(%s, %s, %s, %s, %s, %s)" \
                                  % (ucid, coupon_id, coupon_info['game'], coupon_info['is_time'],
@@ -195,9 +194,9 @@ def v4_anfeng_helper_gifts_real_time_count():
     from run import mysql_cms_session
     find_gift_info_sql = "select giftId, assignNum, num from cms_gameGiftAssign where platformId = 3 " \
                          "and giftId in (%s)" % (ids_list_str,)
+    data_list = []
     try:
         gift_info_list = mysql_cms_session.execute(find_gift_info_sql).fetchall()
-        data_list = []
         for data in gift_info_list:
             count_info = {
                 'gift_id': data['giftId'],

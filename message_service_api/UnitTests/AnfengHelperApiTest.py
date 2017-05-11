@@ -16,21 +16,25 @@ class AnfengHelperApiTest(unittest.TestCase):
     def setUp(self):
         pass
 
-    # def test_get_coupon(self):
-    #     data = {
-    #         "_token": 'umnp8q73gq8sg44sggw8ko84',
-    #         "status": 1,
-    #         "page": 1,
-    #         "pagesize": 10,
-    #         "_type": "json",
-    #         "_appid": 6,
-    #         "_rid": 1,
-    #         "_sign_type": "md5",
-    #         "_timestamp": 1493366352,
-    #         "_sign": "940c760f64d14bcf5567092641802959"
-    #     }
-    #     r = requests.post("http://sdkv4test.qcwanwan.com/msa/anfeng_helper/get_user_coupon", data=data)
-    #     print r.text
+    def test_get_coupon(self):
+        data = {
+            '_appid': 6,
+            '_device_id': '',
+            '_imei': 'b2c401463254650c',
+            '_rid': 1,
+            '_sign_type': 'md5',
+            '_timestamp': '1494413235',
+            '_token': 'ihgne2toexsgwwc8c0k0gk0o',
+            '_type': 'json',
+            'page': 1,
+            'pagesize': 10,
+            'platform_id': 3,
+            'status': 0,
+            'key': 'ebe89a4c54f35e593d86455aab4343a8',
+            '_sign': '9962f08adc2e29e12925018fb3b9dd15'
+        }
+        r = requests.post("http://sdkv4.qcwan.com/msa/anfeng_helper/get_user_coupon", data=data)
+        print r.text
 
     # def test_add_coupon(self):
     #     data = {

@@ -607,6 +607,7 @@ def get_stored_value_card_list(ucid, status=0, start_index=0, end_index=10):
     except Exception, err:
         service_logger.error(err.message)
         mysql_session.rollback()
+        return get_stored_value_card_list(ucid, status, start_index, end_index)
     finally:
         mysql_session.close()
     return total_count, value_card_list
@@ -701,6 +702,82 @@ def get_user_all_coupons(ucid, status=0, start_index=0, end_index=10):
                                           "and coupon.end_time < %s)" \
                                           % (ucid, now)
         get_user_coupon_sql = "select distinct(log.coupon_id) from zy_coupon_log as log join zy_coupon as coupon " \
+                              "on log.coupon_id=coupon.id where coupon.status='normal' and log.is_used = 0 " \
+                              "and log.ucid=%s " \
+                              "and ((coupon.is_time = 1) " \
+                              "and coupon.end_time < %s) order by log.id desc limit %s, %s" \
+                              % (ucid, now, start_index, end_index)
+    coupon_total_count = mysql_session.execute(get_user_coupon_total_count_sql).scalar()
+    coupon_list = mysql_session.execute(get_user_coupon_sql).fetchall()
+    new_coupon_list = []
+    for coupon in coupon_list:
+        get_user_coupon_sql = "select * from zy_coupon where id=%s limit 1" % (coupon['coupon_id'])
+        coupon_info = mysql_session.execute(get_user_coupon_sql).fetchone()
+        game = coupon_info['game']
+        desc = "所有游戏"
+        if coupon_info is not None:
+            info = {
+                'id': coupon_info['id'],
+                'name': coupon_info['name'],
+                'type': 2,
+                'start_time': coupon_info['start_time'],
+                'end_time': coupon_info['end_time'],
+                'desc': desc,
+                'fee': coupon_info['money'],
+                'method': coupon_info['method'],
+                'user_condition': "满%s可用" % (coupon_info['full'] / 100,),
+                'lock_app': '',
+                'supportDivide': 0
+            }
+            if coupon_info['full'] == 0:
+                info['user_condition'] = '通用'
+            if coupon_info['is_first'] == 1:
+                info['user_condition'] = '首充券'
+            unlimited_time = True
+            if coupon_info['is_time'] == 1:
+                unlimited_time = False
+            time_out = False
+            if coupon_info['is_time'] == 1 and coupon_info['end_time'] < now:
+                time_out = True
+            game_info = get_game_info_by_appid(game)
+            if game_info is not None:
+                info['desc'] = game_info['name']
+                info['game_id'] = game_info['id']
+                info['cover'] = game_info['cover']
+            info['unlimited_time'] = unlimited_time
+            info['time_out'] = time_out
+            new_coupon_list.append(info)
+    return coupon_total_count, new_coupon_list
+
+
+def anfeng_helper_get_user_all_coupons(ucid, status=0, start_index=0, end_index=10):
+    from run import mysql_session
+    now = int(time.time())
+    if status == 0:  # 正常数据
+        get_user_coupon_total_count_sql = "select count(log.coupon_id) from zy_coupon_log" \
+                                          " as log join zy_coupon as coupon " \
+                                          "on log.coupon_id=coupon.id where coupon.status='normal' and log.is_used = 0 " \
+                                          "and log.ucid=%s " \
+                                          "and ((coupon.is_time = 0) or ((coupon.is_time = 1) " \
+                                          "and coupon.start_time <= %s " \
+                                          "and coupon.end_time >= %s ))" \
+                                          % (ucid, now, now)
+        get_user_coupon_sql = "select log.coupon_id from zy_coupon_log as log join zy_coupon as coupon " \
+                              "on log.coupon_id=coupon.id where coupon.status='normal' and log.is_used = 0 " \
+                              "and log.ucid=%s " \
+                              "and ((coupon.is_time = 0) or ((coupon.is_time = 1) " \
+                              "and coupon.start_time <= %s " \
+                              "and coupon.end_time >= %s )) order by log.id desc limit %s, %s" \
+                              % (ucid, now, now, start_index, end_index)
+    else:  # 过期数据
+        get_user_coupon_total_count_sql = "select count(log.coupon_id) from zy_coupon_log " \
+                                          "as log join zy_coupon as coupon " \
+                                          "on log.coupon_id=coupon.id where coupon.status='normal' and log.is_used = 0 " \
+                                          "and log.ucid=%s " \
+                                          "and ((coupon.is_time = 1) " \
+                                          "and coupon.end_time < %s)" \
+                                          % (ucid, now)
+        get_user_coupon_sql = "select log.coupon_id from zy_coupon_log as log join zy_coupon as coupon " \
                               "on log.coupon_id=coupon.id where coupon.status='normal' and log.is_used = 0 " \
                               "and log.ucid=%s " \
                               "and ((coupon.is_time = 1) " \
@@ -949,6 +1026,22 @@ def set_message_readed(ucid=None, message_type=None, message_id=None):
                                                    message_id=message_id,
                                                    ucid=ucid)
         user_read_message_log.save()
+
+
+def check_is_user_shiming(ucid=0):
+    from run import mysql_session
+    find_users_info_sql = "select card_no from ucuser_info where ucid = %s limit 1" % (ucid,)
+    try:
+        user_info = mysql_session.execute(find_users_info_sql).fetchone()
+        if user_info is not None:
+            if user_info['card_no'] is not None and user_info['card_no'] != '':
+                return True
+    except Exception, err:
+        service_logger.error("根据ucid获取用户实名信息异常：%s" % (err.message,))
+        mysql_session.rollback()
+    finally:
+        mysql_session.close()
+    return False
 
 
 def get_user_user_type_and_vip_and_uid_by_ucid(ucid=None):

@@ -10,7 +10,8 @@ from MysqlModel.GameGiftLog import GameGiftLog
 from Service.StorageService import get_uid_by_ucid
 from Service.UsersService import get_ucid_by_access_token, sdk_api_request_check, get_username_by_ucid, \
     get_game_info_by_appid, get_user_gift_count, get_user_can_see_gift_count, get_user_can_see_gift_list, \
-    get_user_already_get_and_today_publish_gift_id_list, get_gift_real_time_count, get_game_info_by_gameid
+    get_user_already_get_and_today_publish_gift_id_list, get_gift_real_time_count, get_game_info_by_gameid, \
+    check_is_user_shiming
 from Utils.RedisUtil import RedisHandle
 from Utils.SystemUtils import log_exception, remove_html_tags
 import math
@@ -165,7 +166,12 @@ def v4_sdk_get_gifts_list():
 def v4_sdk_user_get_gift():
     from run import mysql_cms_session
     from run import SDK_PLATFORM_ID
-    ucid = get_ucid_by_access_token(request.form['_token'])
+    if '_token' not in request.form and 'uid' not in request.form:
+        return response_data(200, 0, 'token和uid不能同时为空')
+    if '_token' in request.form:
+        ucid = get_ucid_by_access_token(request.form['_token'])
+    if 'uid' in request.form:
+        ucid = request.form['uid']
     appid = int(request.form['_appid'])  # 根据appid来获取游戏id
     gift_id = request.form['gift_id']
     table_num = int(gift_id) % 10  # 获取分表名
@@ -225,6 +231,9 @@ def v4_sdk_user_get_gift():
                 mysql_session.rollback()
             finally:
                 mysql_session.close()
+        if game_gift_info['isVerified'] == 1:  # 是否需要实名认证
+            if check_is_user_shiming(ucid) is False:
+                return response_data(200, 0, get_tips('gift', 'gift_need_shiming_users'))
         if game_gift_info['isSpecify'] == 1:  # 是否指定用户领取
             from run import mysql_session
             find_users_uid_sql = "select uid from ucusers as u where u.ucid = %s limit 1" % (ucid,)
