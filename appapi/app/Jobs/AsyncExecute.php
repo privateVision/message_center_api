@@ -43,7 +43,7 @@ class AsyncExecute extends Job
         // TODO 非进程安全，无法保证顺序执行
         $user_role_uuid = joinkey($pid, $ucid, $user_sub_id, $zone_id, $role_id);
         
-        Redis::mutex_lock($user_role_uuid, function() use($user_role_uuid) {
+        Redis::mutex_lock($user_role_uuid, function() use($user_role_uuid, $ucid, $pid, $user_sub_id, $zone_id, $zone_name, $role_id, $role_name, $role_level) {
             
             $user_role = UcuserRole::tableSlice($pid)->from_cache($user_role_uuid);
             if(!$user_role) {

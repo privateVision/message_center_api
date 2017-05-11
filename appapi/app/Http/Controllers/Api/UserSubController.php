@@ -82,10 +82,8 @@ class UserSubController extends AuthController
             ];
         }
 
-        $config = ProceduresExtend::from_cache($pid);
-
         return [
-            'allow_num' => $config && $config['allow_num'] ? (int)$config['allow_num'] : 1,
+            'allow_num' => intval($this->procedure_extend->allow_num),
             'data' => $data
         ];
     }
@@ -97,7 +95,7 @@ class UserSubController extends AuthController
             $rid = $this->parameter->tough('_rid');
 
             $config = ProceduresExtend::from_cache($pid);
-            $allow_num = $config && $config['allow_num'] ? (int)$config['allow_num'] : 1;
+            $allow_num = $this->procedure_extend->allow_num;
 
             $redisfield = $this->user->ucid .'_'. $pid;
             $user_sub_num = Redis::hget('user_sub_num', $redisfield);
