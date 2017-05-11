@@ -100,7 +100,7 @@ return [
             'username' => env('MONGODB_USERNAME'),
             'password' => env('MONGODB_PASSWORD'),
             'options'  => [
-                'database' => env('MONGODB_DATABASE') // sets the authentication database required by mongo 3
+                'database' => env('MONGODB_AUTH_DATABASE') // sets the authentication database required by mongo 3
             ]
         ],
 
@@ -112,7 +112,7 @@ return [
             'username' => env('MONGODB_LOG_USERNAME'),
             'password' => env('MONGODB_LOG_PASSWORD'),
             'options'  => [
-                'database' => env('MONGODB_LOG_DATABASE') // sets the authentication database required by mongo 3
+                'database' => env('MONGODB_LOG_AUTH_DATABASE') // sets the authentication database required by mongo 3
             ]
         ],
     ],
