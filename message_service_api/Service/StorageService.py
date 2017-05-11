@@ -690,7 +690,7 @@ def coupon_notify_callback(data_json=None, offset=None):
         sign = m.hexdigest()
         data['sign'] = sign
         response = requests.post(urllib.unquote(data_json['notify_url']), data=data)
-        if response.status_code != 200:
+        if response.status_code == 200:
             service_logger.info("卡券通知回调成功：%s" % (response.text,))
         else:
             service_logger.info("卡券通知回调异常：%s" % (response.text,))
