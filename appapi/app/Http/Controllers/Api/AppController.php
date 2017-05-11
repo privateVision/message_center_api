@@ -2,9 +2,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Exceptions\ApiException;
-use Illuminate\Http\Request;
 use App\Parameter;
-use App\Model\ProceduresExtend;
 use App\Model\Log\DeviceApps;
 use App\Model\Log\DeviceInfo;
 use App\Model\IosApplicationConfig;
