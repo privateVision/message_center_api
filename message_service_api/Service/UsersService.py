@@ -848,6 +848,54 @@ def anfeng_helper_get_gift_real_time_count(ids_list_str):
     return data_list
 
 
+def anfeng_helper_get_user_gifts(ucid, start_index, end_index):
+    from run import mysql_cms_session
+    gift_list = []
+    data = {
+        'total_count': 0,
+        'gift_list': []
+    }
+    user_gift_total_count_sql = "select count(gift.id) from cms_gameGiftLog as log join cms_gameGift as gift" \
+                                " on log.giftId = gift.id where gift.status = 'normal' and " \
+                                "log.status = 'normal' and log.uid = %s " % (ucid,)
+    get_user_gift_sql = "select gift.*, log.code, log.forTime, log.type from cms_gameGiftLog as log join " \
+                        "cms_gameGift as gift on log.giftId = gift.id" \
+                        " where gift.status = 'normal' and log.status = 'normal' and log.uid = %s limit %s, %s" \
+                        % (ucid, start_index, end_index)
+    try:
+        total_count = mysql_cms_session.execute(user_gift_total_count_sql).scalar()
+        user_gift_list = mysql_cms_session.execute(get_user_gift_sql).fetchall()
+        for gift in user_gift_list:
+            game = get_game_info_by_gameid(gift['gameId'])
+            gift_info = {
+                'id': gift['id'],
+                'gameId': gift['gameId'],
+                'gameName': gift['gameName'],
+                'gameCover': game['cover'],
+                'name': gift['name'],
+                'gift': gift['gift'],
+                'content': gift['content'],
+                'label': gift['label'],
+                'total': gift['total'],
+                'num': gift['num'],
+                'assignNum': gift['assignNum'],
+                'code': gift['code'],
+                'for_time': gift['forTime'],
+                'type': gift['type'],
+                'publish_time': gift['publishTime'],
+                'fail_time': gift['failTime']
+            }
+            gift_list.append(gift_info)
+        data['total_count'] = total_count
+        data['gift_list'] = gift_list
+    except Exception, err:
+        mysql_cms_session.rollback()
+        return anfeng_helper_get_user_gifts(ucid, start_index, end_index)
+    finally:
+        mysql_cms_session.close()
+    return data
+
+
 #  获取用户首充之后，剩下的首充券的id
 def get_first_coupon_id_list(ucid=None, pid=None):
     from run import mysql_session
