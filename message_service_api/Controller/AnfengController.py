@@ -10,7 +10,7 @@ from MiddleWare import service_logger
 from MysqlModel.GameGiftLog import GameGiftLog
 from Service.UsersService import get_game_info_by_gameid, anfeng_helper_request_check, get_game_info_by_appid, \
     get_ucid_by_access_token, get_stored_value_card_list, anfeng_helper_get_user_all_coupons, get_username_by_ucid, \
-    get_user_tao_gift_total_count, get_gift_real_time_count
+    get_user_tao_gift_total_count, get_gift_real_time_count, anfeng_helper_get_gift_real_time_count
 
 anfeng_controller = Blueprint('AnfengController', __name__)
 
@@ -191,23 +191,25 @@ def v4_anfeng_helper_gifts_real_time_count():
         return response_data(http_code=200, code=0, message='gift_ids不能为空')
     ids_list = gift_ids.split('|')
     ids_list_str = ",".join(ids_list)
-    from run import mysql_cms_session
-    find_gift_info_sql = "select giftId, assignNum, num from cms_gameGiftAssign where platformId = 3 " \
-                         "and giftId in (%s)" % (ids_list_str,)
-    data_list = []
-    try:
-        gift_info_list = mysql_cms_session.execute(find_gift_info_sql).fetchall()
-        for data in gift_info_list:
-            count_info = {
-                'gift_id': data['giftId'],
-                'assign_num': data['assignNum'],
-                'num': data['num']
-            }
-            data_list.append(count_info)
-    except Exception, err:
-        mysql_cms_session.rollback()
-    finally:
-        mysql_cms_session.close()
+    data_list = anfeng_helper_get_gift_real_time_count(ids_list_str)
+    # from run import mysql_cms_session
+    # find_gift_info_sql = "select giftId, assignNum, num from cms_gameGiftAssign where platformId = 3 " \
+    #                      "and giftId in (%s)" % (ids_list_str,)
+    # data_list = []
+    # try:
+    #     gift_info_list = mysql_cms_session.execute(find_gift_info_sql).fetchall()
+    #     for data in gift_info_list:
+    #         count_info = {
+    #             'gift_id': data['giftId'],
+    #             'assign_num': data['assignNum'],
+    #             'num': data['num']
+    #         }
+    #         data_list.append(count_info)
+    # except Exception, err:
+    #     mysql_cms_session.rollback()
+    #     return v4_anfeng_helper_gifts_real_time_count()
+    # finally:
+    #     mysql_cms_session.close()
     return response_data(http_code=200, data=data_list)
 
 

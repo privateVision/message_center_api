@@ -826,6 +826,28 @@ def anfeng_helper_get_user_all_coupons(ucid, status=0, start_index=0, end_index=
     return coupon_total_count, new_coupon_list
 
 
+def anfeng_helper_get_gift_real_time_count(ids_list_str):
+    from run import mysql_cms_session
+    find_gift_info_sql = "select giftId, assignNum, num from cms_gameGiftAssign where platformId = 3 " \
+                         "and giftId in (%s)" % (ids_list_str,)
+    data_list = []
+    try:
+        gift_info_list = mysql_cms_session.execute(find_gift_info_sql).fetchall()
+        for data in gift_info_list:
+            count_info = {
+                'gift_id': data['giftId'],
+                'assign_num': data['assignNum'],
+                'num': data['num']
+            }
+            data_list.append(count_info)
+    except Exception, err:
+        mysql_cms_session.rollback()
+        return anfeng_helper_get_gift_real_time_count(ids_list_str)
+    finally:
+        mysql_cms_session.close()
+    return data_list
+
+
 #  获取用户首充之后，剩下的首充券的id
 def get_first_coupon_id_list(ucid=None, pid=None):
     from run import mysql_session
