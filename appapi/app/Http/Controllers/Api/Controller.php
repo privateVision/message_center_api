@@ -7,10 +7,13 @@ use App\Exceptions\ApiException;
 use App\Parameter;
 use App\Redis;
 use App\Model\Procedures;
+use App\Model\ProceduresExtend;
 
 class Controller extends \App\Controller
 {
 	protected $procedure = null;
+	protected $procedure_extend = null;
+
 	protected $request = null;
 	protected $parameter = null;
 	
@@ -30,6 +33,29 @@ class Controller extends \App\Controller
 			if (!$this->procedure) {
 				throw new ApiException(ApiException::Error, '"_appid" not exists:' . $_appid);
 			}
+
+			// -------- procedures_extend --------
+			$this->procedure_extend = ProceduresExtend::find($_appid);
+	        if(!$this->procedure_extend) {
+	            $this->procedure_extend = new ProceduresExtend;
+	            $this->procedure_extend->pid = $_appid;
+	            $this->procedure_extend->service_qq = env('service_qq');
+	            $this->procedure_extend->service_page = env('service_page');
+	            $this->procedure_extend->service_phone = env('service_phone');
+	            $this->procedure_extend->service_share = env('service_share');
+	            $this->procedure_extend->heartbeat_data_refresh = 60000;
+	            $this->procedure_extend->heartbeat_interval = 2000;
+	            $this->procedure_extend->enable = 0x00000010 | 0x00000002; // 绑定手机（不强制）、实名（不强制）
+	            $this->procedure_extend->bind_phone_interval = 259200000;
+	            $this->procedure_extend->logout_img = env('logout_img');
+	            $this->procedure_extend->logout_redirect = env('logout_redirect');
+	            $this->procedure_extend->logout_inside = true;
+	            $this->procedure_extend->allow_num = 1;
+	            $this->procedure_extend->create_time = time();
+	            $this->procedure_extend->update_time = time();
+	            $this->procedure_extend->save();
+	        }
+			// --------------- end ---------------
 
 			$appkey = $this->procedure->appkey();
 			

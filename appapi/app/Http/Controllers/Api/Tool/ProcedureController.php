@@ -24,13 +24,12 @@ class ProcedureController extends Controller
 
         $data = [];
         foreach($result as $k => $v) {
-            $data[$k]['pid'] = $v->pid;
-            $data[$k]['pname'] = $v->pname;
-            $data[$k]['icon'] = '';
-            $data[$k]['game_id'] = '';
-
             $game = ZyGame::from_cache($v->gameCenterId);
             if($game) {
+                $data[$k]['pid'] = $v->pid;
+                $data[$k]['pname'] = $v->pname;
+                $data[$k]['icon'] = '';
+                $data[$k]['game_id'] = '';
                 $data[$k]['icon'] = $game->cover;
                 $data[$k]['game_id'] = $game->id;
             }

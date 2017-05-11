@@ -2,9 +2,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Exceptions\ApiException;
-use Illuminate\Http\Request;
 use App\Parameter;
-use App\Model\ProceduresExtend;
 use App\Model\Log\DeviceApps;
 use App\Model\Log\DeviceInfo;
 use App\Model\IosApplicationConfig;
@@ -46,32 +44,6 @@ class AppController extends Controller
             log_error('report_device_info_parse_error', null, '上报的DeviceInfo格式无法解析');
         }
 
-        // config
-        //$config = ProceduresExtend::from_cache($pid);
-        $config = ProceduresExtend::where("pid",$pid)->first();
-        if(!$config) {
-            $config = new ProceduresExtend;
-            $config->pid = $pid;
-            $config->service_qq = env('service_qq');
-            $config->service_page = env('service_page');
-            $config->service_phone = env('service_phone');
-            $config->service_share = env('service_share');
-            //$config->service_af_download = env('af_download');
-            //$config->heartbeat_interval = 2000;
-            $config->bind_phone_need = true;
-            $config->bind_phone_enforce = false;
-            $config->bind_phone_interval = 259200000;
-            $config->real_name_need = false;
-            $config->real_name_enforce = false;
-            $config->logout_img = env('logout_img');
-            $config->logout_redirect = env('logout_redirect');
-            $config->logout_inside = true;
-            $config->allow_num = 1;
-            $config->create_time = time();
-            $config->update_time = time();
-            $config->saveAndCache();
-        }
-
         // check update
         $update = new \stdClass;
         $update_apks = $this->procedure->update_apks()->orderBy('dt', 'desc')->first();
@@ -106,7 +78,7 @@ class AppController extends Controller
         }
 
         return [
-            'allow_sub_num' => $config->allow_num,
+            'allow_sub_num' => $this->procedure_extend->allow_num,
             'oauth_login' => [
                 'qq' => [
                     'url' => $oauth_qq,
@@ -124,23 +96,23 @@ class AppController extends Controller
             ],
             'update' => $update,
             'service' => [
-                'qq' => $config->service_qq,
-                'page' => $config->service_page,
-                'phone' => $config->service_phone,
-                'share' => $config->service_share,
-                'interval' => intval(env('heartbeat_interval')),
-                'af_download' => env('af_download')
+                'qq' => $this->procedure_extend->service_qq,
+                'page' => $this->procedure_extend->service_page,
+                'phone' => $this->procedure_extend->service_phone,
+                'share' => $this->procedure_extend->service_share,
+                'interval' => max(2000, $this->procedure_extend->heartbeat_interval),
+                'af_download' => env('af_download'),
             ],
             'bind_phone' => [
-                'need' => ($config->enable & 0x00000010) == 0x00000010,
-                'enforce' => ($config->enable & 0x00000030) == 0x00000030,
-                'interval' => $config->bind_phone_interval,
+                'need' => ($this->procedure_extend->enable & 0x00000010) == 0x00000010,
+                'enforce' => ($this->procedure_extend->enable & 0x00000030) == 0x00000030,
+                'interval' => $this->procedure_extend->bind_phone_interval,
             ],
             'real_name' => [
-                'need' => ($config->enable & 0x00000002) == 0x00000002,
-                'enforce' => ($config->enable & 0x00000003) == 0x00000003,
-                'pay_need' => ($config->enable & 0x00000008) == 0x00000008,
-                'pay_enforce' => ($config->enable & 0x0000000C) == 0x0000000C,
+                'need' => ($this->procedure_extend->enable & 0x00000002) == 0x00000002,
+                'enforce' => ($this->procedure_extend->enable & 0x00000003) == 0x00000003,
+                'pay_need' => ($this->procedure_extend->enable & 0x00000008) == 0x00000008,
+                'pay_enforce' => ($this->procedure_extend->enable & 0x0000000C) == 0x0000000C,
             ],
 
             'ios_app_config' => $ios_app_config,
@@ -148,12 +120,11 @@ class AppController extends Controller
     }
 
     public function LogoutAction() {
-        $procedures_extend = ProceduresExtend::from_cache($this->procedure->pid);
         return [
-            'img' => $procedures_extend->logout_img,
-            'type' => $procedures_extend->logout_type,
-            'redirect' => $procedures_extend->logout_redirect,
-            'inside' => $procedures_extend->logout_inside,
+            'img' => $this->procedure_extend->logout_img,
+            'type' => $this->procedure_extend->logout_type,
+            'redirect' => $this->procedure_extend->logout_redirect,
+            'inside' => $this->procedure_extend->logout_inside,
         ];
     }
 
@@ -201,7 +172,7 @@ class AppController extends Controller
 
     /*
      * 热更新信息
-    **/
+     **/
     public function HotupdateAction() {
         //$gps = $this->parameter->tough("gps"); //gps 信息
         //$imei = $this->parameter->tough("imei"); //设备信息

@@ -21,7 +21,8 @@ trait CreateOrderAction {
         $role_name = $this->parameter->get('role_name');
         $pid = $this->procedure->pid;
         
-        if(env('realname')) {
+        // 是否强制实名制
+        if(($this->procedure_extend->enable & 0x0000000C) == 0x0000000C) {
         	$user_info = UcuserInfo::from_cache($this->user->ucid);
         	if(!$user_info || !$user_info->card_no) {
         		throw new ApiException(ApiException::NotRealName, '帐号未实名制，无法支付，请先实名后再操作');
