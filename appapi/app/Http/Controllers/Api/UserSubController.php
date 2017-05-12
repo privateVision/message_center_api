@@ -94,7 +94,6 @@ class UserSubController extends AuthController
             $pid = $this->parameter->tough('_appid');
             $rid = $this->parameter->tough('_rid');
 
-            $config = ProceduresExtend::from_cache($pid);
             $allow_num = $this->procedure_extend->allow_num;
 
             $redisfield = $this->user->ucid .'_'. $pid;

@@ -109,9 +109,9 @@ class AppController extends Controller
                 'interval' => $this->procedure_extend->bind_phone_interval,
             ],
             'real_name' => [
-                'need' => ($this->procedure_extend->enable & 0x00000002) == 0x00000002,
+                'need' => ($this->procedure_extend->enable & 0x00000001) == 0x00000001,
                 'enforce' => ($this->procedure_extend->enable & 0x00000003) == 0x00000003,
-                'pay_need' => ($this->procedure_extend->enable & 0x00000008) == 0x00000008,
+                'pay_need' => ($this->procedure_extend->enable & 0x00000004) == 0x00000004,
                 'pay_enforce' => ($this->procedure_extend->enable & 0x0000000C) == 0x0000000C,
             ],
 

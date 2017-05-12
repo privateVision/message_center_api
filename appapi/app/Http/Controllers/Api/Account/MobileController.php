@@ -44,7 +44,7 @@ class MobileController extends Controller {
         $user->nickname = '暂无昵称';
         $user->setPassword($password);
         $user->regtype = static::Type;
-        $user->regip = $this->request->ip();
+        $user->regip = $this->parameter->get('_ipaddress', null) ?: $this->request->ip();
         $user->rid = $this->parameter->tough('_rid');
         $user->pid = $this->parameter->tough('_appid');
         $user->regdate = time();
