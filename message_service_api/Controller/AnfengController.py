@@ -10,7 +10,8 @@ from MiddleWare import service_logger
 from MysqlModel.GameGiftLog import GameGiftLog
 from Service.UsersService import get_game_info_by_gameid, anfeng_helper_request_check, get_game_info_by_appid, \
     get_ucid_by_access_token, get_stored_value_card_list, anfeng_helper_get_user_all_coupons, get_username_by_ucid, \
-    get_user_tao_gift_total_count, get_gift_real_time_count
+    get_user_tao_gift_total_count, get_gift_real_time_count, anfeng_helper_get_gift_real_time_count, \
+    anfeng_helper_get_user_gifts
 
 anfeng_controller = Blueprint('AnfengController', __name__)
 
@@ -191,23 +192,7 @@ def v4_anfeng_helper_gifts_real_time_count():
         return response_data(http_code=200, code=0, message='gift_ids不能为空')
     ids_list = gift_ids.split('|')
     ids_list_str = ",".join(ids_list)
-    from run import mysql_cms_session
-    find_gift_info_sql = "select giftId, assignNum, num from cms_gameGiftAssign where platformId = 3 " \
-                         "and giftId in (%s)" % (ids_list_str,)
-    data_list = []
-    try:
-        gift_info_list = mysql_cms_session.execute(find_gift_info_sql).fetchall()
-        for data in gift_info_list:
-            count_info = {
-                'gift_id': data['giftId'],
-                'assign_num': data['assignNum'],
-                'num': data['num']
-            }
-            data_list.append(count_info)
-    except Exception, err:
-        mysql_cms_session.rollback()
-    finally:
-        mysql_cms_session.close()
+    data_list = anfeng_helper_get_gift_real_time_count(ids_list_str)
     return response_data(http_code=200, data=data_list)
 
 
@@ -227,48 +212,49 @@ def v4_anfeng_helper_get_user_gifts():
     count = request.form['pagesize'] if request.form.has_key('pagesize') and request.form.get('pagesize') else 10
     start_index = (int(page) - 1) * int(count)
     end_index = start_index + int(count)
-    gift_list = []
-    data = {
-        'total_count': 0,
-        'gift_list': []
-    }
-    user_gift_total_count_sql = "select count(gift.id) from cms_gameGiftLog as log join cms_gameGift as gift" \
-                                " on log.giftId = gift.id where gift.status = 'normal' and " \
-                                "log.status = 'normal' and log.uid = %s " % (ucid,)
-    get_user_gift_sql = "select gift.*, log.code, log.forTime, log.type from cms_gameGiftLog as log join " \
-                        "cms_gameGift as gift on log.giftId = gift.id" \
-                        " where gift.status = 'normal' and log.status = 'normal' and log.uid = %s limit %s, %s" \
-                        % (ucid, start_index, end_index)
-    try:
-        total_count = mysql_cms_session.execute(user_gift_total_count_sql).scalar()
-        user_gift_list = mysql_cms_session.execute(get_user_gift_sql).fetchall()
-        for gift in user_gift_list:
-            game = get_game_info_by_gameid(gift['gameId'])
-            gift_info = {
-                'id': gift['id'],
-                'gameId': gift['gameId'],
-                'gameName': gift['gameName'],
-                'gameCover': game['cover'],
-                'name': gift['name'],
-                'gift': gift['gift'],
-                'content': gift['content'],
-                'label': gift['label'],
-                'total': gift['total'],
-                'num': gift['num'],
-                'assignNum': gift['assignNum'],
-                'code': gift['code'],
-                'for_time': gift['forTime'],
-                'type': gift['type'],
-                'publish_time': gift['publishTime'],
-                'fail_time': gift['failTime']
-            }
-            gift_list.append(gift_info)
-        data['total_count'] = total_count
-        data['gift_list'] = gift_list
-    except Exception, err:
-        mysql_cms_session.rollback()
-    finally:
-        mysql_cms_session.close()
+    data = anfeng_helper_get_user_gifts(ucid, start_index, end_index)
+    # gift_list = []
+    # data = {
+    #     'total_count': 0,
+    #     'gift_list': []
+    # }
+    # user_gift_total_count_sql = "select count(gift.id) from cms_gameGiftLog as log join cms_gameGift as gift" \
+    #                             " on log.giftId = gift.id where gift.status = 'normal' and " \
+    #                             "log.status = 'normal' and log.uid = %s " % (ucid,)
+    # get_user_gift_sql = "select gift.*, log.code, log.forTime, log.type from cms_gameGiftLog as log join " \
+    #                     "cms_gameGift as gift on log.giftId = gift.id" \
+    #                     " where gift.status = 'normal' and log.status = 'normal' and log.uid = %s limit %s, %s" \
+    #                     % (ucid, start_index, end_index)
+    # try:
+    #     total_count = mysql_cms_session.execute(user_gift_total_count_sql).scalar()
+    #     user_gift_list = mysql_cms_session.execute(get_user_gift_sql).fetchall()
+    #     for gift in user_gift_list:
+    #         game = get_game_info_by_gameid(gift['gameId'])
+    #         gift_info = {
+    #             'id': gift['id'],
+    #             'gameId': gift['gameId'],
+    #             'gameName': gift['gameName'],
+    #             'gameCover': game['cover'],
+    #             'name': gift['name'],
+    #             'gift': gift['gift'],
+    #             'content': gift['content'],
+    #             'label': gift['label'],
+    #             'total': gift['total'],
+    #             'num': gift['num'],
+    #             'assignNum': gift['assignNum'],
+    #             'code': gift['code'],
+    #             'for_time': gift['forTime'],
+    #             'type': gift['type'],
+    #             'publish_time': gift['publishTime'],
+    #             'fail_time': gift['failTime']
+    #         }
+    #         gift_list.append(gift_info)
+    #     data['total_count'] = total_count
+    #     data['gift_list'] = gift_list
+    # except Exception, err:
+    #     mysql_cms_session.rollback()
+    # finally:
+    #     mysql_cms_session.close()
     return response_data(http_code=200, data=data)
 
 

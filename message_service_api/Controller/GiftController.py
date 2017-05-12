@@ -233,7 +233,7 @@ def v4_sdk_user_get_gift():
                 mysql_session.close()
         if game_gift_info['isVerified'] == 1:  # 是否需要实名认证
             if check_is_user_shiming(ucid) is False:
-                return response_data(200, 0, get_tips('gift', 'gift_need_shiming_users'))
+                return response_data(200, 110, get_tips('gift', 'gift_need_shiming_users'))
         if game_gift_info['isSpecify'] == 1:  # 是否指定用户领取
             from run import mysql_session
             find_users_uid_sql = "select uid from ucusers as u where u.ucid = %s limit 1" % (ucid,)
