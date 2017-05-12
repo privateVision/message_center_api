@@ -40,6 +40,7 @@ class UserController extends AuthController
             'is_real' => $user_info && $user_info->isReal(),
             'is_adult' => $user_info && $user_info->isAdult(),
             'reg_time' => $this->user->regdate,
+            'regtype' => $this->user->regtype,
         ];
     }
 
