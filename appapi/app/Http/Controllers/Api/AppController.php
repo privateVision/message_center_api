@@ -7,6 +7,7 @@ use App\Model\Log\DeviceApps;
 use App\Model\Log\DeviceInfo;
 use App\Model\IosApplicationConfig;
 use App\Model\ZyGame;
+use App\Jobs\AdtRequest;
 
 class AppController extends Controller
 {
@@ -76,6 +77,7 @@ class AppController extends Controller
         		];
         	}
         }
+        dispatch((new AdtRequest(["imei"=>$imei,"gameid"=>$pid,"rid"=>$rid]))->onQueue('adtinit'));
 
         return [
             'allow_sub_num' => $this->procedure_extend->allow_num,
