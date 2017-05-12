@@ -103,6 +103,7 @@ trait RegisterAction {
             'balance' => $user->balance,
             'real_name' => $user_info && $user_info->real_name ? (string)$user_info->real_name : "",
             'card_no' => $user_info && $user_info->card_no ? (string)$user_info->card_no : "",
+            'regtype' => $user->regtype,
         ];
     }
 
