@@ -115,6 +115,18 @@ return [
                 'database' => env('MONGODB_LOG_AUTH_DATABASE') // sets the authentication database required by mongo 3
             ]
         ],
+
+		'adt' => [
+			'driver'   => 'mongodb',
+			'host'     => env('MONGODB_ADT_HOST'),
+			'port'     => env('MONGODB_ADT_PORT'),
+			'database' => env('MONGODB_ADT_DATABASE'),
+			'username' => env('MONGODB_ADT_USERNAME'),
+			'password' => env('MONGODB_ADT_PASSWORD'),
+			'options'  => [
+				'database' => env('MONGODB_ADT_DATABASE') // sets the authentication database required by mongo 3
+			]
+		],
     ],
 
     /*

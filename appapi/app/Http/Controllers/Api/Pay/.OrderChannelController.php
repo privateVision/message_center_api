@@ -60,7 +60,7 @@ class OrderChannelController extends Controller{
             $order->fee = $dat[0]->fee;
             $order->subject = $dat[0]->product_name;
             $order->body = "role_name:" . $role_name . "zone_name:" . $zone_name;
-            $order->createIP = $this->request->ip();
+            $order->createIP = $this->parameter->get('_ipaddress', null) ?: $this->request->ip();
             $order->status = Orders::Status_WaitPay;
             $order->paymentMethod = Orders::Way_Unknow;
             $order->hide = false;
