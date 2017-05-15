@@ -70,18 +70,19 @@ trait RegisterAction {
         $usession->saveAndCache();
         
         // ucuser
-        $user->uuid = $session->token;
+        // $user->uuid = $session->token;
         $user->last_login_at = datetime();
         $user->last_login_ip = $this->parameter->get('_ipaddress', null) ?: $this->request->ip();
         $user->save();
         $user->updateCache();
         
         // login_log
-        $t = time();
+        $t = time() + date('Z');
+        
         $login_log = new LoginLog;
         $login_log->ucid = $user->ucid;
         $login_log->pid = $pid;
-        $login_log->loginDate = intval($t / 86400) - 1;
+        $login_log->loginDate = intval($t / 86400);
         $login_log->loginTime = $t % 86400;
         $login_log->loginIP = ip2long($this->parameter->get('_ipaddress', null) ?: $this->request->ip());
         $login_log->asyncSave();

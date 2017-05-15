@@ -126,16 +126,17 @@ class UserController extends Controller {
     public function SMSResetPasswordAction() {
         $mobile = $this->parameter->tough('mobile', 'mobile');
         
-        $user = Ucuser::where('uid', $mobile)->orWhere('mobile', $mobile)->first();
+        $user = Ucuser::where('mobile', $mobile)->first();
         
-        if(!$user || $user->mobile =="") {
+        if(!$user) {
             throw new ApiException(ApiException::Remind, '手机号码尚未绑定');
         }
         
         $code = smscode();
-        
+
         try {
-            send_sms($mobile, 0, 'reset_password', ['#code#' => $code], $code);
+            // 给当前绑定的手机发短信，而不是当前输入的手机号
+            send_sms($user->mobile, 0, 'reset_password', ['#code#' => $code], $code);
         } catch (\App\Exceptions\Exception $e) {
             throw new ApiException(ApiException::Remind, $e->getMessage());
         }
