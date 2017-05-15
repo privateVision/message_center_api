@@ -7,7 +7,7 @@ use App\Parameter;
 use App\Session;
 use App\Model\UcuserSession;
 use App\Model\Ucuser;
-use App\Model\UcuserInfo;
+use Illuminate\Http\Response;
 
 class AuthController extends Controller {
 
@@ -15,8 +15,8 @@ class AuthController extends Controller {
 	protected $user_info = null;
 	protected $session = null;
 
-	public function before() {
-		parent::before();
+	public function before(Request $request) {
+		parent::before($request);
 
 		$token = $this->parameter->tough('_token');
 		if(!$token) {
@@ -46,12 +46,13 @@ class AuthController extends Controller {
 		$this->user = $user;
 	}
 
-	public function execute(Request $request, $action, $parameters) {
-		$response = parent::execute($request, $action, $parameters);
-		if($response['code'] === ApiException::Success) {
-			$response['_token'] = $this->parameter->tough('_token');
-		}
-
-		return $response;
+	public function onResponse(Request $request, Response $response) {
+	    if(!$response->exception) {
+    	    $content = $response->getOriginalContent();
+    	    $content['_token'] = $this->parameter->tough('_token');
+    	    $response->setContent($content);
+	    }
+	    
+	    return parent::onResponse($request, $response);
 	}
 }

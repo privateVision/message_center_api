@@ -10,7 +10,9 @@ class AuthController extends Controller
 {
     protected $user = null;
 
-    public function before() {
+    public function before(Request $request) {
+        parent::before($request);
+        
         $ucid = $this->parameter->tough('ucid');
         
         $user = Ucuser::from_cache($ucid);

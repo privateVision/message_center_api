@@ -447,10 +447,3 @@ function check_money($money,$del=4){
     if(!preg_match("/^(\d{0,8}).?(?=\d+)(.\d{0,$del})?$/",$money)) return false;
     return true;
 }
-
-//当前是否是合法的http地址
-function check_url($url){
-    $url = trim($url);
-    if(!preg_match("/^http[s]?:\/\//",$url)) return false;
-    return true;
-}
