@@ -15,26 +15,27 @@ class Parameter
 		$this->_data[$key] = $value;
 	}
 
-	public function get($key, $type_fun_regex_default = null) {
+	public function get($key, $default = null, $type_fun_regex = null) {
 		$data = @$this->_data[$key];
-		if($data === null) {
-			return $type_fun_regex_default;
+
+		if(is_string($type_fun_regex) && method_exists($this, $type_fun_regex)) {
+			return $this->$type_fun_regex($data);
 		}
 
-		if(is_string($type_fun_regex_default) && method_exists($this, $type_fun_regex_default)) {
-			return $this->$type_fun_regex_default($data);
+		if(is_callable($type_fun_regex)) {
+			return $type_fun_regex($data);
 		}
 
-		if(is_callable($type_fun_regex_default)) {
-			return $type_fun_regex_default($data);
-		}
-
-		if(is_string($type_fun_regex_default)) {
-			if(preg_match($type_fun_regex_default, $data)) {
+		if(is_string($type_fun_regex)) {
+			if(preg_match($type_fun_regex, $data)) {
 				return $data;
 			} else {
 				throw new Exception ("参数\"{$key}\"格式不正确", 0);
 			}
+		}
+
+		if($data === null || $data === '') {
+			return $default;
 		}
 
 		return $data;
@@ -66,7 +67,7 @@ class Parameter
 	}
 
 	protected function mobile($mobile) {
-		$mobile = trim($mobile);
+		$mobile = trim($mobile, '　 ');
 
 		if(!preg_match('/^1\d{10}$/', $mobile)) {
 			throw new Exception ("\"{$mobile}\" 不是一个有效的手机号码", 0);
@@ -76,17 +77,25 @@ class Parameter
 	}
 
 	protected function username($username) {
-		$username = trim($username);
+		$username = trim($username, '　 ');
 
 		if(preg_match('/^\d+$/', $username)) {
-			throw new Exception ("用户名错误，不能为纯数字", 0);
+		    throw new Exception ("用户名错误，不能为纯数字", 0);
 		}
 		
+		if(strlen($username) < 6 || strlen($username) > 15) {
+		    throw new Exception ("用户名长度在6-15位之间", 0);
+		}
+		
+		if(preg_match('/[^a-zA-Z0-9]+/', $username)) {
+		    throw new Exception ("用户名只能由数字和字母组成", 0);
+		}
+
 		return $username;
 	}
 
 	protected function smscode($smscode) {
-		$smscode = trim($smscode);
+		$smscode = trim($smscode, '　 ');
 
 		if(strlen($smscode) != 6) {
 			throw new Exception ("验证码错误", 0);
@@ -96,19 +105,49 @@ class Parameter
 	}
 
 	protected function url($url) {
-		$url = trim($url);
+		$url = trim($url, '　 ');
 
 		if(!preg_match('/^https*:\/\/.*$/', $url)) {
-			throw new Exception ("\"{$mobile}\" url错误", 0);
+			throw new Exception ("\"{$url}\" url错误", 0);
 		}
 		
 		return $url;
 	}
 
 	protected function password($password) {
-		$password = trim($password);
+		$password = trim($password, '　 ');
 		if($password == "") throw new Exception ("密码不能为空", 0);
 
 		return $password;
+	}
+
+	protected function nickname($nickname) {
+		$nickname = trim($nickname, '　 ');
+
+		$len1 = mb_strlen($nickname, 'UTF-8');
+		$len2 = strlen($nickname);
+
+		$len = $len1 + ($len2 - $len1) / 2;
+
+		if($len > 14) {
+			throw new Exception ("昵称长度不能超过14个字符，1个汉字算2个", 0);
+		}
+
+		return $nickname;
+	}
+
+	protected function sub_nickname($nickname) {
+		$nickname = trim($nickname, '　 ');
+
+		$len1 = mb_strlen($nickname, 'UTF-8');
+		$len2 = strlen($nickname);
+
+		$len = $len1 + ($len2 - $len1) / 2;
+
+		if($len > 10) {
+			throw new Exception ("昵称长度不能超过10个字符，1个汉字算2个", 0);
+		}
+
+		return $nickname;
 	}
 }

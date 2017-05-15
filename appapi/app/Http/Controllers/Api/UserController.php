@@ -2,7 +2,6 @@
 namespace App\Http\Controllers\Api;
 
 use App\Exceptions\ApiException;
-use App\Model\MongoDB\RoleDataLog;
 use Illuminate\Http\Request;
 use App\Parameter;
 use App\Model\Ucuser;
@@ -13,6 +12,7 @@ use App\Model\ProceduresExtend;
 use App\Model\UcuserSub;
 use App\Model\UcuserOauth;
 use App\Model\UcuserInfo;
+use Illuminate\Support\Facades\Session;
 
 class UserController extends AuthController
 {
@@ -27,7 +27,7 @@ class UserController extends AuthController
             'email' => $this->user->email,
             'balance' => $this->user->balance,
             'gender' => $user_info && $user_info->gender ? (int)$user_info->gender : 0,
-            'birthday' => $user_info && $user_info->birthday ? (string)$user_info->birthday : "1990-06-01",
+            'birthday' => $user_info && $user_info->birthday ? (string)$user_info->birthday : "",
             'province' => $user_info && $user_info->province ? (string)$user_info->province : "",
             'city' => $user_info && $user_info->city ? (string)$user_info->city : "",
             'address' => $user_info && $user_info->address ? (string)$user_info->address : "",
@@ -39,47 +39,48 @@ class UserController extends AuthController
             'score' => $user_info && $user_info->score ? (int)$user_info->score : 0,
             'is_real' => $user_info && $user_info->isReal(),
             'is_adult' => $user_info && $user_info->isAdult(),
+            'reg_time' => $this->user->regdate,
+            'regtype' => $this->user->regtype,
         ];
     }
 
     public function BindListAction() {
+        $config = config('common.oauth');
         $data = [];
 
-        $oauth = UcuserOauth::where('ucid', $this->user->ucid)->pluck('type');
-        foreach($oauth as $v) {
-            $data[$v]['is_bind'] = true;
+        foreach($config as $k => $v) {
+            $data[$k]['is_bind'] = false;
         }
 
-        if($this->user->mobile) {
-            $data['mobile']['is_bind'] = true;
+        $oauth = UcuserOauth::where('ucid', $this->user->ucid)->get();
+        foreach($oauth as $v) {
+            $data[$v->type]['is_bind'] = true;
+            $data[$v->type]['openid'] = $v->openid;
+            $data[$v->type]['unionid'] = $v->unionid;
         }
+
+        $data['mobile']['is_bind'] = $this->user->mobile ? true : false;
+        if($data['mobile']['is_bind']) {
+            $data['mobile']['unionid'] = $this->user->mobile;
+            $data['mobile']['openid'] = $this->user->mobile;
+        }
+        
+        $data['password']['is_bind'] = $this->user->regtype == 6;// TODO App\Http\Controllers\Api\Account\UserController::Type;
 
         return $data;
     }
 
     public function SetAction() {
-        $nickname = $this->parameter->get('nickname');
+        $nickname = $this->parameter->get('nickname', null, 'nickname');
         $province = $this->parameter->get('province');
         $city = $this->parameter->get('city');
         $address = $this->parameter->get('address');
         $gender = $this->parameter->get('gender');
-        $birthday = $this->parameter->get('birthday', function($v) {
-            if(!preg_match('/^\d{8}$/', $v)) {
-                throw new ApiException(ApiException::Remind, "生日格式不正确，yyyy-mm-dd");
-            }
-
-            $y = substr($v, 0, 4);
-            $m = substr($v, 4, 2);
-            $d = substr($v, 6, 2);
-
-            $interval = date_diff(date_create("{$y}-{$m}-{$d}"), date_create(date('Y-m-d')));
-
-            if(@$interval->y > 80 || $interval->y < 1) {
-                throw new ApiException(ApiException::Remind, "生日不是一个有效的日期");
-            }
-
-            return $v;
-        });
+        $birthday = $this->parameter->get('birthday', '');
+        
+        if($birthday && !preg_match('/^\d{8}$/', $birthday)) {
+            throw new ApiException(ApiException::Remind, "生日格式不正确，yyyymmdd");
+        }
 
         $user_info = UcuserInfo::from_cache($this->user->ucid);
         if(!$user_info) {
@@ -103,11 +104,11 @@ class UserController extends AuthController
             $user_info->city = $city;
         }
 
-        if($address) {
+        if($address !== null) {
             $user_info->address = $address;
         }
 
-        if($gender) {
+        if($gender === '0' || $gender === '1' || $gender === '2') {
             $user_info->gender = $gender;
         }
 
@@ -137,7 +138,7 @@ class UserController extends AuthController
                 'order_id' => $v->sn,
                 'fee' => $v->fee,
                 'subject' => $v->subject,
-                'otype' => 0, // todo: 这是什么鬼？
+                'otype' => 0, 
                 'createTime' => strtotime($v->createTime),
                 'status' => $v->status,
             ];
@@ -156,13 +157,13 @@ class UserController extends AuthController
         $order = $order->where('ucid', $this->user->ucid);
         $order = $order->where('hide', 0);
         $order = $order->where('status', '!=', Orders::Status_WaitPay);
+        
         $count = $order->count();
         $order = $order->orderBy('id', 'desc');
         $order = $order->take($limit)->skip($offset)->get();
 
         $data = [];
         foreach($order as $v) {
-            //if($v->is_f()) continue;
             $data[] = [
                 'order_id' => $v->sn,
                 'fee' => $v->fee,
@@ -178,7 +179,13 @@ class UserController extends AuthController
 
     public function HideOrderAction() {
         $sn = $this->parameter->tough('order_id');
-        Orders::where('sn', $sn)->update(['hide' => true]);
+
+        $order = Orders::from_cache($sn);
+        if($order) {
+            $order->hide = true;
+            $order->save();
+        }
+
         return ['result' => true];
     }
 
@@ -198,6 +205,7 @@ class UserController extends AuthController
         $this->user->setPassword($new_password);
         $this->user->save();
 
+        async_execute('expire_session', $this->user->ucid);
         user_log($this->user, $this->procedure, 'reset_password', '【重置用户密码】通过旧密码，旧密码[%s]，新密码[%s]', $old_password, $this->user->password);
 
         return ['result' => true];
@@ -207,10 +215,11 @@ class UserController extends AuthController
         $mobile = $this->parameter->tough('mobile', 'mobile');
 
         $user = Ucuser::where('uid', $mobile)->orWhere('mobile', $mobile)->first();
+
         if($user) {
             if($user->ucid != $this->user->ucid) {
                 throw new ApiException(ApiException::Remind, "手机号码已经绑定了其它账号");
-            } else {
+            } elseif($this->user->mobile == $mobile) {
                 throw new ApiException(ApiException::Remind, "该账号已经绑定了这个手机号码");
             }
         }
@@ -234,6 +243,7 @@ class UserController extends AuthController
         if(preg_match('/^[\w\d\-\_\.]+@\w+(\.\w+)+$/', $mobile)) {
             throw new ApiException(ApiException::Remind, "该功能已停用");
         }
+
         // ---- end ----
 
         $mobile = $this->parameter->tough('mobile', 'mobile');
@@ -251,6 +261,9 @@ class UserController extends AuthController
         if($user) {
             if($user->ucid != $this->user->ucid) {
                 throw new ApiException(ApiException::Remind, "手机号码已经绑定了其它账号");
+            } elseif(empty($this->user->mobile)) {
+                $this->user->mobile = $mobile;
+                $this->user->save();
             }
         } else {
             $this->user->mobile = $mobile;
@@ -284,6 +297,7 @@ class UserController extends AuthController
 
     public function UnbindPhoneAction() {
         $code = $this->parameter->tough('code', 'smscode');
+        $username = $this->parameter->get('username', null, 'username'); // 解绑可以同时设置uid
 
         if($this->user->mobile) {
             $mobile = $this->user->mobile;
@@ -291,7 +305,19 @@ class UserController extends AuthController
             if(!verify_sms($mobile, $code)) {
                 throw new ApiException(ApiException::Remind, "手机号码解绑失败，验证码不正确，或已过期");
             }
-            
+
+            if($this->user->mobile == $this->user->uid) {
+                if(!$username) {
+                    throw new ApiException(ApiException::Remind, "您必需重设您的用户名才能解绑");
+                }
+
+                $_user = Ucuser::where('uid', $username)->orWhere('mobile', $username)->orWhere('email', $username)->first();
+                if(!$_user || $_user->ucid == $this->user->ucid) {
+                    $this->user->uid = $username;
+                } else {
+                    throw new ApiException(ApiException::Remind, "解绑失败，用户名已被占用");
+                }
+            }
             $this->user->mobile = '';
             $this->user->save();
 
@@ -343,6 +369,7 @@ class UserController extends AuthController
         $this->user->setPassword($password);
         $this->user->save();
 
+        async_execute('expire_session', $this->user->ucid);
         user_log($this->user, $this->procedure, 'reset_password', '【重置密码】通过手机验证码重置，手机号码{%s}，旧密码[%s]，新密码[%s]', $mobile, $old_password, $this->user->password);
 
         return ['result' => true];
@@ -385,7 +412,7 @@ class UserController extends AuthController
         $user_info->card_no = $card_no;
         $user_info->birthday = $card_info['birthday'];
         $user_info->gender = $card_info['gender'];
-        $user_info->asyncSave();
+        $user_info->save();
 
         user_log($this->user, $this->procedure, 'real_name_attest', '【实名认证】姓名:%s，身份证号码:%s', $name, $card_no);
 
@@ -395,18 +422,20 @@ class UserController extends AuthController
     public function BindOauthAction() {
         $openid = $this->parameter->tough('openid');
         $type = $this->parameter->tough('type');
-        $unionid = $this->parameter->get('unionid');
+        $unionid = $this->parameter->get('unionid', "");
         $nickname = $this->parameter->get('nickname');
         $avatar = $this->parameter->get('avatar');
         $forced = $this->parameter->get('forced');
+        
+        if($type == 'weixin' && $unionid == '') throw new ApiException(ApiException::Error, "unionid不允许为空");
 
         $count = UcuserOauth::where('type', $type)->where('ucid', $this->user->ucid)->count();
         if($count > 0) {
             throw new ApiException(ApiException::Remind, "账号已经绑定了" . config("common.oauth.{$type}.text", '第三方'));
         }
 
-        $openid = md5($type .'_'. $openid);
-        $unionid = $unionid ? md5($type .'_'. $unionid) : '';
+        $openid = "{$openid}@{$type}";
+        $unionid = $unionid ? "{$unionid}@{$type}" : '';
 
         $user_oauth = null;
 
@@ -460,11 +489,14 @@ class UserController extends AuthController
         $type = $this->parameter->tough('type');
 
         $count = UcuserOauth::where('type', '!=', $type)->where('ucid', $this->user->ucid)->count();
-        if($count == 0 && $this->user->mobile == "") {
+        if($count == 0 && $this->user->mobile == "" && $this->user->regtype != 6) {
             throw new ApiException(ApiException::Remind, "为了防止遗忘账号，请绑定手机或者其他社交账号后再解除绑定");
         }
 
-        UcuserOauth::where('type', $type)->where('ucid', $this->user->ucid)->delete();
+        $user_oauth = UcuserOauth::where('type', $type)->where('ucid', $this->user->ucid)->first();
+        if($user_oauth) {
+            $user_oauth->delete();
+        }
 
         user_log($this->user, $this->procedure, 'unbind_oauth', '【解绑平台帐号】%s', config("common.oauth.{$type}.text", '第三方'));
 
@@ -530,7 +562,8 @@ class UserController extends AuthController
     }
 
     public function SetNicknameAction() {
-        $nickname = $this->parameter->tough('nickname');
+        $nickname = $this->parameter->tough('nickname', 'nickname');
+
         $this->user->nickname = $nickname;
         $this->user->save();
 
@@ -542,13 +575,11 @@ class UserController extends AuthController
         return ['result' => true];
     }
 
-
     /*
      * 用户角色等级信息日志
      */
-
+/*
     public function UpdateRoleAction(){
-
         $zone_id                = $this->parameter->tough('zone_id'); //区服ID
         $zone_name              = $this->parameter->tough('zone_name'); //区服名称
         $role_id                = $this->parameter->tough('role_id');  //游戏
@@ -571,4 +602,5 @@ class UserController extends AuthController
 
         return $logdata->save()?"true":"false";
     }
+*/
 }

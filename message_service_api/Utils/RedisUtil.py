@@ -22,6 +22,16 @@ class RedisHandle(object):
             return redis_store.hset(key, field_name, 0)
 
     @staticmethod
+    def set(key_name, field_value):
+        key = "%s%s" % (RedisHandle.common_key_prefix, key_name)
+        return redis_store.set(key, field_value)
+
+    @staticmethod
+    def get(key_name):
+        key = "%s%s" % (RedisHandle.common_key_prefix, key_name)
+        return redis_store.get(key)
+
+    @staticmethod
     def hset(key_name, field_name, field_value):
         key = "%s%s" % (RedisHandle.common_key_prefix, key_name)
         return redis_store.hset(key, field_name, field_value)
@@ -47,6 +57,11 @@ class RedisHandle(object):
         return redis_store.hset(key, field_name, 0)
 
     @staticmethod
+    def set_key_exipre(key_name, ttl):
+        key = "%s%s" % (RedisHandle.common_key_prefix, key_name)
+        redis_store.expire(key, ttl)
+
+    @staticmethod
     def get_user_data_mark_in_redis(key_name, appid):
         key = "%s%s" % (RedisHandle.common_key_prefix, key_name)
         user_mark = {
@@ -61,74 +76,78 @@ class RedisHandle(object):
         user_mark['broadcast'].extend(broadcast_data)
 
         # 获取用户的未读消息数
-        # if redis_store.exists(key):
-        #     redis_mark_data = redis_store.hgetall(key)
-        #     if redis_mark_data.has_key('message'):
-        #         user_mark['message'] = int(redis_mark_data['message'])
         from Service.UsersService import get_user_unread_message_count
-        if redis_store.exists(key):
-            redis_mark_data = redis_store.hgetall(key)
-            if redis_mark_data.has_key('message'):
-                user_mark['message'] = int(redis_mark_data['message'])
-                if user_mark['message'] <= 0:
-                    user_mark['message'] = get_user_unread_message_count(key_name)
-                    RedisHandle.hset(key_name, 'message', user_mark['message'])
-        else:  # 不存在缓存数据
-            user_mark['message'] = get_user_unread_message_count(key_name)
-            RedisHandle.hset(key_name, 'message', user_mark['message'])
+        user_mark['message'] = get_user_unread_message_count(key_name)
+        RedisHandle.hset(key_name, 'message', user_mark['message'])
 
         # 获取用户未领取的礼包数
         from Service.UsersService import get_user_gift_count
-        if RedisHandle.exists(key_name):
-            redis_mark_data = RedisHandle.hgetall(key_name)
-            if redis_mark_data.has_key('gift_num'):
-                gift_num = int(redis_mark_data['gift_num'])
-                if gift_num <= 0:
-                    user_mark['gift_num'] = get_user_gift_count(key_name, appid)
-                    RedisHandle.hset(key_name, 'gift_num', user_mark['gift_num'])
-                else:
-                    user_mark['gift_num'] = gift_num
-            else:
-                user_mark['gift_num'] = get_user_gift_count(key_name, appid)
-                RedisHandle.hset(key_name, 'gift_num', user_mark['gift_num'])
-        else:
-            user_mark['gift_num'] = get_user_gift_count(key_name, appid)
-            RedisHandle.hset(key_name, 'gift_num', user_mark['gift_num'])
+        user_mark['gift_num'] = get_user_gift_count(key_name, appid)
+        RedisHandle.hset(key_name, 'gift_num', user_mark['gift_num'])
+        # RedisHandle.set_key_exipre(key_name, 14400)
+
+        # from Service.UsersService import get_user_gift_count
+        # if RedisHandle.exists(key_name):
+        #     redis_mark_data = RedisHandle.hgetall(key_name)
+        #     if redis_mark_data.has_key('gift_num'):
+        #         gift_num = int(redis_mark_data['gift_num'])
+        #         if gift_num > 0:
+        #             user_mark['gift_num'] = gift_num
+        #         else:
+        #             user_mark['gift_num'] = get_user_gift_count(key_name, appid)
+        #             RedisHandle.hset(key_name, 'gift_num', user_mark['gift_num'])
+        #             RedisHandle.set_key_exipre(key_name, 14400)
+        #     else:
+        #         user_mark['gift_num'] = get_user_gift_count(key_name, appid)
+        #         RedisHandle.hset(key_name, 'gift_num', user_mark['gift_num'])
+        #         RedisHandle.set_key_exipre(key_name, 14400)
+        # else:
+        #     user_mark['gift_num'] = get_user_gift_count(key_name, appid)
+        #     RedisHandle.hset(key_name, 'gift_num', user_mark['gift_num'])
+        #     RedisHandle.set_key_exipre(key_name, 14400)
 
         return user_mark
 
     @staticmethod
     def get_ucid_from_redis_by_token(token=None):
-        get_token_key = 'session_token_%s' % (token,)
-        get_token_value = redis_store.get(get_token_key)
+        get_token_key = 's_%s' % (token,)
+        get_token_value = redis_store.hgetall(get_token_key)
         if get_token_value is None:
-            return None
-        user_info_str = redis_store.get(get_token_value)
-        if user_info_str is None:
-            return None
-        user_info = json.loads(user_info_str)
-        return user_info['ucid']
+            return 0
+        if get_token_value.has_key('ucid'):
+            return int(get_token_value['ucid'])
+        return 0
 
     @staticmethod
-    def get_expired_ts_from_redis_by_token(token=None):
-        get_token_key = 'session_token_%s' % (token,)
-        get_token_value = redis_store.get(get_token_key)
+    def get_is_expired_from_redis_by_token(token=None):
+        get_token_key = 's_%s' % (token,)
+        get_token_value = redis_store.hgetall(get_token_key)
         if get_token_value is None:
             return None
-        user_info_str = redis_store.get(get_token_value)
-        if user_info_str is None:
-            return None
-        user_info = json.loads(user_info_str)
-        return user_info['expired_ts']
+        return get_token_value
 
     @staticmethod
     def get_user_is_freeze_from_redis_by_token(token=None):
-        get_token_key = 'session_token_%s' % (token,)
-        get_token_value = redis_store.get(get_token_key)
+        get_token_key = 's_%s' % (token,)
+        get_token_value = redis_store.hgetall(get_token_key)
         if get_token_value is None:
             return None
-        user_info_str = redis_store.get(get_token_value)
-        if user_info_str is None:
+        if get_token_value.has_key('freeze'):
+            return get_token_value['freeze']
+        return None
+
+    @staticmethod
+    def get_ucuser_session_id_by_token(token=None):
+        get_key = "ucuser_session_session_token_%s" % (token,)
+        get_token_value = redis_store.get(get_key)
+        if get_token_value is None:
             return None
-        user_info = json.loads(user_info_str)
-        return user_info['freeze']
+        return get_token_value
+
+    @staticmethod
+    def get_ucuser_session_info_by_id(ucuser_session_key=None):
+        get_token_value = redis_store.get(ucuser_session_key)
+        if get_token_value is None:
+            return None
+        session_info = json.loads(get_token_value)
+        return session_info

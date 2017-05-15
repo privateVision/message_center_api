@@ -5,10 +5,12 @@ import json
 import urllib
 import urlparse
 
+import time
 from Crypto.Cipher import DES3
 
 from MiddleWare import service_logger
 from Controller.BaseController import response_exception
+from Utils.RedisUtil import RedisHandle
 from run import app
 
 
@@ -114,40 +116,47 @@ def sdk_api_check_sign(request):
         v = urllib.quote_plus(str(request_data[key]))
         data_str += "%s=%s&" % (k, v)
     appid = request.form['_appid']
+    procedure_key = "procedure_%s" % (appid,)
     service_logger.info("sdk api request: appid - %s" % (appid,))
-    find_prikey_sql = 'select priKey from procedures where pid = %s' % (appid,)
-    from run import mysql_session
-    try:
-        app_info = mysql_session.execute(find_prikey_sql).first()
-        if app_info:
-            pri_key = app_info['priKey']
-            m = hashlib.md5()
-            m.update(pri_key)
-            pri_key = m.hexdigest()
-            m = hashlib.md5()
-            m.update(data_str + "key=" + pri_key)
-            service_logger.info(data_str + "key=" + pri_key)
-            md5_sign = m.hexdigest()
-            service_logger.info("客户端sign为：%s" % (request.form['_sign'],))
-            service_logger.info("服务器运算生成sign为：%s" % (md5_sign,))
-            if md5_sign == request.form['_sign']:
-                return True
-            service_logger.error("服务端与客户端签名不匹配")
-            return False
-        service_logger.error("根据appid未找到相关的应用信息pri_key")
-    except Exception, err:
-        service_logger.error(err.message)
-        mysql_session.rollback()
-    finally:
-        mysql_session.close()
+    pri_key = ''
+    if RedisHandle.exists(procedure_key):
+        pri_key = RedisHandle.get(procedure_key)
+    else:
+        from run import mysql_session
+        find_prikey_sql = 'select priKey from procedures where pid = %s' % (appid,)
+        try:
+            app_info = mysql_session.execute(find_prikey_sql).first()
+            if app_info:
+                pri_key = app_info['priKey']
+                RedisHandle.set(procedure_key, pri_key)
+            else:
+                service_logger.error("根据appid未找到相关的应用信息pri_key")
+                return False
+        except Exception, err:
+            service_logger.error(err.message)
+            mysql_session.rollback()
+        finally:
+            mysql_session.close()
+    m = hashlib.md5()
+    m.update(pri_key)
+    pri_key = m.hexdigest()
+    m = hashlib.md5()
+    m.update(data_str + "key=" + pri_key)
+    service_logger.info(data_str + "key=" + pri_key)
+    md5_sign = m.hexdigest()
+    service_logger.info("客户端sign为：%s" % (request.form['_sign'],))
+    service_logger.info("服务器运算生成sign为：%s" % (md5_sign,))
+    if md5_sign == request.form['_sign']:
+        return True
+    service_logger.info("服务端与客户端签名不匹配")
     return False
 
 
 # 安锋助手的后台请求校验函数
 def anfeng_helper_api_check_sign(request):
     data_str = ""
-    request_data = request.json.copy()
-    del request_data['sign']
+    request_data = request.form.copy()
+    del request_data['_sign']
     for key in sorted(request_data.keys()):
         k = urllib.quote_plus(key)
         v = urllib.quote_plus(str(request_data[key]))
@@ -158,8 +167,8 @@ def anfeng_helper_api_check_sign(request):
     service_logger.info(enc_str)
     m.update(enc_str)
     gen_sign = m.hexdigest()
-    service_logger.info("客户端sign为：%s" % (request.json.get('sign'),))
+    service_logger.info("客户端sign为：%s" % (request.form['_sign'],))
     service_logger.info("服务器运算生成sign为：%s" % (gen_sign,))
-    if gen_sign == request.json.get('sign'):
+    if gen_sign == request.form['_sign']:
         return True
     return False

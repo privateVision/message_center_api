@@ -1,10 +1,14 @@
 # _*_ coding: utf-8 _*_
+import hashlib
 import json
 import threading
 
 import time
 
 import datetime
+import urllib
+
+import requests
 from mongoengine import Q
 
 from MiddleWare import service_logger
@@ -38,6 +42,9 @@ from Utils.RedisUtil import RedisHandle
 
 
 #  目标用户太多，改成分批发送
+from Utils.SystemUtils import KafkaConsumeError
+
+
 def add_message_to_user_message_list(game, users_type, vip_user, specify_user, type, msg_id,
                                      start_time, end_time, is_time):
     if users_type is not None:
@@ -199,11 +206,17 @@ def add_user_messsage(ucid, type, msg_id, is_time, start_time, end_time, game):
         if game[0]['apk_id'] != 'all':
             pid = game[0]['apk_id']
         try:
-            insert_user_coupon_sql = "insert into zy_coupon_log(ucid, coupon_id, pid, is_time, start_time, end_time)" \
-                                     " values(%s, %s, %s, %s, %s, %s)" \
-                                     % (ucid, msg_id, pid, is_time, start_time, end_time)
-            mysql_session.execute(insert_user_coupon_sql)
-            mysql_session.commit()
+            find_is_user_get_the_coupon_sql = "select count(*) from zy_coupon_log where ucid = %s" \
+                                              " and coupon_id = %s and pid = %s " % (ucid, msg_id, pid)
+            is_user_get_the_coupon = mysql_session.execute(find_is_user_get_the_coupon_sql).scalar()
+            if is_user_get_the_coupon == 0:
+                insert_user_coupon_sql = "insert into zy_coupon_log(ucid, coupon_id, pid, is_time, start_time, " \
+                                         "end_time) values(%s, %s, %s, %s, %s, %s)" \
+                                         % (ucid, msg_id, pid, is_time, start_time, end_time)
+                mysql_session.execute(insert_user_coupon_sql)
+                mysql_session.commit()
+            else:
+                service_logger.info("用户: %s 已经领取过pid：%s 的卡券：%s, 这次不再分发！" % (ucid, pid, msg_id))
         except Exception, err:
             service_logger.error("添加卡券到每个用户的mysql列表发生异常：%s" % (err.message,))
             mysql_session.rollback()
@@ -227,7 +240,7 @@ def check_user_type_and_vip(ucid=None, user_type=None, vip=None):
             is_vip_exist = mysql_session.execute(find_users_by_vip_sql).scalar()
             service_logger.info("用户vip匹配查找结果：%s" % (is_vip_exist,))
             if is_vip_exist == 0:
-                service_logger.info("检查是否vip等级为0：%s" % (vip,))
+                service_logger.info("检查是否vip等级是否为0，用户等级为：%s" % (vip,))
                 if int(vip) == 0:
                     return True
                 else:
@@ -433,7 +446,7 @@ def system_broadcast_persist(data_json=None):
         users_message.title = data_json['title']
         users_message.content = data_json['content']
         users_message.start_time = data_json['stime']
-        users_message.end_time = int(data_json['stime']) + 10
+        users_message.end_time = int(data_json['stime']) + 60
         users_message.close_time = data_json['close_time']
         users_message.is_time = 1
         users_message.create_timestamp = int(time.time())
@@ -520,6 +533,7 @@ def system_message_persist(data_json=None, update_user_message=True):
             users_message.start_time = int(time.time())
         else:
             users_message.start_time = data_json['send_time']
+            users_message.create_timestamp = data_json['send_time']
         users_message.sys = data_json['sys']
         users_message.users = None
         if 'specify_user' in data_json and data_json['specify_user'] is not None:
@@ -654,3 +668,31 @@ def system_rebate_persist(data_json=None, update_user_message=True):
             service_logger.error("mongodb保存优惠券异常：%s" % (err.message,))
         if update_user_message:
             add_to_every_related_users_message_list(users_message)
+
+
+#  卡券领取通知回调
+def coupon_notify_callback(data_json=None, offset=None):
+    if data_json is not None:
+        data = {
+            "task_id": data_json['order_id'],
+            "ucid": data_json['ucid'],
+            "vcid": data_json['coupon_id'],
+            "status": 1
+        }
+        data_str = ''
+        for key in sorted(data.keys()):
+            k = urllib.quote_plus(key)
+            v = urllib.quote_plus(str(data[key]))
+            data_str += "%s=%s&" % (k, v)
+        data_str += "signKey=%s" % ('968fdb5cbe92e7ddf868b98adc3c1205',)
+        m = hashlib.md5()
+        m.update(data_str)
+        sign = m.hexdigest()
+        data['sign'] = sign
+        response = requests.post(urllib.unquote(data_json['notify_url']), data=data)
+        if response.status_code == 200:
+            service_logger.info("卡券通知回调成功：%s" % (response.text,))
+        else:
+            service_logger.info("卡券通知回调异常：%s" % (response.text,))
+            raise KafkaConsumeError('kafka 消费异常', 1001)
+

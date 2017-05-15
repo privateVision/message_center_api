@@ -1,5 +1,6 @@
 <?php
 namespace App\Model;
+use App\Redis;
 
 class Ucuser extends Model
 {
@@ -36,7 +37,7 @@ class Ucuser extends Model
     }
 */
     /**
-     * 验证登陆密码
+     * 验证登录密码
      * @param  [type] $password [description]
      * @return [type]           [description]
      */

@@ -17,25 +17,25 @@ return [
     ],
 
     'smsconfig' => [
-        'receiver' => '10690204000237',
+        'receiver' => '10690735126170',
         'apikey' => '560ff300cabf7b7df7e3c02f892bfd43',
         'sender' => 'http://yunpian.com/v1/sms/send.json',
         'hour_limit' => 3, // 每小时短信发送次数限制
         'template' => [
-            // 手机注册成功  一键登录  主动短信验证码登录
-            'mobile_register' => '【安锋游戏】恭喜您注册成功，用户名：#username#  密码：#password#，您也可以使用手机号码作为账号登录。',
-            // 重置密码时发送手机验证码 
-            'reset_password' => '【安锋游戏】您正在使用该手机号码重置登录密码，验证码为：#code#，请勿向任何人泄露您的验证码。',
-            // 平台登录时绑定手机发送短信验证码
-            'oauth_login_bind' => '【安锋游戏】您正在通过该手机号码绑定安锋账号，验证码为：#code#，请勿向任何人泄露您的验证码。',
-            // 平台注册成功后向用户发送账号密码
-            'oauth_register' => '【安锋游戏】恭喜您注册成功，您可以使用#type#直接登录，也可以使用手机号码或用户名登录，用户名：#username#  密码：#password#',
-            // 在用户中心绑定手机
-            'bind_phone' => '【安锋游戏】您正在通过手机号码绑定安锋账号，验证码为：#code#，请勿向任何人泄露您的验证码。',
-            // 解除绑定手机号码
-            'unbind_phone' => '【安锋游戏】您正在通过该手机号码解绑安锋账号，验证码为：#code#，请勿向任何人泄露您的验证码。',
-            // 手机号码+验证码登录
-            'login_phone' => '【安锋游戏】您正在使用该手机号码登录安锋游戏，验证码为：#code#，请勿向任何人泄露您的验证码。',
+            //  手机注册成功    一键登录    主动短信验证码登录
+            'mobile_register'  =>  '【安锋游戏】恭喜您注册成功，用户名：#username#    密码：#password#，您也可以使用手机号码作为账号登录。',
+            //  重置密码时发送手机验证码
+            'reset_password'  =>  '【安锋游戏】验证码为：#code#，您正在使用该手机号码重置登录密码，请勿向任何人泄露您的验证码。',
+            //  平台登录时绑定手机发送短信验证码
+            'oauth_login_bind'  =>  '【安锋游戏】验证码为：#code#，您正在通过该手机号码绑定安锋账号，请勿向任何人泄露您的验证码。',
+            //  平台注册成功后向用户发送账号密码
+            'oauth_register'  =>  '【安锋游戏】恭喜您注册成功，您可以使用#type#直接登录，也可以使用手机号码或用户名登录，用户名：#username#    密码：#password#',
+            //  在用户中心绑定手机
+            'bind_phone'  =>  '【安锋游戏】验证码为：#code#，您正在通过手机号码绑定安锋账号，请勿向任何人泄露您的验证码。',
+            //  解除绑定手机号码
+            'unbind_phone'  =>  '【安锋游戏】验证码为：#code#，您正在通过该手机号码解绑安锋账号，请勿向任何人泄露您的验证码。',
+            //  手机号码+验证码登录
+            'login_phone'  =>  '【安锋游戏】验证码为：#code#，您正在使用该手机号码登录安锋游戏，请勿向任何人泄露您的验证码。',
         ]
     ],
 
@@ -52,9 +52,9 @@ return [
             'pfx_pwd' => '906536',
             'verify' =>  __DIR__ . '/unionpay.cert',
             // 手机APP交易请求地址
-            'trade_url' => env('APP_DEBUG') ? 'https://gateway.test.95516.com/gateway/api/appTransReq.do' : 'https://gateway.95516.com/gateway/api/appTransReq.do',
+            'trade_url' => 'https://gateway.95516.com/gateway/api/appTransReq.do',
             //单笔查询请求地址
-            'query_url' => env('APP_DEBUG') ? 'https://gateway.test.95516.com/gateway/api/queryTrans.do' : 'https://gateway.95516.com/gateway/api/queryTrans.do',
+            'query_url' => 'https://gateway.95516.com/gateway/api/queryTrans.do',
             /*
             卡号      6216261000000000018
             卡性质    借记卡
@@ -88,6 +88,14 @@ return [
             'mhtOrderType' => '01',
             'payChannelType' => '13',
             'mhtSignType' => 'MD5',
+        ],
+
+        'wechat' => [
+            'appid' => 'wx873090ec90259693',
+            'mch_id' => '1265654801',
+            'key' => 'cf281b632d1671ed2a94d8f7cdfe2ff0',
+            'pemfile_key' => __DIR__ . '/wechat_key.pem',
+            'pemfile_cert' => __DIR__ . '/wechat_cert.pem',
         ],
     ],
 ];

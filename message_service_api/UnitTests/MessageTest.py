@@ -56,7 +56,7 @@ class MessageFunctionTest(unittest.TestCase):
     #     r = requests.delete("http://localhost:5000/v4/message?sign=%s" % (sign,), data=data_json, headers=headers)
     #     self.assertEqual(r.status_code, 200)
     #     print r.text
-    #
+
     def test_get_message_list(self):
         body_data = {
             '_sign': '7004f02a9d4f466c79c9dace143541e7',
@@ -68,10 +68,10 @@ class MessageFunctionTest(unittest.TestCase):
 
     # def test_set_message_readed(self):
     #     body_data = {
-    #         '_sign': '393a792560a461622a42f134724387fb',
-    #         '_token': 'a1bg7dhi95440sosoggk40ss8',
+    #         '_sign': '57a94a14cd75f480b506c35063f6e26a',
+    #         '_token': '9jxmym7tin8kgcsg8c4w0scks',
     #         'type': 'message',
-    #         'message_id': 2,
+    #         'message_id': 6855,
     #         '_appid': 778
     #     }
     #     r = requests.post('http://sdkv4test.qcwanwan.com/msa/v4/message/read', data=body_data)

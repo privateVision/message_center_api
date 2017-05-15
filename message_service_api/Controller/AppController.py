@@ -10,12 +10,12 @@ from mongoengine import Q
 
 from Controller.BaseController import response_data, response_ok
 from LanguageConf import get_tips
+from MiddleWare import service_logger
 from MongoModel.AppRulesModel import AppVipRules
 from MongoModel.MessageModel import UsersMessage
 from MongoModel.MessageRevocationModel import MessageRevocation
 from MongoModel.UserMessageModel import UserMessage
-from Service.UsersService import get_ucid_by_access_token, sdk_api_request_check, cms_api_request_check, \
-    get_user_is_freeze_by_access_token
+from Service.UsersService import get_ucid_by_access_token, sdk_api_request_check, cms_api_request_check
 from Utils.RedisUtil import RedisHandle
 from Utils.SystemUtils import log_exception
 
@@ -138,31 +138,45 @@ def v4_cms_message_revocation():
 @app_controller.route('/msa/v4/app/heartbeat', methods=['POST'])
 @sdk_api_request_check
 def v4_sdk_heartbeat():
-    start_time = time.time()
-    ucid = get_ucid_by_access_token(request.form['_token'])
+    stime = time.time()
+    num = int(request.form['num']) if 'num' in request.form else 1
+    refresh_interval = int(RedisHandle.get('REFRESH_INTERVAL')) if RedisHandle.exists('REFRESH_INTERVAL') else 60000
+    interval_ms = int(request.form['interval']) if 'interval' in request.form else 2000
     appid = request.form['_appid']
-    if ucid:
-        # 获取用户相关广播和未读消息数
-        data = RedisHandle.get_user_data_mark_in_redis(ucid, appid)
-        print "%s - %s" % (ucid, json.dumps(data))
-        freeze = get_user_is_freeze_by_access_token(request.form['_token'])
-        if freeze is not None:
-            if freeze == 1:
-                return response_data(200, 101, get_tips('heartbeat', 'user_account_freezed'))
-            if freeze == 2:
-                return response_data(200, 108, get_tips('heartbeat', 'sub_user_account_freezed'))
-        end_time = time.time()
-        print (end_time - start_time)
-        return response_data(data=data)
-
-
-# 心跳ACK
-@app_controller.route('/msa/v4/app/heartbeat/ack', methods=['POST'])
-@sdk_api_request_check
-def v4_sdk_heartbeat_ack():
+    data = {
+        "broadcast": [],
+        "message": 0,
+        "gift_num": 0
+    }
     ucid = get_ucid_by_access_token(request.form['_token'])
-    RedisHandle.clear_user_data_mark_in_redis(ucid, request.form['type'])
-    return response_ok()
+    is_need_refresh_data = (num * interval_ms) % refresh_interval
+    if is_need_refresh_data == 0:
+        if ucid is not None:
+            # 获取用户相关广播和未读消息数
+            data = RedisHandle.get_user_data_mark_in_redis(ucid, appid)
+            service_logger.info("%s - %s" % (ucid, json.dumps(data)))
+            etime = time.time()
+            service_logger.info("心跳逻辑处理时间：%s" % (etime - stime,))
+            return response_data(data=data)
+    #  不刷新数据
+    if RedisHandle.exists(ucid):
+        cache_data = RedisHandle.hgetall(ucid)
+        if cache_data.has_key('message'):
+            data['message'] = int(cache_data['message'])
+        if cache_data.has_key('gift_num'):
+            data['gift_num'] = int(cache_data['gift_num'])
+    etime = time.time()
+    service_logger.info("心跳逻辑处理时间：%s" % (etime-stime,))
+    return response_data(data=data)
+
+
+# CMS 更新心跳数据刷新间隔
+@app_controller.route('/msa/v4/refresh_heart_beat_data_interval', methods=['POST'])
+@cms_api_request_check
+def v4_cms_update_refresh_heart_beat_data_interval():
+    refresh_interval = int(request.json.get('refresh_interval'))
+    RedisHandle.set('REFRESH_INTERVAL', refresh_interval)
+    return response_data(http_code=200)
 
 
 #  用于监控程序判断该进程是否存在

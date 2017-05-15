@@ -50,12 +50,12 @@ class ProceduresExtend extends Model
 		$value = trim(@$this->attributes['service_share']);
 		return $value !== '' ? $value : env('service_share');
 	}
-
+/*
 	public function getHeartbeatIntervalAttribute() {
 		$value = trim(@$this->attributes['heartbeat_interval']);
 		return is_numeric($value) ? intval($value) : 2000;
 	}
-
+*/
 	public function getBindPhoneIntervalAttribute() {
 		$value = trim(@$this->attributes['bind_phone_interval']);
 		return is_numeric($value) ? intval($value) : 259200000;

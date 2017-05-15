@@ -5,6 +5,7 @@ class Orders extends Model
 {
 	const Status_WaitPay = 0;
 	const Status_Success = 1;
+	const Status_NotifySuccess = 2;
 
 	const Way_Unknow = 0;
 	const Way_Wechat = 1;
@@ -47,7 +48,7 @@ class Orders extends Model
 
 	public function is_first() {
 		// todo: 单独字段标识，这太Low了
-		return static::where('ucid', $this->ucid)->where('status', '!=', static::Status_WaitPay)->count() == 0;
+		return static::where('ucid', $this->ucid)->where('status', '!=', static::Status_WaitPay)->where("vid",$this->vid)->count() == 0;
 	}
 
 	/**
@@ -55,18 +56,18 @@ class Orders extends Model
 	 * @return boolean [description]
 	 */
 	public function is_f() {
-		return $this->vid < 100 || !$this->notify_url;
+		return $this->vid < 100;
 	}
 
 	public static function whereIsF() {
 		return static::where(function($query) {
-			$query->where('vid', '<', 100)->orWhere('notify_url', '=', '');
+			$query->where('vid', '<', 100);
 		});
 	}
 
 	public static function whereIsNotF() {
 		return static::where(function($query) {
-			$query->where('vid', '>=', 100)->where('notify_url', '!=', '');
+			$query->where('vid', '>=', 100);
 		});
 	}
 }

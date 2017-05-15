@@ -12,6 +12,8 @@ use App\Model\UcuserInfo;
 class OauthController extends Controller {
 
     use LoginAction, RegisterAction;
+
+    const Type = 3;
 /*
     public function SMSBindAction() {
         $mobile = $this->parameter->tough('mobile', 'mobile');
@@ -135,7 +137,7 @@ class OauthController extends Controller {
             $mobile_user->nickname = $nickname;
             $mobile_user->avatar = $avatar;
             $mobile_user->password = $password;
-            $mobile_user->regip = $this->request->ip();
+            $mobile_user->regip = $this->parameter->get('_ipaddress', null) ?: $this->request->ip();
             $mobile_user->rid = $this->parameter->tough('_rid');
             $mobile_user->pid = $this->parameter->tough('_appid');
             $mobile_user->regdate = date('Ymd');
@@ -166,34 +168,33 @@ class OauthController extends Controller {
     public function getRegisterUser() {
         $openid = $this->parameter->tough('openid');
         $type = $this->parameter->tough('type');
-        $unionid = $this->parameter->get('unionid');
+        $unionid = $this->parameter->get('unionid', "");
+        
+        if($type == 'weixin' && $unionid == '') throw new ApiException(ApiException::Error, "unionid不允许为空");
+
         $nickname = $this->parameter->get('nickname');
         $avatar = $this->parameter->get('avatar');
 
         $ctype = config("common.oauth.{$type}", false);
         if(!$ctype) {
-            throw new ApiException(ApiException::Error, '未知的第三方登陆类型，type='.$type);
+            throw new ApiException(ApiException::Error, '未知的第三方登录类型，type='.$type);
         }
 
-        $openid = md5($type .'_'. $openid);
-        $unionid = $unionid ? md5($type .'_'. $unionid) : '';
+        $openid = "{$openid}@{$type}";
+        $unionid = $unionid ? "{$unionid}@{$type}" : '';
 
         $user_oauth = null;
 
         if($unionid) {
-            //$user_oauth = UcuserOauth::from_cache_unionid($unionid);
-            $user_oauth = UcuserOauth::where("unionid",$unionid)->first();
-
+            $user_oauth = UcuserOauth::from_cache_unionid($unionid);
         }
 
         if(!$user_oauth) {
-           // $user_oauth = UcuserOauth::from_cache_openid($openid);
-            $user_oauth = UcuserOauth::where("openid",$openid)->first();
+            $user_oauth = UcuserOauth::from_cache_openid($openid);
         }
 
         if($user_oauth) {
-            //$user = Ucuser::from_cache($user_oauth->ucid);
-            $user = Ucuser::where("ucid",$user_oauth->ucid)->first();
+            $user = Ucuser::from_cache($user_oauth->ucid);
             if($user) return $user;
         }
 
@@ -207,7 +208,8 @@ class OauthController extends Controller {
         $user->mobile = '';
         $user->nickname = $nickname ?: $username;
         $user->setPassword($password);
-        $user->regip = $this->request->ip();
+        $user->regtype = static::Type;
+        $user->regip = $this->parameter->get('_ipaddress', null) ?: $this->request->ip();
         $user->rid = $this->parameter->tough('_rid');
         $user->pid = $this->parameter->tough('_appid');
         $user->regdate = time();
@@ -219,7 +221,6 @@ class OauthController extends Controller {
         $user_oauth->openid = $openid;
         $user_oauth->unionid = $unionid;
         $user_oauth->saveAndCache();
-        $user_oauth->updateCache();
 
         $user_info = UcuserInfo::where("ucid",$user->ucid)->first();
 
@@ -238,32 +239,29 @@ class OauthController extends Controller {
     public function getLoginUser() {
         $openid = $this->parameter->tough('openid');
         $type = $this->parameter->tough('type');
-        $unionid = $this->parameter->get('unionid');
+        $unionid = $this->parameter->get('unionid', "");
+        
+        if($type == 'weixin' && $unionid == '') throw new ApiException(ApiException::Error, "unionid不允许为空");
 
-        $openid = md5($type .'_'. $openid);
-        $unionid = $unionid ? md5($type .'_'. $unionid) : '';
+        $openid = "{$openid}@{$type}";;
+        $unionid = $unionid ? "{$unionid}@{$type}" : '';
 
         $user_oauth = null;
 
         if($unionid) {
-            //$user_oauth = UcuserOauth::from_cache_unionid($unionid);
-            $user_oauth = UcuserOauth::where("unionid",$unionid)->first();
-
+            $user_oauth = UcuserOauth::from_cache_unionid($unionid);
         }
 
         if(!$user_oauth) {
-            $user_oauth = UcuserOauth::where("openid",$openid)->first();
-           // $user_oauth = UcuserOauth::from_cache_openid($openid);
-
+            $user_oauth = UcuserOauth::from_cache_openid($openid);
         }
         
         if(!$user_oauth) {
             throw new ApiException(ApiException::OauthNotRegister, "尚未注册");
         }
 
-       // $user = Ucuser::from_cache($user_oauth->ucid);
+        $user = Ucuser::from_cache($user_oauth->ucid);
 
-        $user = Ucuser::where("ucid",$user_oauth->ucid)->first();
         return $user;
     }
 }

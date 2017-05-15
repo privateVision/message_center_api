@@ -4,9 +4,10 @@ namespace App\Http\Controllers\Api;
 use Illuminate\Http\Request;
 use App\Exceptions\ApiException;
 use App\Parameter;
-use App\Model\Session;
+use App\Session;
+use App\Model\UcuserSession;
 use App\Model\Ucuser;
-use App\Model\UcuserInfo;
+use Illuminate\Http\Response;
 
 class AuthController extends Controller {
 
@@ -14,31 +15,44 @@ class AuthController extends Controller {
 	protected $user_info = null;
 	protected $session = null;
 
-	public function before() {
-		parent::before();
+	public function before(Request $request) {
+		parent::before($request);
 
 		$token = $this->parameter->tough('_token');
+		if(!$token) {
+			throw new ApiException(ApiException::Expire, '请先登录');
+		}
 
-		$user = Ucuser::from_cache_uuid($token);
+		$usession = UcuserSession::from_cache_session_token($token);
+		if(!$usession) {
+			throw new ApiException(ApiException::Expire, '会话已失效，请重新登录');
+		}
+
+		$user = Ucuser::from_cache($usession->ucid);
 		if(!$user) {
-			throw new ApiException(ApiException::Remind, '账号已在其它地方登陆');
+			throw new ApiException(ApiException::Expire, '会话已失效，请重新登录');
+		}
+
+		$session = Session::find($token);
+		if(!$session) {
+			throw new ApiException(ApiException::Expire, '会话已失效，请重新登录');
 		}
 
 		if($user->is_freeze) {
 			throw new ApiException(ApiException::AccountFreeze, '账号已被冻结');
 		}
 
-		$session = Session::from_cache_token($token);
-		if(!$session) {
-			throw new ApiException(ApiException::Remind, '会话未找到，或已过期');
-		}
-
-		//$pid = $this->parameter->tough('_appid');
-		//if($session->pid != $pid) {
-		//	throw new ApiException(ApiException::Remind, '会话未找到，或已过期');
-		//}
-
 		$this->session = $session;
 		$this->user = $user;
+	}
+
+	public function onResponse(Request $request, Response $response) {
+	    if(!$response->exception) {
+    	    $content = $response->getOriginalContent();
+    	    $content['_token'] = $this->parameter->tough('_token');
+    	    $response->setContent($content);
+	    }
+	    
+	    return parent::onResponse($request, $response);
 	}
 }

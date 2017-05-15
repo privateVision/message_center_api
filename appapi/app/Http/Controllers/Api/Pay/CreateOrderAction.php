@@ -3,9 +3,9 @@ namespace App\Http\Controllers\Api\Pay;
 
 use Illuminate\Http\Request;
 use App\Exceptions\ApiException;
-use App\Parameter;
 use App\Model\UcuserInfo;
 use App\Model\Orders;
+use App\Model\OrderExtend;
 use App\Model\UcusersVC;
 use App\Model\VirtualCurrencies;
 use App\Model\ZyCouponLog;
@@ -14,7 +14,20 @@ use App\Model\ZyCoupon;
 trait CreateOrderAction {
 
     public function NewAction() {
+        $zone_id = $this->parameter->get('zone_id');
+        $zone_name = $this->parameter->get('zone_name');
+        $role_id = $this->parameter->get('role_id');
+        $role_level = $this->parameter->get('role_level');
+        $role_name = $this->parameter->get('role_name');
         $pid = $this->procedure->pid;
+        
+        // 是否强制实名制
+        if(($this->procedure_extend->enable & 0x0000000C) == 0x0000000C) {
+        	$user_info = UcuserInfo::from_cache($this->user->ucid);
+        	if(!$user_info || !$user_info->card_no) {
+        		throw new ApiException(ApiException::NotRealName, '帐号未实名制，无法支付，请先实名后再操作');
+        	}
+        }
 
         $order = new Orders;
         $order->getConnection()->beginTransaction();
@@ -23,7 +36,7 @@ trait CreateOrderAction {
         $order->uid = $this->user->uid;
         $order->sn = date('ymdHis') . substr(microtime(), 2, 6) . str_pad(rand(0, 999999), 6, '0', STR_PAD_LEFT);
         $order->vid = $this->procedure->pid;
-        $order->createIP = $this->request->ip();
+        $order->createIP = $this->parameter->get('_ipaddress', null) ?: $this->request->ip();
         $order->status = Orders::Status_WaitPay;
         $order->paymentMethod = '';
         $order->cp_uid = $this->session->cp_uid;
@@ -32,6 +45,21 @@ trait CreateOrderAction {
         $this->onCreateOrder($order);
         $order->real_fee = $order->fee;
         $order->save();
+
+        // order_extend;
+        if($zone_id || $zone_name || $role_id || $role_level || $role_name) {
+            $order_extend = new OrderExtend;
+            $order_extend->oid = $order->id;
+            $order_extend->ucid = $this->user->ucid;
+            $order_extend->pid = $this->procedure->pid;
+            $order_extend->date = date('Ymd');
+            $order_extend->zone_id = $zone_id;
+            $order_extend->zone_name = $zone_name;
+            $order_extend->role_id = $role_id;
+            $order_extend->role_level = $role_level;
+            $order_extend->role_name = $role_name;
+            $order_extend->save();
+        }
 
         $order->getConnection()->commit();
 

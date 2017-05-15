@@ -7,15 +7,15 @@ return [
     | Default Queue Driver
     |--------------------------------------------------------------------------
     |
-    | The Laravel queue API supports a variety of back-ends via an unified
+    | Laravel's queue API supports an assortment of back-ends via a single
     | API, giving you convenient access to each back-end using the same
     | syntax for each one. Here you may set the default queue driver.
     |
-    | Supported: "null", "sync", "database", "beanstalkd", "sqs", "redis"
+    | Supported: "sync", "database", "beanstalkd", "sqs", "redis", "null"
     |
     */
 
-    'default' => env('QUEUE_DRIVER'),
+    'default' => env('QUEUE_DRIVER', 'sync'),
 
     /*
     |--------------------------------------------------------------------------
@@ -38,21 +38,22 @@ return [
             'driver' => 'database',
             'table' => 'jobs',
             'queue' => 'default',
-            'retry_after' => 60,
+            'retry_after' => 90,
         ],
 
         'beanstalkd' => [
             'driver' => 'beanstalkd',
             'host' => 'localhost',
             'queue' => 'default',
-            'retry_after' => 60,
+            'retry_after' => 90,
         ],
 
         'sqs' => [
             'driver' => 'sqs',
             'key' => 'your-public-key',
             'secret' => 'your-secret-key',
-            'queue' => 'your-queue-url',
+            'prefix' => 'https://sqs.us-east-1.amazonaws.com/your-account-id',
+            'queue' => 'your-queue-name',
             'region' => 'us-east-1',
         ],
 
@@ -77,8 +78,8 @@ return [
     */
 
     'failed' => [
-        'database' => env('DB_CONNECTION', 'mysql'),
-        'table' => env('QUEUE_FAILED_TABLE', 'failed_jobs'),
+        'database' => 'default',
+        'table' => 'failed_jobs',
     ],
 
 ];

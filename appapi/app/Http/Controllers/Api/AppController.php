@@ -2,11 +2,12 @@
 namespace App\Http\Controllers\Api;
 
 use App\Exceptions\ApiException;
-use Illuminate\Http\Request;
 use App\Parameter;
-use App\Model\ProceduresExtend;
 use App\Model\Log\DeviceApps;
 use App\Model\Log\DeviceInfo;
+use App\Model\IosApplicationConfig;
+use App\Model\ZyGame;
+use App\Jobs\AdtRequest;
 
 class AppController extends Controller
 {
@@ -18,6 +19,7 @@ class AppController extends Controller
         $apps = $this->parameter->get('device_apps');
         $info = $this->parameter->tough('device_info');
         $app_version = $this->parameter->tough('app_version');
+        $os = $this->parameter->get('_os');
 
         if($apps) {
             $_apps = json_decode($apps, true);
@@ -28,7 +30,7 @@ class AppController extends Controller
                 $device_apps->apps = $_apps;
                 $device_apps->asyncSave();
             } else {
-                log_('report_device_apps_parse_error', null, '上报的DeviceApps格式无法解析');
+                log_error('report_device_apps_parse_error', null, '上报的DeviceApps格式无法解析');
             }
         }
 
@@ -43,31 +45,6 @@ class AppController extends Controller
             log_error('report_device_info_parse_error', null, '上报的DeviceInfo格式无法解析');
         }
 
-        // config
-        $config = ProceduresExtend::from_cache($pid);
-        if(!$config) {
-            $config = new ProceduresExtend;
-            $config->pid = $pid;
-            $config->service_qq = env('service_qq');
-            $config->service_page = env('service_page');
-            $config->service_phone = env('service_phone');
-            $config->service_share = env('service_share');
-            $config->service_af_download = env('af_download');
-            $config->heartbeat_interval = 2000;
-            $config->bind_phone_need = true;
-            $config->bind_phone_enforce = false;
-            $config->bind_phone_interval = 259200000;
-            $config->real_name_need = false;
-            $config->real_name_enforce = false;
-            $config->logout_img = env('logout_img');
-            $config->logout_redirect = env('logout_redirect');
-            $config->logout_inside = true;
-            $config->allow_num = 1;
-            $config->create_time = time();
-            $config->update_time = time();
-            $config->saveAndCache();
-        }
-
         // check update
         $update = new \stdClass;
         $update_apks = $this->procedure->update_apks()->orderBy('dt', 'desc')->first();
@@ -75,7 +52,7 @@ class AppController extends Controller
             $update = array(
                 'down_url' => $update_apks->down_uri,
                 'version' => $update_apks->version,
-                'force_update' => $update_apks->force_update,
+                'force_update' => env('APP_DEBUG') ? false : $update_apks->force_update,
             );
         }
 
@@ -86,9 +63,24 @@ class AppController extends Controller
         $oauth_weixin .= (strpos($oauth_weixin, '?') === false ? '?' : '&') . $oauth_params;
         $oauth_weibo = env('oauth_url_weibo');
         $oauth_weibo .= (strpos($oauth_weibo, '?') === false ? '?' : '&') . $oauth_params;
+        
+        // ios
+        $ios_app_config = new \stdClass();
+        if($os == 1) {
+        	$game = ZyGame::find($this->procedure->gameCenterId);
+        	$application_config = IosApplicationConfig::find($pid);
+        	if($application_config) {
+        		$ios_app_config = [
+        			'bundle_id' => $application_config->bundle_id,
+        			'apple_id' => $application_config->apple_id,
+        			'name' => $game ? $game->name : '',
+        		];
+        	}
+        }
+        dispatch((new AdtRequest(["imei"=>$imei,"gameid"=>$pid,"rid"=>$rid]))->onQueue('adtinit'));
 
         return [
-            'allow_sub_num' => $config->allow_num,
+            'allow_sub_num' => $this->procedure_extend->allow_num,
             'oauth_login' => [
                 'qq' => [
                     'url' => $oauth_qq,
@@ -106,32 +98,35 @@ class AppController extends Controller
             ],
             'update' => $update,
             'service' => [
-                'qq' => $config->service_qq,
-                'page' => $config->service_page,
-                'phone' => $config->service_phone,
-                'share' => $config->service_share,
-                'interval' => $config->heartbeat_interval,
-                'af_download' =>env('af_download')
+                'qq' => $this->procedure_extend->service_qq,
+                'page' => $this->procedure_extend->service_page,
+                'phone' => $this->procedure_extend->service_phone,
+                'share' => $this->procedure_extend->service_share,
+                'interval' => max(2000, $this->procedure_extend->heartbeat_interval),
+                'af_download' => env('af_download'),
             ],
             'bind_phone' => [
-                'need' => $config->bind_phone_need,
-                'enforce' => $config->bind_phone_enforce,
-                'interval' => $config->bind_phone_interval,
+                'need' => ($this->procedure_extend->enable & 0x00000010) == 0x00000010,
+                'enforce' => ($this->procedure_extend->enable & 0x00000030) == 0x00000030,
+                'interval' => $this->procedure_extend->bind_phone_interval,
             ],
             'real_name' => [
-                'need' => $config->real_name_need,
-                'enforce' => $config->real_name_enforce,
-            ]
+                'need' => ($this->procedure_extend->enable & 0x00000001) == 0x00000001,
+                'enforce' => ($this->procedure_extend->enable & 0x00000003) == 0x00000003,
+                'pay_need' => ($this->procedure_extend->enable & 0x00000004) == 0x00000004,
+                'pay_enforce' => ($this->procedure_extend->enable & 0x0000000C) == 0x0000000C,
+            ],
+
+            'ios_app_config' => $ios_app_config,
         ];
     }
 
     public function LogoutAction() {
-        $procedures_extend = ProceduresExtend::from_cache($this->procedure->pid);
         return [
-            'img' => $procedures_extend->logout_img,
-            'type' => $procedures_extend->logout_type,
-            'redirect' => $procedures_extend->logout_redirect,
-            'inside' => $procedures_extend->logout_inside,
+            'img' => $this->procedure_extend->logout_img,
+            'type' => $this->procedure_extend->logout_type,
+            'redirect' => $this->procedure_extend->logout_redirect,
+            'inside' => $this->procedure_extend->logout_inside,
         ];
     }
 
@@ -176,4 +171,41 @@ class AppController extends Controller
         return ['result' => true];
     }
 */
+
+    /*
+     * 热更新信息
+     **/
+    public function HotupdateAction() {
+        //$gps = $this->parameter->tough("gps"); //gps 信息
+        //$imei = $this->parameter->tough("imei"); //设备信息
+
+        $sdk_version  = $this->parameter->get("sdk_version"); //sdk version
+
+        if(!$sdk_version) return ["code"=>0,"msg"=>"参数","data"=>""];
+
+        if($this->parameter->get('_appid') == '846') {
+            $manifest = [];
+            $manifest["version"] = "1.0.0";
+            $manifest["bundles"][] = ["type"=>"lib","pkg"=>"com.anfeng.pay"];
+
+            $updates = [];
+            $updates["pkg"] = "com.anfeng.pay";
+            $updates["version"] = 410;
+            $updates['use_version'] = 410; // 回退版本，默认与version一致
+            $updates["url"] = "http://afsdkup.qcwan.com/down/com.anfeng.pay.apk";
+        } else {
+            $manifest = [];
+            $manifest["version"] = "1.0.0";
+            $manifest["bundles"][] = ["type"=>"lib","pkg"=>"com.anfeng.pay"];
+
+            $updates = [];
+            $updates["pkg"] = "com.anfeng.pay";
+            $updates["version"] = 40;
+            $updates['use_version'] = 40; // 回退版本，默认与version一致
+            $updates["url"] = "http://afsdkup.qcwan.com/down/com.anfeng.pay.apk";
+        }
+
+        return ["manifest"=>$manifest, "updates"=>[$updates]];
+    }
+
 }

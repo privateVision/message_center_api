@@ -7,6 +7,7 @@ use App\Parameter;
 use App\Model\Orders;
 use App\Model\OrdersExt;
 use App\Model\OrderExtend;
+use App\Model\UcuserInfo;
 
 class OrderController extends Controller {
 
@@ -24,5 +25,19 @@ class OrderController extends Controller {
         $order->fee = $fee;
         $order->subject = $subject;
         $order->body = $body;
+    }
+
+    public function InfoAction() {
+        $sn = $this->parameter->tough('order_id');
+
+        $order = Orders::from_cache_sn($sn);
+
+        if($order) {
+            return [
+                'status' => $order->status
+            ];
+        }
+
+        return [];
     }
 }

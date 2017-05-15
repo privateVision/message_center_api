@@ -8,6 +8,7 @@ from flask import request
 from mongoengine import Q
 
 from Controller.BaseController import response_data
+from LanguageConf import get_tips
 from MiddleWare import service_logger, hdfs_logger
 from MongoModel.AppRulesModel import AppVipRules
 from MongoModel.MessageModel import UsersMessage
@@ -131,22 +132,20 @@ def get_coupon_message_detail_info(msg_id=None):
     return UsersMessage.objects(Q(type='coupon') & Q(mysql_id=msg_id)).first()
 
 
+def is_user_in_apks(appid=0, app_list=None):
+    if app_list is not None:
+        for app in app_list:
+            if app['apk_id'] == 'all':
+                return True
+            if int(app['apk_id']) == appid:
+                return True
+    return False
+
+
 def get_ucid_by_access_token(access_token=None):
     ucid = RedisHandle.get_ucid_from_redis_by_token(access_token)
     if ucid is not None:
         return ucid
-    find_ucid_sql = "select ucid from session where token = '%s'" % (access_token,)
-    from run import mysql_session
-    try:
-        user_info = mysql_session.execute(find_ucid_sql).first()
-        if user_info is not None:
-            if 'ucid' in user_info:
-                return user_info['ucid']
-    except Exception, err:
-        service_logger.error(err.message)
-        mysql_session.rollback()
-    finally:
-        mysql_session.close()
     return None
 
 
@@ -166,48 +165,60 @@ def get_username_by_ucid(ucid=None):
     return ''
 
 
-def is_session_expired_by_access_token(access_token=None):
-    expired_ts = RedisHandle.get_expired_ts_from_redis_by_token(access_token)
-    now = int(time.time())
-    if expired_ts is not None:
-        if expired_ts < now:
-            return True
-        else:
+def is_session_expired_by_access_token(appid=None, access_token=None):
+    if check_user_multi_point_login_token(appid, access_token) is False:  # db token 有效
+        expired = RedisHandle.get_is_expired_from_redis_by_token(access_token)
+        if expired is not None:
             return False
-    find_expired_ts_sql = "select expired_ts from session where token = '%s'" % (access_token,)
-    from run import mysql_session
-    try:
-        user_info = mysql_session.execute(find_expired_ts_sql).first()
-        if user_info is not None:
-            if 'expired_ts' in user_info:
-                if user_info['expired_ts'] < now:
-                    return True
-                return False
-    except Exception, err:
-        service_logger.error(err.message)
-        mysql_session.rollback()
-    finally:
-        mysql_session.close()
     return True
+    # if check_user_multi_point_login_token(appid, access_token):
+    #     return True
+    # expired = RedisHandle.get_is_expired_from_redis_by_token(access_token)
+    # if expired is not None:
+    #     return False
+    # return True
 
 
 def get_user_is_freeze_by_access_token(access_token=None):
     freeze = RedisHandle.get_user_is_freeze_from_redis_by_token(access_token)
     if freeze is not None:
         return freeze
-    find_freeze_sql = "select freeze from session where token = '%s'" % (access_token,)
+    return None
+
+
+#  检查用户多点登录的token是否有效
+def check_user_multi_point_login_token(appid=None, token=None):
+    return check_user_multi_point_login_token_in_db(appid, token)
+    # ucuser_session_key = RedisHandle.get_ucuser_session_id_by_token(token)
+    # if ucuser_session_key is None:
+    #     return check_user_multi_point_login_token_in_db(appid, token)
+    # else:
+    #     ucuser_session_info = RedisHandle.get_ucuser_session_info_by_id(ucuser_session_key)
+    #     if ucuser_session_info is None:
+    #         return check_user_multi_point_login_token_in_db(appid, token)
+    #     else:
+    #         if token != ucuser_session_info['session_token']:
+    #             service_logger.info("token_102_ucuser_session_redis_token_数据不匹配")
+    #             return True
+    # return False
+
+
+#  访问 DB 检查用户多点登录的token是否有效
+def check_user_multi_point_login_token_in_db(appid=None, token=None):
+    type = min(int(appid), 100)
     from run import mysql_session
+    find_valid_sql = "select id from ucuser_session where type = %s and session_token = '%s' limit 1" % (type, token)
     try:
-        user_info = mysql_session.execute(find_freeze_sql).first()
-        if user_info is not None:
-            if 'freeze' in user_info:
-                return user_info['freeze']
+        is_valid = mysql_session.execute(find_valid_sql).fetchone()
+        if is_valid is not None:  # token 有效
+            return False
+        service_logger.info("token_102_ucuser_session_db_token_数据找不到")
     except Exception, err:
         service_logger.error(err.message)
         mysql_session.rollback()
     finally:
         mysql_session.close()
-    return None
+    return True
 
 
 # 根据用户id获取广播列表
@@ -234,10 +245,12 @@ def get_user_broadcast_list(ucid=None):
 
 # 根据用户id获取未读消息数
 def get_user_unread_message_count(ucid=None):
+    current_timestamp = get_current_timestamp()
     count = UserMessage.objects(
         Q(type='message')
         & Q(closed=0)
         & Q(is_read=0)
+        & Q(start_time__lte=current_timestamp)
         & Q(ucid=ucid)).count()
     return count
 
@@ -252,6 +265,7 @@ def get_user_gift_count(ucid=None, appid=None):
         return 0
 
     # 找到用户已经领取的礼包，需要排除掉
+
     find_user_already_get_gift_id_sql = "select distinct(giftId) from cms_gameGiftLog where gameId = %s" \
                                         " and status = 'normal' and uid = %s " % (game['id'], ucid)
     gift_id_list = mysql_cms_session.execute(find_user_already_get_gift_id_sql).fetchall()
@@ -265,7 +279,7 @@ def get_user_gift_count(ucid=None, appid=None):
     uid = get_uid_by_ucid(ucid)
     now = int(time.time())
     game_gift_list_sql = "select id from cms_gameGift where status = 'normal' and failTime > %s and gameId = %s" \
-                         % (now, game['id'],)
+                         % (now, game['id'])
     game_gift_list = mysql_cms_session.execute(game_gift_list_sql).fetchall()
     game_gift_array = []
     for game_gift in game_gift_list:
@@ -287,11 +301,11 @@ def get_user_gift_count(ucid=None, appid=None):
         get_not_specify_user_gift_count_sql = "select count(*) from cms_gameGift as gift join cms_gameGiftAssign " \
                                               "as assign" \
                                               " on gift.id=assign.giftId where gift.status='normal' " \
-                                              "and gift.failTime > %s and assign.platformId = %s " \
+                                              "and gift.failTime > %s and assign.platformId = %s and gift.gameId = %s " \
                                               "and assign.status='normal' and assign.assignNum>0 " \
                                               "and gift.isSpecify=0 " \
                                               "and gift.id not in(%s)" % (
-                                                  now, SDK_PLATFORM_ID, already_get_gift_id_list_str)
+                                                  now, SDK_PLATFORM_ID, game['id'], already_get_gift_id_list_str)
         if len(specify_user_gift_id_list) > 0:
             # 获取指定了用户的还有剩余礼包的礼包数
             get_specify_user_gift_count_sql = "select count(*) from cms_gameGift as gift join cms_gameGiftAssign " \
@@ -299,9 +313,9 @@ def get_user_gift_count(ucid=None, appid=None):
                                               " on gift.id=assign.giftId where gift.status='normal' " \
                                               "and gift.failTime > %s and assign.platformId = %s " \
                                               "and assign.status='normal' and assign.assignNum>0 " \
-                                              "and gift.isSpecify=1 " \
+                                              "and gift.isSpecify=1 and gift.gameId = %s " \
                                               "and gift.id in(%s) and gift.id not in(%s) " \
-                                              % (now, SDK_PLATFORM_ID, specify_user_gift_id_list_str,
+                                              % (now, SDK_PLATFORM_ID, game['id'], specify_user_gift_id_list_str,
                                                  already_get_gift_id_list_str)
         else:
             # 获取指定了用户的还有剩余礼包的礼包数
@@ -311,10 +325,10 @@ def get_user_gift_count(ucid=None, appid=None):
         get_not_specify_user_gift_count_sql = "select count(*) from cms_gameGift as gift join cms_gameGiftAssign " \
                                               "as assign" \
                                               " on gift.id=assign.giftId where gift.status='normal' " \
-                                              "and gift.failTime > %s and assign.platformId = %s " \
+                                              "and gift.failTime > %s and assign.platformId = %s and gift.gameId = %s " \
                                               "and assign.status='normal' and assign.assignNum>0 " \
                                               "and gift.isSpecify=0 " \
-                                              % (now, SDK_PLATFORM_ID)
+                                              % (now, SDK_PLATFORM_ID, game['id'])
         if len(specify_user_gift_id_list) > 0:
             # 获取指定了用户的还有剩余礼包的礼包数
             get_specify_user_gift_count_sql = "select count(*) from cms_gameGift as gift join cms_gameGiftAssign" \
@@ -322,9 +336,9 @@ def get_user_gift_count(ucid=None, appid=None):
                                               " on gift.id=assign.giftId where gift.status='normal' " \
                                               "and gift.failTime > %s and assign.platformId = %s " \
                                               "and assign.status='normal' and assign.assignNum>0 " \
-                                              "and gift.isSpecify=1 " \
+                                              "and gift.isSpecify=1 and gift.gameId = %s " \
                                               "and gift.id in(%s)" \
-                                              % (now, SDK_PLATFORM_ID, specify_user_gift_id_list_str)
+                                              % (now, SDK_PLATFORM_ID, game['id'], specify_user_gift_id_list_str)
         else:
             # 获取指定了用户的还有剩余礼包的礼包数
             get_specify_user_gift_count_sql = None
@@ -333,6 +347,7 @@ def get_user_gift_count(ucid=None, appid=None):
         specify_count = mysql_cms_session.execute(get_specify_user_gift_count_sql).scalar()
     else:
         specify_count = 0
+    mysql_cms_session.close()
     return not_specify_count + specify_count
 
 
@@ -407,7 +422,7 @@ def get_user_can_see_gift_list(ucid=None, game_id=None, start_index=None, end_in
     if len(already_get_gift_id_list) > 0:
         if len(specify_user_gift_id_list) > 0:
             unget_gifts_page_list_sql = "select * from (select a.id,a.gameId,a.gameName,a.name,a.gift," \
-                                        "a.isAfReceive, a.isBindPhone," \
+                                        "a.isAfReceive, a.isBindPhone, a.isVerified, c.forTime as forTime," \
                                         "a.content,a.label,a.uid,a.publishTime,a.failTime,a.status," \
                                         "b.num, b.assignNum, ifnull(c.code,'') as code,if(c.code<>'', 1, 0) " \
                                         "as is_get from cms_gameGift as a join cms_gameGiftAssign as b " \
@@ -417,13 +432,14 @@ def get_user_can_see_gift_list(ucid=None, game_id=None, start_index=None, end_in
                                         "and a.status='normal' and b.status='normal' " \
                                         "and ((a.assignNum > 0 and b.assignNum > 0) " \
                                         "and ((a.isSpecify=1 and a.id in (%s)) or (a.isSpecify=0)) or a.id in (%s) ) " \
-                                        "order by is_get asc , c.forTime desc, a.id desc) as d " \
-                                        "where d.code<>'' or (d.assignNum>0 and d.code='') limit %s, %s " \
+                                        ") as d " \
+                                        "where d.code<>'' or (d.assignNum>0 and d.code='')" \
+                                        " order by d.is_get asc , d.forTime desc, d.id desc limit %s, %s " \
                                         % (ucid, game_id, now, SDK_PLATFORM_ID, specify_user_gift_id_list_str,
                                            already_get_gift_id_list_str, start_index, end_index)
         else:
             unget_gifts_page_list_sql = "select * from (select a.id,a.gameId,a.gameName,a.name,a.gift," \
-                                        "a.isAfReceive, a.isBindPhone," \
+                                        "a.isAfReceive, a.isBindPhone, a.isVerified, c.forTime as forTime," \
                                         "a.content,a.label,a.uid,a.publishTime,a.failTime,a.status," \
                                         "b.num, b.assignNum, ifnull(c.code,'') as code,if(c.code<>'', 1, 0) " \
                                         "as is_get from cms_gameGift as a join cms_gameGiftAssign as b " \
@@ -433,14 +449,15 @@ def get_user_can_see_gift_list(ucid=None, game_id=None, start_index=None, end_in
                                         "and a.status='normal' and b.status='normal' " \
                                         "and ((a.assignNum > 0 and b.assignNum > 0) " \
                                         "and (a.isSpecify=0) or a.id in (%s) ) " \
-                                        "order by is_get asc , c.forTime desc, a.id desc) as d " \
-                                        "where d.code<>'' or (d.assignNum>0 and d.code='') limit %s, %s " \
+                                        ") as d " \
+                                        "where d.code<>'' or (d.assignNum>0 and d.code='')" \
+                                        " order by d.is_get asc , d.forTime desc, d.id desc limit %s, %s " \
                                         % (ucid, game_id, now, SDK_PLATFORM_ID,
                                            already_get_gift_id_list_str, start_index, end_index)
     else:
         if len(specify_user_gift_id_list) > 0:
             unget_gifts_page_list_sql = "select * from (select a.id,a.gameId,a.gameName,a.name,a.gift," \
-                                        "a.isAfReceive, a.isBindPhone," \
+                                        "a.isAfReceive, a.isBindPhone, a.isVerified, c.forTime as forTime," \
                                         "a.content,a.label,a.uid,a.publishTime,a.failTime,a.status," \
                                         "b.num, b.assignNum, ifnull(c.code,'') as code,if(c.code<>'', 1, 0) " \
                                         "as is_get from cms_gameGift as a join cms_gameGiftAssign as b " \
@@ -450,13 +467,14 @@ def get_user_can_see_gift_list(ucid=None, game_id=None, start_index=None, end_in
                                         "and a.gameId=%s and a.failTime > %s and b.platformId=%s " \
                                         "and a.status='normal' and b.status='normal' " \
                                         "and (a.assignNum > 0 and b.assignNum > 0) " \
-                                        "order by is_get asc , c.forTime desc, a.id desc) as d " \
-                                        "where d.code<>'' or (d.assignNum>0 and d.code='') limit %s, %s " \
+                                        ") as d " \
+                                        "where d.code<>'' or (d.assignNum>0 and d.code='')" \
+                                        " order by d.is_get asc , d.forTime desc, d.id desc limit %s, %s " \
                                         % (ucid, specify_user_gift_id_list_str, game_id, now, SDK_PLATFORM_ID,
                                            start_index, end_index)
         else:
             unget_gifts_page_list_sql = "select * from (select a.id,a.gameId,a.gameName,a.name,a.gift," \
-                                        "a.isAfReceive, a.isBindPhone," \
+                                        "a.isAfReceive, a.isBindPhone, a.isVerified, c.forTime as forTime," \
                                         "a.content,a.label,a.uid,a.publishTime,a.failTime,a.status," \
                                         "b.num, b.assignNum, ifnull(c.code,'') as code,if(c.code<>'', 1, 0) " \
                                         "as is_get from cms_gameGift as a join cms_gameGiftAssign as b " \
@@ -466,8 +484,9 @@ def get_user_can_see_gift_list(ucid=None, game_id=None, start_index=None, end_in
                                         "and a.gameId=%s and a.failTime > %s and b.platformId=%s " \
                                         "and a.status='normal' and b.status='normal' " \
                                         "and (a.assignNum > 0 and b.assignNum > 0) " \
-                                        "order by is_get asc , c.forTime desc, a.id desc) as d " \
-                                        "where d.code<>'' or (d.assignNum>0 and d.code='') limit %s, %s " \
+                                        ") as d " \
+                                        "where d.code<>'' or (d.assignNum>0 and d.code='')" \
+                                        " order by d.is_get asc , d.forTime desc, d.id desc limit %s, %s " \
                                         % (ucid, game_id, now, SDK_PLATFORM_ID, start_index, end_index)
     unget_gifts_page_list = mysql_cms_session.execute(unget_gifts_page_list_sql).fetchall()
     return unget_gifts_page_list
@@ -475,10 +494,13 @@ def get_user_can_see_gift_list(ucid=None, game_id=None, start_index=None, end_in
 
 # 检查用户账号是否被冻结
 def find_user_account_is_freeze(ucid=None):
+    stime = time.time()
     find_is_freeze_sql = "select is_freeze from ucusers where ucid = %s" % (ucid,)
     from run import mysql_session
     try:
         user_info = mysql_session.execute(find_is_freeze_sql).first()
+        etime = time.time()
+        service_logger.info("检查账号冻结耗时：%s" % (etime - stime,))
         if user_info is not None:
             if 'is_freeze' in user_info:
                 if user_info['is_freeze'] == 1:
@@ -511,25 +533,39 @@ def find_user_child_account_is_freeze(ucid=None):
     return False, []
 
 
-def get_stored_value_card_list(ucid, start_index, end_index):
+def get_stored_value_card_list(ucid, status=0, start_index=0, end_index=10):
     from run import mysql_session
     total_count = 0
     value_card_list = []
     time_now = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-    find_user_store_value_card_list_sql = "select vc.*, uvc.balance from ucusersVC as uvc, " \
-                                          "virtualCurrencies as vc where " \
-                                          "uvc.vcid = vc.vcid and uvc.balance > 0 and uvc.ucid = %s and " \
-                                          "((vc.untimed = 1) or ((vc.untimed = 0) and " \
-                                          "unix_timestamp(vc.startTime) <= unix_timestamp('%s') " \
-                                          "and unix_timestamp(vc.endTime) >= unix_timestamp('%s'))) " \
-                                          "limit %s, %s " % \
-                                          (ucid, time_now, time_now, start_index, end_index)
-    find_user_store_value_card_count_sql = "select count(*) from ucusersVC as uvc, virtualCurrencies as vc where " \
-                                           "uvc.vcid = vc.vcid and uvc.balance > 0 and uvc.ucid = %s and " \
-                                           "((vc.untimed = 1) or ((vc.untimed = 0) " \
-                                           "and unix_timestamp(vc.startTime) <= unix_timestamp('%s')" \
-                                           " and unix_timestamp(vc.endTime) >= unix_timestamp('%s'))) " \
-                                           % (ucid, time_now, time_now)
+    if status == 0:
+        find_user_store_value_card_list_sql = "select vc.*, uvc.balance from ucusersVC as uvc, " \
+                                              "virtualCurrencies as vc where " \
+                                              "uvc.vcid = vc.vcid and uvc.balance > 0 and uvc.ucid = %s and " \
+                                              "((vc.untimed = 1) or ((vc.untimed = 0) and " \
+                                              "unix_timestamp(vc.startTime) <= unix_timestamp('%s') " \
+                                              "and unix_timestamp(vc.endTime) >= unix_timestamp('%s'))) " \
+                                              "limit %s, %s " % \
+                                              (ucid, time_now, time_now, start_index, end_index)
+        find_user_store_value_card_count_sql = "select count(*) from ucusersVC as uvc, virtualCurrencies as vc where " \
+                                               "uvc.vcid = vc.vcid and uvc.balance > 0 and uvc.ucid = %s and " \
+                                               "((vc.untimed = 1) or ((vc.untimed = 0) " \
+                                               "and unix_timestamp(vc.startTime) <= unix_timestamp('%s')" \
+                                               " and unix_timestamp(vc.endTime) >= unix_timestamp('%s'))) " \
+                                               % (ucid, time_now, time_now)
+    else:
+        find_user_store_value_card_list_sql = "select vc.*, uvc.balance from ucusersVC as uvc, " \
+                                              "virtualCurrencies as vc where " \
+                                              "uvc.vcid = vc.vcid and uvc.balance > 0 and uvc.ucid = %s and " \
+                                              "((vc.untimed = 0) " \
+                                              "and unix_timestamp(vc.endTime) < unix_timestamp('%s')) " \
+                                              "limit %s, %s " % \
+                                              (ucid, time_now, start_index, end_index)
+        find_user_store_value_card_count_sql = "select count(*) from ucusersVC as uvc, virtualCurrencies as vc where " \
+                                               "uvc.vcid = vc.vcid and uvc.balance > 0 and uvc.ucid = %s and " \
+                                               "((vc.untimed = 0) " \
+                                               " and unix_timestamp(vc.endTime) < unix_timestamp('%s')) " \
+                                               % (ucid, time_now)
     try:
         total_count = mysql_session.execute(find_user_store_value_card_count_sql).scalar()
         card_list = mysql_session.execute(find_user_store_value_card_list_sql).fetchall()
@@ -560,10 +596,18 @@ def get_stored_value_card_list(ucid, start_index, end_index):
                     item['unlimited_time'] = True
                 if game_info:
                     item['lock_app'] = game_info['pname']
+                game = get_game_info_by_appid(card['lockApp'])
+                if game is not None:
+                    item['game_id'] = game['id']
+                    item['cover'] = game['cover']
+                else:
+                    item['game_id'] = 0
+                    item['cover'] = ''
                 value_card_list.append(item)
     except Exception, err:
         service_logger.error(err.message)
         mysql_session.rollback()
+        return get_stored_value_card_list(ucid, status, start_index, end_index)
     finally:
         mysql_session.close()
     return total_count, value_card_list
@@ -630,6 +674,228 @@ def get_user_coupons_by_game(ucid, appid, start_index, end_index):
     return new_coupon_list
 
 
+def get_user_all_coupons(ucid, status=0, start_index=0, end_index=10):
+    from run import mysql_session
+    now = int(time.time())
+    if status == 0:  # 正常数据
+        get_user_coupon_total_count_sql = "select count(distinct(log.coupon_id)) from zy_coupon_log" \
+                                          " as log join zy_coupon as coupon " \
+                                          "on log.coupon_id=coupon.id where coupon.status='normal' and log.is_used = 0 " \
+                                          "and log.ucid=%s " \
+                                          "and ((coupon.is_time = 0) or ((coupon.is_time = 1) " \
+                                          "and coupon.start_time <= %s " \
+                                          "and coupon.end_time >= %s ))" \
+                                          % (ucid, now, now)
+        get_user_coupon_sql = "select distinct(log.coupon_id) from zy_coupon_log as log join zy_coupon as coupon " \
+                              "on log.coupon_id=coupon.id where coupon.status='normal' and log.is_used = 0 " \
+                              "and log.ucid=%s " \
+                              "and ((coupon.is_time = 0) or ((coupon.is_time = 1) " \
+                              "and coupon.start_time <= %s " \
+                              "and coupon.end_time >= %s )) order by log.id desc limit %s, %s" \
+                              % (ucid, now, now, start_index, end_index)
+    else:  # 过期数据
+        get_user_coupon_total_count_sql = "select count(distinct(log.coupon_id)) from zy_coupon_log " \
+                                          "as log join zy_coupon as coupon " \
+                                          "on log.coupon_id=coupon.id where coupon.status='normal' and log.is_used = 0 " \
+                                          "and log.ucid=%s " \
+                                          "and ((coupon.is_time = 1) " \
+                                          "and coupon.end_time < %s)" \
+                                          % (ucid, now)
+        get_user_coupon_sql = "select distinct(log.coupon_id) from zy_coupon_log as log join zy_coupon as coupon " \
+                              "on log.coupon_id=coupon.id where coupon.status='normal' and log.is_used = 0 " \
+                              "and log.ucid=%s " \
+                              "and ((coupon.is_time = 1) " \
+                              "and coupon.end_time < %s) order by log.id desc limit %s, %s" \
+                              % (ucid, now, start_index, end_index)
+    coupon_total_count = mysql_session.execute(get_user_coupon_total_count_sql).scalar()
+    coupon_list = mysql_session.execute(get_user_coupon_sql).fetchall()
+    new_coupon_list = []
+    for coupon in coupon_list:
+        get_user_coupon_sql = "select * from zy_coupon where id=%s limit 1" % (coupon['coupon_id'])
+        coupon_info = mysql_session.execute(get_user_coupon_sql).fetchone()
+        game = coupon_info['game']
+        desc = "所有游戏"
+        if coupon_info is not None:
+            info = {
+                'id': coupon_info['id'],
+                'name': coupon_info['name'],
+                'type': 2,
+                'start_time': coupon_info['start_time'],
+                'end_time': coupon_info['end_time'],
+                'desc': desc,
+                'fee': coupon_info['money'],
+                'method': coupon_info['method'],
+                'user_condition': "满%s可用" % (coupon_info['full'] / 100,),
+                'lock_app': '',
+                'supportDivide': 0
+            }
+            if coupon_info['full'] == 0:
+                info['user_condition'] = '通用'
+            if coupon_info['is_first'] == 1:
+                info['user_condition'] = '首充券'
+            unlimited_time = True
+            if coupon_info['is_time'] == 1:
+                unlimited_time = False
+            time_out = False
+            if coupon_info['is_time'] == 1 and coupon_info['end_time'] < now:
+                time_out = True
+            game_info = get_game_info_by_appid(game)
+            if game_info is not None:
+                info['desc'] = game_info['name']
+                info['game_id'] = game_info['id']
+                info['cover'] = game_info['cover']
+            info['unlimited_time'] = unlimited_time
+            info['time_out'] = time_out
+            new_coupon_list.append(info)
+    return coupon_total_count, new_coupon_list
+
+
+def anfeng_helper_get_user_all_coupons(ucid, status=0, start_index=0, end_index=10):
+    from run import mysql_session
+    now = int(time.time())
+    if status == 0:  # 正常数据
+        get_user_coupon_total_count_sql = "select count(log.coupon_id) from zy_coupon_log" \
+                                          " as log join zy_coupon as coupon " \
+                                          "on log.coupon_id=coupon.id where coupon.status='normal' and log.is_used = 0 " \
+                                          "and log.ucid=%s " \
+                                          "and ((coupon.is_time = 0) or ((coupon.is_time = 1) " \
+                                          "and coupon.start_time <= %s " \
+                                          "and coupon.end_time >= %s ))" \
+                                          % (ucid, now, now)
+        get_user_coupon_sql = "select log.coupon_id from zy_coupon_log as log join zy_coupon as coupon " \
+                              "on log.coupon_id=coupon.id where coupon.status='normal' and log.is_used = 0 " \
+                              "and log.ucid=%s " \
+                              "and ((coupon.is_time = 0) or ((coupon.is_time = 1) " \
+                              "and coupon.start_time <= %s " \
+                              "and coupon.end_time >= %s )) order by log.id desc limit %s, %s" \
+                              % (ucid, now, now, start_index, end_index)
+    else:  # 过期数据
+        get_user_coupon_total_count_sql = "select count(log.coupon_id) from zy_coupon_log " \
+                                          "as log join zy_coupon as coupon " \
+                                          "on log.coupon_id=coupon.id where coupon.status='normal' and log.is_used = 0 " \
+                                          "and log.ucid=%s " \
+                                          "and ((coupon.is_time = 1) " \
+                                          "and coupon.end_time < %s)" \
+                                          % (ucid, now)
+        get_user_coupon_sql = "select log.coupon_id from zy_coupon_log as log join zy_coupon as coupon " \
+                              "on log.coupon_id=coupon.id where coupon.status='normal' and log.is_used = 0 " \
+                              "and log.ucid=%s " \
+                              "and ((coupon.is_time = 1) " \
+                              "and coupon.end_time < %s) order by log.id desc limit %s, %s" \
+                              % (ucid, now, start_index, end_index)
+    coupon_total_count = mysql_session.execute(get_user_coupon_total_count_sql).scalar()
+    coupon_list = mysql_session.execute(get_user_coupon_sql).fetchall()
+    new_coupon_list = []
+    for coupon in coupon_list:
+        get_user_coupon_sql = "select * from zy_coupon where id=%s limit 1" % (coupon['coupon_id'])
+        coupon_info = mysql_session.execute(get_user_coupon_sql).fetchone()
+        game = coupon_info['game']
+        desc = "所有游戏"
+        if coupon_info is not None:
+            info = {
+                'id': coupon_info['id'],
+                'name': coupon_info['name'],
+                'type': 2,
+                'start_time': coupon_info['start_time'],
+                'end_time': coupon_info['end_time'],
+                'desc': desc,
+                'fee': coupon_info['money'],
+                'method': coupon_info['method'],
+                'user_condition': "满%s可用" % (coupon_info['full'] / 100,),
+                'lock_app': '',
+                'supportDivide': 0
+            }
+            if coupon_info['full'] == 0:
+                info['user_condition'] = '通用'
+            if coupon_info['is_first'] == 1:
+                info['user_condition'] = '首充券'
+            unlimited_time = True
+            if coupon_info['is_time'] == 1:
+                unlimited_time = False
+            time_out = False
+            if coupon_info['is_time'] == 1 and coupon_info['end_time'] < now:
+                time_out = True
+            game_info = get_game_info_by_appid(game)
+            if game_info is not None:
+                info['desc'] = game_info['name']
+                info['game_id'] = game_info['id']
+                info['cover'] = game_info['cover']
+            info['unlimited_time'] = unlimited_time
+            info['time_out'] = time_out
+            new_coupon_list.append(info)
+    return coupon_total_count, new_coupon_list
+
+
+def anfeng_helper_get_gift_real_time_count(ids_list_str):
+    from run import mysql_cms_session
+    find_gift_info_sql = "select giftId, assignNum, num from cms_gameGiftAssign where platformId = 3 " \
+                         "and giftId in (%s)" % (ids_list_str,)
+    data_list = []
+    try:
+        gift_info_list = mysql_cms_session.execute(find_gift_info_sql).fetchall()
+        for data in gift_info_list:
+            count_info = {
+                'gift_id': data['giftId'],
+                'assign_num': data['assignNum'],
+                'num': data['num']
+            }
+            data_list.append(count_info)
+    except Exception, err:
+        mysql_cms_session.rollback()
+        return anfeng_helper_get_gift_real_time_count(ids_list_str)
+    finally:
+        mysql_cms_session.close()
+    return data_list
+
+
+def anfeng_helper_get_user_gifts(ucid, start_index, end_index):
+    from run import mysql_cms_session
+    gift_list = []
+    data = {
+        'total_count': 0,
+        'gift_list': []
+    }
+    user_gift_total_count_sql = "select count(gift.id) from cms_gameGiftLog as log join cms_gameGift as gift" \
+                                " on log.giftId = gift.id where gift.status = 'normal' and " \
+                                "log.status = 'normal' and log.uid = %s " % (ucid,)
+    get_user_gift_sql = "select gift.*, log.code, log.forTime, log.type from cms_gameGiftLog as log join " \
+                        "cms_gameGift as gift on log.giftId = gift.id" \
+                        " where gift.status = 'normal' and log.status = 'normal' and log.uid = %s limit %s, %s" \
+                        % (ucid, start_index, end_index)
+    try:
+        total_count = mysql_cms_session.execute(user_gift_total_count_sql).scalar()
+        user_gift_list = mysql_cms_session.execute(get_user_gift_sql).fetchall()
+        for gift in user_gift_list:
+            game = get_game_info_by_gameid(gift['gameId'])
+            gift_info = {
+                'id': gift['id'],
+                'gameId': gift['gameId'],
+                'gameName': gift['gameName'],
+                'gameCover': game['cover'],
+                'name': gift['name'],
+                'gift': gift['gift'],
+                'content': gift['content'],
+                'label': gift['label'],
+                'total': gift['total'],
+                'num': gift['num'],
+                'assignNum': gift['assignNum'],
+                'code': gift['code'],
+                'for_time': gift['forTime'],
+                'type': gift['type'],
+                'publish_time': gift['publishTime'],
+                'fail_time': gift['failTime']
+            }
+            gift_list.append(gift_info)
+        data['total_count'] = total_count
+        data['gift_list'] = gift_list
+    except Exception, err:
+        mysql_cms_session.rollback()
+        return anfeng_helper_get_user_gifts(ucid, start_index, end_index)
+    finally:
+        mysql_cms_session.close()
+    return data
+
+
 #  获取用户首充之后，剩下的首充券的id
 def get_first_coupon_id_list(ucid=None, pid=None):
     from run import mysql_session
@@ -656,14 +922,20 @@ def user_get_coupon(ucid=None, coupon_id=None, app_id=None):
     get_coupon_info_sql = "select game, users_type, vip_user, specify_user from zy_coupon where status = 'normal' " \
                           "and ( (is_time=0) or (is_time=1 and start_time <= %s and end_time >= %s) ) and id = %s " \
                           % (now, now, coupon_id)
-    coupon_info = mysql_session.execute(get_coupon_info_sql).fetchone()
-    if coupon_info is not None:
-        if coupon_info['game'] == 0:  # 卡券适用全部游戏
-            pass
-        else:
-            if coupon_info['game'] == app_id:
+    try:
+        coupon_info = mysql_session.execute(get_coupon_info_sql).fetchone()
+        if coupon_info is not None:
+            if coupon_info['game'] == 0:  # 卡券适用全部游戏
                 pass
-            return False
+            else:
+                if coupon_info['game'] == app_id:
+                    pass
+                return False
+    except Exception, err:
+        service_logger.error("用户领取卡券的逻辑发生异常：%s" % (err.message,))
+        mysql_session.rollback()
+    finally:
+        mysql_session.close()
     return False
 
 
@@ -672,42 +944,91 @@ def get_game_info_by_appid(appid=None):
     from run import mysql_session
     find_game_info_sql = "select p.gameCenterId as id, game.name, game.cover from procedures as p, zy_game as game " \
                          "where p.gameCenterId = game.id and p.pid= %s limit 1" % (appid,)
-    game_info = mysql_session.execute(find_game_info_sql).fetchone()
-    game = {}
-    if game_info is not None:
-        game['id'] = game_info['id']
-        game['name'] = game_info['name']
-        game['cover'] = game_info['cover']
-        return game
+    try:
+        game_info = mysql_session.execute(find_game_info_sql).fetchone()
+        game = {}
+        if game_info is not None:
+            game['id'] = game_info['id']
+            game['name'] = game_info['name']
+            game['cover'] = game_info['cover']
+            return game
+    except Exception, err:
+        service_logger.error("根据appid获取游戏信息发生异常：%s" % (err.message,))
+        mysql_session.rollback()
+    finally:
+        mysql_session.close()
     return None
+
+
+def get_game_info_by_gameid(game_id=0):
+    from run import mysql_session
+    find_game_info_sql = "select game.id, game.name, game.cover from zy_game as game " \
+                         "where game.id= %s limit 1" % (game_id,)
+    try:
+        game_info = mysql_session.execute(find_game_info_sql).fetchone()
+        game = {}
+        if game_info is not None:
+            game['id'] = game_info['id']
+            game['name'] = game_info['name']
+            game['cover'] = game_info['cover']
+            return game
+    except Exception, err:
+        service_logger.error("根据gameid获取游戏信息发生异常：%s" % (err.message,))
+        mysql_session.rollback()
+    finally:
+        mysql_session.close()
+    return None
+
+
+#  获取用户淘号的总次数
+def get_user_tao_gift_total_count(ucid=None, platform_id=4):
+    from run import mysql_cms_session
+    find_tao_gift_total_count_sql = "select count(*) from cms_gameGiftLog where status = 'normal' and " \
+                                    " platformId = %s and type = 1 and uid = %s " % (platform_id, ucid)
+    try:
+        total_count = mysql_cms_session.execute(find_tao_gift_total_count_sql).scalar()
+        return total_count
+    except Exception, err:
+        service_logger.error("获取用户淘号总次数发生异常：%s" % (err.message,))
+        mysql_cms_session.rollback()
+    finally:
+        mysql_cms_session.close()
+    return 0
+
+
+# 获取礼包的实时数量
+def get_gift_real_time_count(platform_id=3, gift_id=0):
+    from run import mysql_cms_session
+    find_count_sql = "select assignNum, num from cms_gameGiftAssign" \
+                     " where platformId = %s and giftId = %s" % (platform_id, gift_id)
+    try:
+        count_info = mysql_cms_session.execute(find_count_sql).fetchone()
+        return count_info['assignNum'], count_info['num']
+    except Exception, err:
+        service_logger.error("获取用户淘号总次数发生异常：%s" % (err.message,))
+        mysql_cms_session.rollback()
+    finally:
+        mysql_cms_session.close()
+    return 0, 0
 
 
 def get_game_info_by_gameid(gameid=None):
     from run import mysql_session
     find_game_info_sql = "select id, name, cover from zy_game " \
                          "where id = %s limit 1" % (gameid,)
-    game_info = mysql_session.execute(find_game_info_sql).fetchone()
-    game = {}
-    if game_info is not None:
-        game['id'] = game_info['id']
-        game['name'] = game_info['name']
-        game['cover'] = game_info['cover']
-        return game
-    return None
-
-
-# 根据token获取用户当前所在的区服
-def get_user_current_game_and_area_by_token(token=None):
-    from run import mysql_session
-    find_user_current_game_area_info_sql = "select s.token, s.zone_id, s.zone_name from session as s " \
-                                           "where s.token = %s limit 1" % (token,)
-    game_info = mysql_session.execute(find_user_current_game_area_info_sql).fetchone()
-    game = {}
-    if game_info is not None:
-        game['token'] = game_info['token']
-        game['zone_id'] = game_info['zone_id']
-        game['zone_name'] = game_info['zone_name']
-        return game
+    try:
+        game_info = mysql_session.execute(find_game_info_sql).fetchone()
+        game = {}
+        if game_info is not None:
+            game['id'] = game_info['id']
+            game['name'] = game_info['name']
+            game['cover'] = game_info['cover']
+            return game
+    except Exception, err:
+        service_logger.error("根据gameid获取游戏信息发生异常：%s" % (err.message,))
+        mysql_session.rollback()
+    finally:
+        mysql_session.close()
     return None
 
 
@@ -777,16 +1098,38 @@ def set_message_readed(ucid=None, message_type=None, message_id=None):
         user_read_message_log.save()
 
 
+def check_is_user_shiming(ucid=0):
+    from run import mysql_session
+    find_users_info_sql = "select card_no from ucuser_info where ucid = %s limit 1" % (ucid,)
+    try:
+        user_info = mysql_session.execute(find_users_info_sql).fetchone()
+        if user_info is not None:
+            if user_info['card_no'] is not None and user_info['card_no'] != '':
+                return True
+    except Exception, err:
+        service_logger.error("根据ucid获取用户实名信息异常：%s" % (err.message,))
+        mysql_session.rollback()
+    finally:
+        mysql_session.close()
+    return False
+
+
 def get_user_user_type_and_vip_and_uid_by_ucid(ucid=None):
     from run import mysql_session
     find_users_type_info_sql = "select u.ucid, u.uid, r.rtype from ucusers as u, retailers as r where u.rid = r.rid " \
                                "and u.ucid = %s" % (ucid,)
-    user_type_info = mysql_session.execute(find_users_type_info_sql).fetchone()
-    if user_type_info is not None:
-        find_users_vip_info_sql = "select vip from ucuser_info as u where u.ucid = %s" % (ucid,)
-        user_vip_info = mysql_session.execute(find_users_vip_info_sql).fetchone()
-        if user_vip_info is not None:
-            return user_type_info['rtype'], user_vip_info['vip'], user_type_info['uid']
+    try:
+        user_type_info = mysql_session.execute(find_users_type_info_sql).fetchone()
+        if user_type_info is not None:
+            find_users_vip_info_sql = "select vip from ucuser_info as u where u.ucid = %s" % (ucid,)
+            user_vip_info = mysql_session.execute(find_users_vip_info_sql).fetchone()
+            if user_vip_info is not None:
+                return user_type_info['rtype'], user_vip_info['vip'], user_type_info['uid']
+    except Exception, err:
+        service_logger.error("根据ucid获取用户类型和vip信息发生异常：%s" % (err.message,))
+        mysql_session.rollback()
+    finally:
+        mysql_session.close()
     return None
 
 
@@ -813,22 +1156,28 @@ def sdk_api_request_check(func):
             log_exception(request, '客户端请求错误-appid或sign或token为空')
             return response_data(200, 0, '客户端参数错误')
         # 会话是否过期判断
-        is_session_expired = is_session_expired_by_access_token(request.form['_token'])
+        is_session_expired = is_session_expired_by_access_token(request.form['_appid'], request.form['_token'])
         if is_session_expired:
-            return response_data(200, 102, '用户未登录或session已过期')
+            data = {
+                '_token': request.form['_token']
+            }
+            return response_data(200, 102, '用户未登录或session已过期', data)
+
+        # 检查账号冻结
+        freeze = get_user_is_freeze_by_access_token(request.form['_token'])
+        if freeze is not None:
+            if int(freeze) == 1:
+                return response_data(200, 101, get_tips('heartbeat', 'user_account_freezed'))
+            if int(freeze) == 2:
+                return response_data(200, 108, get_tips('heartbeat', 'sub_user_account_freezed'))
+
         is_sign_true = sdk_api_check_sign(request)
         if is_sign_true is True:
             ucid = get_ucid_by_access_token(request.form['_token'])
             interval = 2000
             if 'interval' in request.form:
                 interval = request.form['interval']
-            if ucid:
-                if find_user_account_is_freeze(ucid):
-                    return response_data(200, 101, '账号被冻结')
-                hdfs_logger.info("ucid-%s-uri-%s-interval-%s" % (ucid, request.url, interval))
-            else:
-                log_exception(request, "根据token: %s 获取ucid失败" % (request.form['_token'],))
-                return response_data(200, 0, '根据token获取ucid失败')
+            hdfs_logger.info("ucid-%s-uri-%s-interval-%s" % (ucid, request.url, interval))
             return func(*args, **kwargs)
         else:
             return response_data(200, 0, '请求校验错误')

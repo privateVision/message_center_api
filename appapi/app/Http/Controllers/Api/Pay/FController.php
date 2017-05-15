@@ -17,6 +17,12 @@ class FController extends Controller {
     const EnableBalance = true;
     const FSIGN = 2;
 
+    /**
+     * 使用F币或优惠券支付
+     * @param  Orders $order    [description]
+     * @param  [type] $real_fee [description]
+     * @return [type]           [description]
+     */
     public function payHandle(Orders $order, $real_fee) {
         if($real_fee > 0) {
             throw new ApiException(ApiException::Remind, '不能使用余额或优惠券直接抵扣');
@@ -27,10 +33,16 @@ class FController extends Controller {
         return ['result' => true];
     }
 
+    /**
+     * 购买F币
+     * @param  Orders $order [description]
+     * @return [type]        [description]
+     */
     protected function onCreateOrder(Orders $order) {
         $fee = $this->parameter->tough('fee');
         $body = $this->parameter->tough('body');
         $subject = $this->parameter->tough('subject');
+        
         $order->vid = self::FSIGN;
         $order->fee = $fee;
         $order->subject = $subject;

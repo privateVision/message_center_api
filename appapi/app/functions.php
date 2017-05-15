@@ -196,12 +196,16 @@ function username() {
  * @return [type]         [description]
  */
 function uuid($prefix = "") {
-    return base_convert(md5($prefix . uniqid(mt_rand(), true) . microtime() . mt_rand()), 16, 36);
+    return md5_36($prefix . uniqid(mt_rand(), true) . microtime() . mt_rand());
+}
+
+function md5_36($str) {
+    return base_convert(md5($str), 16, 36);
 }
 
 /**
  * 主要用于生成多联的KEY，24~25位36进制
- * @return [type] [description]
+ * @return string md5 to 36
  */
 function joinkey() {
     $key = implode('_', func_get_args());
@@ -265,8 +269,8 @@ function user_log($user, $procedure, $type, $text_format) {
     $user_log->type = $type;
     $user_log->ucid = $user->ucid;
     $user_log->mobile = $user->mobile;
-    $user_log->pid = $procedure ? $procedure->pid : '';
-    $user_log->pname = $procedure ? $procedure->pname : '';
+    $user_log->pid = isset($procedure) ? $procedure->pid : '';
+    $user_log->pname = isset($procedure) ? $procedure->pname : '';
     $user_log->text = count($format_arguments) ? sprintf($text_format, ...$format_arguments) : $text_format;
     $user_log->asyncSave();
 }
@@ -287,7 +291,7 @@ function order_success($order_id) {
 function send_sms($mobile, $pid, $template_id, $repalce, $code = '') {
     $smsconfig = config('common.smsconfig');
 
-    if(!env('APP_DEBUG') && Redis::exists(sprintf('sms_%s_60s', $mobile))) {
+    if(!env('APP_DEBUG') && Redis::exists(sprintf('sms_%s_%s_60s', $template_id, $mobile))) {
         throw new \App\Exceptions\Exception('短信发送过于频繁');
     }
 
@@ -343,9 +347,9 @@ function log_debug ($keyword, $content, $desc = '') {
         'desc' => $desc,
         'mode' => PHP_SAPI,
         'level' => 'DEBUG', 
-        'ip' => $app->request->ip(),
+        'ip' => $app->request->get('_ipaddress') ?: $app->request->ip(),
         'pid' => getmypid(),
-        'datetime' =>datetime(),
+        'datetime' =>datetime() .'.'. substr(microtime(), 2, 6),
         'content' => $content,
     ]));
 }
@@ -360,9 +364,9 @@ function log_info ($keyword, $content, $desc = '') {
         'desc' => $desc,
         'mode' => PHP_SAPI,
         'level' => 'INFO', 
-        'ip' => $app->request->ip(),
+        'ip' => $app->request->get('_ipaddress') ?: $app->request->ip(),
         'pid' => getmypid(),
-        'datetime' =>datetime(),
+        'datetime' =>datetime() .'.'. substr(microtime(), 2, 6),
         'content' => $content,
     ]));
 }
@@ -377,9 +381,9 @@ function log_warning ($keyword, $content, $desc = '') {
         'desc' => $desc,
         'mode' => PHP_SAPI,
         'level' => 'WARNING', 
-        'ip' => $app->request->ip(),
+        'ip' => $app->request->get('_ipaddress') ?: $app->request->ip(),
         'pid' => getmypid(),
-        'datetime' =>datetime(),
+        'datetime' =>datetime() .'.'. substr(microtime(), 2, 6),
         'content' => $content,
     ]));
 }
@@ -392,9 +396,9 @@ function log_error ($keyword, $content, $desc = '') {
         'desc' => $desc,
         'mode' => PHP_SAPI,
         'level' => 'ERROR', 
-        'ip' => $app->request->ip(),
+        'ip' => $app->request->get('_ipaddress') ?: $app->request->ip(),
         'pid' => getmypid(),
-        'datetime' =>datetime(),
+        'datetime' =>datetime() .'.'. substr(microtime(), 2, 6),
         'content' => $content,
     ]));
 }

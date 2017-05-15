@@ -97,6 +97,7 @@ def v4_user_get_coupon():
 @coupon_controller.route('/msa/v4/coupons', methods=['POST'])
 @sdk_api_request_check
 def v4_sdk_get_broadcast_list():
+    stime = time.time()
     ucid = get_ucid_by_access_token(request.form['_token'])
     game_id = int(request.form['_appid'])
     page = request.form['page'] if request.form.has_key('page') and request.form['page'] else 1
@@ -106,7 +107,7 @@ def v4_sdk_get_broadcast_list():
     end_index = int(count)
     service_logger.info("用户：%s 获取卡券列表，数据从%s到%s" % (ucid, start_index, end_index))
     # 获取用户的储值卡数据列表
-    value_card_total_count, value_card_list = get_stored_value_card_list(ucid, start_index, end_index)
+    value_card_total_count, value_card_list = get_stored_value_card_list(ucid, 0, start_index, end_index)
     # 储值卡没有数据,直接拿卡券的数据
     if value_card_total_count == 0:
         new_coupon_list = get_user_coupons_by_game(ucid, game_id, start_index, end_index)
@@ -117,14 +118,18 @@ def v4_sdk_get_broadcast_list():
     # 储值卡数据不够，用卡券数据补充
     else:
         left_count = int(need_total_count) - int(value_card_total_count)  # 还缺少的数据量
-        if int(page) == 1:
+        head_count = (value_card_total_count / end_index + 1) * end_index - value_card_total_count
+        tmp_count = left_count / end_index
+        if tmp_count == 0:
             coupon_start_index = 0
             coupon_end_index = left_count
         else:
-            coupon_start_index = (int(page)-1)*int(count) - value_card_total_count
-            coupon_end_index = end_index
+            coupon_start_index = (tmp_count - 1) * end_index + head_count
+            coupon_end_index = coupon_start_index + end_index
         # 查询用户相关的卡券列表
         new_coupon_list = get_user_coupons_by_game(ucid, game_id, coupon_start_index, coupon_end_index)
         # 拼接储值卡和卡券列表返回
         value_card_list.extend(new_coupon_list)
+        etime = time.time()
+        service_logger.info("卡券列表耗时: %s" % (etime-stime,))
         return response_data(http_code=200, data=value_card_list)

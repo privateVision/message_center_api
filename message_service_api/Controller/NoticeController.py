@@ -13,7 +13,7 @@ from MongoModel.UserReadMessageLogModel import UserReadMessageLog
 from RequestForm.PostNoticesRequestForm import PostNoticesRequestForm
 from Service.StorageService import system_notices_update
 from Service.UsersService import get_notice_message_detail_info, get_ucid_by_access_token, \
-    sdk_api_request_check, cms_api_request_check, set_message_readed, find_is_message_readed
+    sdk_api_request_check, cms_api_request_check, set_message_readed, find_is_message_readed, is_user_in_apks
 from Utils.RedisUtil import RedisHandle
 from Utils.SystemUtils import get_current_timestamp, log_exception
 
@@ -120,6 +120,7 @@ def v4_cms_set_post_notice_sort():
 @sdk_api_request_check
 def v4_sdk_get_notice_list():
     ucid = get_ucid_by_access_token(request.form['_token'])
+    appid = int(request.form['_appid'])
     # 查询用户相关的公告列表
     current_timestamp = get_current_timestamp()
     message_list = UserMessage.objects(
@@ -128,7 +129,7 @@ def v4_sdk_get_notice_list():
         # & Q(is_read=0)
         & Q(start_time__lte=current_timestamp)
         & Q(end_time__gte=current_timestamp)
-        & Q(ucid=ucid)).order_by('-sortby', '-create_timestamp')
+        & Q(ucid=ucid)).order_by('-sortby', '-create_timestamp')[0:1]
     data_list = []
     for message in message_list:
         message_resp = {
@@ -166,7 +167,8 @@ def v4_sdk_get_notice_list():
                 message_resp['button_content'] = message_info['button_content']
             if 'button_url' in message_info:
                 message_resp['button_url'] = message_info['button_url']
-            data_list.append(message_resp)
+            if is_user_in_apks(appid, message_info['app']):
+                data_list.append(message_resp)
     return response_data(http_code=200, data=data_list)
 
 

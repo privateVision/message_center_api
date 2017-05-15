@@ -5,39 +5,38 @@ use Illuminate\Http\Request;
 use App\Model\YunpianCallback;
 use Illuminate\Support\Facades\Config;
 
-class YunpianController extends \App\Controller
-{
+class YunpianController extends \App\Controller {
+    
     public function RequestAction(Request $request) {
-
         try {
-
             $sms_reply = $request->input('sms_reply');
 
+            log_info('YunpianCallback', $sms_reply);
 
-
-            $sms_reply = @json_decode($sms_reply, true);
+            $sms_reply = @json_decode(urldecode($sms_reply), true);
             if(!$sms_reply) {
-                return 'SUCCESS';
+                return 'FAILURE';
             }
+            
+            log_info('YunpianCallback', $sms_reply);
 
             $sign = $sms_reply['_sign'];
             unset($sms_reply['_sign']);
             ksort($sms_reply);
 
-            $dat = [];
-            foreach ( $sms_reply as $k=>$v){
-                $dat[$k] = trim(urldecode($v)," ");
+            $data = [];
+            foreach ($sms_reply as $k=>$v){
+            	$data[] = trim($v, ' ');
             }
-           $dat[] = config('common.smsconfig.apikey');
-          //  $dat[] = '0000';
-            // todo: 这里要改...
-            $str = implode(',', $dat);
-            log_info('YunpianCallback', $str."_____".strtolower(md5($str))."====".$sign);
+
+            $data[] = config('common.smsconfig.apikey');
+
+            $str = implode(',', $data);
 
             if($sign !== md5($str)) {
                 return 'FAILURE';
             }
-            log_info('YunpianCallback', $sms_reply);
+
             $yunpiansms = new YunpianCallback;
             $yunpiansms->yid = $sms_reply['id'];
             $yunpiansms->mobile = $sms_reply['mobile'];
@@ -50,7 +49,7 @@ class YunpianController extends \App\Controller
             return 'SUCCESS';
         }catch(\Exception $e){
             log_info('YunpianCallback', $e->getMessage());
+            return 'FAILURE';
         }
-
     }
 }
