@@ -12,7 +12,7 @@ class OrderController extends Controller {
 
         $order = Orders::where('cp_uid', $open_id)->where('sn', $sn)->first();
         if(!$order) {
-            throw new ApiException(1000, '订单不存在'); // LANG:order_not_exists
+            throw new ApiException(1000, '订单不存在');
         }
 
         $data = [];

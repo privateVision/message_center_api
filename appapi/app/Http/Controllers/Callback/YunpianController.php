@@ -5,10 +5,11 @@ use Illuminate\Http\Request;
 use App\Model\YunpianCallback;
 use Illuminate\Support\Facades\Config;
 
-class YunpianController extends \App\Controller {
-    
+class YunpianController extends \App\Controller
+{
     public function RequestAction(Request $request) {
         try {
+
             $sms_reply = $request->input('sms_reply');
 
             log_info('YunpianCallback', $sms_reply);
@@ -51,5 +52,6 @@ class YunpianController extends \App\Controller {
             log_info('YunpianCallback', $e->getMessage());
             return 'FAILURE';
         }
+
     }
 }

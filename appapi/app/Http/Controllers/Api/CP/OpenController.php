@@ -24,7 +24,7 @@ class OpenController extends OpenBaseController{
 
             //查询当前的session
             if(!$token || $session->cp_uid !== $openid || $session->pid !== $appid){
-                 throw new ApiException(0, "token失效"); // LANG:token_invalid
+                 throw new ApiException(0, "token失效");
             } else {
                 return true;
             }

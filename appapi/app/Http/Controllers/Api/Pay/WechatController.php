@@ -76,7 +76,7 @@ class WechatController extends Controller {
         log_debug('微信统一下单', ['url' => 'https://api.mch.weixin.qq.com/pay/unifiedorder', 'reqdata' => $data, 'resdata' => $result]);
 
         if(!$result) {
-            throw new ApiException(ApiException::Remind, '发起支付失败'); //LANG:pay_request_fail
+            throw new ApiException(ApiException::Remind, '发起支付失败');
         }
         
         $responseData = [];
@@ -89,11 +89,11 @@ class WechatController extends Controller {
         $responseData['out_trade_no'] = $order->sn;
         
         if(!@$responseData['return_code']) {
-            throw new ApiException(ApiException::Remind, '发起支付失败'); //LANG:pay_request_fail
+            throw new ApiException(ApiException::Remind, '发起支付失败');
         }
         
         if($responseData['return_code'] != 'SUCCESS') {
-            throw new ApiException(ApiException::Remind, '发起支付失败（'.$responseData['return_msg'].'）'); //LANG:pay_request_fail
+            throw new ApiException(ApiException::Remind, '发起支付失败（'.$responseData['return_msg'].'）');
         }
         
         $responseData['timeStamp'] = time();

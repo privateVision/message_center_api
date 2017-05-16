@@ -20,18 +20,18 @@ class TokenController extends Controller {
 
         $session = Session::find($token);
         if(!$session) {
-            throw new ApiException(ApiException::Remind, '会话失效，请重新登录');// LANG:session_invalid
+            throw new ApiException(ApiException::Remind, '会话失效，请重新登录');
         }
 
         // todo: 验证token有效期
 
         if(!$session->ucid) {
-            throw new ApiException(ApiException::Remind, '会话失效，请重新登录');// LANG:session_invalid
+            throw new ApiException(ApiException::Remind, '会话失效，请重新登录');
         }
 
         $user = Ucuser::from_cache($session->ucid);
         if(!$user) {
-            throw new ApiException(ApiException::Remind, '会话失效，请重新登录');// LANG:session_invalid
+            throw new ApiException(ApiException::Remind, '会话失效，请重新登录');
         }
 
         return $user;

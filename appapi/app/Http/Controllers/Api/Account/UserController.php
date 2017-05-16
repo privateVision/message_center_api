@@ -32,7 +32,7 @@ class UserController extends Controller {
         $rediskey_limit = 'login_limit_' . $key;
         
         if(Redis::get($rediskey_lock)) {
-            throw new ApiException(ApiException::Remind, "错误次数太多，请稍后再试"); // LANG:try_much_wait_please
+            throw new ApiException(ApiException::Remind, "错误次数太多，请稍后再试");
         }
         // --------- end
         
@@ -89,7 +89,7 @@ class UserController extends Controller {
             }
             // --------- end
             
-            throw new ApiException(ApiException::Remind, "用户名或者密码不正确"); // LANG:login_fail
+            throw new ApiException(ApiException::Remind, "用户名或者密码不正确");
         }
         
         Redis::del($rediskey_limit);
@@ -105,7 +105,7 @@ class UserController extends Controller {
         $isRegister  = Ucuser::where("mobile", $username)->orWhere('uid', $username)->count();
         
         if($isRegister) {
-            throw new  ApiException(ApiException::Remind, "用户已注册，请直接登录"); // LANG:already_register
+            throw new  ApiException(ApiException::Remind, "用户已注册，请直接登录");
         }
         
         $user = new Ucuser;
@@ -134,7 +134,7 @@ class UserController extends Controller {
         $user = Ucuser::where('mobile', $mobile)->first();
         
         if(!$user) {
-            throw new ApiException(ApiException::Remind, '手机号码尚未绑定'); // LANG:mobile_not_bind
+            throw new ApiException(ApiException::Remind, '手机号码尚未绑定');
         }
         
         $code = smscode();
@@ -157,12 +157,12 @@ class UserController extends Controller {
         $new_password = $this->parameter->tough('password', 'password');
         
         if(!verify_sms($mobile, $code)) {
-            throw new ApiException(ApiException::Remind, "验证码不正确，或已过期"); // LANG:smscode_error
+            throw new ApiException(ApiException::Remind, "验证码不正确，或已过期");
         }
         
         $user = Ucuser::where('uid', $mobile)->orWhere('mobile', $mobile)->first();
         if(!$user) {
-            throw new ApiException(ApiException::Remind, '手机号码尚未绑定'); // LANG:mobile_not_bind
+            throw new ApiException(ApiException::Remind, '手机号码尚未绑定');
         }
         
         $old_password = $user->password;

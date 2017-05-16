@@ -14,21 +14,21 @@ class ResetPasswordController extends Controller
 
         $token = decrypt3des($token);
         if(!$token) {
-            throw new ApiException(ApiException::Error, "修改失败，页面已失效"); // LANG:page_invalid
+            throw new ApiException(ApiException::Error, "修改失败，页面已失效");
         }
 
         $token_info = json_decode($token, true);
         if(!$token_info) {
-            throw new ApiException(ApiException::Error, "修改失败，页面已失效"); // LANG:page_invalid
+            throw new ApiException(ApiException::Error, "修改失败，页面已失效");
         }
 
         if(@$token_info['t'] < time()) {
-            throw new ApiException(ApiException::Remind, "修改失败，页面已失效"); // LANG:page_invalid
+            throw new ApiException(ApiException::Remind, "修改失败，页面已失效");
         }
 
         $user = Ucuser::from_cache($token_info['ucid']);
         if(!$user) {
-            throw new ApiException(ApiException::Error, "用户不存在"); // LANG:user_not_exists
+            throw new ApiException(ApiException::Error, "用户不存在");
         }
 
         $old_password = $user->password;

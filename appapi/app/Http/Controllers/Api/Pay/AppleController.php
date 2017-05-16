@@ -147,7 +147,7 @@ class  AppleController extends Controller{
         if(($this->procedure_extend->enable & 0x0000000C) == 0x0000000C) {
             $user_info = UcuserInfo::from_cache($this->user->ucid);
             if(!$user_info || !$user_info->card_no) {
-                throw new ApiException(ApiException::NotRealName, '帐号未实名制，无法支付，请先实名后再操作'); // LANG:not_pay_before_reg
+                throw new ApiException(ApiException::NotRealName, '帐号未实名制，无法支付，请先实名后再操作');
             }
         }
 
@@ -157,10 +157,10 @@ class  AppleController extends Controller{
 
         $sql = "select p.fee,p.product_name,con.notify_url,con.iap,con.bundle_id from ios_products as p INNER JOIN ios_application_config as con ON p.app_id = con.app_id WHERE p.product_id = '{$product_id}' AND p.app_id = {$appid}";
         $dat = app('db')->select($sql);
-        if(count($dat) == 0) throw new ApiException(ApiException::Remind,"未找到相关的商品"); // LANG:product_not_exists
+        if(count($dat) == 0) throw new ApiException(ApiException::Remind,"未找到相关的商品");
         //验证当前的发货信息
-        if(!check_url($dat[0]->notify_url)) throw new ApiException(ApiException::Remind,"请填写正确的通知地址"); // LANG:notify_url_error
-        if($dat[0]->bundle_id =='' || $dat[0]->iap =='') throw new ApiException(ApiException::Remind,"bundle_id 或iap 不存在"); // LANG:app_not_exists
+        if(!check_url($dat[0]->notify_url)) throw new ApiException(ApiException::Remind,"请填写正确的通知地址");
+        if($dat[0]->bundle_id =='' || !isset($dat[0]->iap)) throw new ApiException(ApiException::Remind,"bundle_id 或iap 不存在");
         //验证信息结束
         $order = new Orders;
         $order->getConnection()->beginTransaction();
