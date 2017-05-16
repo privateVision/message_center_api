@@ -16,6 +16,8 @@ use App\Model\UcusersVC;
 use App\Model\VirtualCurrencies;
 use App\Model\ZyCoupon;
 use App\Model\ZyCouponLog;
+use ReceiptValidator\iTunes\Validator as iTunesValidator;
+
 
 class  AppleController extends Controller{
 
@@ -25,33 +27,66 @@ class  AppleController extends Controller{
 
     public function validateReceiptAction ()
     {
+
         //匹配当前的操作的实现
         $receipt = $this->request->input('receipt');
         $transaction = $this->parameter->tough("transaction_id");
-        $receipt = urldecode($receipt);
 
-        $logsql = "select id from ios_receipt_log WHERE receipt_md5 = ".md5($receipt);
+        $order_id = $this->parameter->tough("order_id");
+
+        $order_sql ="SELECT * FROM orders WHERE sn = {$order_id}";
+
+        $order_data = app('db')->select($order_sql);
+        if(!$order_data) throw new ApiException(ApiException::Remind,"order not exists!");
+
+        $receipt_b64 = urldecode($receipt);
+        $mds = md5($receipt);
+
+        $logsql = "select id from ios_receipt_log WHERE receipt_md5 = '{$mds}'";
+
         $log_data = app('db')->select($logsql);
         if(count($log_data)) throw new ApiException(ApiException::Remind,"had in ");
 
         //保存当前的操作
-
-        $sql = "insert into ios_receipt_log (`receipt_md5`,`receipt_base64`) VALUES ({md5($receipt)},$receipt)";
+        $sql = "insert into ios_receipt_log (`receipt_md5`,`receipt_base64`) VALUES ('".$mds."','".$receipt."')";
+       
         app('db')->select($sql);
 
         //订单号
         $sn  = $this->request->input("order_id"); //生成订单的时候返回的订单号
 
-        $dat = $this->getReceiptData($receipt, true); //开启黑盒测试
+       // $dat = $this->getReceiptData($receipt, true); //开启黑盒测试
+
+        $validator = new iTunesValidator(iTunesValidator::ENDPOINT_SANDBOX);
+        try {
+            $response = $validator->setReceiptData($receipt_b64)->validate();
+        } catch (Exception $e) {
+            echo 'got error = ' . $e->getMessage() . PHP_EOL;
+        }
+
+        if ($response->isValid()) {
+            echo 'Receipt is valid.' . PHP_EOL;
+            echo 'Receipt data = ' . print_r($response->getReceipt()) . PHP_EOL;
+        } else {
+            echo 'Receipt is not valid.' . PHP_EOL;
+            echo 'Receipt result code = ' . $response->getResultCode() . PHP_EOL;
+        }
+
+        throw new ApiException(ApiException::Remind,json_encode($response->getReceipt()));
         //获取当前的订单的ID
         $oid = $this->request->input("id"); //处理当前的操作
 
         if(!preg_match("/^\d{1,10}$/",$oid)) return trans("messages.app_param_type_error");
 
+        if(empty($dat)) return false;
 
-        if($dat["errNo"] ==0 && count($dat['data']) > 0){
+        if(isset($dat["errNo"]) && $dat["errNo"] ==0 && isset($dat['data']) &&  count($dat['data']) > 0){
             foreach($dat['data'] as $key =>$value){
                 if($value->transaction_id == $transaction){
+                    //是否已经存在
+                    $o_ext = IosOrderExt::where("transaction_id",$transaction)->frist();
+                    if($o_ext) throw new ApiException(ApiException::Remind,"order transaction_id:{$transaction} had exists! ");
+
                     //购买成功写入数据库
                     $od = IosOrderExt::where("oid",$oid)->frist();
                     $od ->transaction_id = $transaction;
@@ -155,12 +190,13 @@ class  AppleController extends Controller{
 
         if(count($ord)) throw new ApiException(ApiException::Remind,"未找到订单"); //限制关闭
 
-        $sql = "select p.fee,p.product_name,con.notify_url,con.iap,con.bundle_id from ios_products as p INNER JOIN ios_application_config as con ON p.app_id = con.app_id WHERE p.product_id = '{$product_id}' AND p.app_id = {$appid}";
+        $sql = "select p.fee,p.product_name,con.app_id,con.notify_url,con.iap,con.bundle_id from ios_products as p left JOIN ios_application_config as con ON p.app_id = con.app_id WHERE p.product_id = '{$product_id}' AND p.app_id = {$appid}";
         $dat = app('db')->select($sql);
         if(count($dat) == 0) throw new ApiException(ApiException::Remind,"未找到相关的商品");
+        if($dat[0]->app_id == '' ) throw new ApiException(ApiException::Remind,"app_id不存在{$appid}");
         //验证当前的发货信息
         if(!check_url($dat[0]->notify_url)) throw new ApiException(ApiException::Remind,"请填写正确的通知地址");
-        if($dat[0]->bundle_id =='' || !isset($dat[0]->iap)) throw new ApiException(ApiException::Remind,"bundle_id 或iap 不存在");
+        if($dat[0]->bundle_id =='' ) throw new ApiException(ApiException::Remind,"bundle_id不存在");
         //验证信息结束
         $order = new Orders;
         $order->getConnection()->beginTransaction();

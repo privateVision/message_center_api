@@ -740,8 +740,7 @@ trait RoutesRequests
     {
         try {
             return $this->prepareResponse(
-                // lixx $this->call($callable, $parameters)
-                $this->call([$callable[0], 'execute'], [$callable[1], $parameters])
+                $this->call($callable, $parameters)
             );
         } catch (HttpResponseException $e) {
             return $e->getResponse();

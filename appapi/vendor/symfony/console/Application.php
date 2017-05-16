@@ -822,7 +822,7 @@ class Application
         }
 
         if (null === $this->dispatcher) {
-        	try {
+            try {
                 return $command->run($input, $output);
             } catch (\Exception $e) {
                 throw $e;
