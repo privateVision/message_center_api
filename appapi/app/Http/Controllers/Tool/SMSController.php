@@ -28,7 +28,7 @@ class SMSController extends Controller {
         $code = $parameter->tough('code', 'smscode');
 
         if(!verify_sms($mobile, $code)) {
-            throw new ToolException(ToolException::Remind, "验证码不正确，或已过期");
+            throw new ToolException(ToolException::Remind, "验证码不正确，或已过期"); // LANG:smscode_error
         }
 
         return ['result' => true];

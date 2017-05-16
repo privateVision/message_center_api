@@ -83,7 +83,7 @@ class UserController extends Controller{
             }
 
         }catch(Exception $e){
-            throw new ToolException(ToolException::Remind,"错误");
+            throw new ToolException(ToolException::Remind,"错误"); // LANG:error
         }
         // $uid = Ucusers::where("uid",$uid)->get();
     }

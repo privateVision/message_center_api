@@ -1,5 +1,7 @@
 .env
+.settings/
+.project
+swoole_server.php
+tpack.sh
 listen-queue.sh
-.env.test
-switchenv.sh
 _ab/

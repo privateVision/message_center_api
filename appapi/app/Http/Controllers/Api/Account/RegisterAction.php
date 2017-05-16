@@ -10,6 +10,7 @@ use App\Model\UcuserSub;
 use App\Model\LoginLog;
 use App\Model\UcuserInfo;
 use App\Model\UcuserSession;
+use App\Model\Retailers;
 
 trait RegisterAction {
     
@@ -19,9 +20,9 @@ trait RegisterAction {
         $rid = $this->parameter->tough('_rid');
         
         $user = $this->getRegisterUser();
-        if(!$user) throw new ApiException(ApiException::OauthNotRegister, '未注册第三方账号，请注册');
+        if(!$user) throw new ApiException(ApiException::OauthNotRegister, '尚未注册第三方账号，请先注册'); // LANG:not_register_3th
         if($user->is_freeze) {
-            throw new ApiException(ApiException::AccountFreeze, '账号被冻结，无法登录');
+            throw new ApiException(ApiException::AccountFreeze, '账号被冻结，无法登录'); // LANG:freeze_not_login
         }
 
         // 查找最近一次登录的小号
@@ -88,6 +89,11 @@ trait RegisterAction {
         $login_log->asyncSave();
 
         $user_info = UcuserInfo::from_cache($user->ucid);
+        
+        $retailers = null;
+        if($user->rid) {
+            $retailers = Retailers::find($user->rid);
+        }
 
         return [
             'openid' => strval($user_sub->cp_uid),
@@ -104,7 +110,9 @@ trait RegisterAction {
             'balance' => $user->balance,
             'real_name' => $user_info && $user_info->real_name ? (string)$user_info->real_name : "",
             'card_no' => $user_info && $user_info->card_no ? (string)$user_info->card_no : "",
-            'regtype' => $user->regtype,
+            'regtype' => intval($user->regtype),
+            'rid' => $user->rid,
+            'rtype' => $retailers ? $retailers->rtype : 0,
         ];
     }
 

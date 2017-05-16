@@ -70,7 +70,7 @@ class Controller extends \App\Controller
 
 		$this->procedure = Procedures::from_cache($_appid);
 		if (!$this->procedure) {
-			throw new ApiException(ApiException::Error, '"_appid" not exists:' . $_appid);
+			throw new ApiException(ApiException::Error, '"_appid" not exists:' . $_appid); // LANG:appid_missing
 		}
 
 		// -------- procedures_extend --------
@@ -103,7 +103,7 @@ class Controller extends \App\Controller
 		$sign = md5(http_build_query($data) . '&key=' . $appkey);
 
 		if($_sign !== $sign) {
-			throw new ApiException(ApiException::Error, "签名验证失败");
+			throw new ApiException(ApiException::Error, "签名验证失败"); // LANG:sign_verify_error
 		}
 
 		// --------- 平台登录特殊处理 ---------
@@ -116,7 +116,7 @@ class Controller extends \App\Controller
 			}
 
 			if (!$this->procedure) {
-				throw new ApiException(ApiException::Error, "appid not found:{$_appid}");
+				throw new ApiException(ApiException::Error, "appid not found:{$_appid}"); // LANG:appid_missing
 			}
 
 			$this->parameter->set('_appid', $__appid);

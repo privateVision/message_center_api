@@ -1,11 +1,59 @@
 <?php
-// 尽量不要使用{0},{1}这样的变量替换符，这个文件是要给小白配置的，不懂的小白把{0},{1}顺序调换，程序就出错了
-// 例：
-// trans('我叫{0}，今年{1}岁'， 'lixx', 28)           ---> 我叫lixx，今年28岁了
-// trans('他今年{0}岁，他的名字叫{1}'， 'lixx', 28)   ---> 他今年lixx岁，他的名字叫28   --> 这个时候必须要改代码才能得到正确的
-// 
-// 推荐这种格式（以不变应万变）：trans('我叫:name，今年:age', ['name' => 'lixx', 'age' => 28])
-
+return [
+    'must_login'                               => '请先登录',
+    'session_invalid_relogin'                  => '会话已失效，请重新登录',
+    'freeze'                                   => '账号已被冻结',
+    'birthday_format_error'                    => "生日格式不正确，yyyymmdd",
+    'old_password_error'                       => "旧的密码不正确",
+    'mobile_already_bind_other'                => "手机号码已经绑定了其它账号",
+    'mobile_already_bind'                      => "该账号已经绑定了这个手机号码",
+    'func_off'                                 => '该功能已停用',
+    'bind_fail_smscode_error'                  => "绑定失败，验证码不正确，或已过期",
+    'already_bind_mobile'                      => "该账号已经绑定了手机号码",
+    'notbind_an_not_unbind_mobile'             => "还未绑定手机号码，无法解绑",
+    'unbind_fail_mobile_error'                 => "手机号码解绑失败，验证码不正确，或已过期",
+    'unbind_only_reset_username'               => "您必需重设您的用户名才能解绑",
+    'unbind_fail_username_already'             => "解绑失败，用户名已被占用",
+    'not_reset_password_that_unbind_mobile'    => "还未绑定手机号码，无法使用该方式重置密码",
+    'smscode_error'                            => "验证码不正确，或已过期",
+    'card_no_error'                            => "身份证号码不正确",
+    'unionid_not_empty'                        => "unionid不允许为空",
+    'already_bind_3th'                         => "账号已经绑定了" . config("common.oauth.{$type}.text", '第三方'),
+    'already_bind_other_3th'                   => config("common.oauth.{$type}.text", '第三方') . "已经绑定了其它账号",
+    'before_bind_mobile_after_unbind_after'    => "为了防止遗忘账号，请绑定手机或者其他社交账号后再解除绑定",
+    'avatar_upload_fail'                       => '头像上传失败：' . $e->getMessage(),
+    'set_username_fail_already_exists'         => '设置失败，用户名已被占用',
+    'set_nickname_fail_exists'                 => "修改失败，昵称已经存在",
+    'user_sub_not_exists_on_set_nickname'      => "修改失败，小号不存在",
+    'user_sub_limit'                           => "小号创建数量已达上限",
+    'product_not_exists'                       => "未找到相关的商品",
+    'not_pay_before_reg'                       => '帐号未实名制，无法支付，请先实名后再操作',
+    'not_user_f'                               => '不能使用余额或优惠券直接抵扣',
+    'order_not_exists'                         => '订单不存在',
+    'order_already_succ'                       => '订单已支付完成，请勿重复支付',
+    'storecard_invalid'                        => '优惠券不可使用，已过期',
+    'union_request_fail'                       => '银联支付请求失败 ' . $resdata['respMsg'],
+    'pay_request_fail'                         => '发起支付失败（'.$responseData['return_msg'].'）',
+    'notify_url_error'                         => "请填写正确的通知地址",
+    'app_not_exists'                           => "bundle_id 或iap 不存在",
+    'session_invalid'                          => '会话失效，请重新登录',
+    'unknow_login_type_3th'                    => '未知的登录类型:'.$type,
+    'not_register_3th'                         => '尚未注册第三方账号，请先注册',
+    'wait_accept_sms'                          => '服务器等待收到短信...',
+    'freeze_not_login'                         => '账号被冻结，无法登录',
+    'role_not_exists'                          => "角色不存在，无法登录",
+    'role_freeze_not_login'                    => '角色已被冻结，无法登录',
+    'try_much_wait_please'                     => "错误次数太多，请稍后再试",
+    'login_fail'                               => "用户名或者密码不正确",
+    'already_register'                         => "用户已注册，请直接登录",
+    'mobile_not_bind'                          => '手机号码尚未绑定',
+    'token_invalid'                            => "token失效",
+    'appid_missing'                            => "appid not found:{$_appid}",
+    'sign_verify_error'                        => "签名验证失败",
+    'page_invalid'                             => "修改失败，页面已失效",
+    'user_not_exists'                          => '用户不存在',
+];
+/*
 return [
     'phone_unbind_code'             => "【安峰网】您好，您的验证码是",
     'unbind_newname '               => "【安锋网】您好，你解绑后，为君生成新名",
@@ -43,3 +91,4 @@ return [
     "product_not_found"             => "您好产品信息未找到" ,
 
 ];
+*/

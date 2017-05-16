@@ -21,7 +21,7 @@ class MobileController extends Controller {
         $is_set_password = !empty($password);
 
         if(!verify_sms($mobile, $code)) {
-            throw new ApiException(ApiException::Remind, "验证码不正确，或已过期");
+            throw new ApiException(ApiException::Remind, "验证码不正确，或已过期"); //LANG:smscode_error
         }
 
         // 登录

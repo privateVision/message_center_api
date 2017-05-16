@@ -6,18 +6,20 @@ use Illuminate\Http\Request;
 use App\Parameter;
 use App\Model\Ucuser;
 use App\Model\Orders;
-use App\Model\UcuserRole;
-use App\Model\ProceduresZone;
-use App\Model\ProceduresExtend;
-use App\Model\UcuserSub;
 use App\Model\UcuserOauth;
 use App\Model\UcuserInfo;
 use Illuminate\Support\Facades\Session;
+use App\Model\Retailers;
 
 class UserController extends AuthController
 {
     public function InfoAction() {
         $user_info = UcuserInfo::from_cache($this->user->ucid);
+        
+        $retailers = null;
+        if($user->rid) {
+            $retailers = Retailers::find($user->rid);
+        }
 
         return [
             'uid' => $this->user->ucid,
@@ -41,6 +43,8 @@ class UserController extends AuthController
             'is_adult' => $user_info && $user_info->isAdult(),
             'reg_time' => $this->user->regdate,
             'regtype' => $this->user->regtype,
+            'rid' => $user->rid,
+            'rtype' => $retailers ? $retailers->rtype : 0,
         ];
     }
 
@@ -79,7 +83,7 @@ class UserController extends AuthController
         $birthday = $this->parameter->get('birthday', '');
         
         if($birthday && !preg_match('/^\d{8}$/', $birthday)) {
-            throw new ApiException(ApiException::Remind, "生日格式不正确，yyyymmdd");
+            throw new ApiException(ApiException::Remind, "生日格式不正确，yyyymmdd"); // LANG:birthday_format_error
         }
 
         $user_info = UcuserInfo::from_cache($this->user->ucid);
@@ -198,7 +202,7 @@ class UserController extends AuthController
         $new_password = $this->parameter->tough('new_password', 'password');
 
         if(!$this->user->checkPassword($old_password)) {
-            throw new ApiException(ApiException::Remind, "旧的密码不正确");
+            throw new ApiException(ApiException::Remind, "旧的密码不正确"); // LANG:old_password_error
         }
 
         $old_password = $this->user->password;
@@ -218,9 +222,9 @@ class UserController extends AuthController
 
         if($user) {
             if($user->ucid != $this->user->ucid) {
-                throw new ApiException(ApiException::Remind, "手机号码已经绑定了其它账号");
+                throw new ApiException(ApiException::Remind, "手机号码已经绑定了其它账号"); // LANG:mobile_already_bind_other
             } elseif($this->user->mobile == $mobile) {
-                throw new ApiException(ApiException::Remind, "该账号已经绑定了这个手机号码");
+                throw new ApiException(ApiException::Remind, "该账号已经绑定了这个手机号码"); // LANG:mobile_already_bind
             }
         }
 
@@ -241,7 +245,7 @@ class UserController extends AuthController
         // todo: 以前绑定手机号绑定邮箱走的同一个接口
         $mobile = $this->request->input('mobile');
         if(preg_match('/^[\w\d\-\_\.]+@\w+(\.\w+)+$/', $mobile)) {
-            throw new ApiException(ApiException::Remind, "该功能已停用");
+            throw new ApiException(ApiException::Remind, '该功能已停用'); // LANG:func_off
         }
 
         // ---- end ----
@@ -250,17 +254,17 @@ class UserController extends AuthController
         $code = $this->parameter->tough('code', 'smscode');
 
         if(!verify_sms($mobile, $code)) {
-            throw new ApiException(ApiException::Remind, "绑定失败，验证码不正确，或已过期");
+            throw new ApiException(ApiException::Remind, "绑定失败，验证码不正确，或已过期"); // LANG:bind_fail_smscode_error
         }
 
         if($this->user->mobile) {
-            throw new ApiException(ApiException::Remind, "该账号已经绑定了手机号码");
+            throw new ApiException(ApiException::Remind, "该账号已经绑定了手机号码"); // LANG:already_bind_mobile
         }
         
         $user = Ucuser::where('uid', $mobile)->orWhere('mobile', $mobile)->first();
         if($user) {
             if($user->ucid != $this->user->ucid) {
-                throw new ApiException(ApiException::Remind, "手机号码已经绑定了其它账号");
+                throw new ApiException(ApiException::Remind, "手机号码已经绑定了其它账号"); // LANG:mobile_already_bind_other
             } elseif(empty($this->user->mobile)) {
                 $this->user->mobile = $mobile;
                 $this->user->save();
@@ -277,7 +281,7 @@ class UserController extends AuthController
 
     public function SMSUnbindPhoneAction() {
         if(!$this->user->mobile) {
-            throw new ApiException(ApiException::Remind, "还未绑定手机号码，无法解绑");
+            throw new ApiException(ApiException::Remind, "还未绑定手机号码，无法解绑"); // LANG:notbind_an_not_unbind_mobile
         }
 
         $mobile = $this->user->mobile;
@@ -303,19 +307,19 @@ class UserController extends AuthController
             $mobile = $this->user->mobile;
 
             if(!verify_sms($mobile, $code)) {
-                throw new ApiException(ApiException::Remind, "手机号码解绑失败，验证码不正确，或已过期");
+                throw new ApiException(ApiException::Remind, "手机号码解绑失败，验证码不正确，或已过期"); // LANG:unbind_fail_mobile_error
             }
 
             if($this->user->mobile == $this->user->uid) {
                 if(!$username) {
-                    throw new ApiException(ApiException::Remind, "您必需重设您的用户名才能解绑");
+                    throw new ApiException(ApiException::Remind, "您必需重设您的用户名才能解绑"); // LANG:unbind_only_reset_username
                 }
 
                 $_user = Ucuser::where('uid', $username)->orWhere('mobile', $username)->orWhere('email', $username)->first();
                 if(!$_user || $_user->ucid == $this->user->ucid) {
                     $this->user->uid = $username;
                 } else {
-                    throw new ApiException(ApiException::Remind, "解绑失败，用户名已被占用");
+                    throw new ApiException(ApiException::Remind, "解绑失败，用户名已被占用"); // LANG:unbind_fail_username_already
                 }
             }
             $this->user->mobile = '';
@@ -333,7 +337,7 @@ class UserController extends AuthController
 
     public function SMSPhoneResetPasswordAction() {
         if(!$this->user->mobile) {
-            throw new ApiException(ApiException::Remind, "还未绑定手机号码，无法使用该方式重置密码");
+            throw new ApiException(ApiException::Remind, "还未绑定手机号码，无法使用该方式重置密码"); // LANG:not_reset_password_that_unbind_mobile
         }
 
         $mobile = $this->user->mobile;
@@ -356,13 +360,13 @@ class UserController extends AuthController
         $password = $this->parameter->tough('password', 'password');
 
         if(!$this->user->mobile) {
-            throw new ApiException(ApiException::Remind, "还未绑定手机号码，无法使用该方式重置密码");
+            throw new ApiException(ApiException::Remind, "还未绑定手机号码，无法使用该方式重置密码"); // LANG:not_reset_password_that_unbind_mobile
         }
 
         $mobile = $this->user->mobile;
 
         if(!verify_sms($mobile, $code)) {
-            throw new ApiException(ApiException::Remind, "验证码不正确，或已过期");
+            throw new ApiException(ApiException::Remind, "验证码不正确，或已过期"); // LANG:smscode_error
         }
 
         $old_password = $this->user->password;
@@ -399,7 +403,7 @@ class UserController extends AuthController
 
         $card_info = parse_card_id($card_no);
         if(!$card_info) {
-            throw new ApiException(ApiException::Remind, "身份证号码不正确");
+            throw new ApiException(ApiException::Remind, "身份证号码不正确"); // LANG:card_no_error
         }
 
         $user_info = UcuserInfo::from_cache($this->user->ucid);
@@ -427,11 +431,11 @@ class UserController extends AuthController
         $avatar = $this->parameter->get('avatar');
         $forced = $this->parameter->get('forced');
         
-        if($type == 'weixin' && $unionid == '') throw new ApiException(ApiException::Error, "unionid不允许为空");
+        if($type == 'weixin' && $unionid == '') throw new ApiException(ApiException::Error, "unionid不允许为空"); // LANG:unionid_not_empty
 
         $count = UcuserOauth::where('type', $type)->where('ucid', $this->user->ucid)->count();
         if($count > 0) {
-            throw new ApiException(ApiException::Remind, "账号已经绑定了" . config("common.oauth.{$type}.text", '第三方'));
+            throw new ApiException(ApiException::Remind, "账号已经绑定了" . config("common.oauth.{$type}.text", '第三方')); // LANG:already_bind_3th
         }
 
         $openid = "{$openid}@{$type}";
@@ -453,7 +457,7 @@ class UserController extends AuthController
             }
 
             if($forced == 0) {
-                throw new ApiException(ApiException::AlreadyBindOauthOther, config("common.oauth.{$type}.text", '第三方') . "已经绑定了其它账号");
+                throw new ApiException(ApiException::AlreadyBindOauthOther, config("common.oauth.{$type}.text", '第三方') . "已经绑定了其它账号"); // LANG:already_bind_other_3th
             }
 
             $user_oauth->ucid = $this->user->ucid;
@@ -490,7 +494,7 @@ class UserController extends AuthController
 
         $count = UcuserOauth::where('type', '!=', $type)->where('ucid', $this->user->ucid)->count();
         if($count == 0 && $this->user->mobile == "" && $this->user->regtype != 6) {
-            throw new ApiException(ApiException::Remind, "为了防止遗忘账号，请绑定手机或者其他社交账号后再解除绑定");
+            throw new ApiException(ApiException::Remind, "为了防止遗忘账号，请绑定手机或者其他社交账号后再解除绑定"); // LANG:before_bind_mobile_after_unbind_after
         }
 
         $user_oauth = UcuserOauth::where('type', $type)->where('ucid', $this->user->ucid)->first();
@@ -529,7 +533,7 @@ class UserController extends AuthController
                 $avatar_url = upload_to_cdn($filename, $filepath,true);
                 $flush = updateQnCache($avatar_url); //更新七牛文件缓存
             } catch(\App\Exceptions\Exception $e) {
-                throw new ApiException(ApiException::Remind, '头像上传失败：' . $e->getMessage());
+                throw new ApiException(ApiException::Remind, '头像上传失败：' . $e->getMessage()); // LANG:avatar_upload_fail
             }
         }
 
@@ -551,7 +555,7 @@ class UserController extends AuthController
         $user = Ucuser::where('uid', $username)->orWhere('mobile', $username)->orWhere('email', $username)->first();
         if($user) {
             if($user->ucid != $this->user->ucid) {
-                throw new ApiException(ApiException::Remind, '设置失败，用户名已被占用');
+                throw new ApiException(ApiException::Remind, '设置失败，用户名已被占用'); // LANG:set_username_fail_already_exists
             }
         } else {
             $this->user->uid = $username;

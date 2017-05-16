@@ -135,7 +135,7 @@ class AppController extends Controller
         $code = $this->parameter->tough('code', 'smscode');
 
         if(!verify_sms($mobile, $code)) {
-            throw new ApiException(ApiException::Remind, "验证码不正确，或已过期");
+            throw new ApiException(ApiException::Remind, "验证码不正确，或已过期"); // LANG:smscode_error
         }
 
         return ['result' => true];

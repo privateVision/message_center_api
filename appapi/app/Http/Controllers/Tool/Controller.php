@@ -15,19 +15,19 @@ class Controller extends \App\Controller
             // 两个公共参数：_appid, _token
             $data = $request->all();
             if(empty($data)){
-                throw new ToolException(ToolException::Error, '数据为空');
+                throw new ToolException(ToolException::Error, '数据为空'); // LANG:data_empty
             }
             $token = @$data['_token'];
             unset($data['_token']);
             ksort($data);
 
             if(!isset($data['_appid'])) {
-                throw new ToolException(ToolException::Error, '缺少"_appid"');
+                throw new ToolException(ToolException::Error, '缺少"_appid"'); // LANG:missing_appid
             }
 
             $this->app = config('common.apps.'.$data['_appid'], null);
             if(!$this->app) {
-                throw new ToolException(ToolException::Error, '应用未授权');
+                throw new ToolException(ToolException::Error, '应用未授权'); // LANG:app_not_allow
             }
 
             $appkey = $this->app->appkey;
@@ -35,7 +35,7 @@ class Controller extends \App\Controller
             $_token = md5(http_build_query($data) . $appkey);
 
             if($_token !== $token) {
-                throw new ToolException(ToolException::Error, '"_token"错误');
+                throw new ToolException(ToolException::Error, '"_token"错误'); // LANG:token_error
             }
 
             log_debug('request', ['route' => $request->path(), 'data' => $data]);

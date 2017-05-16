@@ -25,7 +25,7 @@ class FController extends Controller {
      */
     public function payHandle(Orders $order, $real_fee) {
         if($real_fee > 0) {
-            throw new ApiException(ApiException::Remind, '不能使用余额或优惠券直接抵扣');
+            throw new ApiException(ApiException::Remind, '不能使用余额或优惠券直接抵扣'); //LANG:not_user_f
         }
         
         order_success($order->id);

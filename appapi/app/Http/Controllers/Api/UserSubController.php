@@ -50,12 +50,12 @@ class UserSubController extends AuthController
 
         $count = UcuserSub::tableSlice($this->user->ucid)->where('ucid', $this->user->ucid)->where('name', $nickname)->count();
         if($count) {
-            throw new ApiException(ApiException::Remind, "修改失败，昵称已经存在");
+            throw new ApiException(ApiException::Remind, "修改失败，昵称已经存在"); // LANG:set_nickname_fail_exists
         }
 
         $user_sub = UcuserSub::tableSlice($this->user->ucid)->find($id);
         if(!$user_sub || $user_sub->ucid != $this->user->ucid) {
-            throw new ApiException(ApiException::Remind, "修改失败，小号不存在");
+            throw new ApiException(ApiException::Remind, "修改失败，小号不存在"); // LANG:user_sub_not_exists_on_set_nickname
         }
 
         $user_sub->name = $nickname;
@@ -104,7 +104,7 @@ class UserSubController extends AuthController
             }
 
             if($allow_num <= $user_sub_num) {
-                throw new ApiException(ApiException::Remind, "小号创建数量已达上限");
+                throw new ApiException(ApiException::Remind, "小号创建数量已达上限"); // LANG:user_sub_limit
             }
 
             $user_sub_num++;

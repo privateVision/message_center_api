@@ -48,14 +48,14 @@ class UnionpayController extends Controller {
         log_info('unionpayRequest', ['reqdata' => $data, 'resdata' => $res]);
 
         if(!$res) {
-            throw new ApiException(ApiException::Remind, '银联支付请求失败');
+            throw new ApiException(ApiException::Remind, '银联支付请求失败'); //LANG:union_request_fail
         }
 
         parse_str($res, $resdata);
 
         // todo: 是否该把银联返回的错误消息返回给用户
         if($resdata['respCode'] !== '00') {
-            throw new ApiException(ApiException::Remind, '银联支付请求失败 ' . $resdata['respMsg']);
+            throw new ApiException(ApiException::Remind, '银联支付请求失败 ' . $resdata['respMsg']); //LANG:union_request_fail
         }
 
         return ['tn' => $resdata['tn']];

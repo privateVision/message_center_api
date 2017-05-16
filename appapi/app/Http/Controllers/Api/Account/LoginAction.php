@@ -11,6 +11,7 @@ use App\Model\UcuserSub;
 use App\Model\UcuserSession;
 use App\Model\LoginLog;
 use App\Model\UcuserInfo;
+use App\Model\Retailers;
 
 trait LoginAction {
 
@@ -20,7 +21,7 @@ trait LoginAction {
         
         $user = $this->getLoginUser();
         if($user && $user->is_freeze) {
-            throw new ApiException(ApiException::AccountFreeze, '账号已被冻结，无法登录', ['ucid' => $user->ucid]);
+            throw new ApiException(ApiException::AccountFreeze, '账号已被冻结，无法登录', ['ucid' => $user->ucid]);// LANG:freeze_not_login
         }
 
         $user_sub_id = $this->getDefaultUserSubId($user);
@@ -29,11 +30,11 @@ trait LoginAction {
         if($user_sub_id) {
             $user_sub = UcuserSub::tableSlice($user->ucid)->from_cache($user_sub_id);
             if(!$user_sub || $user_sub->ucid != $user->ucid || $user_sub->pid != $pid) {
-                throw new ApiException(ApiException::Remind, "角色不存在，无法登录");
+                throw new ApiException(ApiException::Remind, "角色不存在，无法登录"); // LANG:role_not_exists
             }
 
             if($user_sub->is_freeze) {
-                throw new ApiException(ApiException::UserSubFreeze, '角色已被冻结，无法登录');
+                throw new ApiException(ApiException::UserSubFreeze, '角色已被冻结，无法登录'); // LANG:role_freeze_not_login
             }
         }
 
@@ -114,6 +115,11 @@ trait LoginAction {
         $login_log->asyncSave();
 
         $user_info = UcuserInfo::from_cache($user->ucid);
+        
+        $retailers = null;
+        if($user->rid) {
+            $retailers = Retailers::find($user->rid);
+        }
 
         return [
             'openid' => strval($user_sub->cp_uid),
@@ -130,7 +136,9 @@ trait LoginAction {
             'balance' => $user->balance,
             'real_name' => $user_info && $user_info->real_name ? (string)$user_info->real_name : "",
             'card_no' => $user_info && $user_info->card_no ? (string)$user_info->card_no : "",
-            'regtype' => $user->regtype,
+            'regtype' => intval($user->regtype),
+            'rid' => $user->rid,
+            'rtype' => $retailers ? $retailers->rtype : 0,
         ];
     }
 

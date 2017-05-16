@@ -48,7 +48,7 @@ class Orders extends Model
 
 	public function is_first() {
 		// todo: 单独字段标识，这太Low了
-		return static::where('ucid', $this->ucid)->where('status', '!=', static::Status_WaitPay)->where("vid",$this->vid)->count() == 0;
+		return static::where('ucid', $this->ucid)->where('status', '!=', static::Status_WaitPay)->where("vid", $this->vid)->count() == 0;
 	}
 
 	/**
