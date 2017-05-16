@@ -24,24 +24,32 @@ d('./app/', function($file) use(&$data) {
     
     $content = file_get_contents($file);
     if(!$content) return;
+
+    $is_match = false;
     
     $re = preg_match_all('/throw\s+new\s+ApiException.*?,\s*(.*)\)\s*;\s*\/\/\s*LANG\s*:\s*(\w+)/', $content, $result);
-    if(!$re) return;
+    if($re) {
+        foreach($result[1] as $k => $v) {
+            $data[$result[2][$k]] = $v;
 
-    foreach($result[1] as $k => $v) {
-        $data[$result[2][$k]] = $v;
-        $content = str_replace($v, $result[2][$k], $content);
+            $is_match = true;
+            $content = str_replace($v, $result[2][$k], "trans(" . $content .")");
+        }
     }
     
     $re = preg_match_all('/throw\s+new\s+Exception\s*\((.*?),.*?;\s*\/\/\s*LANG\s*:\s*(\w+)/', $content, $result);
-    if(!$re) return;
+    if($re) {
+        foreach($result[1] as $k => $v) {
+            $data[$result[2][$k]] = $v;
 
-    foreach($result[1] as $k => $v) {
-        $data[$result[2][$k]] = $v;
-        $content = str_replace($v, $result[2][$k], $content);
+            $is_match = true;
+            $content = str_replace($v, $result[2][$k], "trans(" . $content .")");
+        }
     }
     
-    file_put_contents($file, $content);
+    if($is_match) {
+        file_put_contents($file, $content);
+    }
 });
 
 foreach($data as $k => $v) {
