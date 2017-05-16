@@ -39,6 +39,14 @@ return [
         ]
     ],
 
+    'pay_methods' => [
+        2 => ['type' => 'wechat', 'api' => '/api/pay/wechat/request'],
+        4 => ['type' => 'alipay', 'api' => '/api/pay/alipay/request'],
+        8 => ['type' => 'unionpay', 'api' => '/api/pay/unionpay/request'],
+        16 => ['type' => 'mycard', 'api' => '/api/pay/mycard/request'],
+        32 => ['type' => 'nowpay_wechat', 'api' => '/api/pay/nowpay_wechat/request'],
+    ],
+
     'payconfig' => [
         'alipay' => [
             'AppID' => "2088411293741002",
