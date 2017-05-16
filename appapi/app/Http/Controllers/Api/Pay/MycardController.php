@@ -1,24 +1,35 @@
 <?php
 namespace App\Http\Controllers\Api\Pay;
 
-use Illuminate\Http\Request;
 use App\Exceptions\ApiException;
-use App\Parameter;
 use App\Model\Orders;
 
 class MycardController extends Controller {
 
     use RequestAction;
 
-    const PayType = '-5';
-    const PayTypeText = '微信';
+    const PayType = '-7';
+    const PayTypeText = 'MyCard';
     const EnableStoreCard = true;
     const EnableCoupon = true;
     const EnableBalance = true;
 
     public function payHandle(Orders $order, $real_fee) {
-        $config = config('common.payconfig.nowpay_wechat');
-
+        $config = config('common.payconfig.mycard');
+        
+        $data['FacServiceId'] = $config['FacServiceId'];
+        $data['FacTradeSeq'] = $order->sn;
+        $data['TradeType'] = 'WEB';
+        $data['ServerId'] = $this->parameter->get('_ipaddress', null) ?: $this->request->ip();
+        $data['CustomerId'] = $order->ucid;
+        $data['ProductName'] = $order->subject;
+        $data['Amount'] = $real_fee;
+        $data['Currency'] = 'TWD';
+        $data['SandBoxMode'] = env('APP_DEBUG') ? true : false;
+        
+        $data['hash'] = mycard_hash();
+        //$data['PaymentType'] = 
+/*
         $mht['appId'] = $config['appId'];
         $mht['mhtCharset'] = $config['mhtCharset'];
         $mht['mhtCurrencyType'] = $config['mhtCurrencyType'];
@@ -40,19 +51,14 @@ class MycardController extends Controller {
             if($v == "") continue;
             $str[] = "{$k}=".urlencode($v);
         }
-
+*/
         $dt =  implode('&', $str);
         return ['data' => $dt];
     }
 
-    protected static function encode($data) {
+    protected static function mycard_hash($data) {
         ksort($data);
-        $str = [];
-        foreach($data as $k => $v) {
-            if($v == "") continue;
-            $str[] = "{$k}={$v}";
-        }
-
-        return implode('&', $str);
+        $str = implode('', $data);
+        $str = urlencode($str);
     }
 }

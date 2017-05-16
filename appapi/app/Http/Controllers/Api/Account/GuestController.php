@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use App\Parameter;
 
 use App\Model\Ucuser;
+use App\Model\UcusersUUID;
 
 class GuestController extends Controller {
 
@@ -41,6 +42,16 @@ class GuestController extends Controller {
         $user->regdate = time();
         $user->device_uuid = $uuid;
         $user->save();
+        
+        $imei = $this->parameter->get('_imei');
+        $device_id = $this->parameter->get('_device_id', '');
+        if($imei || $device_id) {
+            $ucusers_uuid =  new UcusersUUID();
+            $ucusers_uuid->ucid = $user->ucid;
+            $ucusers_uuid->imei = $imei;
+            $ucusers_uuid->device_id= $device_id;
+            $ucusers_uuid->asyncSave();
+        }
 
         user_log($user, $this->procedure, 'register', '【注册】通过“游客登录”注册，用户名(%s)，密码[%s]', $username, $user->password);
 

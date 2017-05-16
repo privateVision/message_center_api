@@ -9,6 +9,7 @@ use App\Parameter;
 use App\Redis;
 use App\Model\Ucuser;
 use App\Model\_56GameBBS\Members as Member;
+use App\Model\UcusersUUID;
 
 class UserController extends Controller {
     
@@ -119,8 +120,16 @@ class UserController extends Controller {
         $user->pid = $this->parameter->tough('_appid');
         $user->regdate = time();
         $user->save();
-        //登录加入通知队列
+        
+        $imei = $this->parameter->get('_imei');
+        if($imei) {
+            $ucusers_uuid =  new UcusersUUID();
+            $ucusers_uuid->ucid = $user->ucid;
+            $ucusers_uuid->uuid = $imei;
+            $ucusers_uuid->asyncSave();
+        }
 
+        //登录加入通知队列
         dispatch((new AdtRequest(["imei"=>$imei,"gameid"=>$this->parameter->tough('_appid'),"rid"=>$this->parameter->tough('_rid'),"ucid"=>$user->uid]))->onQueue('adtinit'));
         
         user_log($user, $this->procedure, 'register', '【注册】通过“用户名”注册，用户名(%s), 密码[%s]', $username, $user->password);
@@ -160,7 +169,7 @@ class UserController extends Controller {
             throw new ApiException(ApiException::Remind, "验证码不正确，或已过期");
         }
         
-        $user = Ucuser::where('uid', $mobile)->orWhere('mobile', $mobile)->first();
+        $user = Ucuser::where('mobile', $mobile)->first();
         if(!$user) {
             throw new ApiException(ApiException::Remind, '手机号码尚未绑定');
         }

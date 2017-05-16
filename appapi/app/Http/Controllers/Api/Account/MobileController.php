@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use App\Parameter;
 
 use App\Model\Ucuser;
+use App\Model\UcusersUUID;
 
 class MobileController extends Controller {
 
@@ -49,6 +50,16 @@ class MobileController extends Controller {
         $user->pid = $this->parameter->tough('_appid');
         $user->regdate = time();
         $user->save();
+        
+        $imei = $this->parameter->get('_imei');
+        $device_id = $this->parameter->get('_device_id', '');
+        if($imei || $device_id) {
+            $ucusers_uuid =  new UcusersUUID();
+            $ucusers_uuid->ucid = $user->ucid;
+            $ucusers_uuid->imei = $imei;
+            $ucusers_uuid->device_id= $device_id;
+            $ucusers_uuid->asyncSave();
+        }
 
         user_log($user, $this->procedure, 'register', '【手机号码登录】检测到尚未注册，手机号码{%s}，密码[%s]', $mobile, $user->password);
 

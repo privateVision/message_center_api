@@ -6,18 +6,20 @@ use Illuminate\Http\Request;
 use App\Parameter;
 use App\Model\Ucuser;
 use App\Model\Orders;
-use App\Model\UcuserRole;
-use App\Model\ProceduresZone;
-use App\Model\ProceduresExtend;
-use App\Model\UcuserSub;
 use App\Model\UcuserOauth;
 use App\Model\UcuserInfo;
 use Illuminate\Support\Facades\Session;
+use App\Model\Retailers;
 
 class UserController extends AuthController
 {
     public function InfoAction() {
         $user_info = UcuserInfo::from_cache($this->user->ucid);
+        
+        $retailers = null;
+        if($this->user->rid) {
+            $retailers = Retailers::find($this->user->rid);
+        }
 
         return [
             'uid' => $this->user->ucid,
@@ -41,6 +43,8 @@ class UserController extends AuthController
             'is_adult' => $user_info && $user_info->isAdult(),
             'reg_time' => $this->user->regdate,
             'regtype' => $this->user->regtype,
+            'rid' => $this->user->rid,
+            'rtype' => $retailers ? $retailers->rtype : 0,
         ];
     }
 
