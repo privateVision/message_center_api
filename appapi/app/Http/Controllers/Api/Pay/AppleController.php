@@ -49,9 +49,7 @@ class  AppleController extends Controller{
 
         //保存当前的操作
         $sql = "insert into ios_receipt_log (`receipt_md5`,`receipt_base64`) VALUES ('".$mds."','".$receipt."')";
-       
         app('db')->select($sql);
-
         //订单号
         $sn  = $this->request->input("order_id"); //生成订单的时候返回的订单号
 
