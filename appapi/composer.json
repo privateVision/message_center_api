@@ -21,7 +21,8 @@
         "jeremeamia/SuperClosure": "^2.3",
         "barryvdh/laravel-cors": "^0.8.6",
         "qiniu/php-sdk": "^7.1",
-        "aporat/store-receipt-validator": "^2.0"
+        "aporat/store-receipt-validator": "^2.0",
+        "google/apiclient": "^2.0"
 	},
 	"require-dev" : {
 		"eaglewu/swoole-ide-helper" : "dev-master",
