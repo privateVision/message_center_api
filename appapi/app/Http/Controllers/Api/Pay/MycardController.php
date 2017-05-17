@@ -16,17 +16,18 @@ class MycardController extends Controller {
 
     public function payHandle(Orders $order, $real_fee) {
         $config = config('common.payconfig.mycard');
-        
+
+        // data的key顺序不能变
         $data['FacServiceId'] = $config['FacServiceId'];
         $data['FacTradeSeq'] = $order->sn;
         $data['TradeType'] = '2';
         $data['ServerId'] = $this->parameter->get('_ipaddress', null) ?: $this->request->ip();
         $data['CustomerId'] = $order->ucid;
-        $data['ProductName'] = $order->subject;
-        $data['Amount'] = $real_fee;
+        $data['ProductName'] = $order->subject ?: "props";
+        $data['Amount'] = number_format($real_fee / 100, 2);
         $data['Currency'] = 'TWD';
         $data['SandBoxMode'] = env('APP_DEBUG') ? 'true' : 'false';
-        
+
         $data['hash'] = static::mycard_hash($data, $config['FacServerKey']);
 
         //获取authtoken
@@ -37,7 +38,7 @@ class MycardController extends Controller {
         // json decode
         $result = json_decode($result, true);
         if(!$result) {
-            throw new ApiException(ApiException::Remind, 'MyCard 支付请求失败');
+            throw new ApiException(ApiException::Remind, trans('messages.mycard_request_fail'));
         }
 
         if(@$result['ReturnCode'] != '1' || empty(@$result['AuthCode'])) {
@@ -51,12 +52,17 @@ class MycardController extends Controller {
     }
 
     protected static function mycard_hash($data, $key) {
-        $prms = array_values($data);
-        $prms[] = $key;
-        $preStr = implode('', $prms);
-        $hash = urlencode($preStr);
+        $_data = array_values($data);
+        $_data[] = $key;
 
-        $sign = hash('sha256', $hash, true);
+        $str = implode('', $_data);
+        $str = urlencode($str);
+
+        $str = preg_replace_callback('/%[0-9A-F]{2}/', function($matches) {
+            return strtolower($matches[0]);
+        }, $str);
+
+        $sign = hash('sha256', $str, true);
 
         return bin2hex($sign);
     }

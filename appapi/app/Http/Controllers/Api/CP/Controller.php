@@ -26,7 +26,7 @@ class Controller extends \App\Controller
 
         $this->procedure = Procedures::from_cache($_appid);
         if (!$this->procedure) {
-            throw new ApiException(ApiException::Error, '"_appid" not exists:' . $_appid); // LANG:appid_missing
+            throw new ApiException(ApiException::Error, trans('messages.invalid_appid', ['appid' => $_appid])); // LANG:appid_missing
         }
 
         $appkey1 = $this->procedure->psingKey;
@@ -41,7 +41,7 @@ class Controller extends \App\Controller
         }
 
         if($_sign !== md5("{$str}sign_key={$appkey1}") && $_sign !== md5("{$str}sign_key={$appkey2}")) {
-            throw new ApiException(ApiException::Error, "签名验证失败"); // LANG:sign_verify_error
+            throw new ApiException(ApiException::Error, trans('messages.sign_error')); // LANG:sign_verify_error
         }
 
         // ------------------------------------

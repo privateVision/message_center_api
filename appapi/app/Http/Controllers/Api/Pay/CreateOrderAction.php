@@ -26,17 +26,17 @@ trait CreateOrderAction {
         // product_id or fee,body,subject
         $product_id = $this->parameter->get('protected_id');
         if(!$product_id) {
-            $fee = $this->parameter->get('fee');
-            $body = $this->parameter->get('body');
-            $subject = $this->parameter->get('subject');
+            $fee = $this->parameter->tough('fee');
+            $body = $this->parameter->tough('body');
+            $subject = $this->parameter->tough('subject');
         } else {
             $product = ProceduresProducts::where('cp_product_id', $product_id);
 
-            if(!$product) throw new ApiException(ApiException::Error, '计费点不存在'); // LANG:product_not_exists
+            if(!$product) throw new ApiException(ApiException::Error, trans('messages.product_not_exists')); // LANG:product_not_exists
 
             $fee = $product->fee / 100;
-            $body = $product->name;
-            $subject = $product->desc;
+            $body = strval($product->name);
+            $subject = strval($product->desc);
         }
         
         $pid = $this->procedure->pid;
@@ -45,7 +45,7 @@ trait CreateOrderAction {
         if(($this->procedure_extend->enable & 0x0000000C) == 0x0000000C) { /*[3:2]*/
             $user_info = UcuserInfo::from_cache($this->user->ucid);
             if(!$user_info || !$user_info->card_no) {
-                throw new ApiException(ApiException::NotRealName, '帐号未实名制，无法支付，请先实名后再操作'); // LANG:not_pay_before_reg
+                throw new ApiException(ApiException::NotRealName, trans('messages.check_in_before_pay')); // LANG:not_pay_before_reg
             }
         }
 

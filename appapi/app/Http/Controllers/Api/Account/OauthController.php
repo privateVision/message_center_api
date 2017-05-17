@@ -21,14 +21,14 @@ class OauthController extends Controller {
         $type = $this->parameter->tough('type');
         $unionid = $this->parameter->get('unionid', "");
         
-        if($type == 'weixin' && $unionid == '') throw new ApiException(ApiException::Error, "unionid不允许为空");
+        if($type == 'weixin' && $unionid == '') throw new ApiException(ApiException::Error, trans('messages.unionid_empty'));
 
         $nickname = $this->parameter->get('nickname');
         $avatar = $this->parameter->get('avatar');
 
         $ctype = config("common.oauth.{$type}", false);
         if(!$ctype) {
-            throw new ApiException(ApiException::Error, '未知的第三方登录类型，type='.$type);
+            throw new ApiException(ApiException::Error, trans('messages.3th_unknow', ['type' => $type]));
         }
 
         $openid = "{$openid}@{$type}";
@@ -99,7 +99,7 @@ class OauthController extends Controller {
         $unionid = $this->parameter->get('unionid', "");
         $forced = $this->parameter->get('forced');
         
-        if($type == 'weixin' && $unionid == '') throw new ApiException(ApiException::Error, "unionid不允许为空");
+        if($type == 'weixin' && $unionid == '') throw new ApiException(ApiException::Error, trans('messages.unionid_empty'));
 
         $openid = "{$openid}@{$type}";;
         $unionid = $unionid ? "{$unionid}@{$type}" : '';
@@ -119,7 +119,7 @@ class OauthController extends Controller {
                 // 注册
                 $ctype = config("common.oauth.{$type}", false);
                 if(!$ctype) {
-                    throw new ApiException(ApiException::Error, '未知的第三方登录类型，type='.$type);
+                    throw new ApiException(ApiException::Error, trans('messages.3th_unknow', ['type' => $type]));
                 }
 
                 $nickname = $this->parameter->get('nickname');
@@ -165,7 +165,7 @@ class OauthController extends Controller {
 
                 user_log($user, $this->procedure, 'register', '【注册】通过%s注册，密码[%s]', $ctype['text'], $user->password);
             } else {
-                throw new ApiException(ApiException::OauthNotRegister, "尚未注册");
+                throw new ApiException(ApiException::OauthNotRegister, trans('messages.not_register'));
             }
         } else {
             $user = Ucuser::from_cache($user_oauth->ucid);

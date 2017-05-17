@@ -23,7 +23,7 @@ class OnekeyController extends Controller {
         $yunpian_callback = YunpianCallback::where('text', $sms_token)->first();
 
         if(!$yunpian_callback) {
-            throw new ApiException(ApiException::MobileNotRegister, '服务器等待收到短信...');
+            throw new ApiException(ApiException::MobileNotRegister, trans('messages.not_accept_sms'));
         }
 
         $mobile = $yunpian_callback->mobile;
