@@ -70,9 +70,11 @@ Route::group(['prefix' => 'api'], function () {
     Route::any('pay/alipay/request', 'Api\\Pay\\AlipayController@RequestAction');                           // 现在支付，支付宝
     Route::any('pay/unionpay/request', 'Api\\Pay\\UnionpayController@RequestAction');                       // 现在支付，银联
     Route::any('pay/f/request', 'Api\\Pay\\FController@RequestAction');                                     // 安锋支付，（帐户余额支付）
+    Route::any('pay/mycard/request', 'Api\\Pay\\MycardController@RequestAction');                           // MyCard支付
     Route::any('ios/order/receipt/verify','Api\\Pay\\AppleController@validateReceiptAction');               // 验证苹果支付的信息
     Route::any('ios/order/create','Api\\Pay\\AppleController@OrderCreateAction');                           // 验证苹果支付的信息
     Route::any('ios/applelimit','Api\\Pay\\AppleController@AppleLimitAction');                              // 验证当前是否开启限制
+
     
     Route::any('tool/reset_password/request','Api\\Tool\\ResetPasswordController@RequestAction');           // 通过token用户自行修改密码
     Route::any('tool/user/reset_password_page','Api\\Tool\\UserController@ResetPasswordPageAction');        // 获取重设密码页面
