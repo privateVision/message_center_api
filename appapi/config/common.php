@@ -14,6 +14,9 @@ return [
         'weixin' => ['text' => '微信'],
         'qq' => ['text' => 'QQ'],
         'weibo' => ['text' => '微博'],
+        'baidu' => ['text' => '百度'],
+        'yingyongbao' => ['text' => '应用宝'],
+        'facebook' => ['text' => 'Facebook'],
     ],
 
     'smsconfig' => [

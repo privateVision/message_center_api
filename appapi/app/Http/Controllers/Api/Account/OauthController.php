@@ -83,14 +83,14 @@ class OauthController extends Controller {
         $user_oauth->unionid = $unionid;
         $user_oauth->saveAndCache();
 
-        $user_info = UcuserInfo::where("ucid",$user->ucid)->first();
+        //$user_info = UcuserInfo::where("ucid",$user->ucid)->first();
 
-        if(!$user_info) {
+        //if(!$user_info) {
             $user_info = new UcuserInfo;
             $user_info->ucid = $user->ucid;
-            $user_info->avatar = $avatar?$avatar:env('default_avatar');
+            $user_info->avatar = $avatar ? $avatar:env('default_avatar');
             $user_info->saveAndCache();
-        }
+        //}
 
         user_log($user, $this->procedure, 'register', '【注册】通过%s注册，密码[%s]', $ctype['text'], $user->password);
         
@@ -101,6 +101,7 @@ class OauthController extends Controller {
         $openid = $this->parameter->tough('openid');
         $type = $this->parameter->tough('type');
         $unionid = $this->parameter->get('unionid', "");
+        $forced = $this->parameter->get('forced');
         
         if($type == 'weixin' && $unionid == '') throw new ApiException(ApiException::Error, "unionid不允许为空");
 
@@ -118,14 +119,65 @@ class OauthController extends Controller {
         }
         
         if(!$user_oauth) {
-            throw new ApiException(ApiException::OauthNotRegister, "尚未注册");
-        }
+            if($forced) {
+                // 注册
+                $ctype = config("common.oauth.{$type}", false);
+                if(!$ctype) {
+                    throw new ApiException(ApiException::Error, '未知的第三方登录类型，type='.$type);
+                }
 
-        $user = Ucuser::from_cache($user_oauth->ucid);
+                $nickname = $this->parameter->get('nickname');
+                $avatar = $this->parameter->get('avatar');
 
-        if($unionid && !$user_oauth->unionid) {
-            $user_oauth->unionid = $unionid;
-            $user_oauth->save();
+                $username = username();
+                $password = rand(100000, 999999);
+                
+                $user = new Ucuser;
+                $user->uid = $username;
+                $user->email = $username . "@anfan.com";
+                $user->mobile = '';
+                $user->nickname = $nickname ?: $username;
+                $user->setPassword($password);
+                $user->regtype = static::Type;
+                $user->regip = $this->parameter->get('_ipaddress', null) ?: $this->request->ip();
+                $user->rid = $this->parameter->tough('_rid');
+                $user->pid = $this->parameter->tough('_appid');
+                $user->regdate = time();
+                $user->save();
+                
+                $imei = $this->parameter->get('_imei');
+                $device_id = $this->parameter->get('_device_id', '');
+                if($imei || $device_id) {
+                    $ucusers_uuid =  new UcusersUUID();
+                    $ucusers_uuid->ucid = $user->ucid;
+                    $ucusers_uuid->imei = $imei;
+                    $ucusers_uuid->device_id= $device_id;
+                    $ucusers_uuid->asyncSave();
+                }
+
+                $user_oauth = new UcuserOauth;
+                $user_oauth->ucid = $user->ucid;
+                $user_oauth->type = $type;
+                $user_oauth->openid = $openid;
+                $user_oauth->unionid = $unionid;
+                $user_oauth->saveAndCache();
+
+                $user_info = new UcuserInfo;
+                $user_info->ucid = $user->ucid;
+                $user_info->avatar = $avatar ? $avatar : env('default_avatar');
+                $user_info->saveAndCache();
+
+                user_log($user, $this->procedure, 'register', '【注册】通过%s注册，密码[%s]', $ctype['text'], $user->password);
+            } else {
+                throw new ApiException(ApiException::OauthNotRegister, "尚未注册");
+            }
+        } else {
+            $user = Ucuser::from_cache($user_oauth->ucid);
+
+            if($unionid && !$user_oauth->unionid) {
+                $user_oauth->unionid = $unionid;
+                $user_oauth->save();
+            }
         }
 
         return $user;
