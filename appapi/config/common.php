@@ -14,6 +14,9 @@ return [
         'weixin' => ['text' => '微信'],
         'qq' => ['text' => 'QQ'],
         'weibo' => ['text' => '微博'],
+        'baidu' => ['text' => '百度'],
+        'yingyongbao' => ['text' => '应用宝'],
+        'facebook' => ['text' => 'Facebook'],
     ],
 
     'smsconfig' => [
@@ -108,8 +111,8 @@ return [
         
         'mycard' => [
             'FacServiceId' => 'NOVAS',
-            'ServerId' => '83BC614DF932329D52B9FC73F7BA7DEB',
-            'authcode_quey_url' => env('APP_DEBUG') ? 'https://test.b2b.mycard520.com.tw/MyBillingPay/api/AuthGlobal' : 'https://b2b.mycard520.com.tw/MyBillingPay/api/AuthGlobal',
+            'FacServerKey' => '83BC614DF932329D52B9FC73F7BA7DEB',
+            'authcode_quey_url' => env('APP_DEBUG') ? 'https://test.b2b.mycard520.com.tw/' : 'https://b2b.mycard520.com.tw/'
         ],
     ],
 ];

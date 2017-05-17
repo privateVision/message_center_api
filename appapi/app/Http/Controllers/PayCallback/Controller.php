@@ -59,10 +59,49 @@ abstract class Controller extends \App\Controller
         }
     }
 
+    /**
+     * 获取回调的数据
+     * @param  Request $request [description]
+     * @return [type]           [description]
+     */
     abstract protected function getData(Request $request);
+
+    /**
+     * 获取我方订单号
+     * @param  Request $request [description]
+     * @return [type]           [description]
+     */
     abstract protected function getOrderNo($data);
+
+    /**
+     * 获取第三方订单号（微信，支付宝等）
+     * @param  [type] $data [description]
+     * @return [type]       [description]
+     */
     abstract protected function getTradeOrderNo($data, $order);
+
+    /**
+     * 验证签名
+     * @param  [type] $data  [description]
+     * @param  [type] $order [description]
+     * @return [type]        [description]
+     */
     abstract protected function verifySign($data, $order);
+
+    /**
+     * 进行订单特殊处理，通常无需处理，直接返回true即可
+     * @param  [type] $data  [description]
+     * @param  [type] $order [description]
+     * @return [type]        [description]
+     */
     abstract protected function handler($data, $order);
+
+    /**
+     * 订单完成后的回应，返回值将直接输出给回调方
+     * @param  [type] $data      [description]
+     * @param  [type] $order     [description]
+     * @param  [type] $isSuccess [description]
+     * @return [type]            [description]
+     */
     abstract protected function onComplete($data, $order, $isSuccess);
 }

@@ -17,7 +17,7 @@ class Controller extends \App\Controller
     public function before(Request $request) {
         parent::before($request);
         
-        $data = $request->all();
+        $data = array_map(function($v) { return strval($v); }, $request->all());
 
         $this->parameter = new Parameter($data);
 

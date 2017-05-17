@@ -19,46 +19,30 @@ class MycardController extends Controller {
         
         $data['FacServiceId'] = $config['FacServiceId'];
         $data['FacTradeSeq'] = $order->sn;
-        $data['TradeType'] = 'WEB';
+        $data['TradeType'] = '2';
         $data['ServerId'] = $this->parameter->get('_ipaddress', null) ?: $this->request->ip();
         $data['CustomerId'] = $order->ucid;
         $data['ProductName'] = $order->subject;
         $data['Amount'] = $real_fee;
         $data['Currency'] = 'TWD';
-        $data['SandBoxMode'] = env('APP_DEBUG') ? true : false;
+        $data['SandBoxMode'] = env('APP_DEBUG') ? 'true' : 'false';
         
-        $data['hash'] = mycard_hash();
-        //$data['PaymentType'] = 
-/*
-        $mht['appId'] = $config['appId'];
-        $mht['mhtCharset'] = $config['mhtCharset'];
-        $mht['mhtCurrencyType'] = $config['mhtCurrencyType'];
-        $mht['mhtOrderAmt'] = env('APP_DEBUG', true) ? 1 : $real_fee;
-        $mht['mhtOrderName'] = $order->subject;
-        $mht['mhtOrderDetail'] = $order->body;
-        $mht['mhtOrderNo'] = $order->sn;
-        $mht['mhtOrderStartTime'] = date($config['dtFormat']);
-        $mht['mhtOrderType'] = $config['mhtOrderType'];
-        $mht['notifyUrl'] = url('pay_callback/nowpay_wechat');
-        $mht['payChannelType'] = $config['payChannelType'];
-        ksort($mht);
+        $data['hash'] = mycard_hash($data, $config['FacServerKey']);
 
-        $mht['mhtSignature'] = md5(static::encode($mht) .'&'. md5($config['secure_key']));
-        $mht['mhtSignType'] = $config['mhtSignType'];
+        //获取authtoken
+        $res = http_curl($config['authcode_quey_url'].'MyBillingPay/api/AuthGlobal', $data, 'POST');
 
-        $str = [];
-        foreach($mht as $k => $v) {
-            if($v == "") continue;
-            $str[] = "{$k}=".urlencode($v);
-        }
-*/
-        $dt =  implode('&', $str);
-        return ['data' => $dt];
+        return ['data' => $res];
     }
 
-    protected static function mycard_hash($data) {
-        ksort($data);
-        $str = implode('', $data);
-        $str = urlencode($str);
+    protected static function mycard_hash($data, $key) {
+        $prms = array_values($data);
+        $prms[] = $key;
+        $preStr = implode('', $prms);
+        $hash = urlencode($preStr);
+
+        $sign = hash('sha256', $hash, true);
+
+        return bin2hex($sign);
     }
 }
