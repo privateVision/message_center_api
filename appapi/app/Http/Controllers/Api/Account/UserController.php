@@ -121,7 +121,7 @@ class UserController extends Controller {
         $user->regdate = time();
         $user->save();
         
-        $imei = $this->parameter->get('_imei');
+        $imei = $this->parameter->get('_imei', '');
         $device_id = $this->parameter->get('_device_id', '');
         if($imei || $device_id) {
             $ucusers_uuid =  new UcusersUUID();

@@ -118,6 +118,8 @@ class AppController extends Controller
             ],
 
             'ios_app_config' => $ios_app_config,
+
+            ''
         ];
     }
 

@@ -27,12 +27,27 @@ class MycardController extends Controller {
         $data['Currency'] = 'TWD';
         $data['SandBoxMode'] = env('APP_DEBUG') ? 'true' : 'false';
         
-        $data['hash'] = mycard_hash($data, $config['FacServerKey']);
+        $data['hash'] = static::mycard_hash($data, $config['FacServerKey']);
 
         //获取authtoken
-        $res = http_curl($config['authcode_quey_url'].'MyBillingPay/api/AuthGlobal', $data, 'POST');
+        $result = http_request($config['autocode_url'], $data, true);
 
-        return ['data' => $res];
+        log_debug('mycard-authcode-request', ['resdata' => $result, 'reqdata' => $data], $config['autocode_url']);
+
+        // json decode
+        $result = json_decode($result, true);
+        if(!$result) {
+            throw new ApiException(ApiException::Remind, 'MyCard 支付请求失败');
+        }
+
+        if(@$result['ReturnCode'] != '1' || empty(@$result['AuthCode'])) {
+            throw new ApiException(ApiException::Remind, $result['ReturnMsg']);
+        }
+
+        return [
+            'type' => 'webview',
+            'url' => $config['webpay_url'] .'?AuthCode='. $result['AuthCode'],
+        ];
     }
 
     protected static function mycard_hash($data, $key) {

@@ -6,8 +6,12 @@ Route::group(['prefix' => 'pay_callback'], function () {
     Route::any('unionpay', 'PayCallback\\UnionpayController@CallbackAction');                               // 银联支付回调
     Route::any('wechat', 'PayCallback\\WechatController@CallbackAction');                                   // 微信支付回调
 
+
     //渠道支付回调
     Route::any('baidu', 'PayCallback\\BaiduController@CallbackAction');
+
+    Route::any('mycard', 'PayCallback\\MycardController@CallbackAction');                                   // mycard支付回调
+
 });
     
 // 对外公开（无限制的）功能（杂项）
