@@ -122,10 +122,12 @@ class UserController extends Controller {
         $user->save();
         
         $imei = $this->parameter->get('_imei');
-        if($imei) {
+        $device_id = $this->parameter->get('_device_id', '');
+        if($imei || $device_id) {
             $ucusers_uuid =  new UcusersUUID();
             $ucusers_uuid->ucid = $user->ucid;
-            $ucusers_uuid->uuid = $imei;
+            $ucusers_uuid->imei = $imei;
+            $ucusers_uuid->device_id= $device_id;
             $ucusers_uuid->asyncSave();
         }
 

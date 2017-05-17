@@ -56,7 +56,7 @@ class Controller extends \App\Controller
     public function before(Request $request) {
         parent::before($request);
 
-		$data = $request->all();
+		$data = array_map(function($v) { return strval($v); }, $request->all());
 
 		$this->parameter = new Parameter($data);
 		$_appid = $this->parameter->tough('_appid');
@@ -78,7 +78,7 @@ class Controller extends \App\Controller
 		}
 
 		// --------- 平台登录特殊处理 ---------
-		
+
 		$__appid = $this->parameter->get('__appid');
 		if($__appid) {
 			$this->procedure = Procedures::from_cache($__appid);

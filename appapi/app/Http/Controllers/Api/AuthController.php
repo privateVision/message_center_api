@@ -47,11 +47,10 @@ class AuthController extends Controller {
 	}
 
 	public function onResponse(Request $request, Response $response) {
-	    if(!$response->exception) {
-    	    $content = $response->getOriginalContent();
-    	    $content['_token'] = $this->parameter->tough('_token');
-    	    $response->setContent($content);
-	    }
+	    $content = $response->getOriginalContent();
+	    
+    	$content['_token'] = $this->parameter->tough('_token');
+    	$response->setContent($content);
 	    
 	    return parent::onResponse($request, $response);
 	}
