@@ -64,7 +64,7 @@ return [
     |
     */
 
-    'timezone' => 'UTC',
+    'timezone' => env('APP_TIMEZONE'),
 
     /*
     |--------------------------------------------------------------------------
@@ -176,6 +176,9 @@ return [
         // App\Providers\BroadcastServiceProvider::class,
         App\Providers\EventServiceProvider::class,
         App\Providers\RouteServiceProvider::class,
+        
+        // mongodb
+        Jenssegers\Mongodb\MongodbServiceProvider::class,
 
     ],
 
@@ -225,6 +228,9 @@ return [
         'URL' => Illuminate\Support\Facades\URL::class,
         'Validator' => Illuminate\Support\Facades\Validator::class,
         'View' => Illuminate\Support\Facades\View::class,
+        
+        // mongodb
+        'Mongo' => Jenssegers\Mongodb\MongodbServiceProvider::class,
 
     ],
 

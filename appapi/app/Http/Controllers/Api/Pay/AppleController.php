@@ -160,7 +160,7 @@ class  AppleController extends Controller{
         if(count($dat) == 0) throw new ApiException(ApiException::Remind,"未找到相关的商品");
         //验证当前的发货信息
         if(!check_url($dat[0]->notify_url)) throw new ApiException(ApiException::Remind,"请填写正确的通知地址");
-        if($dat[0]->bundle_id =='' || $dat[0]->iap =='') throw new ApiException(ApiException::Remind,"bundle_id 或iap 不存在");
+        if($dat[0]->bundle_id =='' || !isset($dat[0]->iap)) throw new ApiException(ApiException::Remind,"bundle_id 或iap 不存在");
         //验证信息结束
         $order = new Orders;
         $order->getConnection()->beginTransaction();

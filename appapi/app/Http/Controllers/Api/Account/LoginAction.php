@@ -11,6 +11,8 @@ use App\Model\UcuserSub;
 use App\Model\UcuserSession;
 use App\Model\LoginLog;
 use App\Model\UcuserInfo;
+use App\Model\Retailers;
+use App\Model\LoginLogUUID;
 
 trait LoginAction {
 
@@ -103,17 +105,34 @@ trait LoginAction {
         $user->save();
         $user->updateCache();
 
-        $t = time() + date('Z');
+        $t = time() - date('Z');
 
         $login_log = new LoginLog;
         $login_log->ucid = $user->ucid;
         $login_log->pid = $pid;
-        $login_log->loginDate = intval($t / 86400);
+        $login_log->loginDate = intval(($t - date('Z'))/ 86400);
         $login_log->loginTime = $t % 86400;
         $login_log->loginIP = ip2long($this->parameter->get('_ipaddress', null) ?: $this->request->ip());
-        $login_log->asyncSave();
+        $login_log->save();
+        
+        // login_log_uuid
+        $imei = $this->parameter->get('_imei', '');
+        $device_id = $this->parameter->get('_device_id', '');
+        if($imei || $device_id) {
+            $login_log_uuid = new LoginLogUUID;
+            $login_log_uuid->id = $login_log->id;
+            $login_log_uuid->ucid = $user->ucid;
+            $login_log_uuid->imei = $imei;
+            $login_log_uuid->device_id= $device_id;
+            $login_log_uuid->asyncSave();
+        }
 
         $user_info = UcuserInfo::from_cache($user->ucid);
+        
+        $retailers = null;
+        if($user->rid) {
+            $retailers = Retailers::find($user->rid);
+        }
 
         return [
             'openid' => strval($user_sub->cp_uid),
@@ -131,6 +150,8 @@ trait LoginAction {
             'real_name' => $user_info && $user_info->real_name ? (string)$user_info->real_name : "",
             'card_no' => $user_info && $user_info->card_no ? (string)$user_info->card_no : "",
             'regtype' => $user->regtype,
+            'rid' => $user->rid,
+            'rtype' => $retailers ? $retailers->rtype : 0,
         ];
     }
 

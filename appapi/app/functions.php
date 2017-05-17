@@ -129,7 +129,7 @@ function upload_to_cdn($filename, $filepath, $is_delete = true) {
         $result = $bucketMgr->delete($config['bucket'], $filename);
         if($result && $result->code() != 612 && $result->code() != 200) {
             log_error('cdn_delete_error', ['code' => $result->code(), 'message' => $result->message()]);
-            throw new \App\Exceptions\Exception('文件上传失败：'. $result->message());
+            throw new \App\Exceptions\Exception('文件上传失败：'. $result->message()); // LANG:file_upload_fail
         }
 
     };
@@ -145,7 +145,7 @@ function upload_to_cdn($filename, $filepath, $is_delete = true) {
         if($err) {
             if($err->code() != 614) {
                 log_error('cdn_update_error', ['code' => $ret->code(), 'message' => $ret->message()]);
-                throw new \App\Exceptions\Exception('文件上传失败：'. $ret->message());
+                throw new \App\Exceptions\Exception('文件上传失败：'. $ret->message()); // LANG:file_upload_fail
             }
 
             $delete();
@@ -292,15 +292,15 @@ function send_sms($mobile, $pid, $template_id, $repalce, $code = '') {
     $smsconfig = config('common.smsconfig');
 
     if(!env('APP_DEBUG') && Redis::exists(sprintf('sms_%s_%s_60s', $template_id, $mobile))) {
-        throw new \App\Exceptions\Exception('短信发送过于频繁');
+        throw new \App\Exceptions\Exception('短信发送过于频繁'); // LANG:sms_fast
     }
 
     if(!env('APP_DEBUG') && Redis::get(sprintf('sms_%s_hourlimit', $mobile)) >= 10 ) {
-        throw new \App\Exceptions\Exception('短信发送次数超过限制，请稍候再试');
+        throw new \App\Exceptions\Exception('短信发送次数超过限制，请稍候再试'); // LANG:sms_limit
     }
 
     if(!isset($smsconfig['template'][$template_id])) {
-        throw new \App\Exceptions\Exception('短信模板不存在');
+        throw new \App\Exceptions\Exception('短信模板不存在'); // LANG:sms_template_not_exists
     }
 
     if(is_array($repalce) && count($repalce)) {

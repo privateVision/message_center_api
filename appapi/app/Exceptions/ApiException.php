@@ -21,8 +21,15 @@ class ApiException extends Exception
     const AlreadyBindMobile = 107;      // 账号已经绑定了手机号码，无法再次绑定
     const AlreadyBindOauthOther = 109;  // 平台账号已经绑定了其它账号
     const NotRealName = 110;            // 未实名制
+    
+    protected $data = null;
 
 	public function __construct($code, $message, $data = null) {
-		parent::__construct($message, $code, $data);
+		parent::__construct($message, $code);
+		$this->data = $data;
+	}
+	
+	public function getData() {
+	    return $this->data;
 	}
 }

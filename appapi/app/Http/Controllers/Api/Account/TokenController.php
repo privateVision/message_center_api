@@ -2,12 +2,9 @@
 namespace App\Http\Controllers\Api\Account;
 
 use App\Exceptions\ApiException;
-use Illuminate\Http\Request;
 use App\Parameter;
-use App\Redis;
 use App\Session;
 use App\Model\Ucuser;
-
 
 class TokenController extends Controller {
 
