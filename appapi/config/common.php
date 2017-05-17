@@ -39,6 +39,14 @@ return [
         ]
     ],
 
+    'pay_methods' => [
+        2 => ['type' => 'wechat', 'api' => '/api/pay/wechat/request'],
+        4 => ['type' => 'alipay', 'api' => '/api/pay/alipay/request'],
+        8 => ['type' => 'unionpay', 'api' => '/api/pay/unionpay/request'],
+        16 => ['type' => 'mycard', 'api' => '/api/pay/mycard/request'],
+        32 => ['type' => 'nowpay_wechat', 'api' => '/api/pay/nowpay_wechat/request'],
+    ],
+
     'payconfig' => [
         'alipay' => [
             'AppID' => "2088411293741002",
@@ -56,25 +64,25 @@ return [
             //单笔查询请求地址
             'query_url' => 'https://gateway.95516.com/gateway/api/queryTrans.do',
             /*
-            卡号      6216261000000000018
-            卡性质    借记卡
-            机构名称  平安银行
-            手机号码  13552535506
-            密码      123456
-            CVN2
-            有效期
-            证件号    341126197709218366
-            姓名      全渠道
-            ----------------------------
-            卡号      6221558812340000
-            卡性质    贷记卡
-            机构名称  平安银行
-            手机号码  13552535506
-            密码      123456
-            CVN2      123
-            有效期    1711
-            证件号    341126197709218366
-            姓名      互联网
+                        卡号      6216261000000000018
+                        卡性质    借记卡
+                        机构名称  平安银行
+                        手机号码  13552535506
+                        密码      123456
+                        CVN2
+                        有效期
+                        证件号    341126197709218366
+                        姓名      全渠道
+                        ----------------------------
+                        卡号      6221558812340000
+                        卡性质    贷记卡
+                        机构名称  平安银行
+                        手机号码  13552535506
+                        密码      123456
+                        CVN2      123
+                        有效期    1711
+                        证件号    341126197709218366
+                        姓名      互联网
             */
         ],
 
@@ -96,6 +104,12 @@ return [
             'key' => 'cf281b632d1671ed2a94d8f7cdfe2ff0',
             'pemfile_key' => __DIR__ . '/wechat_key.pem',
             'pemfile_cert' => __DIR__ . '/wechat_cert.pem',
+        ],
+        
+        'mycard' => [
+            'FacServiceId' => 'NOVAS',
+            'FacServerKey' => '83BC614DF932329D52B9FC73F7BA7DEB',
+            'authcode_quey_url' => env('APP_DEBUG') ? 'https://test.b2b.mycard520.com.tw/' : 'https://b2b.mycard520.com.tw/'
         ],
     ],
 ];

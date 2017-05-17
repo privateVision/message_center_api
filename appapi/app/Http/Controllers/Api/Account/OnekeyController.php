@@ -7,6 +7,7 @@ use App\Parameter;
 
 use App\Model\Ucuser;
 use App\Model\YunpianCallback;
+use App\Model\UcusersUUID;
 
 class OnekeyController extends Controller {
 
@@ -49,6 +50,16 @@ class OnekeyController extends Controller {
         $user->pid = $this->parameter->tough('_appid');
         $user->regdate = time();
         $user->save();
+        
+        $imei = $this->parameter->get('_imei');
+        $device_id = $this->parameter->get('_device_id', '');
+        if($imei || $device_id) {
+            $ucusers_uuid =  new UcusersUUID();
+            $ucusers_uuid->ucid = $user->ucid;
+            $ucusers_uuid->imei = $imei;
+            $ucusers_uuid->device_id= $device_id;
+            $ucusers_uuid->asyncSave();
+        }
 
         user_log($user, $this->procedure, 'register', '【注册】通过“手机号码一键登录”注册，手机号码{%s}, 密码[%s]', $mobile, $user->password);
 

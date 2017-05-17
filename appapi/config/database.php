@@ -4,19 +4,6 @@ return [
 
     /*
     |--------------------------------------------------------------------------
-    | PDO Fetch Style
-    |--------------------------------------------------------------------------
-    |
-    | By default, database results will be returned as instances of the PHP
-    | stdClass object; however, you may desire to retrieve records in an
-    | array format for simplicity. Here you can tweak the fetch style.
-    |
-    */
-
-    'fetch' => PDO::FETCH_CLASS,
-
-    /*
-    |--------------------------------------------------------------------------
     | Default Database Connection Name
     |--------------------------------------------------------------------------
     |
@@ -47,43 +34,43 @@ return [
     'connections' => [
         'default' => [
             'driver'    => 'mysql',
-        	'read' => [
-        		'host'      => env('DBR_HOST'),
-        		'port'      => env('DBR_PORT'),
-        		'database'  => env('DBR_DATABASE'),
-        		'username'  => env('DBR_USERNAME'),
-        		'password'  => env('DBR_PASSWORD'),
-        	],
-        	'write' => [
-        		'host'      => env('DBW_HOST'),
-        		'port'      => env('DBW_PORT'),
-        		'database'  => env('DBW_DATABASE'),
-        		'username'  => env('DBW_USERNAME'),
-        		'password'  => env('DBW_PASSWORD'),
-        	],
+            'read' => [
+                'host'      => env('DBR_HOST'),
+                'port'      => env('DBR_PORT'),
+                'database'  => env('DBR_DATABASE'),
+                'username'  => env('DBR_USERNAME'),
+                'password'  => env('DBR_PASSWORD'),
+            ],
+            'write' => [
+                'host'      => env('DBW_HOST'),
+                'port'      => env('DBW_PORT'),
+                'database'  => env('DBW_DATABASE'),
+                'username'  => env('DBW_USERNAME'),
+                'password'  => env('DBW_PASSWORD'),
+            ],
             'charset'   => env('DB_CHARSET', 'utf8'),
             'collation' => env('DB_COLLATION', 'utf8_unicode_ci'),
             'prefix'    => env('DB_PREFIX'),
             'timezone'  => env('DB_TIMEZONE', '+00:00'),
             'strict'    => env('DB_STRICT_MODE', false),
         ],
-
+        
         '56gamebbs' => [
             'driver'    => 'mysql',
-        	'read' => [
-        		'host'      => env('DBR_56GAMEBBS_HOST'),
-        		'port'      => env('DBR_56GAMEBBS_PORT'),
-        		'database'  => env('DBR_56GAMEBBS_DATABASE'),
-        		'username'  => env('DBR_56GAMEBBS_USERNAME'),
-        		'password'  => env('DBR_56GAMEBBS_PASSWORD'),
-        	],
-        	'write' => [
-        		'host'      => env('DBW_56GAMEBBS_HOST'),
-        		'port'      => env('DBW_56GAMEBBS_PORT'),
-        		'database'  => env('DBW_56GAMEBBS_DATABASE'),
-        		'username'  => env('DBW_56GAMEBBS_USERNAME'),
-        		'password'  => env('DBW_56GAMEBBS_PASSWORD'),
-        	],
+            'read' => [
+                'host'      => env('DBR_56GAMEBBS_HOST'),
+                'port'      => env('DBR_56GAMEBBS_PORT'),
+                'database'  => env('DBR_56GAMEBBS_DATABASE'),
+                'username'  => env('DBR_56GAMEBBS_USERNAME'),
+                'password'  => env('DBR_56GAMEBBS_PASSWORD'),
+            ],
+            'write' => [
+                'host'      => env('DBW_56GAMEBBS_HOST'),
+                'port'      => env('DBW_56GAMEBBS_PORT'),
+                'database'  => env('DBW_56GAMEBBS_DATABASE'),
+                'username'  => env('DBW_56GAMEBBS_USERNAME'),
+                'password'  => env('DBW_56GAMEBBS_PASSWORD'),
+            ],
             
             'charset'   => env('DB_56GAMEBBS_CHARSET', 'utf8'),
             'collation' => env('DB_56GAMEBBS_COLLATION', 'utf8_unicode_ci'),
@@ -91,7 +78,7 @@ return [
             'timezone'  => env('DB_56GAMEBBS_TIMEZONE', '+00:00'),
             'strict'    => env('DB_56GAMEBBS_STRICT_MODE', false),
         ],
-
+        
         'mongodb' => [
             'driver'   => 'mongodb',
             'host'     => env('MONGODB_HOST'),
@@ -100,10 +87,10 @@ return [
             'username' => env('MONGODB_USERNAME'),
             'password' => env('MONGODB_PASSWORD'),
             'options'  => [
-                'database' => env('MONGODB_AUTH_DATABASE') // sets the authentication database required by mongo 3
+                'database' => env('MONGODB_AUTH_DATABASE')// sets the authentication database required by mongo 3
             ]
         ],
-
+        
         'log' => [
             'driver'   => 'mongodb',
             'host'     => env('MONGODB_LOG_HOST'),
@@ -112,21 +99,9 @@ return [
             'username' => env('MONGODB_LOG_USERNAME'),
             'password' => env('MONGODB_LOG_PASSWORD'),
             'options'  => [
-                'database' => env('MONGODB_LOG_AUTH_DATABASE') // sets the authentication database required by mongo 3
+                'database' => env('MONGODB_LOG_AUTH_DATABASE')// sets the authentication database required by mongo 3
             ]
         ],
-
-		'adt' => [
-			'driver'   => 'mongodb',
-			'host'     => env('MONGODB_ADT_HOST'),
-			'port'     => env('MONGODB_ADT_PORT'),
-			'database' => env('MONGODB_ADT_DATABASE'),
-			'username' => env('MONGODB_ADT_USERNAME'),
-			'password' => env('MONGODB_ADT_PASSWORD'),
-			'options'  => [
-				'database' => env('MONGODB_ADT_DATABASE') // sets the authentication database required by mongo 3
-			]
-		],
     ],
 
     /*
@@ -154,9 +129,8 @@ return [
     */
 
     'redis' => [
-
         'cluster' => env('REDIS_CLUSTER'),
-
+        
         'default' => [
             'host'     => env('REDIS_HOST'),
             'port'     => env('REDIS_PORT'),
@@ -164,7 +138,5 @@ return [
             'password' => env('REDIS_PASSWORD'),
             'prefix' => env('REDIS_PREFIX'),
         ],
-
     ],
-
 ];

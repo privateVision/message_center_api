@@ -1,14 +1,17 @@
 {
-    "name": "laravel/lumen",
-    "description": "The Laravel Lumen Framework.",
-    "keywords": ["framework", "laravel", "lumen"],
-    "license": "MIT",
-    "type": "project",
-    "require": {
-        "php": ">=5.6.4",
-        "laravel/lumen-framework": "5.4.*",
-        "vlucas/phpdotenv": "~2.2",
-        "predis/predis": "*",
+	"name" : "laravel/laravel",
+	"description" : "The Laravel Framework.",
+	"keywords" : [
+		"framework",
+		"laravel"
+	],
+	"license" : "MIT",
+	"type" : "project",
+	"require" : {
+		"php" : ">=5.6.4",
+		"laravel/framework" : "5.4.*",
+		"laravel/tinker" : "~1.0",
+		"predis/predis": "*",
         "illuminate/redis": "*",
 		"aws/aws-sdk-php": "~3.0",
 		"pda/pheanstalk": "~3.0",
@@ -18,6 +21,7 @@
         "jeremeamia/SuperClosure": "^2.3",
         "barryvdh/laravel-cors": "^0.8.6",
         "qiniu/php-sdk": "^7.1",
+<<<<<<< HEAD
          "aporat/store-receipt-validator": "^2.0"
     },
     "require-dev": {
@@ -47,3 +51,47 @@
     "minimum-stability": "dev",
     "prefer-stable": true
 }
+=======
+        "aporat/store-receipt-validator": "^2.0"
+	},
+	"require-dev" : {
+		"eaglewu/swoole-ide-helper" : "dev-master",
+		"fzaninotto/faker" : "~1.4",
+		"mockery/mockery" : "0.9.*",
+		"phpunit/phpunit" : "~5.7"
+	},
+	"autoload" : {
+		"classmap" : [
+			"database"
+		],
+		"psr-4" : {
+			"App\\" : "app/"
+		},
+		"files" : [
+			"app/functions.php"
+		]
+	},
+	"autoload-dev" : {
+		"psr-4" : {
+			"Tests\\" : "tests/"
+		}
+	},
+	"scripts" : {
+		"post-root-package-install" : "php -r \"file_exists('.env') || copy('.env.example', '.env');\"",
+		"post-create-project-cmd" : "php artisan key:generate",
+		"post-install-cmd" : [
+			"Illuminate\\Foundation\\ComposerScripts::postInstall",
+			"php artisan optimize"
+		],
+		"post-update-cmd" : [
+			"Illuminate\\Foundation\\ComposerScripts::postUpdate",
+			"php artisan optimize"
+		]
+	},
+	"config" : {
+		"preferred-install" : "dist",
+		"sort-packages" : true,
+		"optimize-autoloader" : true
+	}
+}
+>>>>>>> gry

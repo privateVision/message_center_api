@@ -129,7 +129,7 @@ function upload_to_cdn($filename, $filepath, $is_delete = true) {
         $result = $bucketMgr->delete($config['bucket'], $filename);
         if($result && $result->code() != 612 && $result->code() != 200) {
             log_error('cdn_delete_error', ['code' => $result->code(), 'message' => $result->message()]);
-            throw new \App\Exceptions\Exception('文件上传失败：'. $result->message());
+            throw new \App\Exceptions\Exception('文件上传失败：'. $result->message()); // LANG:file_upload_fail
         }
 
     };
@@ -145,7 +145,7 @@ function upload_to_cdn($filename, $filepath, $is_delete = true) {
         if($err) {
             if($err->code() != 614) {
                 log_error('cdn_update_error', ['code' => $ret->code(), 'message' => $ret->message()]);
-                throw new \App\Exceptions\Exception('文件上传失败：'. $ret->message());
+                throw new \App\Exceptions\Exception('文件上传失败：'. $ret->message()); // LANG:file_upload_fail
             }
 
             $delete();
@@ -292,15 +292,15 @@ function send_sms($mobile, $pid, $template_id, $repalce, $code = '') {
     $smsconfig = config('common.smsconfig');
 
     if(!env('APP_DEBUG') && Redis::exists(sprintf('sms_%s_%s_60s', $template_id, $mobile))) {
-        throw new \App\Exceptions\Exception('短信发送过于频繁');
+        throw new \App\Exceptions\Exception('短信发送过于频繁'); // LANG:sms_fast
     }
 
     if(!env('APP_DEBUG') && Redis::get(sprintf('sms_%s_hourlimit', $mobile)) >= 10 ) {
-        throw new \App\Exceptions\Exception('短信发送次数超过限制，请稍候再试');
+        throw new \App\Exceptions\Exception('短信发送次数超过限制，请稍候再试'); // LANG:sms_limit
     }
 
     if(!isset($smsconfig['template'][$template_id])) {
-        throw new \App\Exceptions\Exception('短信模板不存在');
+        throw new \App\Exceptions\Exception('短信模板不存在'); // LANG:sms_template_not_exists
     }
 
     if(is_array($repalce) && count($repalce)) {
@@ -424,6 +424,78 @@ function http_request($url, $data, $is_post = true) {
     return $res;
 }
 
+/**
+ * @param $url
+ * @param array $param
+ * @param bool $is_post
+ * @param string $code
+ * @param array $header
+ * @param array $cookie
+ * @return array|mixed
+ */
+function http_curl($url, $param = array(), $is_post = true, $code = 'cd', $header = array(), $cookie = array()){
+    if (is_string($param)) {
+        $strPOST = $param;
+    }
+    else if (is_array($param) && count($param)>0) {
+        $strPOST =  http_build_query($param);
+    }
+    else {
+        $strPOST = '';
+    }
+
+    if (!$is_post) {
+        $url = strpos($url, '?') == -1 ? ($url .'?'. $param) : ($url .'&'. $param);
+    }
+
+    $oCurl = curl_init();
+    if (stripos($url,"https://") !== FALSE) {
+        curl_setopt($oCurl, CURLOPT_SSL_VERIFYPEER, FALSE);
+        curl_setopt($oCurl, CURLOPT_SSL_VERIFYHOST, FALSE);
+    }
+    curl_setopt($oCurl, CURLOPT_URL, $url);
+    curl_setopt($oCurl, CURLOPT_RETURNTRANSFER, 1 );
+    curl_setopt($oCurl, CURLOPT_TIMEOUT, 60);
+    if ($is_post) {
+        curl_setopt($oCurl, CURLOPT_POST,true);
+        curl_setopt($oCurl, CURLOPT_POSTFIELDS, $strPOST);
+    }
+    if (!empty($header)) {
+        curl_setopt($oCurl, CURLOPT_HTTPHEADER,$header);
+    }
+    if (!empty($cookie)) {
+        curl_setopt($oCurl, CURLOPT_COOKIE, implode(';', $cookie));
+    }
+    $resp = curl_exec($oCurl);
+    $curl_error = curl_error($oCurl);
+    $curl_errno = curl_errno($oCurl);
+    $curl_code = curl_getinfo($oCurl, CURLINFO_HTTP_CODE);
+
+    curl_close($oCurl);
+    if (empty($curl_error)) {
+        $res = json_decode($resp, true);
+        if (is_array($res)) {
+            $res[$code] = isset($res[$code])?$res[$code]:1;
+            $response = $res;
+        }
+        else if ($curl_code == 200) {
+            $response = array($code=>1, 'rspmsg'=>'http 200', 'data'=>$resp);
+        }
+        else {
+            $response = array($code=>'0', 'rspmsg'=>'http response error curl_code1:'.$curl_code.' curl_errno1:'.$curl_errno.' curl_error1:'.$curl_error.' resp:'.$resp);
+        }
+    }
+    else {
+        if ($curl_code == 200) {
+            $response = array($code=>1, 'rspmsg'=>'http 200', 'data'=>$resp);
+        } else {
+            $response = array($code=>'0', 'rspmsg'=>'http response error curl_code:'.$curl_code.' curl_errno:'.$curl_errno.' curl_error:'.$curl_error.' resp:'.$resp);
+        }
+    }
+
+    return $response;
+}
+
 //监测当前的格式
 function check_name($username,$len = 32){
     if(!preg_match("/^[\w\_\-\.\@\:]+$/",$username) || strlen($username) > $len ) return false;
@@ -445,12 +517,5 @@ function check_code($code,$len=6){
 //检查当前的金额 12.34 or 12  参数一金额 参数二监测小数点后的数据 bug 没法控制全部是0
 function check_money($money,$del=4){
     if(!preg_match("/^(\d{0,8}).?(?=\d+)(.\d{0,$del})?$/",$money)) return false;
-    return true;
-}
-
-//当前是否是合法的http地址
-function check_url($url){
-    $url = trim($url);
-    if(!preg_match("/^http[s]?:\/\//",$url)) return false;
     return true;
 }
