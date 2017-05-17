@@ -14,6 +14,7 @@ class OrderController extends Controller {
     use CreateOrderAction;
 
     protected function onCreateOrder(Orders $order) {
+        /*
         $fee = $this->parameter->tough('fee');
         $body = $this->parameter->tough('body');
         $subject = $this->parameter->tough('subject');
@@ -25,6 +26,7 @@ class OrderController extends Controller {
         $order->fee = $fee;
         $order->subject = $subject;
         $order->body = $body;
+        */
     }
 
     public function InfoAction() {

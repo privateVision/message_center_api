@@ -66,7 +66,7 @@ class OauthController extends Controller {
         $user->regdate = time();
         $user->save();
         
-        $imei = $this->parameter->get('_imei');
+        $imei = $this->parameter->get('_imei', '');
         $device_id = $this->parameter->get('_device_id', '');
         if($imei || $device_id) {
             $ucusers_uuid =  new UcusersUUID();
@@ -83,14 +83,10 @@ class OauthController extends Controller {
         $user_oauth->unionid = $unionid;
         $user_oauth->saveAndCache();
 
-        //$user_info = UcuserInfo::where("ucid",$user->ucid)->first();
-
-        //if(!$user_info) {
-            $user_info = new UcuserInfo;
-            $user_info->ucid = $user->ucid;
-            $user_info->avatar = $avatar ? $avatar:env('default_avatar');
-            $user_info->saveAndCache();
-        //}
+        $user_info = new UcuserInfo;
+        $user_info->ucid = $user->ucid;
+        $user_info->avatar = $avatar ? $avatar:env('default_avatar');
+        $user_info->saveAndCache();
 
         user_log($user, $this->procedure, 'register', '【注册】通过%s注册，密码[%s]', $ctype['text'], $user->password);
         
@@ -119,7 +115,7 @@ class OauthController extends Controller {
         }
         
         if(!$user_oauth) {
-            if($forced) {
+            if($forced == '1') {
                 // 注册
                 $ctype = config("common.oauth.{$type}", false);
                 if(!$ctype) {
@@ -145,7 +141,7 @@ class OauthController extends Controller {
                 $user->regdate = time();
                 $user->save();
                 
-                $imei = $this->parameter->get('_imei');
+                $imei = $this->parameter->get('_imei', '');
                 $device_id = $this->parameter->get('_device_id', '');
                 if($imei || $device_id) {
                     $ucusers_uuid =  new UcusersUUID();

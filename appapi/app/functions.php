@@ -405,6 +405,7 @@ function log_error ($keyword, $content, $desc = '') {
 
 function http_request($url, $data, $is_post = true) {
     $data = http_build_query($data);
+
     if(!$is_post) {
         $url = strpos($url, '?') == -1 ? ($url .'?'. $data) : ($url .'&'. $data);
     }
@@ -412,10 +413,19 @@ function http_request($url, $data, $is_post = true) {
     $ch = curl_init();
     curl_setopt($ch, CURLOPT_URL, $url);
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+
+    // is https
+    if (stripos($url,"https://") !== FALSE) {
+        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, FALSE);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, FALSE);
+    }
+
+    // is post
     if($is_post) {
         curl_setopt($ch, CURLOPT_POST, true);
         curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
     }
+
     curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 60); //超时限制
     curl_setopt($ch, CURLOPT_TIMEOUT, 60);
     $res = curl_exec($ch);
@@ -466,6 +476,7 @@ function http_curl($url, $param = array(), $is_post = true, $code = 'cd', $heade
     if (!empty($cookie)) {
         curl_setopt($oCurl, CURLOPT_COOKIE, implode(';', $cookie));
     }
+
     $resp = curl_exec($oCurl);
     $curl_error = curl_error($oCurl);
     $curl_errno = curl_errno($oCurl);

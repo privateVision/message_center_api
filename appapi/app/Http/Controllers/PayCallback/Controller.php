@@ -89,7 +89,7 @@ abstract class Controller extends \App\Controller
     abstract protected function verifySign($data, $order);
 
     /**
-     * 进行订单特殊处理，通常无需处理，直接返回true即可
+     * 订单特殊处理逻辑判断，如果返回false则视为订单支付失败
      * @param  [type] $data  [description]
      * @param  [type] $order [description]
      * @return [type]        [description]
