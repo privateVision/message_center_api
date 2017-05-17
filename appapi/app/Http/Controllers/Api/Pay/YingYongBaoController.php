@@ -5,9 +5,15 @@ namespace App\Http\Controllers\Api\Pay;
 use App\Model\Orders;
 use Illuminate\Http\Request;
 
-class BaiduController extends Controller
+class YingYongBaoController extends Controller
 {
     use RequestAction;
+
+    const PayType = '-8';
+    const PayTypeText = '应用宝';
+    const EnableStoreCard = true;
+    const EnableCoupon = true;
+    const EnableBalance = true;
 
     /**
      * 订单处理函数，重写该函数实现不同的支付方式
@@ -17,6 +23,6 @@ class BaiduController extends Controller
      */
     protected function payHandle(Orders $order, $real_fee)
     {
-        // TODO: Implement payHandle() method.
+
     }
 }
