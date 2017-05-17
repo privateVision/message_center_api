@@ -9,27 +9,39 @@ class ComposerStaticInite0704cbbdcb2b22e78bd6bb659055920
     public static $files = array (
         '0e6d7bf4a5811bfa5cf40c5ccd6fae6a' => __DIR__ . '/..' . '/symfony/polyfill-mbstring/bootstrap.php',
 <<<<<<< HEAD
+<<<<<<< HEAD
         '5255c38a0faeba867671b61dfda6d864' => __DIR__ . '/..' . '/paragonie/random_compat/lib/random.php',
         '72579e7bd17821bb1321b87411366eae' => __DIR__ . '/..' . '/illuminate/support/helpers.php',
+=======
+        '667aeda72477189d0494fecd327c3641' => __DIR__ . '/..' . '/symfony/var-dumper/Resources/functions/dump.php',
+>>>>>>> 03ce1657e24290b6c3f2f78667788716aa70d282
         'a0edc8309cc5e1d60e3047b5df6b7052' => __DIR__ . '/..' . '/guzzlehttp/psr7/src/functions_include.php',
-        'c964ee0ededf28c96ebd9db5099ef910' => __DIR__ . '/..' . '/guzzlehttp/promises/src/functions_include.php',
         '1d1b89d124cc9cb8219922c9d5569199' => __DIR__ . '/..' . '/hamcrest/hamcrest-php/hamcrest/Hamcrest.php',
+<<<<<<< HEAD
 =======
         '667aeda72477189d0494fecd327c3641' => __DIR__ . '/..' . '/symfony/var-dumper/Resources/functions/dump.php',
         'a0edc8309cc5e1d60e3047b5df6b7052' => __DIR__ . '/..' . '/guzzlehttp/psr7/src/functions_include.php',
         '1d1b89d124cc9cb8219922c9d5569199' => __DIR__ . '/..' . '/hamcrest/hamcrest-php/hamcrest/Hamcrest.php',
         'c964ee0ededf28c96ebd9db5099ef910' => __DIR__ . '/..' . '/guzzlehttp/promises/src/functions_include.php',
 >>>>>>> gry
+=======
+        'c964ee0ededf28c96ebd9db5099ef910' => __DIR__ . '/..' . '/guzzlehttp/promises/src/functions_include.php',
+>>>>>>> 03ce1657e24290b6c3f2f78667788716aa70d282
         '37a3dc5111fe8f707ab4c132ef1dbc62' => __DIR__ . '/..' . '/guzzlehttp/guzzle/src/functions_include.php',
         'b067bc7112e384b61c701452d53a14a8' => __DIR__ . '/..' . '/mtdowling/jmespath.php/src/JmesPath.php',
         '2c102faa651ef8ea5874edb585946bce' => __DIR__ . '/..' . '/swiftmailer/swiftmailer/lib/swift_required.php',
         '8a9dc1de0ca7e01f3e08231539562f61' => __DIR__ . '/..' . '/aws/aws-sdk-php/src/functions.php',
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+        '5255c38a0faeba867671b61dfda6d864' => __DIR__ . '/..' . '/paragonie/random_compat/lib/random.php',
+>>>>>>> 03ce1657e24290b6c3f2f78667788716aa70d282
         'decc78cc4436b1292c6c0d151b19445c' => __DIR__ . '/..' . '/phpseclib/phpseclib/phpseclib/bootstrap.php',
-        '253c157292f75eb38082b5acb06f3f01' => __DIR__ . '/..' . '/nikic/fast-route/src/functions.php',
         '3a37ebac017bc098e9a86b35401e7a68' => __DIR__ . '/..' . '/mongodb/mongodb/src/functions.php',
         'bd9634f2d41831496de0d3dfe4c94881' => __DIR__ . '/..' . '/symfony/polyfill-php56/bootstrap.php',
+        'e7223560d890eab89cda23685e711e2c' => __DIR__ . '/..' . '/psy/psysh/src/Psy/functions.php',
         '841780ea2e1d6545ea3a253239d59c05' => __DIR__ . '/..' . '/qiniu/php-sdk/src/Qiniu/functions.php',
+<<<<<<< HEAD
         'bee9632da3ca00a99623b9c35d0c4f8b' => __DIR__ . '/..' . '/laravel/lumen-framework/src/helpers.php',
         'f82e97c0dd2fb608b8cde919d54b1b0f' => __DIR__ . '/../..' . '/app/functions.php',
 =======
@@ -43,6 +55,11 @@ class ComposerStaticInite0704cbbdcb2b22e78bd6bb659055920
         '58571171fd5812e6e447dce228f52f4d' => __DIR__ . '/..' . '/laravel/framework/src/Illuminate/Support/helpers.php',
         '3adb193d4261a019502ea897e056f4fe' => __DIR__ . '/../..' . '/app/functions.php',
 >>>>>>> gry
+=======
+        'f0906e6318348a765ffb6eb24e0d0938' => __DIR__ . '/..' . '/laravel/framework/src/Illuminate/Foundation/helpers.php',
+        '58571171fd5812e6e447dce228f52f4d' => __DIR__ . '/..' . '/laravel/framework/src/Illuminate/Support/helpers.php',
+        '3adb193d4261a019502ea897e056f4fe' => __DIR__ . '/../..' . '/app/functions.php',
+>>>>>>> 03ce1657e24290b6c3f2f78667788716aa70d282
     );
 
     public static $prefixLengthsPsr4 = array (
@@ -89,9 +106,13 @@ class ComposerStaticInite0704cbbdcb2b22e78bd6bb659055920
             'RobRichards\\XMLSecLibs\\' => 23,
             'ReceiptValidator\\' => 17,
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
             'Ramsey\\Uuid\\' => 12,
 >>>>>>> gry
+=======
+            'Ramsey\\Uuid\\' => 12,
+>>>>>>> 03ce1657e24290b6c3f2f78667788716aa70d282
         ),
         'Q' => 
         array (
@@ -136,9 +157,12 @@ class ComposerStaticInite0704cbbdcb2b22e78bd6bb659055920
         array (
             'Firebase\\JWT\\' => 13,
 <<<<<<< HEAD
+<<<<<<< HEAD
             'FastRoute\\' => 10,
 =======
 >>>>>>> gry
+=======
+>>>>>>> 03ce1657e24290b6c3f2f78667788716aa70d282
             'Faker\\' => 6,
         ),
         'D' => 
@@ -267,12 +291,18 @@ class ComposerStaticInite0704cbbdcb2b22e78bd6bb659055920
             0 => __DIR__ . '/..' . '/aporat/store-receipt-validator/src',
         ),
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
+=======
+>>>>>>> 03ce1657e24290b6c3f2f78667788716aa70d282
         'Ramsey\\Uuid\\' => 
         array (
             0 => __DIR__ . '/..' . '/ramsey/uuid/src',
         ),
+<<<<<<< HEAD
 >>>>>>> gry
+=======
+>>>>>>> 03ce1657e24290b6c3f2f78667788716aa70d282
         'Qiniu\\' => 
         array (
             0 => __DIR__ . '/..' . '/qiniu/php-sdk/src/Qiniu',
@@ -350,12 +380,15 @@ class ComposerStaticInite0704cbbdcb2b22e78bd6bb659055920
         array (
             0 => __DIR__ . '/..' . '/firebase/php-jwt/src',
         ),
+<<<<<<< HEAD
         'FastRoute\\' => 
 =======
 >>>>>>> gry
         array (
             0 => __DIR__ . '/..' . '/firebase/php-jwt/src',
         ),
+=======
+>>>>>>> 03ce1657e24290b6c3f2f78667788716aa70d282
         'Faker\\' => 
         array (
             0 => __DIR__ . '/..' . '/fzaninotto/faker/src/Faker',
@@ -1374,12 +1407,18 @@ class ComposerStaticInite0704cbbdcb2b22e78bd6bb659055920
         'File_Iterator_Facade' => __DIR__ . '/..' . '/phpunit/php-file-iterator/src/Facade.php',
         'File_Iterator_Factory' => __DIR__ . '/..' . '/phpunit/php-file-iterator/src/Factory.php',
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
+=======
+>>>>>>> 03ce1657e24290b6c3f2f78667788716aa70d282
         'Firebase\\JWT\\BeforeValidException' => __DIR__ . '/..' . '/firebase/php-jwt/src/BeforeValidException.php',
         'Firebase\\JWT\\ExpiredException' => __DIR__ . '/..' . '/firebase/php-jwt/src/ExpiredException.php',
         'Firebase\\JWT\\JWT' => __DIR__ . '/..' . '/firebase/php-jwt/src/JWT.php',
         'Firebase\\JWT\\SignatureInvalidException' => __DIR__ . '/..' . '/firebase/php-jwt/src/SignatureInvalidException.php',
+<<<<<<< HEAD
 >>>>>>> gry
+=======
+>>>>>>> 03ce1657e24290b6c3f2f78667788716aa70d282
         'Google\\Auth\\ApplicationDefaultCredentials' => __DIR__ . '/..' . '/google/auth/src/ApplicationDefaultCredentials.php',
         'Google\\Auth\\CacheTrait' => __DIR__ . '/..' . '/google/auth/src/CacheTrait.php',
         'Google\\Auth\\Cache\\InvalidArgumentException' => __DIR__ . '/..' . '/google/auth/src/Cache/InvalidArgumentException.php',
@@ -1405,9 +1444,12 @@ class ComposerStaticInite0704cbbdcb2b22e78bd6bb659055920
         'Google\\Auth\\Subscriber\\ScopedAccessTokenSubscriber' => __DIR__ . '/..' . '/google/auth/src/Subscriber/ScopedAccessTokenSubscriber.php',
         'Google\\Auth\\Subscriber\\SimpleSubscriber' => __DIR__ . '/..' . '/google/auth/src/Subscriber/SimpleSubscriber.php',
 <<<<<<< HEAD
+<<<<<<< HEAD
         'Google_Service_Exception' => __DIR__ . '/..' . '/google/apiclient/src/Google/Service/Exception.php',
         'Google_Service_Resource' => __DIR__ . '/..' . '/google/apiclient/src/Google/Service/Resource.php',
 =======
+=======
+>>>>>>> 03ce1657e24290b6c3f2f78667788716aa70d282
         'Google_AccessToken_Revoke' => __DIR__ . '/..' . '/google/apiclient/src/Google/AccessToken/Revoke.php',
         'Google_AccessToken_Verify' => __DIR__ . '/..' . '/google/apiclient/src/Google/AccessToken/Verify.php',
         'Google_AuthHandler_AuthHandlerFactory' => __DIR__ . '/..' . '/google/apiclient/src/Google/AuthHandler/AuthHandlerFactory.php',
@@ -6583,7 +6625,10 @@ class ComposerStaticInite0704cbbdcb2b22e78bd6bb659055920
         'GuzzleHttp\\RetryMiddleware' => __DIR__ . '/..' . '/guzzlehttp/guzzle/src/RetryMiddleware.php',
         'GuzzleHttp\\TransferStats' => __DIR__ . '/..' . '/guzzlehttp/guzzle/src/TransferStats.php',
         'GuzzleHttp\\UriTemplate' => __DIR__ . '/..' . '/guzzlehttp/guzzle/src/UriTemplate.php',
+<<<<<<< HEAD
 >>>>>>> gry
+=======
+>>>>>>> 03ce1657e24290b6c3f2f78667788716aa70d282
         'Hamcrest\\Arrays\\IsArray' => __DIR__ . '/..' . '/hamcrest/hamcrest-php/hamcrest/Hamcrest/Arrays/IsArray.php',
         'Hamcrest\\Arrays\\IsArrayContaining' => __DIR__ . '/..' . '/hamcrest/hamcrest-php/hamcrest/Hamcrest/Arrays/IsArrayContaining.php',
         'Hamcrest\\Arrays\\IsArrayContainingInAnyOrder' => __DIR__ . '/..' . '/hamcrest/hamcrest-php/hamcrest/Hamcrest/Arrays/IsArrayContainingInAnyOrder.php',

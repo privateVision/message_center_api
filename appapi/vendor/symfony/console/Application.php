@@ -833,6 +833,7 @@ class Application
 
         if (null === $this->dispatcher) {
 <<<<<<< HEAD
+<<<<<<< HEAD
             try {
                 return $command->run($input, $output);
             } catch (\Exception $e) {
@@ -843,6 +844,9 @@ class Application
 =======
             return $command->run($input, $output);
 >>>>>>> gry
+=======
+            return $command->run($input, $output);
+>>>>>>> 03ce1657e24290b6c3f2f78667788716aa70d282
         }
 
         // bind before the console.command event, so the listeners have access to input options/arguments

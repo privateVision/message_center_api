@@ -32,9 +32,13 @@ return array(
     'RobRichards\\XMLSecLibs\\' => array($vendorDir . '/robrichards/xmlseclibs/src'),
     'ReceiptValidator\\' => array($vendorDir . '/aporat/store-receipt-validator/src'),
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
     'Ramsey\\Uuid\\' => array($vendorDir . '/ramsey/uuid/src'),
 >>>>>>> gry
+=======
+    'Ramsey\\Uuid\\' => array($vendorDir . '/ramsey/uuid/src'),
+>>>>>>> 03ce1657e24290b6c3f2f78667788716aa70d282
     'Qiniu\\' => array($vendorDir . '/qiniu/php-sdk/src/Qiniu'),
     'Psy\\' => array($vendorDir . '/psy/psysh/src/Psy'),
     'Psr\\Log\\' => array($vendorDir . '/psr/log/Psr/Log'),
@@ -55,9 +59,12 @@ return array(
     'Google\\Auth\\' => array($vendorDir . '/google/auth/src'),
     'Firebase\\JWT\\' => array($vendorDir . '/firebase/php-jwt/src'),
 <<<<<<< HEAD
+<<<<<<< HEAD
     'FastRoute\\' => array($vendorDir . '/nikic/fast-route/src'),
 =======
 >>>>>>> gry
+=======
+>>>>>>> 03ce1657e24290b6c3f2f78667788716aa70d282
     'Faker\\' => array($vendorDir . '/fzaninotto/faker/src/Faker'),
     'Dotenv\\' => array($vendorDir . '/vlucas/phpdotenv/src'),
     'Doctrine\\Instantiator\\' => array($vendorDir . '/doctrine/instantiator/src/Doctrine/Instantiator'),

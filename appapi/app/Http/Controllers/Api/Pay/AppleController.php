@@ -28,40 +28,37 @@ class  AppleController extends Controller{
         //匹配当前的操作的实现
         $receipt = $this->request->input('receipt');
         $transaction = $this->parameter->tough("transaction_id");
-        $receipt_a = urldecode($receipt);
-        $mds = md5($receipt_a);
+        $receipt = urldecode($receipt);
 
-        $logsql = "select id from ios_receipt_log WHERE receipt_md5 = '{$mds}'";
+        $logsql = "select id from ios_receipt_log WHERE receipt_md5 = ".md5($receipt);
         $log_data = app('db')->select($logsql);
         if(count($log_data)) throw new ApiException(ApiException::Remind,"had in ");
 
         //保存当前的操作
 
-        $sql = "insert into ios_receipt_log (`receipt_md5`,`receipt_base64`) VALUES ('".$mds."','".$receipt."')";
+        $sql = "insert into ios_receipt_log (`receipt_md5`,`receipt_base64`) VALUES ({md5($receipt)},$receipt)";
         app('db')->select($sql);
 
         //订单号
         $sn  = $this->request->input("order_id"); //生成订单的时候返回的订单号
-        $dat = $this->getReceiptData($receipt, true); //开启黑盒测试
 
+        $dat = $this->getReceiptData($receipt, true); //开启黑盒测试
         //获取当前的订单的ID
         $oid = $this->request->input("id"); //处理当前的操作
 
-        if(!preg_match("/^\d{1,10}$/",$oid))  return ["code"=>0,"msg"=>"格式错误"];;
+        if(!preg_match("/^\d{1,10}$/",$oid)) return trans("messages.app_param_type_error");
 
 
-        if(isset($dat["errNo"]) && $dat["errNo"] ==0 && isset($dat['data']) &&  count($dat['data']) > 0){
+        if($dat["errNo"] ==0 && count($dat['data']) > 0){
             foreach($dat['data'] as $key =>$value){
-                if($value['transaction_id'] == $transaction){
-                    $o_ext = IosOrderExt::where("transaction_id",$transaction)->first();
-                    if($o_ext) return ["code"=>0,"msg"=>"已经使用过"];
+                if($value->transaction_id == $transaction){
                     //购买成功写入数据库
-                    $od = IosOrderExt::where("oid",$oid)->first();
+                    $od = IosOrderExt::where("oid",$oid)->frist();
                     $od ->transaction_id = $transaction;
                     $od ->descript = "SUCESS";
                     $ore = $od ->save();
                     if($ore){
-                        $orders =  Orders::where("id",$oid)->where("sn",$sn)->first();
+                        $orders =  Orders::where("id",$oid)->where("sn",$sn)->frist();
                         $orders ->status = 1;
                         $orders->paymentMethod = "AppleStore";
                         $os = $orders->save(); //当前的信息是否保存成功！失败信息回归
@@ -69,18 +66,18 @@ class  AppleController extends Controller{
                             $od->transaction = '';
                             $od->descript = '';
                             $od->save();
-                            return ["code"=>0,"msg"=>"失败"];
+                            return trans("messages.app_buy_faild");
                         }
                         //通知发货
                         order_success($orders->id);
-                        return ["code"=>1,"msg"=>"成功"];
+                        return trans("messages.apple_buy_success");
                     }else{
                         throw new ApiException(ApiException::Remind,trans("messages.app_buy_faild"));
                     }
                 }
             }
         }else{
-            throw  new ApiException(ApiException::Remind,"APP购买失败---".json_encode($dat));
+            throw  new ApiException(ApiException::Remind,trans("messages.app_buy_faild"));
         }
 
         //订单完成，通知发货，添加日志记录
@@ -114,7 +111,7 @@ class  AppleController extends Controller{
             if (!is_array($data)) {
                 return trans("messages.apple_rer_error_type");
             }
-
+            return $data;
             //判断购买时候成功
             if (!isset($data['status']) || $data['status'] != 0) {
                 return trans("messages.app_buy_faild");
@@ -282,10 +279,10 @@ class  AppleController extends Controller{
     //返回当前的限制的控制
     public function AppleLimitAction(){
         $ucid = $this->user->ucid;
-
+        $product_id = $this->parameter->tough('product_id');
         $appid  = $this->request->input("_appid");
 
-        $sql = "select con.iap from ios_products as p LEFT JOIN ios_application_config as con ON p.app_id = con.app_id WHERE  p.app_id = {$appid}";
+        $sql = "select con.iap from ios_products as p LEFT JOIN ios_application_config as con ON p.app_id = con.app_id WHERE p.product_id = '{$product_id}' AND p.app_id = {$appid}";
         $dat = app('db')->select($sql);
         if(count($dat) == 0) throw new ApiException(ApiException::Remind,"not exists!");
 

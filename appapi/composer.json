@@ -22,6 +22,7 @@
         "barryvdh/laravel-cors": "^0.8.6",
         "qiniu/php-sdk": "^7.1",
 <<<<<<< HEAD
+<<<<<<< HEAD
          "aporat/store-receipt-validator": "^2.0"
     },
     "require-dev": {
@@ -52,6 +53,8 @@
     "prefer-stable": true
 }
 =======
+=======
+>>>>>>> 03ce1657e24290b6c3f2f78667788716aa70d282
         "aporat/store-receipt-validator": "^2.0"
 	},
 	"require-dev" : {
@@ -93,5 +96,9 @@
 		"sort-packages" : true,
 		"optimize-autoloader" : true
 	}
+<<<<<<< HEAD
 }
 >>>>>>> gry
+=======
+}
+>>>>>>> 03ce1657e24290b6c3f2f78667788716aa70d282
