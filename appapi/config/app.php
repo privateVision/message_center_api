@@ -179,7 +179,7 @@ return [
         
         // mongodb
         Jenssegers\Mongodb\MongodbServiceProvider::class,
-
+        Laravel\Tinker\TinkerServiceProvider::class,
     ],
 
     /*
