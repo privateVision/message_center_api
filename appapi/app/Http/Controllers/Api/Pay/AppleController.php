@@ -25,40 +25,43 @@ class  AppleController extends Controller{
 
     public function validateReceiptAction ()
     {
-        //匹配当前的操作的实现
+      //匹配当前的操作的实现
         $receipt = $this->request->input('receipt');
         $transaction = $this->parameter->tough("transaction_id");
-        $receipt = urldecode($receipt);
+        $receipt_a = urldecode($receipt);
+        $mds = md5($receipt_a);
 
-        $logsql = "select id from ios_receipt_log WHERE receipt_md5 = ".md5($receipt);
+        $logsql = "select id from ios_receipt_log WHERE receipt_md5 = '{$mds}'";
         $log_data = app('db')->select($logsql);
         if(count($log_data)) throw new ApiException(ApiException::Remind,"had in ");
 
         //保存当前的操作
 
-        $sql = "insert into ios_receipt_log (`receipt_md5`,`receipt_base64`) VALUES ({md5($receipt)},$receipt)";
+        $sql = "insert into ios_receipt_log (`receipt_md5`,`receipt_base64`) VALUES ('".$mds."','".$receipt."')";
         app('db')->select($sql);
 
         //订单号
         $sn  = $this->request->input("order_id"); //生成订单的时候返回的订单号
-
         $dat = $this->getReceiptData($receipt, true); //开启黑盒测试
+
         //获取当前的订单的ID
         $oid = $this->request->input("id"); //处理当前的操作
 
-        if(!preg_match("/^\d{1,10}$/",$oid)) return trans("messages.app_param_type_error");
+        if(!preg_match("/^\d{1,10}$/",$oid))  return ["code"=>0,"msg"=>trans("messages.app_param_type_error")];
 
 
-        if($dat["errNo"] ==0 && count($dat['data']) > 0){
+        if(isset($dat["errNo"]) && $dat["errNo"] ==0 && isset($dat['data']) &&  count($dat['data']) > 0){
             foreach($dat['data'] as $key =>$value){
-                if($value->transaction_id == $transaction){
+                if($value['transaction_id'] == $transaction){
+                    $o_ext = IosOrderExt::where("transaction_id",$transaction)->first();
+                    if($o_ext) return ["code"=>0,"msg"=>trans("messages.app_buy_faild")];
                     //购买成功写入数据库
-                    $od = IosOrderExt::where("oid",$oid)->frist();
+                    $od = IosOrderExt::where("oid",$oid)->first();
                     $od ->transaction_id = $transaction;
                     $od ->descript = "SUCESS";
                     $ore = $od ->save();
                     if($ore){
-                        $orders =  Orders::where("id",$oid)->where("sn",$sn)->frist();
+                        $orders =  Orders::where("id",$oid)->where("sn",$sn)->first();
                         $orders ->status = 1;
                         $orders->paymentMethod = "AppleStore";
                         $os = $orders->save(); //当前的信息是否保存成功！失败信息回归
@@ -66,11 +69,11 @@ class  AppleController extends Controller{
                             $od->transaction = '';
                             $od->descript = '';
                             $od->save();
-                            return trans("messages.app_buy_faild");
+                            return ["code"=>0,"msg"=>trans("messages.app_buy_faild")];
                         }
                         //通知发货
                         order_success($orders->id);
-                        return trans("messages.apple_buy_success");
+                        return ["code"=>1,"msg"=>trans("messages.apple_buy_success")];
                     }else{
                         throw new ApiException(ApiException::Remind,trans("messages.app_buy_faild"));
                     }
@@ -79,7 +82,6 @@ class  AppleController extends Controller{
         }else{
             throw  new ApiException(ApiException::Remind,trans("messages.app_buy_faild"));
         }
-
         //订单完成，通知发货，添加日志记录
     }
     //验证
