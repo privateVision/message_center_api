@@ -17,7 +17,6 @@ class MycardController extends Controller {
     public function payHandle(Orders $order, $real_fee) {
         $config = config('common.payconfig.mycard');
 
-        // data的key顺序不能变
         $data['FacServiceId'] = $config['FacServiceId'];
         $data['FacTradeSeq'] = $order->sn;
         $data['TradeType'] = '2';
@@ -52,10 +51,19 @@ class MycardController extends Controller {
     }
 
     protected static function mycard_hash($data, $key) {
-        $_data = array_values($data);
-        $_data[] = $key;
+        $str = implode('', [
+            $data['FacServiceId'],
+            $data['FacTradeSeq'],
+            $data['TradeType'],
+            $data['ServerId'],
+            $data['CustomerId'],
+            $data['ProductName'],
+            $data['Amount'],
+            $data['Currency'],
+            $data['SandBoxMode'],
+            $key
+        ]);
 
-        $str = implode('', $_data);
         $str = urlencode($str);
 
         $str = preg_replace_callback('/%[0-9A-F]{2}/', function($matches) {

@@ -98,7 +98,7 @@ trait RequestAction {
 
             // $data = $this->payHandle($order, $fee);
         } else {
-            // order_success($order->id); // 不用支付，直接发货
+            // order_success($order->id); // 不用支付，直接发货，客户端调用另一个接口实现
         }
 
         $data = $this->payHandle($order, $fee);
