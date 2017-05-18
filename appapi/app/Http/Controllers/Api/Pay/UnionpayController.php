@@ -10,15 +10,11 @@ class UnionpayController extends Controller {
 
     use RequestAction;
 
-    const PayType = '-2';
+    const PayMethod = '-2';
+    const PayText = 'unionpay';
     const PayTypeText = '银联';
-    const EnableStoreCard = true;
-    const EnableCoupon = true;
-    const EnableBalance = true;
 
-    public function payHandle(Orders $order, $real_fee) {
-        $config = config('common.payconfig.unionpay');
-
+    public function getData($config, Orders $order, $real_fee) {
         openssl_pkcs12_read(base64_decode($config['pfx']), $cert, $config['pfx_pwd']);
         $x509 = openssl_x509_read($cert['cert']);
         $certinfo = openssl_x509_parse($x509);
@@ -53,7 +49,7 @@ class UnionpayController extends Controller {
 
         parse_str($res, $resdata);
 
-        // todo: 是否该把银联返回的错误消息返回给用户
+        // 银联返回的错误消息返回给用户
         if($resdata['respCode'] !== '00') {
             throw new ApiException(ApiException::Remind, trans('messages.unionpay_fail_1', ['respMsg' => $resdata['respMsg']]));
         }

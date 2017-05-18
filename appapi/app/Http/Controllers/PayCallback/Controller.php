@@ -49,10 +49,12 @@ abstract class Controller extends \App\Controller
 
             $outer_order_no = $this->getTradeOrderNo($data, $order);
 
-            // 记录第三方订单号
+            // 记录订单信息
             $order_extend = OrderExtend::find($order->id);
             if(!$order_extend) $order_extend = new OrderExtend();
             $order_extend->third_order_no = $outer_order_no;
+            $order_extend->extra_params = json_encode($data);
+            $order_extend->real_fee = $order->real_fee * 100;
             $order_extend->asyncSave();
 
             if(!$this->handler($data, $order)) {
@@ -77,48 +79,43 @@ abstract class Controller extends \App\Controller
     }
 
     /**
-     * 获取回调的数据
-     * @param  Request $request [description]
-     * @return [type]           [description]
+     * 获取回调的所有数据
+     * @param  Request $request
      */
     abstract protected function getData(Request $request);
 
     /**
      * 获取我方订单号
-     * @param  Request $request [description]
-     * @return [type]           [description]
+     * @param mixed $data getData方法返回的数据
      */
     abstract protected function getOrderNo($data);
 
     /**
      * 获取第三方订单号（微信，支付宝等）
-     * @param  [type] $data [description]
-     * @return [type]       [description]
+     * @param   mixed $data getData方法返回的数据
+     * @param  \App\Model\Orders $order Orders
      */
     abstract protected function getTradeOrderNo($data, $order);
 
     /**
      * 验证签名
-     * @param  [type] $data  [description]
-     * @param  [type] $order [description]
-     * @return [type]        [description]
+     * @param   mixed $data getData方法返回的数据
+     * @param  \App\Model\Orders $order Orders
      */
     abstract protected function verifySign($data, $order);
 
     /**
      * 订单特殊处理逻辑判断，如果返回false则视为订单支付失败
-     * @param  [type] $data  [description]
-     * @param  [type] $order [description]
-     * @return [type]        [description]
+     * @param   mixed $data getData方法返回的数据
+     * @param  \App\Model\Orders $order Orders
      */
     abstract protected function handler($data, $order);
 
     /**
      * 订单完成后的回应，返回值将直接输出给回调方
-     * @param  [type] $data      [description]
-     * @param  [type] $order     [description]
-     * @param  [type] $isSuccess [description]
-     * @return [type]            [description]
+     * @param   mixed $data getData方法返回的数据
+     * @param  \App\Model\Orders $order Orders
+     * @param  boolean $isSuccess 订单是否处理成功
      */
     abstract protected function onComplete($data, $order, $isSuccess);
 }

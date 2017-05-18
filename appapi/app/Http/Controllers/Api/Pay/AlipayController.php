@@ -10,17 +10,52 @@ class AlipayController extends Controller {
 
     use RequestAction;
 
-    const PayType = '-1';
+    const PayMethod = '-1';
+    const PayText = 'alipay';
     const PayTypeText = '支付宝';
-    const EnableStoreCard = true;
-    const EnableCoupon = true;
-    const EnableBalance = true;
 
-    public function payHandle(Orders $order, $real_fee) {
+    public function getData($config, Orders $order, $real_fee) {
+        // XXX 兼容旧版IOS返回scheme
         $restype = $this->parameter->get('restype');
+        if($restype  == 'protocol') {
+            return [
+                'protocol' => $this->getUrlScheme($config, $order, $real_fee),
+            ];
+        } else {
+            return [
+                'data' => $this->request($config, $order, $real_fee),
+            ];
+        }
+    }
 
-        $config = config('common.payconfig.alipay');
+    public function getUrlScheme($config, Orders $order, $real_fee)
+    {
+        $package = $this->procedure_extend->package_name;
+        if(!$package) {
+            throw new ApiException(ApiException::Remind, trans('messages.app_package_not_set'));
+        }
 
+        $scheme = $this->parameter->tough('scheme');
+
+        $data = $this->request($config, $order, $real_fee);
+        $data.= '&bizcontext="{"av":"1","ty":"ios_lite","appkey":"'.$config['AppID'].'","sv":"h.a.3.1.6","an":"'.$package.'"}"';
+        $data = json_encode([
+            'fromAppUrlScheme' => $scheme,
+            'requestType' => 'SafePay',
+            'dataString' => $data,
+        ]);
+
+        return sprintf('alipay://alipayclient/?%s', urlencode($data));
+    }
+
+    protected static function rsaSign($str, $prikey) {
+        $key = openssl_get_privatekey($prikey);
+        openssl_sign($str, $sign, $key);
+        openssl_free_key($key);
+        return base64_encode($sign);
+    }
+
+    protected function request($config, Orders $order, $real_fee) {
         $data = sprintf('partner="%s"', $config['AppID']);
         $data.= sprintf('&out_trade_no="%s"', $order->sn);
         $data.= sprintf('&subject="%s"', str_replace([' ', '　'], '', $order->subject));
@@ -34,28 +69,6 @@ class AlipayController extends Controller {
         $data.= sprintf('&sign="%s"', urlencode(static::rsaSign($data, file_get_contents($config['PriKey']))));
         $data.= '&sign_type="RSA"';
 
-        if($restype  == 'protocol') {
-            $fromAppUrlScheme = $this->parameter->tough('scheme');
-            $package = $this->parameter->tough('package');
-            
-            $data.= '&bizcontext="{"av":"1","ty":"ios_lite","appkey":"'.$config['AppID'].'","sv":"h.a.3.1.6","an":"'.$package.'"}"';
-
-            $data = json_encode([
-                'fromAppUrlScheme' => $fromAppUrlScheme,
-                'requestType' => 'SafePay',
-                'dataString' => $data,
-            ]);
-
-            return ['protocol' => sprintf('alipay://alipayclient/?%s', urlencode($data))];
-        } else {
-            return ['data' => $data];
-        }
-    }
-
-    protected static function rsaSign($str, $prikey) {
-        $key = openssl_get_privatekey($prikey);
-        openssl_sign($str, $sign, $key);
-        openssl_free_key($key);
-        return base64_encode($sign);
+        return $data;
     }
 }

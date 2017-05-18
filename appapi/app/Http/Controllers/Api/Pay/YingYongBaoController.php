@@ -17,9 +17,6 @@ class YingYongBaoController extends Controller
 {
     const PayType = '-9';
     const PayTypeText = '应用宝';
-    const EnableStoreCard = true;
-    const EnableCoupon = true;
-    const EnableBalance = true;
 
     //查询余额
     public function getBalanceMAction()

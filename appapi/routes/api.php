@@ -1,5 +1,5 @@
 <?php
-// 支付回调相关
+// 支付回调
 Route::group(['prefix' => 'pay_callback'], function () {
     Route::any('nowpay_wechat', 'PayCallback\\NowpayWechatController@CallbackAction');                      // 现代支付，微信支付回调
     Route::any('alipay', 'PayCallback\\AlipayController@CallbackAction');                                   // 支付宝支付回调
@@ -16,7 +16,7 @@ Route::group(['prefix' => 'pay_callback'], function () {
 
 });
     
-// 对外公开（无限制的）功能（杂项）
+// 各种回调
 Route::group(['prefix' => 'callback'], function () {
     Route::any('yunpian/request', 'Callback\\YunpianController@RequestAction');                             // 云片手机短信回调
 });

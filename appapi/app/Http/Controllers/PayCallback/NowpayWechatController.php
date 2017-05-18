@@ -5,6 +5,7 @@ use Illuminate\Http\Request;
 
 class NowpayWechatController extends Controller
 {
+    const PayType = '-5';
 
     protected function getData(Request $request) {
         $input = file_get_contents('php://input');

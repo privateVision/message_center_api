@@ -21,16 +21,41 @@ trait CreateOrderAction {
         $role_level = $this->parameter->get('role_level');
         $role_name = $this->parameter->get('role_name');
         $vorderid = $this->parameter->tough('vorderid');
-        $notify_url = $this->parameter->tough('notify_url');
+        $product_type = $this->parameter->get('product_type', 0); // 0 游戏道具，1 F币，2 游币（H5专用）
 
-        // product_id or fee,body,subject
-        $product_id = $this->parameter->get('protected_id');
+        $pid = $this->procedure->pid;
+
+        // 是否强制实名制
+
+        if(($this->procedure_extend->enable & 0x0000000C) == 0x0000000C) { /*[3:2]*/
+            $user_info = UcuserInfo::from_cache($this->user->ucid);
+            if(!$user_info || !$user_info->card_no) {
+                throw new ApiException(ApiException::NotRealName, trans('messages.check_in_before_pay'));
+            }
+        }
+
+        // 如果是买F币不用通知地址，否则如果没有通知地址则去数据库看有没有预设置
+
+        $notify_url = $this->parameter->get('notify_url', '');
+        if($product_type != 1) {
+            if (!$notify_url) {
+                $notify_url = $this->procedure_extend->pay_callback_url;
+            }
+
+            if (!$notify_url) {
+                throw new ApiException(ApiException::Remind, trans('messages.not_set_notify_url'));
+            }
+        }
+
+        // 如果传了product_id则通过product_id找到计费点信息，否则fee,body,subject必传
+
+        $product_id = $this->parameter->get('product_id');
         if(!$product_id) {
             $fee = $this->parameter->tough('fee');
             $body = $this->parameter->tough('body');
             $subject = $this->parameter->tough('subject');
         } else {
-            $product = ProceduresProducts::where('cp_product_id', $product_id);
+            $product = ProceduresProducts::where('cp_product_id', $product_id)->first();
 
             if(!$product) throw new ApiException(ApiException::Error, trans('messages.product_not_exists')); // LANG:product_not_exists
 
@@ -38,16 +63,7 @@ trait CreateOrderAction {
             $body = strval($product->name);
             $subject = strval($product->desc);
         }
-        
-        $pid = $this->procedure->pid;
-        
-        // 是否强制实名制
-        if(($this->procedure_extend->enable & 0x0000000C) == 0x0000000C) { /*[3:2]*/
-            $user_info = UcuserInfo::from_cache($this->user->ucid);
-            if(!$user_info || !$user_info->card_no) {
-                throw new ApiException(ApiException::NotRealName, trans('messages.check_in_before_pay')); // LANG:not_pay_before_reg
-            }
-        }
+
 
         $order = new Orders;
         $order->getConnection()->beginTransaction();
@@ -71,19 +87,18 @@ trait CreateOrderAction {
         $order->save();
 
         // order_extend;
-        if($zone_id || $zone_name || $role_id || $role_level || $role_name) {
-            $order_extend = new OrderExtend;
-            $order_extend->oid = $order->id;
-            $order_extend->ucid = $this->user->ucid;
-            $order_extend->pid = $this->procedure->pid;
-            $order_extend->date = date('Ymd');
-            $order_extend->zone_id = $zone_id;
-            $order_extend->zone_name = $zone_name;
-            $order_extend->role_id = $role_id;
-            $order_extend->role_level = $role_level;
-            $order_extend->role_name = $role_name;
-            $order_extend->save();
-        }
+        $order_extend = new OrderExtend;
+        $order_extend->oid = $order->id;
+        $order_extend->ucid = $this->user->ucid;
+        $order_extend->pid = $this->procedure->pid;
+        $order_extend->date = date('Ymd');
+        $order_extend->zone_id = $zone_id;
+        $order_extend->zone_name = $zone_name;
+        $order_extend->role_id = $role_id;
+        $order_extend->role_level = $role_level;
+        $order_extend->role_name = $role_name;
+        $order_extend->product_type = $product_type;
+        $order_extend->save();
 
         $order->getConnection()->commit();
 
@@ -94,9 +109,16 @@ trait CreateOrderAction {
         
         // 可用的支付方式
         $pay_methods = [];
+
+        $iap = ($this->procedure_extend->pay_method & 0x01) != 0;
+
+        // 如果设置了切换金额，则在充值达到此额度时关闭iap
+        if($this->procedure_extend->pay_switch_fee > 0 && $this->procedure_extend->pay_switch_fee <= ($fee * 100)) {
+            $iap = false;
+        }
         
-        // 官方支付不允许使用储值卡或优惠券
-        if(($this->procedure_extend->pay_method & 0x01) == 0) {
+        // 官方支付和购买F币不允许使用储值卡或优惠券
+        if(!$iap && $product_type != 1) {
             $result = UcusersVC::where('ucid', $this->user->ucid)->get();
             foreach($result as $v) {
                 $fee = $v->balance * 100;
@@ -138,7 +160,7 @@ trait CreateOrderAction {
             for($i = 1; $i < 32; $i++) {
                 $_i = 1 << $i;
                 if(($this->procedure_extend->pay_method & $_i) != 0 && isset($pay_methods_config[$_i])) {
-                    $pay_methods[] = $pay_methods_config[$_i]['type'];
+                    $pay_methods[] = $pay_methods_config[$_i];
                 }
             }
         }
@@ -151,7 +173,7 @@ trait CreateOrderAction {
             'vip' => $user_info && $user_info->vip ? (int)$user_info->vip : 0,
             'balance' => $this->user->balance,
             'coupons' => $list,
-            'iap' => ($this->procedure_extend->pay_method& 0x01) == 0,
+            'iap' => $iap,
             'pay_methods' => $pay_methods,
         ];
     }

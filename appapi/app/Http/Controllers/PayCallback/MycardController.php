@@ -5,6 +5,8 @@ use Illuminate\Http\Request;
 
 class MycardController extends Controller
 {
+    const PayType = '-7';
+
     protected function getData(Request $request) {
         return $_POST;
     }

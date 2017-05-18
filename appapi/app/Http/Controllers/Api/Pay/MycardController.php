@@ -8,15 +8,11 @@ class MycardController extends Controller {
 
     use RequestAction;
 
-    const PayType = '-7';
+    const PayMethod = '-7';
+    const PayText = 'mycard';
     const PayTypeText = 'MyCard';
-    const EnableStoreCard = true;
-    const EnableCoupon = true;
-    const EnableBalance = true;
 
-    public function payHandle(Orders $order, $real_fee) {
-        $config = config('common.payconfig.mycard');
-
+    public function getUrl($config, Orders $order, $real_fee) {
         $data['FacServiceId'] = $config['FacServiceId'];
         $data['FacTradeSeq'] = $order->sn;
         $data['TradeType'] = '2';
@@ -44,10 +40,7 @@ class MycardController extends Controller {
             throw new ApiException(ApiException::Remind, $result['ReturnMsg']);
         }
 
-        return [
-            'type' => 'webview',
-            'url' => $config['webpay_url'] .'?AuthCode='. $result['AuthCode'],
-        ];
+        return $config['webpay_url'] .'?AuthCode='. $result['AuthCode'];
     }
 
     protected static function mycard_hash($data, $key) {

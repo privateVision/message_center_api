@@ -69,6 +69,10 @@ return [
     "apple_rer_error_type"                  => "苹果返回的数据有误，请重新尝试！",
     'mycard_callback_success'               => '购买“:name”成功',
     'mycard_callback_fail'                  => '购买“:name”失败，:ReturnMsg',
+    'not_set_notify_url'                    => '未设置订单成功通知地址',
+    'not_payconfig'                         => '未获取到支付配置', // error
+    'not_allow_pay_type'                    => '不支持该支付场景', // error
+    'app_package_not_set'                   => 'procedures_extend.package_name 未配置', // error
 ];
 /*
 return [

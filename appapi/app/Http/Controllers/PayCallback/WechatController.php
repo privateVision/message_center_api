@@ -4,7 +4,9 @@ namespace App\Http\Controllers\PayCallback;
 use Illuminate\Http\Request;
 
 class WechatController extends Controller {
-    
+
+    const PayType = '-5';
+
     protected function getData(Request $request) {
         $content = file_get_contents('php://input', 'r');
         $xml = simplexml_load_string($content);
