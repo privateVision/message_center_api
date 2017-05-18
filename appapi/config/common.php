@@ -118,5 +118,9 @@ return [
             'webpay_url' => env('APP_DEBUG') ? 'https://test.mycard520.com.tw/MyCardPay/' : 'https://www.mycard520.com.tw/MyCardPay/',
             'pay_result_url' => env('APP_DEBUG') ? 'https://test.b2b.mycard520.com.tw/MyBillingPay/api/TradeQuery' : 'https://b2b.mycard520.com.tw/MyBillingPay/api/TradeQuery',
         ],
+
+        'googleplay'=>[
+            'cert'=>__DIR__ . '/google_play.json'
+        ]
     ],
 ];

@@ -25,7 +25,7 @@ class  AppleController extends Controller{
 
     public function validateReceiptAction ()
     {
-        //匹配当前的操作的实现
+      //匹配当前的操作的实现
         $receipt = $this->request->input('receipt');
         $transaction = $this->parameter->tough("transaction_id");
         $receipt_a = urldecode($receipt);

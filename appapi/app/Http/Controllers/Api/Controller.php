@@ -13,7 +13,7 @@ use Illuminate\Http\Response;
 class Controller extends \App\Controller
 {
 	protected $procedure = null;
-	protected $procedure_extend = null;
+    protected $procedure_extend = null;
 
 	protected $request = null;
 	protected $parameter = null;
