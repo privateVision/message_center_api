@@ -3,6 +3,7 @@ namespace App\Http\Controllers\PayCallback;
 
 use Illuminate\Http\Request;
 use App\Model\Orders;
+use App\Model\OrderExtend;
 use App\Model\CallbackLog;
 
 abstract class Controller extends \App\Controller
@@ -11,12 +12,12 @@ abstract class Controller extends \App\Controller
     public function CallbackAction(Request $request) {
         try {
             $data = $this->getData($request);
-            $sn = $this->getOrderNo($data); 
+            $sn = $this->getOrderNo($data);
 
             log_info('paycallback', ['route' => $request->path(), 'data' => $data, 'sn' => $sn]);
 
             $order = null;
-        
+
             if($sn) {
                 $order = Orders::from_cache_sn($sn);
             }
@@ -25,12 +26,13 @@ abstract class Controller extends \App\Controller
                 log_error('paycallback_error', null, '订单不存在');
                 return $this->onComplete($data, null, true);
             }
-            
+
             if(!$this->verifySign($data, $order)) {
                 log_error('paycallback_error', null, '签名验证失败');
-                return $this->onComplete($data, null, false);
+                return $this->onComplete($data, $order, false);
             }
 
+            // 记录回调
             $callback_log = new CallbackLog;
             $callback_log->timestamp = date('Y-m-d H:i:s');
             $callback_log->order_id = $order->sn;
@@ -39,7 +41,7 @@ abstract class Controller extends \App\Controller
             
             if($order->status != Orders::Status_WaitPay) {
                 log_error('paycallback_error', ['sn' => $sn], '订单状态不正确');
-                return $this->onComplete($data, null, true);
+                return $this->onComplete($data, $order, true);
             }
 
             $order->callback_ts = time();
@@ -47,15 +49,30 @@ abstract class Controller extends \App\Controller
 
             $outer_order_no = $this->getTradeOrderNo($data, $order);
 
+            // 记录第三方订单号
+            $order_extend = OrderExtend::find($order->id);
+            if(!$order_extend) $order_extend = new OrderExtend();
+            $order_extend->third_order_no = $outer_order_no;
+            $order_extend->asyncSave();
+
             if(!$this->handler($data, $order)) {
-                return $this->onComplete($data, null, false);
+                return $this->onComplete($data, $order, false);
             }
 
             // 订单状态改变等等全部在这里做
             order_success($order->id);
             return $this->onComplete($data, $order, true);
         } catch(\Exception $e) {
-            return $this->onComplete($data, null, false);
+            log_error('error', [
+                'message' => $e->getMessage(),
+                'code' => $e->getCode(),
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'path' => $request->path(),
+                'reqdata' => $request->all()
+            ]);
+
+            return $this->onComplete($data, $order, false);
         }
     }
 

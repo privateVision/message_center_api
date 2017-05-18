@@ -52,15 +52,15 @@ class AsyncExecute extends Job
                 $user_role->ucid = $ucid;
                 $user_role->pid = $pid;
                 $user_role->user_sub_id = $user_sub_id;
-                $user_role->intRoleLevel = $role_level;
                 $user_role->zoneId = $zone_id;
                 $user_role->roleId = $role_id;
-            } elseif($user_role->roleLevel >= $role_level) {
-                $user_role->zoneName = $zone_name;
-                $user_role->roleName = $role_name;
-                $user_role->roleLevel = $role_level;
-                $user_role->save();
             }
+
+            $user_role->zoneName = $zone_name;
+            $user_role->roleName = $role_name;
+            $user_role->roleLevel = $role_level;
+            $user_role->intRoleLevel = $role_level;
+            $user_role->save();
             
             // 记录日志
             $user_role_log = new UserRoleLog();
