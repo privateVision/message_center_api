@@ -15,7 +15,7 @@ define('OPENAPI_ERROR_CURL', 1900); // 网络错误, 偏移量1900, 详见 http:
 
 class YingYongBaoController extends Controller
 {
-    const PayType = '-8';
+    const PayType = '-9';
     const PayTypeText = '应用宝';
     const EnableStoreCard = true;
     const EnableCoupon = true;
