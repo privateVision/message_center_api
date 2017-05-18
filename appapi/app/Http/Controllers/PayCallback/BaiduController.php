@@ -43,7 +43,7 @@ class BaiduController extends Controller
 
     protected function onComplete($data, $order, $isSuccess)
     {
-        $result = ProceduresExtend::where('third_appid', $data['AppID'])->first();
+        $result = ProceduresExtend::where('third_appid', $data['AppID'])->first()->toArray;
 
         $sign = md5($data['AppID'].$data['OrderSerial'].$data['CooperatorOrderSerial'].$data['Content'].$result['third_appsecret']);
 

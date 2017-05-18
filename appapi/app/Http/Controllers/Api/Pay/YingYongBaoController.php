@@ -83,7 +83,7 @@ class YingYongBaoController extends Controller
     {
 
         // 添加一些参数
-        $params['appid'] = $this->procedure_extend['third_payid'];
+        $params['appid'] = $this->procedure_extend->third_payid;
         $params['format'] = 'json';
 
         $cookie=array();
