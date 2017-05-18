@@ -1,0 +1,12 @@
+{
+  "type": "service_account",
+  "project_id": "api-project-70324813277",
+  "private_key_id": "d1f3a826617e8dadcbd43df5c8a23132e561c375",
+  "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQDxwq9DOOAeBzCI\nqAO/FIsjp+wyCeW0cFiz2kIaKsXVkJTNDWLbwr/vdFGFsa1Y7PrQJH8pmNDnCN9P\naMKBqb2TL7Zlu4a1lhCZdh9vIpiWAVYJoPHNIOKo47O7jAFtFbmjK7gplT1oOCbO\nLohcMAAKfg7ghd1FOiZ5aoMEBLUbdVa124yAty+IB05HNF0ziITfMgf+brYu2AQv\nP/6z8PS4fUF1Kg2+A111zBDG7BGOh3TvQPI1XveX8SKGy7VHZ0tOtkuPXvqXIMMn\nofEw0MrbXXqawMYC8+hFARg4leu9eVh7UH1XcEw89qIcVpQwsb+bPSHoqzW/6V1f\n7lSodY0rAgMBAAECggEARjs+y+H1ZXPEOybH89YFd6W8HWs3ojvy4MiaZFyhnSGD\nwK/PVLUWKftaBWMwzwEE+btof46HvV4b9UcjHiTP0DbPn20jPJQsHVCt4AymVAlu\nU5zAMc2IWvTPDUAmV+i0RX0ZYmca8DBDwajN7y34jRPCwaHRvl8ety3kgqHVdPSI\nYaRM2CBTeXwPISoR1mX4ccmeqhHoR3Z6f8FGb50vXCltLx8XD0sVMk+ik11j8ly3\n4vGhenmWUP7GqOdpZ3c6P9RddoDEtilr+O3Pcwwynr1d4vx2rY2/UQ36dlEPNTlW\n+BN/kRNxGmGkgHPifwzeKNKqWWdrT5b5ZlepC7frmQKBgQD5G/Ta7Wt4KUrf2LM0\n+FZQ5WtZoAJccYd1qwlUeCBnUmR2oJOqyrNRqWGTzJQDOLvNqQva4VfU8IkeJOrb\nGoTWWVoVmyKMoLAeXQtF07Js4l89IZKG4r2/wZD7dJasPBT++VfE74U51+M/8NhI\nXmcwdi7S5hhd5V2/B6/c0eo+eQKBgQD4crBbVm9VpNavGyQBxlzS2T3YFzCVSe8e\nG5pxEwetJd23qyl5g9+X+qI2NZUsLs4r2OM68kjrC4pq8U99+0I9W02F+AZbyLT2\nmELu7xrIBoirZKuNPh/I/hsXHvEWsRKJ9ou/nLqg76h6qUsDHFe0+v9vPzhb9UXn\n1rNCNx3vwwKBgGnuboBOp/3QKWvpPcPPuvzpom3ZckeXa5ApLG2EK9tkGR6tCD5/\ntiOK0NjGDUcVcB9zvHvWicAejWCJOGn16/kuw/UeJGICzwIKdQm7jUtqNC/Nv/6m\nGySZDqsvmAckAZWvuJghdtjzKkr9gyu7IUxlZWH/wOrk56mdfjZ7+Y2ZAoGAbgCR\ntw8xIlFmwIcazTJfvPd0222BFEh09/auzevoFTDT11OQfH34DNlq4ueckcBzhpR0\nH5BQ2sj0U19em+AYtwPq8isb3Z2jCh/mWtZBHFlQP9rF3jaoahygL/+CLVLfa3he\n7creEw2pog286bat2rLbUA1EzepuNjUoj2PJ/HMCgYEAnUg1V1uUHc0HNZyi1DAA\nK25RCFp/c6WaGawgMG7ep8Zu1A+5iaSFllboJCqiOGRWOZKy1SelcBlLMu5neZv/\nzLaUviqs8PVSehM3rYoPivbCTGqNQbVfkUFygMjsc1iTibSXQBFhPE6vCiZsaJSu\nbLJLj/aGDZkQicr0e1EqpCw=\n-----END PRIVATE KEY-----\n",
+  "client_email": "google-play-game@api-project-70324813277.iam.gserviceaccount.com",
+  "client_id": "113301022587293280530",
+  "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+  "token_uri": "https://accounts.google.com/o/oauth2/token",
+  "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+  "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/google-play-game%40api-project-70324813277.iam.gserviceaccount.com"
+}

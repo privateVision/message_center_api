@@ -22,7 +22,7 @@ trait LoginAction {
         
         $user = $this->getLoginUser();
         if($user && $user->is_freeze) {
-            throw new ApiException(ApiException::AccountFreeze, '账号已被冻结，无法登录', ['ucid' => $user->ucid]);
+            throw new ApiException(ApiException::AccountFreeze, trans('messages.freeze_onlogin'), ['ucid' => $user->ucid]);
         }
 
         $user_sub_id = $this->getDefaultUserSubId($user);
@@ -31,11 +31,11 @@ trait LoginAction {
         if($user_sub_id) {
             $user_sub = UcuserSub::tableSlice($user->ucid)->from_cache($user_sub_id);
             if(!$user_sub || $user_sub->ucid != $user->ucid || $user_sub->pid != $pid) {
-                throw new ApiException(ApiException::Remind, "角色不存在，无法登录");
+                throw new ApiException(ApiException::Remind, trans('messages.role_not_exists'));
             }
 
             if($user_sub->is_freeze) {
-                throw new ApiException(ApiException::UserSubFreeze, '角色已被冻结，无法登录');
+                throw new ApiException(ApiException::UserSubFreeze, trans('messages.role_freeze_onlogin'));
             }
         }
 

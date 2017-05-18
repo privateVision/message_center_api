@@ -117,5 +117,9 @@ return [
             'autocode_url' => env('APP_DEBUG') ? 'https://test.b2b.mycard520.com.tw/MyBillingPay/api/AuthGlobal' : 'https://b2b.mycard520.com.tw/MyBillingPay/api/AuthGlobal',
             'webpay_url' => env('APP_DEBUG') ? 'https://test.mycard520.com.tw/MyCardPay/' : 'https://www.mycard520.com.tw/MyCardPay/',
         ],
+
+        'googleplay'=>[
+            'cert'=>__DIR__ . '/google_play.json'
+        ]
     ],
 ];

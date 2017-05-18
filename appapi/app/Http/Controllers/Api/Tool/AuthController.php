@@ -20,7 +20,7 @@ class AuthController extends Controller
             $user = Ucuser::where("ucid",$ucid)->first();
         }
         if(!$user) {
-            throw new ApiException(ApiException::Remind, '用户不存在'); // LANG:user_not_exists
+            throw new ApiException(ApiException::Remind, trans('messages.user_not_exists')); // LANG:user_not_exists
         }
 
         $this->user = $user;
