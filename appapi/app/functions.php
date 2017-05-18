@@ -448,14 +448,14 @@ function http_curl($url, $param = array(), $is_post = true, $code = 'cd', $heade
         $strPOST = $param;
     }
     else if (is_array($param) && count($param)>0) {
-        $strPOST =  http_build_query($param);
+        $strPOST =  makeQueryString($param);
     }
     else {
         $strPOST = '';
     }
 
     if (!$is_post) {
-        $url = strpos($url, '?') == -1 ? ($url .'?'. $param) : ($url .'&'. $param);
+        $url = strpos($url, '?') == -1 ? ($url .'?'. $strPOST) : ($url .'&'. $strPOST);
     }
 
     $oCurl = curl_init();
@@ -474,7 +474,7 @@ function http_curl($url, $param = array(), $is_post = true, $code = 'cd', $heade
         curl_setopt($oCurl, CURLOPT_HTTPHEADER,$header);
     }
     if (!empty($cookie)) {
-        curl_setopt($oCurl, CURLOPT_COOKIE, implode(';', $cookie));
+        curl_setopt($oCurl, CURLOPT_COOKIE, makeCookieString($cookie));
     }
 
     $resp = curl_exec($oCurl);
@@ -505,6 +505,36 @@ function http_curl($url, $param = array(), $is_post = true, $code = 'cd', $heade
     }
 
     return $response;
+}
+
+//拼接字符串
+function makeQueryString($params)
+{
+    if (is_string($params))
+        return $params;
+
+    $query_string = array();
+    foreach ($params as $key => $value)
+    {
+        array_push($query_string, rawurlencode($key) . '=' . rawurlencode($value));
+    }
+    $query_string = join('&', $query_string);
+    return $query_string;
+}
+
+//拼接cookie字符串
+function makeCookieString($params)
+{
+    if (is_string($params))
+        return $params;
+
+    $cookie_string = array();
+    foreach ($params as $key => $value)
+    {
+        array_push($cookie_string, $key . '=' . $value);
+    }
+    $cookie_string = join('; ', $cookie_string);
+    return $cookie_string;
 }
 
 //监测当前的格式
