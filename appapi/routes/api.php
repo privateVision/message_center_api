@@ -14,6 +14,8 @@ Route::group(['prefix' => 'pay_callback'], function () {
 
     Route::any('googleplay', 'PayCallback\\GooglePlayController@CallbackAction');                           // GooglePlay支付回调
 
+    Route::any('uc', 'PayCallback\\UcController@CallbackAction');                                           // Uc支付回调
+
 });
     
 // 各种回调
@@ -81,6 +83,10 @@ Route::group(['prefix' => 'api'], function () {
     Route::any('pay/unionpay/request', 'Api\\Pay\\UnionpayController@RequestAction');                       // 现在支付，银联
     Route::any('pay/f/request', 'Api\\Pay\\FController@RequestAction');                                     // 安锋支付，（帐户余额支付）
     Route::any('pay/mycard/request', 'Api\\Pay\\MycardController@RequestAction');                           // MyCard支付
+    Route::any('pay/uc/request', 'Api\\Pay\\UcController@RequestAction');                                   // Uc平台支付
+    Route::any('pay/googleplay/request', 'Api\\Pay\\GooglePlayController@RequestAction');                   // GooglePlay平台支付
+    Route::any('pay/baidu/request', 'Api\\Pay\\BaiduController@RequestAction');                             // 百度平台支付
+    Route::any('pay/yingyongbao/request', 'Api\\Pay\\YingYongBaoController@RequestAction');                 // 应用宝平台支付
 
     // Apple支付方式将被废弃
     Route::any('ios/order/receipt/verify','Api\\Pay\\AppleController@validateReceiptAction');               // XXX 4.0 验证苹果支付的信息

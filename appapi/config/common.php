@@ -123,6 +123,12 @@ return [
         //https://console.developers.google.com/iam-admin/serviceaccounts/project?project=api-project-70324813277
         'googleplay'=>[
             'cert' => __DIR__ . '/google_play.json'  //通过google play控制台生产秘钥账号
+        ],
+
+        //uc游戏平台
+        'uc'=>[
+            'cpId'=>'71659',
+            'apikey'=>'bd@anfan.com'
         ]
     ],
 ];
