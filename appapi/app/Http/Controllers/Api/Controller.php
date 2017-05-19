@@ -21,7 +21,7 @@ class Controller extends \App\Controller
 	public function onError(Request $request, \Exception $e) {
 	    if($e instanceof ApiException) {
 	        log_warning('ApiException', ['code' => $e->getCode(), 'path' => $request->path(), 'reqdata' => $request->all()], $e->getMessage());
-	        $content = ['code' => $e->getCode(), 'msg' => $e->getMessage(), 'data' => null];
+	        $content = ['code' => $e->getCode(), 'msg' => $e->getMessage(), 'data' => $this->getData()];
 	    } elseif($e instanceof Exception) {
 	        log_warning('Exception', ['code' => $e->getCode(), 'path' => $request->path(), 'reqdata' => $request->all()], $e->getMessage());
 	        $content = ['code' => ApiException::Remind, 'msg' => $e->getMessage(), 'data' => null];
