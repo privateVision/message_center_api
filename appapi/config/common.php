@@ -120,8 +120,9 @@ return [
             'pay_result_url' => env('APP_DEBUG') ? 'https://test.b2b.mycard520.com.tw/MyBillingPay/api/TradeQuery' : 'https://b2b.mycard520.com.tw/MyBillingPay/api/TradeQuery',
         ],
 
+        //https://console.developers.google.com/iam-admin/serviceaccounts/project?project=api-project-70324813277
         'googleplay'=>[
-            'cert' => __DIR__ . '/google_play.json'
+            'cert' => __DIR__ . '/google_play.json'  //通过google play控制台生产秘钥账号
         ]
     ],
 ];
