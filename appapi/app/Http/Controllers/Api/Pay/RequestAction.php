@@ -1,9 +1,7 @@
 <?php
 namespace App\Http\Controllers\Api\Pay;
 
-use Illuminate\Http\Request;
 use App\Exceptions\ApiException;
-use App\Parameter;
 use App\Model\Orders;
 use App\Model\OrdersExt;
 use App\Model\OrderExtend;
@@ -97,8 +95,8 @@ trait RequestAction {
             $ordersExt->fee = $fee / 100;
             $ordersExt->save();
         } else {
-            // XXX 不用支付，直接发货，客户端调用另一个接口实现
-            // order_success($order->id);
+            // XXX 不用支付，直接发货
+            order_success($order->id);
         }
 
         // 获取配置传给子类
