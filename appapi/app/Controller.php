@@ -1,6 +1,8 @@
 <?php
 namespace App;
 
+use App\Exceptions\ApiException;
+use App\Model\IpRefused;
 use Illuminate\Routing\Controller as BaseController;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
@@ -43,6 +45,15 @@ class Controller extends BaseController
     public function before(Request $request) {
         $this->starttime = microtime(true);
         log_info('request', $request->all(), $request->path());
+        //封ip
+        $ip = $request->ip();
+        $dat = IpRefused::where("ip",$ip)->first();
+        if($dat){
+            throw new ApiException(ApiException::Error, "账户被封");
+            return ;
+        }
+
+
     }
 
     /**
