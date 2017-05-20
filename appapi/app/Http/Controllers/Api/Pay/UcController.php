@@ -45,7 +45,7 @@ class UcController extends Controller {
             }
             $enData = $enData.$key.'='.$val;
         }
-        return md5($enData.$config.apikey);
+        return md5($enData.$config['apikey']);
     }
 
 

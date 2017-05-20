@@ -128,7 +128,10 @@ return [
         //uc游戏平台
         'uc'=>[
             'cpId'=>'71659',
-            'apikey'=>'bd@anfan.com'
+            'apikey'=>'bd@anfan.com',
+            'baseUrl'=>'http://sdk.9game.cn',
+            'port'=>'80',
+            'prefix'=>'ng/cp/'
         ]
     ],
 ];

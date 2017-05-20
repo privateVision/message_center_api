@@ -84,6 +84,7 @@ Route::group(['prefix' => 'api'], function () {
     Route::any('pay/f/request', 'Api\\Pay\\FController@RequestAction');                                     // 安锋支付，（帐户余额支付）
     Route::any('pay/mycard/request', 'Api\\Pay\\MycardController@RequestAction');                           // MyCard支付
     Route::any('pay/uc/request', 'Api\\Pay\\UcController@RequestAction');                                   // Uc平台支付
+    Route::any('account/common/uc', 'Api\\Account\\CommonController@getUcAccountAction');                   // Uc平台获取用户信息
     Route::any('pay/googleplay/request', 'Api\\Pay\\GooglePlayController@RequestAction');                   // GooglePlay平台支付
     Route::any('pay/baidu/request', 'Api\\Pay\\BaiduController@RequestAction');                             // 百度平台支付
     Route::any('pay/yingyongbao/request', 'Api\\Pay\\YingYongBaoController@RequestAction');                 // 应用宝平台支付
