@@ -45,11 +45,8 @@ class Handler extends ExceptionHandler
     public function render($request, \Exception $exception)
     {
         // XXX 在抛出错误时调用 Controller::onError
-        if(env('APP_DEBUG')){
-            return parent::render($request, $exception);
-        } else {
-            return $request->route()->getController()->onError($request, $exception);
-        }
+        //return parent::render($request, $exception);
+        return $request->route()->getController()->onError($request, $exception);
     }
 
     /**
