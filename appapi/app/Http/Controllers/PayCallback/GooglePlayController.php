@@ -2,9 +2,16 @@
 namespace App\Http\Controllers\PayCallback;
 
 use Illuminate\Http\Request;
+use Illuminate\Http\Response;
+use App\Exceptions\ApiException;
+use App\Exceptions\Exception;
 
 class GooglePlayController extends Controller {
 
+    /**
+     * @param Request $request   token,out_trade_no,transaction_id,packageName,productId
+     * @return array
+     */
     protected function getData(Request $request) {
         try {
             $config = config('common.payconfig.googleplay');
@@ -25,7 +32,7 @@ class GooglePlayController extends Controller {
 
             return array_merge($_REQUEST, $resp);
 
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             log_error('googleplay_error', null, $e->getCode().'|'.$e->getMessage());
             return $_REQUEST;
         }
@@ -51,6 +58,16 @@ class GooglePlayController extends Controller {
     }
 
     protected function onComplete($data, $order, $isSuccess) {
-        return 'success';
+        if($isSuccess){
+            $code = ApiException::Success;
+        } else {
+            $code = ApiException::Error;
+        }
+        $content = [
+            'code' =>$code,
+            'msg' => null,
+            'data' => null
+        ];
+        return response($content);
     }
 }
