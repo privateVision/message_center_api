@@ -12,23 +12,7 @@ use App\Model\ZyCoupon;
 use App\Model\ProceduresProducts;
 
 class OrderController extends Controller {
-/*
-    use CreateOrderAction;
 
-    protected function onCreateOrder(Orders $order) {
-        $fee = $this->parameter->tough('fee');
-        $body = $this->parameter->tough('body');
-        $subject = $this->parameter->tough('subject');
-        $vorderid = $this->parameter->tough('vorderid');
-        $notify_url = $this->parameter->tough('notify_url');
-
-        $order->notify_url = $notify_url;
-        $order->vorderid = $vorderid;
-        $order->fee = $fee;
-        $order->subject = $subject;
-        $order->body = $body;
-    }
-*/
     public function NewAction() {
         $zone_id = $this->parameter->get('zone_id', '');
         $zone_name = $this->parameter->get('zone_name', '');
@@ -40,14 +24,15 @@ class OrderController extends Controller {
 
         $pid = $this->procedure->pid;
 
-        // 是否强制实名制
-
-        if(($this->procedure_extend->enable & 0x0000000C) == 0x0000000C) { /*[3:2]*/
+        // TODO 是否强制实名制，改成在发起支付时再判断
+        /*
+        if(($this->procedure_extend->enable & 0x0000000C) == 0x0000000C) {
             $user_info = UcuserInfo::from_cache($this->user->ucid);
             if(!$user_info || !$user_info->card_no) {
                 throw new ApiException(ApiException::NotRealName, trans('messages.check_in_before_pay'));
             }
         }
+        */
 
         // 如果是买F币不用通知地址，否则如果没有通知地址则去数据库看有没有预设置
         if($pid < 100) {
@@ -73,7 +58,7 @@ class OrderController extends Controller {
             $body = $this->parameter->tough('body');
             $subject = $this->parameter->tough('subject');
         } else {
-            $product = ProceduresProducts::where('cp_product_id', $product_id)->first();
+            $product = ProceduresProducts::where('cp_product_id', $product_id)->where('pid', $pid)->first();
 
             if(!$product) throw new ApiException(ApiException::Error, trans('messages.product_not_exists')); // LANG:product_not_exists
 
@@ -116,6 +101,7 @@ class OrderController extends Controller {
         $order_extend->role_level = $role_level;
         $order_extend->role_name = $role_name;
         $order_extend->product_type = $product_type;
+        $order_extend->product_id = isset($product) ? $product->id : 0;
         $order_extend->save();
 
         $order->getConnection()->commit();
@@ -128,59 +114,67 @@ class OrderController extends Controller {
         // 可用的支付方式
         $pay_methods = [];
 
-        $iap = ($this->procedure_extend->pay_method & 0x01) != 0;
+        $iap = (($this->procedure_extend->enable & 0x00000100) == 0);
 
         // 如果设置了切换金额，则在充值达到此额度时关闭iap
         if($this->procedure_extend->pay_switch_fee > 0 && $this->procedure_extend->pay_switch_fee <= ($fee * 100)) {
             $iap = false;
         }
 
-        // 官方支付和购买F币不允许使用储值卡或优惠券
-        if(!$iap && $product_type != 1) {
-            $result = UcusersVC::where('ucid', $this->user->ucid)->get();
-            foreach($result as $v) {
-                $fee = $v->balance * 100;
-                if(!$fee) continue;
+        // 非官方支付
+        if(!$iap) {
+            // 购买F币不允许使用储值卡或优惠券
+            if($product_type != 1) {
+                $result = UcusersVC::where('ucid', $this->user->ucid)->get();
+                foreach($result as $v) {
+                    $fee = $v->balance * 100;
+                    if(!$fee) continue;
 
-                $rule = VirtualCurrencies::from_cache($v->vcid);
-                if(!$rule) continue;
+                    $rule = VirtualCurrencies::from_cache($v->vcid);
+                    if(!$rule) continue;
 
-                $e = $rule->is_valid($pid);
-                if($e === false) continue;
+                    $e = $rule->is_valid($pid);
+                    if($e === false) continue;
 
-                $list[] = [
-                    'id' => encrypt3des(json_encode(['oid' => $order->id, 'type' => 1, 'fee' => $fee, 'id' => $v->vcid, 'e' => $e])),
-                    'fee' => $fee,
-                    'name' => $rule->vcname,
-                ];
+                    $list[] = [
+                        'id' => encrypt3des(json_encode(['oid' => $order->id, 'type' => 1, 'fee' => $fee, 'id' => $v->vcid, 'e' => $e])),
+                        'fee' => $fee,
+                        'name' => $rule->vcname,
+                    ];
+                }
+
+                $result = ZyCouponLog::where('ucid', $this->user->ucid)->where('is_used', false)->whereIn('pid', [0, $pid])->get();
+                foreach($result as $v) {
+                    $rule = ZyCoupon::from_cache($v->coupon_id);
+                    if(!$rule) continue;
+
+                    $fee = $rule->money;
+                    if(!$fee) continue;
+
+                    $e = $rule->is_valid($pid, $order->fee, $order_is_first);
+                    if($e === false) continue;
+
+                    $list[] = [
+                        'id' => encrypt3des(json_encode(['oid' => $order->id, 'type' => 2, 'fee' => $fee, 'id' => $v->id, 'e' => $e])),
+                        'fee' => $fee,
+                        'name' => $rule->name,
+                    ];
+                }
             }
 
-            $result = ZyCouponLog::where('ucid', $this->user->ucid)->where('is_used', false)->whereIn('pid', [0, $pid])->get();
-            foreach($result as $v) {
-                $rule = ZyCoupon::from_cache($v->coupon_id);
-                if(!$rule) continue;
-
-                $fee = $rule->money;
-                if(!$fee) continue;
-
-                $e = $rule->is_valid($pid, $order->fee, $order_is_first);
-                if($e === false) continue;
-
-                $list[] = [
-                    'id' => encrypt3des(json_encode(['oid' => $order->id, 'type' => 2, 'fee' => $fee, 'id' => $v->id, 'e' => $e])),
-                    'fee' => $fee,
-                    'name' => $rule->name,
-                ];
-            }
-
-            // 读取可用的支付方式
+            // 从procedures_extend.pay_method读取可用的支付方式
 
             $pay_methods_config = config('common.pay_methods');
 
-            for($i = 1; $i < 32; $i++) {
-                $_i = 1 << $i;
-                if(($this->procedure_extend->pay_method & $_i) != 0 && isset($pay_methods_config[$_i])) {
-                    $pay_methods[] = $pay_methods_config[$_i];
+            for($i = 0; $i <= 31; $i++) {
+                $pay_method = @$pay_methods_config[floor($i/4)];
+                if(!$pay_method) continue;
+
+                if(($this->procedure_extend->pay_method & (1 << $i)) == 0) continue;
+
+                if(in_array($i % 4, $pay_method['pay_type'])) {
+                    $pay_method['pay_type'] = $i % 4;
+                    $pay_methods[floor($i/4)] = $pay_method;
                 }
             }
         }
@@ -195,7 +189,7 @@ class OrderController extends Controller {
             'balance' => $this->user->balance,
             'coupons' => $list,
             'iap' => $iap,
-            'pay_methods' => $pay_methods,
+            'pay_methods' => array_values($pay_methods),
             'package' => $this->procedure_extend->package_name,
         ];
     }

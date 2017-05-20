@@ -99,6 +99,9 @@ trait RequestAction {
             order_success($order->id);
         }
 
+        // order_extend
+        $order_extend = OrderExtend::find($order->id);
+
         // 获取配置传给子类
         $config = config('common.payconfig.'.static::PayText);
         if(!$config) {
@@ -121,6 +124,10 @@ trait RequestAction {
             $data['url_scheme'] = $this->getUrlScheme($config, $order, $fee);
         } elseif($pay_type == 2) {
             $data['url'] = $this->getUrl($config, $order, $fee);
+            $callback = $this->parameter->get('callback');
+            if($callback) {
+                $order_extend->callback = $callback;
+            }
         } else {
             throw new ApiException(ApiException::Remind, trans('messages.not_allow_pay_type'));
         }
@@ -128,14 +135,13 @@ trait RequestAction {
         $order->paymentMethod = static::PayTypeText;
         $order->real_fee = $fee;
         $order->save();
-        $order->getConnection()->commit();
 
-        // order_extend
-        $order_extend = OrderExtend::find($order->id);
         $order_extend->pay_method = static::PayMethod;
         $order_extend->pay_type = $pay_type;
         $order_extend->real_fee = $fee;
         $order_extend->asyncSave();
+
+        $order->getConnection()->commit();
 
         return $data;
     }

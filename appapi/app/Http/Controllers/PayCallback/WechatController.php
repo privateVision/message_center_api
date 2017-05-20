@@ -5,7 +5,6 @@ use Illuminate\Http\Request;
 
 class WechatController extends Controller {
 
-    const PayType = '-5';
 
     protected function getData(Request $request) {
         $content = file_get_contents('php://input', 'r');

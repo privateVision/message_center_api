@@ -5,11 +5,13 @@
  * Date: 2017/3/21
  * Time: 14:40
  */
-namespace App\Http\Controllers\Api\Pay ;
+namespace App\Http\Controllers\Api\Pay;
 
 use App\Exceptions\ApiException;
-use App\Model\IosOrderExt;
+use App\Model\IosReceiptLog;
 use App\Model\Orders;
+
+use App\Model\IosOrderExt;
 use App\Model\OrderExtend;
 use App\Model\UcuserInfo;
 use App\Model\UcusersVC;
@@ -21,9 +23,73 @@ class  IOSController extends Controller{
 
     use VerifyAction;
 
-    protected function getData() {
+    protected function getTradeOrderNo($data) {
+        return $this->parameter->tough('transaction_id');
+    }
+
+    protected function verify($data, Orders $order) {
 
     }
+
+    protected function handler($data, Orders $order, OrderExtend $order_extend) {
+        $transaction_id = $this->parameter->tough('transaction_id');
+        $receipt = $this->parameter->tough('receipt');
+
+        $receipt_md5 = md5(urldecode($receipt));
+        if(IosReceiptLog::where('receipt_md5', $receipt_md5)->first()) {
+            return true;
+        }
+
+        $verify_result = $this->verifyReceipt($receipt, ($this->procedure_extend->enable & 0x00000080) != 0);
+
+        if($verify_result['transaction_id'] != $transaction_id) {
+            throw new ApiException(ApiException::Remind, trans('messages.order_verify_fail'));
+        }
+
+    }
+
+    protected function getData() {
+        return [];
+    }
+
+    protected function getFee() {
+
+    }
+
+    protected function verifyReceipt($receipt, $sandbox) {
+        $config = config('common.payconfog.ios');
+
+        if ($sandbox) {
+            $url = $config['verifyReceipt_sandbox'];
+        } else {
+            $url = $config['verifyReceipt'];
+        }
+
+        $data = json_encode(['receipt-data' => $receipt]);
+
+        $ch = curl_init($url);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_POST, true);
+        curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, 0);  // 这两行一定要加，不加会报SSL 错误
+        curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 0);
+        $response = curl_exec($ch);
+
+        log_debug('ios_verify_receipt', ['resdata' => $response, 'reqdata' => $data], $url);
+
+        if (!$response) {
+            throw new ApiException(ApiException::Remind, trans('messages.order_verify_fail'));
+        }
+
+        $response = json_decode($response, true);
+        if (!$response || !isset($response['status']) || $response['status'] != 0) {
+            throw new ApiException(ApiException::Remind, trans('messages.order_verify_fail'));
+        }
+
+        return $response['receipt'];
+    }
+
+    // ---------------------------------------------------------------------------------------------------------------
 
     /*
      * 验证苹果信息
@@ -90,6 +156,7 @@ class  IOSController extends Controller{
         }
         //订单完成，通知发货，添加日志记录
     }
+
     //验证
     protected function getReceiptData($receipt, $isSandbox = false) {
         if ($isSandbox) {

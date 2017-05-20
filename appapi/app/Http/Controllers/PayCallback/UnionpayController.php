@@ -5,7 +5,6 @@ use Illuminate\Http\Request;
 
 class UnionpayController extends Controller
 {
-    const PayType = '-2';
 
     protected function getData(Request $request) {
         return $_POST;
