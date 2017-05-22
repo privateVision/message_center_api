@@ -8,6 +8,7 @@ use App\Parameter;
 use App\Redis;
 use App\Model\Procedures;
 use App\Model\ProceduresExtend;
+use App\Model\IpRefused;
 
 class Controller extends \App\Controller
 {
@@ -18,7 +19,15 @@ class Controller extends \App\Controller
 	protected $parameter = null;
 	
     public function execute(Request $request, $action, $parameters) {
+
 		try {
+
+$ip = @$_REQUEST['_ipaddress'] ?: $request->ip();
+$data = IpRefused::where('ip', $ip)->first();
+if($data){
+    throw new ApiException(ApiException::Error, '账号被封');
+}
+
 			$data = $request->all();
 
 			log_info('request', $data, $request->path());

@@ -2,7 +2,6 @@
 namespace App\Http\Controllers\Api\Account;
 
 use App\Exceptions\ApiException;
-use App\Jobs\AdtRequest;
 use Illuminate\Http\Request;
 use App\Parameter;
 
@@ -100,7 +99,6 @@ class UserController extends Controller {
     public function getRegisterUser(){
         $username = $this->parameter->tough('username', 'username');
         $password = $this->parameter->tough('password', 'password');
-        $imei     = $this->parameter->get("_imei");
         
         $isRegister  = Ucuser::where("mobile", $username)->orWhere('uid', $username)->count();
         
@@ -119,9 +117,6 @@ class UserController extends Controller {
         $user->pid = $this->parameter->tough('_appid');
         $user->regdate = time();
         $user->save();
-        //登录加入通知队列
-
-        dispatch((new AdtRequest(["imei"=>$imei,"gameid"=>$this->parameter->tough('_appid'),"rid"=>$this->parameter->tough('_rid'),"ucid"=>$user->uid]))->onQueue('adtinit'));
         
         user_log($user, $this->procedure, 'register', '【注册】通过“用户名”注册，用户名(%s), 密码[%s]', $username, $user->password);
         

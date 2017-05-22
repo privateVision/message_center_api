@@ -295,7 +295,7 @@ function send_sms($mobile, $pid, $template_id, $repalce, $code = '') {
         throw new \App\Exceptions\Exception('短信发送过于频繁');
     }
 
-    if(!env('APP_DEBUG') && Redis::get(sprintf('sms_%s_hourlimit', $mobile)) >= 10 ) {
+    if(!env('APP_DEBUG') && Redis::get(sprintf('sms_%s_hourlimit', $mobile)) >= 3 ) {
         throw new \App\Exceptions\Exception('短信发送次数超过限制，请稍候再试');
     }
 

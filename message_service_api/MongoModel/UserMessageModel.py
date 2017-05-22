@@ -10,7 +10,6 @@ class UserMessage(DynamicDocument):
     meta = {
         'collection': 'sdk_api_user_message',
         'indexes': [
-            ('type', 'ucid', 'closed'),
             {'fields': ['expireAt'], 'expireAfterSeconds': 0}
         ]
     }
