@@ -9,6 +9,7 @@ use App\Model\ProceduresExtend;
 use App\Model\Procedures;
 use App\Model\UcuserSub;
 use App\Model\ZyGame;
+use App\Model\UcuserSubService;
 
 class UserSubController extends AuthController
 {
@@ -138,5 +139,28 @@ class UserSubController extends AuthController
                 'last_login_at' => "",
             ];
         });
+    }
+
+    public function FreezeSubAction()
+    {
+        $subUserId = $this->parameter->tough('sub_user_id');
+        $srcUcid = $this->parameter->tough('ucid');
+        $status = $this->parameter->tough('status');
+
+        $userSub = UcuserSub::tableSlice($srcUcid)->where('id', $subUserId)->where('ucid', $srcUcid)->first();
+
+        if(!$userSub){
+            throw new ApiException(ApiException::Remind, trans('messages.game_sub_user_err'));
+        }
+
+        $ucuserSubService = new UcuserSubService();
+        $ucuserSubService->ucid = 0;
+        $ucuserSubService->user_sub_id = $subUserId;
+        $ucuserSubService->pid = $pid;
+        $ucuserSubService->src_ucid = $srcUcid;
+        $ucuserSubService->status = $status;
+        $ucuserSubService->save();
+
+        return [];
     }
 }

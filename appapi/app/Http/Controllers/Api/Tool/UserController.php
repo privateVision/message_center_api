@@ -93,7 +93,7 @@ class UserController extends AuthController
             'username'=>$user->uid,
             'uid'=>$user->ucid,
             'mobile'=>$user->mobile,
-            'sub'=>$userSubs,
+            'subInfo'=>$userSubs,
             'total_fee'=>$total_fee,
         ];
     }
