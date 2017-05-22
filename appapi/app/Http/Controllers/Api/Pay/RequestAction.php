@@ -118,7 +118,7 @@ trait RequestAction {
 
         if($pay_type == 0) {
             // XXX 为了兼容旧的代码
-            // $data['data'] = $this->getData($config, $order, $fee);
+            // $data['data'] = $this->getData($config, $order, $order_extend, $fee);
             $data = array_merge($data, $this->getData($config, $order, $order_extend, $fee));
         } elseif($pay_type == 1) {
             $data['url_scheme'] = $this->getUrlScheme($config, $order, $order_extend, $fee);

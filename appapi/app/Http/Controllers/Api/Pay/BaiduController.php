@@ -21,7 +21,7 @@ class BaiduController extends Controller {
      * @param $accountId
      * @return array
      */
-    public function getData($config, Orders $order, $real_fee, OrderExtend $order_extend, Request $request) {
+    public function getData($config, Orders $order, OrderExtend $order_extend, $real_fee) {
         return [
             'data' => array()
         ];
