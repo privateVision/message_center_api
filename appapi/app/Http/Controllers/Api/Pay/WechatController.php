@@ -1,10 +1,9 @@
 <?php
 namespace App\Http\Controllers\Api\Pay;
 
-use Illuminate\Http\Request;
 use App\Exceptions\ApiException;
-use App\Parameter;
 use App\Model\Orders;
+use App\Model\OrderExtend;
 
 class WechatController extends Controller {
 
@@ -14,21 +13,21 @@ class WechatController extends Controller {
     const PayText = 'wechat';
     const PayTypeText = '微信';
 
-    public function getData($config, Orders $order, $real_fee)
+    public function getData($config, Orders $order, OrderExtend $order_extend, $real_fee)
     {
         // XXX 兼容旧版IOS返回scheme
 
         $restype = $this->parameter->get('restype');
         if($restype  == 'protocol') {
             return [
-                'protocol' => $this->getUrlScheme($config, $order, $real_fee),
+                'protocol' => $this->getUrlScheme($config, $order, $order_extend, $real_fee),
             ];
         } else {
             return $this->request($config, $order, $real_fee);
         }
     }
 
-    public function getUrlScheme($config, Orders $order, $real_fee) {
+    public function getUrlScheme($config, Orders $order, OrderExtend $order_extend, $real_fee) {
         $responseData = $this->request($config, $order, $real_fee);
 
         return sprintf('weixin://app/%s/pay/?%s', $config['appid'], http_build_query([

@@ -5,7 +5,6 @@ use Illuminate\Http\Request;
 
 class MycardController extends Controller
 {
-    const PayType = '-7';
 
     protected function getData(Request $request) {
         return $_POST;
@@ -30,30 +29,11 @@ class MycardController extends Controller
     }
 
     protected function onComplete($data, $order, $isSuccess) {
-        $html = '';
-        $html.= '<doctype html!>';
-        $html.= '<html>';
-        $html.= '<meta http-equiv="Content-Type" content="text/html;charset=UTF-8">';
-        $html.= '<head>';
-        $html.= '<title></title>';
-        $html.= '<script type="text/javascript">';
-
         if($isSuccess) {
-            $msg = trans('messages.mycard_callback_success', ['name' => $order ? $order->subject : trans('messages.product_default_name')]);
-            $html .= 'window.mycard.payResult(true, "'.$msg.'")';
+            return trans('messages.mycard_callback_success', ['name' => $order ? $order->subject : trans('messages.product_default_name')]);
         } else {
-            $msg = trans('messages.mycard_callback_fail', ['name' => $order ? $order->subject : trans('messages.product_default_name'), 'ReturnMsg' => urldecode(@$data['ReturnMsg'])]);
-            $html .= 'window.mycard.payResult(false, "'.$msg.'")';
+            return trans('messages.mycard_callback_fail', ['name' => $order ? $order->subject : trans('messages.product_default_name'), 'ReturnMsg' => urldecode(@$data['ReturnMsg'])]);
         }
-
-        $html.= '</script>';
-        $html.= '</head>';
-        $html.= '<body>';
-        $html.= $msg;
-        $html.= '<body>';
-        $html.= '</html>';
-
-        return $html;
     }
 
     protected static function mycard_hash($data, $key) {

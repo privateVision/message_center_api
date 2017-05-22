@@ -5,7 +5,6 @@ use Illuminate\Http\Request;
 
 class AlipayController extends Controller
 {
-    const PayType = '-1';
 
     protected function getData(Request $request) {
         return $_POST;

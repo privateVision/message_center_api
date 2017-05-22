@@ -3,6 +3,7 @@ namespace App\Http\Controllers\Api\Pay;
 
 use App\Exceptions\ApiException;
 use App\Model\Orders;
+use App\Model\OrderExtend;
 
 class FController extends Controller {
 
@@ -12,7 +13,7 @@ class FController extends Controller {
     const PayText = 'fb';
     const PayTypeText = 'F币或卡券直接支付';
 
-    public function getData($config, Orders $order, $real_fee) {
+    public function getData($config, Orders $order, OrderExtend $order_extend, $real_fee) {
         if($real_fee > 0) {
             throw new ApiException(ApiException::Remind, trans('messages.order_not_use_f'));
         }

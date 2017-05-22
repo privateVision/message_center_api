@@ -3,6 +3,7 @@ namespace App\Http\Controllers\Api\Pay;
 
 use App\Exceptions\ApiException;
 use App\Model\Orders;
+use App\Model\OrderExtend;
 
 class MycardController extends Controller {
 
@@ -12,7 +13,7 @@ class MycardController extends Controller {
     const PayText = 'mycard';
     const PayTypeText = 'MyCard';
 
-    public function getUrl($config, Orders $order, $real_fee) {
+    public function getUrl($config, Orders $order, OrderExtend $order_extend, $real_fee) {
         $data['FacServiceId'] = $config['FacServiceId'];
         $data['FacTradeSeq'] = $order->sn;
         $data['TradeType'] = '2';

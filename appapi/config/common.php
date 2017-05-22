@@ -46,11 +46,11 @@ return [
 
     'pay_methods' => [
         // pay_type，该支付方式支持的支付场景，0sdk,1url_scheme,2web
-        2 => ['type' => 'wechat', 'api' => 'api/pay/wechat/request', 'pay_type' => [0,1]],
-        4 => ['type' => 'alipay', 'api' => 'api/pay/alipay/request', 'pay_type' => [0,1]],
-        8 => ['type' => 'unionpay', 'api' => 'api/pay/unionpay/request', 'pay_type' => [0]],
-        16 => ['type' => 'mycard', 'api' => 'api/pay/mycard/request', 'pay_type' => [2]],
-        32 => ['type' => 'nowpay_wechat', 'api' => 'api/pay/nowpay_wechat/request', 'pay_type' => [0]],
+        0 => ['type' => 'wechat', 'api' => 'api/pay/wechat/request', 'pay_type' => [0,1]],
+        1 => ['type' => 'alipay', 'api' => 'api/pay/alipay/request', 'pay_type' => [0,1]],
+        2 => ['type' => 'unionpay', 'api' => 'api/pay/unionpay/request', 'pay_type' => [0]],
+        3 => ['type' => 'mycard', 'api' => 'api/pay/mycard/request', 'pay_type' => [2]],
+        4 => ['type' => 'nowpay_wechat', 'api' => 'api/pay/nowpay_wechat/request', 'pay_type' => [0]],
     ],
 
     'payconfig' => [
@@ -118,6 +118,7 @@ return [
             'autocode_url' => env('APP_DEBUG') ? 'https://test.b2b.mycard520.com.tw/MyBillingPay/api/AuthGlobal' : 'https://b2b.mycard520.com.tw/MyBillingPay/api/AuthGlobal',
             'webpay_url' => env('APP_DEBUG') ? 'https://test.mycard520.com.tw/MyCardPay/' : 'https://www.mycard520.com.tw/MyCardPay/',
             'pay_result_url' => env('APP_DEBUG') ? 'https://test.b2b.mycard520.com.tw/MyBillingPay/api/TradeQuery' : 'https://b2b.mycard520.com.tw/MyBillingPay/api/TradeQuery',
+            'server_host' => env('APP_DEBUG') ? '218.32.37.148' : '220.130.127.125',
         ],
 
         //https://console.developers.google.com/iam-admin/serviceaccounts/project?project=api-project-70324813277

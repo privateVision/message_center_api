@@ -3,7 +3,7 @@ namespace App\Http\Controllers\Api\Pay;
 
 use Illuminate\Http\Request;
 use App\Exceptions\ApiException;
-use App\Parameter;
+use App\Model\OrderExtend;
 use App\Model\Orders;
 
 class BaiduController extends Controller {
@@ -21,7 +21,7 @@ class BaiduController extends Controller {
      * @param $accountId
      * @return array
      */
-    public function getData($config, Orders $order, $real_fee, Request $request) {
+    public function getData($config, Orders $order, OrderExtend $order_extend, $real_fee) {
         return [
             'data' => array()
         ];
