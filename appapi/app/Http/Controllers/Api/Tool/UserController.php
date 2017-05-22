@@ -96,6 +96,5 @@ class UserController extends AuthController
             'sub'=>$userSubs,
             'total_fee'=>$total_fee,
         ];
-
     }
 }
