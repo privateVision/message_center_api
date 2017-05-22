@@ -79,6 +79,7 @@ return [
     'order_status_error'                    => '订单状态不正确，或已完成', // 在尝试处理订单时，发现订单已经被处理过
     'order_extend_info_error'               => '订单扩展数据异常',
     'http_request_error'                    => '连接第三方服务器失败',
+    'game_not_found'                        => '游戏不存在',
 ];
 /*
 return [
