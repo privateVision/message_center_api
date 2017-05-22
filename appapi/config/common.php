@@ -120,16 +120,6 @@ return [
             'pay_result_url' => env('APP_DEBUG') ? 'https://test.b2b.mycard520.com.tw/MyBillingPay/api/TradeQuery' : 'https://b2b.mycard520.com.tw/MyBillingPay/api/TradeQuery',
         ],
 
-<<<<<<< HEAD
-        'googleplay' => [
-            'cert' => __DIR__ . '/google_play.json'
-        ],
-
-        'ios' => [
-            'verifyReceipt_sandbox' => 'https://sandbox.itunes.apple.com/verifyReceipt',
-            'verifyReceipt' => 'https://buy.itunes.apple.com/verifyReceipt',
-        ],
-=======
         //https://console.developers.google.com/iam-admin/serviceaccounts/project?project=api-project-70324813277
         'googleplay'=>[
             'cert' => __DIR__ . '/google_play.json'  //通过google play控制台生产秘钥账号
@@ -143,6 +133,5 @@ return [
             'port'=>'80',
             'prefix'=>'ng/cp/'
         ]
->>>>>>> e74101cd396da95a566361d237cc7120158af8c4
     ],
 ];

@@ -73,14 +73,11 @@ return [
     'not_payconfig'                         => '未获取到支付配置', // error
     'not_allow_pay_type'                    => '不支持该支付场景', // error
     'app_package_not_set'                   => 'procedures_extend.package_name 未配置', // error
-<<<<<<< HEAD
     'ipfreeze'                              => '设备被封',
     'order_verify_fail'                     => '订单验证失败', // error
     'order_handle_fail'                     => '订单处理失败', // error
     'order_status_error'                    => '订单状态不正确，或已完成', // 在尝试处理订单时，发现订单已经被处理过
-=======
     'http_request_error'                    => '连接第三方服务器失败',
->>>>>>> e74101cd396da95a566361d237cc7120158af8c4
 ];
 /*
 return [
