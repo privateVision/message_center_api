@@ -77,8 +77,8 @@ return [
     'order_verify_fail'                     => '订单验证失败', // error
     'order_handle_fail'                     => '订单处理失败', // error
     'order_status_error'                    => '订单状态不正确，或已完成', // 在尝试处理订单时，发现订单已经被处理过
+    'order_extend_info_error'               => '订单扩展数据异常',
     'http_request_error'                    => '连接第三方服务器失败',
-    'order_not_exist'                       => '订单信息不存在',
 ];
 /*
 return [

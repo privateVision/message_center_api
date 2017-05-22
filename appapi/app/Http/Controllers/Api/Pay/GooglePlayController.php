@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api\Pay;
 use App\Exceptions\ApiException;
 use App\Model\Orders;
 use App\Model\OrderExtend;
+use App\Model\ProceduresProducts;
 
 class GooglePlayController extends Controller {
 
@@ -21,34 +22,38 @@ class GooglePlayController extends Controller {
      * @return array
      */
     public function getData($config, Orders $order, OrderExtend $order_extend, $real_fee) {
+        $packageName = $this->parameter->tough('packageName');
+        $token = $this->parameter->tough('token');
+
+        //获取订单扩展信息
+        $product_id = isset($order_extend['product_id'])?$order_extend['product_id']:'';
+        if(!$product_id){
+            throw new ApiException(ApiException::Remind,  trans('order_extend_info_error'));
+        }
+
+        $product_extend = ProceduresProducts::find($product_id);
+        if(!$product_extend){
+            throw new ApiException(ApiException::Remind,  trans('order_extend_info_error'));
+        }
+
+        $status = self::handler($product_extend['third_product_id'], $packageName, $token);
+        if($status == 1){
+            //支付成功
+            order_success($order->id);
+        }
+
         return [
-            'data' => array()
+            'data' => array(
+                'packageName'=>$packageName,
+                'productId'=>$product_extend['third_product_id'],
+                'token'=>$token,
+                'status'=>$status
+            )
         ];
     }
 
-
-    /**
-     * @param order_id
-     * @param token
-     */
-    public function payStatusAction(Request $request){
-        $order_id = $this->parameter->tough('order_id');
-        $token = $this->parameter->tough('token');
-
-        $order = null;
-        if($order_id) {
-            $order = Orders::from_cache_sn($order_id);
-        }
-
-        if(!$order) {
-            throw new ApiException(ApiException::Remind,  trans('order_not_exist'));
-        }
-
-        //获取订单扩展信息
-
-
-
-        try {
+    protected function handler($productId, $packageName, $token){
+         try {
             $config = config('common.payconfig.googleplay');
             putenv('GOOGLE_APPLICATION_CREDENTIALS=' .$config['cert']);
 
@@ -59,17 +64,17 @@ class GooglePlayController extends Controller {
             //初始化服务
             $service = new \Google_Service_AndroidPublisher( $client );
 
-            $packageName = $_REQUEST['packageName'];
-            $productId = $_REQUEST['productId'];
-            $token = $_REQUEST['token'];
             $optps = array();
             $resp = $service->purchases_products->get( $packageName, $productId, $token, $optps );
 
-            return array_merge($_REQUEST, $resp);
-
+            if($resp['consumptionState'] == 1 && $resp['purchaseState'] == 0){
+                return 1;
+            } else {
+                return 2;
+            }
         } catch (\Exception $e) {
             log_error('googleplay_error', null, $e->getCode().'|'.$e->getMessage());
-            return $_REQUEST;
+            return 3;
         }
     }
 }
