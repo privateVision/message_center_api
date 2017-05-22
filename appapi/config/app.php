@@ -180,6 +180,9 @@ return [
         // mongodb
         Jenssegers\Mongodb\MongodbServiceProvider::class,
         Laravel\Tinker\TinkerServiceProvider::class,
+
+        //laravel_ide_helper
+        Barryvdh\LaravelIdeHelper\IdeHelperServiceProvider::class,
     ],
 
     /*

@@ -24,9 +24,10 @@ class YingYongBaoController extends Controller
     /**
      * @param $config
      * @param Orders $order
+     * @param OrderExtend $order_extend
      * @param $real_fee
-     * @param $accountId
      * @return array
+     * @internal param $accountId
      */
     public function getData($config, Orders $order, OrderExtend $order_extend, $real_fee) {
         return [
@@ -36,7 +37,7 @@ class YingYongBaoController extends Controller
 
 
     //查询余额
-    public function getBalanceMAction()
+    public function getBalanceM()
     {
         $params = array(
             'openid' => $this->parameter->tough('openid'),
@@ -54,7 +55,7 @@ class YingYongBaoController extends Controller
     }
 
     //扣除游戏币
-    public function payMAction()
+    public function payM()
     {
         $params = array(
             'openid' => $this->parameter->tough('openid'),
@@ -74,7 +75,7 @@ class YingYongBaoController extends Controller
     }
 
     //取消支付
-    public function cancelPayMAction()
+    public function cancelPayM()
     {
         $params = array(
             'openid' => $this->parameter->tough('openid'),

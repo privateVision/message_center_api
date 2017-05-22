@@ -96,6 +96,7 @@ Route::group(['prefix' => 'api'], function () {
     Route::any('tool/user/reset_password_page','Api\\Tool\\UserController@ResetPasswordPageAction');        // 获取重设密码页面
     Route::any('tool/user/freeze','Api\\Tool\\UserController@FreezeAction');                                // 冻结用户
     Route::any('tool/procedure/query','Api\\Tool\\ProcedureController@QueryAction');                        // 通过包名查询procedure
+    Route::any('tool/user/auth', 'Api\\Tool\\UserController@AuthAccountAction');
     
     Route::any('v1.0/cp/info/order','Api\\CP\\OrderController@GetOrderInfoAction');                          //获取订单信息
     Route::any('v1.0/cp/user/auth','Api\\CP\\UserController@CheckAuthAction');                               //验证登陆是否有效
