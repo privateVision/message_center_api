@@ -97,4 +97,5 @@ class UserController extends AuthController
             'total_fee'=>$total_fee,
         ];
     }
+
 }
