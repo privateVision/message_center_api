@@ -27,7 +27,7 @@ $env = $app->detectEnvironment(function () {
         $setEnv = $_SERVER['HTTP_HOST'] == 'sdkv4.qcwan.com'?'online' : ($_SERVER['HTTP_HOST'] == 'sdkv4test.qcwanwan.com'?'testing':'local');
     }
     //兼容.env配置APP_ENV=local或者local两种格式
-    $setEnv = str_replace($setEnv, 'APP_ENV=', '');
+    $setEnv = str_replace('APP_ENV=', '', $setEnv);
     putenv("APP_ENV=$setEnv");
     if(getenv('APP_ENV') && file_exists(__DIR__ . '/../.' . '.env.' . getenv('APP_ENV'))) {
         Dotenv::load(__DIR__ . '/../', '.' . '.env.' . getenv('APP_ENV'));
