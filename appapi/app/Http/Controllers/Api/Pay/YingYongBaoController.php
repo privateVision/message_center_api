@@ -15,7 +15,10 @@ define('OPENAPI_ERROR_CURL', 1900); // 网络错误, 偏移量1900, 详见 http:
 
 class YingYongBaoController extends Controller
 {
+    use RequestAction;
+
     const PayType = '-9';
+    const PayText = 'yyb';
     const PayTypeText = '应用宝';
 
     //查询余额
