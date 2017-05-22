@@ -2,9 +2,8 @@
 
 namespace App\Http\Controllers\Api\Pay;
 
+use App\Model\OrderExtend;
 use App\Model\Orders;
-use Illuminate\Http\Request;
-use App\Model\ProceduresExtend;
 /**
  * 错误码定义
  */
@@ -17,9 +16,24 @@ class YingYongBaoController extends Controller
 {
     use RequestAction;
 
-    const PayType = '-9';
-    const PayText = 'yyb';
-    const PayTypeText = '应用宝';
+
+    const PayMethod = '-9';
+    const PayText = 'yingyongbao';
+    const PayTypeText = '应用宝平台支付';
+
+    /**
+     * @param $config
+     * @param Orders $order
+     * @param $real_fee
+     * @param $accountId
+     * @return array
+     */
+    public function getData($config, Orders $order, OrderExtend $order_extend, $real_fee) {
+        return [
+            'data' => array()
+        ];
+    }
+
 
     //查询余额
     public function getBalanceMAction()

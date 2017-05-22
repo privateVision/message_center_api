@@ -132,7 +132,9 @@ class UserController extends AuthController
         $order = $order->where('ucid', $this->user->ucid);
         $order = $order->where('hide', 0);
         $order = $order->where('status', '!=', Orders::Status_WaitPay);
+
         $count = $order->count();
+
         $order = $order->orderBy('id', 'desc');
         $order = $order->take($limit)->skip($offset)->get();
 
@@ -160,9 +162,11 @@ class UserController extends AuthController
         $order = Orders::whereIsNotF();
         $order = $order->where('ucid', $this->user->ucid);
         $order = $order->where('hide', 0);
+        $order = $order->where('vid', $this->procedure->pid);
         $order = $order->where('status', '!=', Orders::Status_WaitPay);
         
         $count = $order->count();
+
         $order = $order->orderBy('id', 'desc');
         $order = $order->take($limit)->skip($offset)->get();
 

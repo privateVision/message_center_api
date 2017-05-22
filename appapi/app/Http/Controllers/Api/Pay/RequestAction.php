@@ -1,9 +1,7 @@
 <?php
 namespace App\Http\Controllers\Api\Pay;
 
-use Illuminate\Http\Request;
 use App\Exceptions\ApiException;
-use App\Parameter;
 use App\Model\Orders;
 use App\Model\OrdersExt;
 use App\Model\OrderExtend;
@@ -97,9 +95,12 @@ trait RequestAction {
             $ordersExt->fee = $fee / 100;
             $ordersExt->save();
         } else {
-            // XXX 不用支付，直接发货，客户端调用另一个接口实现
-            // order_success($order->id);
+            // XXX 不用支付，直接发货
+            order_success($order->id);
         }
+
+        // order_extend
+        $order_extend = OrderExtend::find($order->id);
 
         // 获取配置传给子类
         $config = config('common.payconfig.'.static::PayText);
@@ -117,12 +118,12 @@ trait RequestAction {
 
         if($pay_type == 0) {
             // XXX 为了兼容旧的代码
-            // $data['data'] = $this->getData($config, $order, $fee);
-            $data = array_merge($data, $this->getData($config, $order, $fee));
+            // $data['data'] = $this->getData($config, $order, $order_extend, $fee);
+            $data = array_merge($data, $this->getData($config, $order, $order_extend, $fee));
         } elseif($pay_type == 1) {
-            $data['url_scheme'] = $this->getUrlScheme($config, $order, $fee);
+            $data['url_scheme'] = $this->getUrlScheme($config, $order, $order_extend, $fee);
         } elseif($pay_type == 2) {
-            $data['url'] = $this->getUrl($config, $order, $fee);
+            $data['url'] = $this->getUrl($config, $order, $order_extend, $fee);
         } else {
             throw new ApiException(ApiException::Remind, trans('messages.not_allow_pay_type'));
         }
@@ -130,14 +131,14 @@ trait RequestAction {
         $order->paymentMethod = static::PayTypeText;
         $order->real_fee = $fee;
         $order->save();
-        $order->getConnection()->commit();
 
-        // order_extend
-        $order_extend = OrderExtend::find($order->id);
         $order_extend->pay_method = static::PayMethod;
         $order_extend->pay_type = $pay_type;
         $order_extend->real_fee = $fee;
+        $order_extend->callback = $this->parameter->get('callback', '');
         $order_extend->asyncSave();
+
+        $order->getConnection()->commit();
 
         return $data;
     }
@@ -148,7 +149,7 @@ trait RequestAction {
      * @param $real_fee
      * @return mixed
      */
-    protected function getData($config, Orders $order, $real_fee) {
+    protected function getData($config, Orders $order, OrderExtend $order_extend, $real_fee) {
         throw new ApiException(ApiException::Remind, trans('messages.not_allow_pay_type'));
     }
 
@@ -158,7 +159,7 @@ trait RequestAction {
      * @param $real_fee
      * @return mixed
      */
-    protected function getUrl($config, Orders $order, $real_fee) {
+    protected function getUrl($config, Orders $order, OrderExtend $order_extend, $real_fee) {
         throw new ApiException(ApiException::Remind, trans('messages.not_allow_pay_type'));
     }
 
@@ -168,7 +169,7 @@ trait RequestAction {
      * @param $real_fee
      * @return mixed
      */
-    protected function getUrlScheme($config, Orders $order, $real_fee) {
+    protected function getUrlScheme($config, Orders $order, OrderExtend $order_extend, $real_fee) {
         throw new ApiException(ApiException::Remind, trans('messages.not_allow_pay_type'));
     }
 }

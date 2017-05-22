@@ -1,9 +1,7 @@
 <?php
 namespace App\Http\Controllers\Api\Pay;
 
-use Illuminate\Http\Request;
 use App\Exceptions\ApiException;
-use App\Parameter;
 use App\Model\Orders;
 
 class NowpayWechatController extends Controller {
@@ -14,7 +12,7 @@ class NowpayWechatController extends Controller {
     const PayText = 'nowpay_wechat';
     const PayTypeText = '微信';
 
-    public function getData($config, Orders $order, $real_fee) {
+    public function getData($config, Orders $order, OrderExtend $order_extend, $real_fee) {
         $mht['appId'] = $config['appId'];
         $mht['mhtCharset'] = $config['mhtCharset'];
         $mht['mhtCurrencyType'] = $config['mhtCurrencyType'];
