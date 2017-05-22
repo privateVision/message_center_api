@@ -1,9 +1,8 @@
 <?php
 namespace App\Http\Controllers\Api\Pay;
 
-use Illuminate\Http\Request;
 use App\Exceptions\ApiException;
-use App\Parameter;
+use App\Model\OrderExtend;
 use App\Model\Orders;
 
 class AlipayController extends Controller {
@@ -14,12 +13,12 @@ class AlipayController extends Controller {
     const PayText = 'alipay';
     const PayTypeText = '支付宝';
 
-    public function getData($config, Orders $order, $real_fee) {
+    public function getData($config, Orders $order, OrderExtend $order_extend, $real_fee) {
         // XXX 兼容旧版IOS返回scheme
         $restype = $this->parameter->get('restype');
         if($restype  == 'protocol') {
             return [
-                'protocol' => $this->getUrlScheme($config, $order, $real_fee),
+                'protocol' => $this->getUrlScheme($config, $order, $order_extend, $real_fee),
             ];
         } else {
             return [
@@ -28,7 +27,7 @@ class AlipayController extends Controller {
         }
     }
 
-    public function getUrlScheme($config, Orders $order, $real_fee)
+    public function getUrlScheme($config, Orders $order, OrderExtend $order_extend, $real_fee)
     {
         $package = $this->procedure_extend->package_name;
         if(!$package) {

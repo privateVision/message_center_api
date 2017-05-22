@@ -1,10 +1,9 @@
 <?php
 namespace App\Http\Controllers\Api\Pay;
 
-use Illuminate\Http\Request;
 use App\Exceptions\ApiException;
-use App\Parameter;
 use App\Model\Orders;
+use App\Model\OrderExtend;
 
 class UcController extends Controller {
 
@@ -21,7 +20,7 @@ class UcController extends Controller {
      * @param $accountId
      * @return array
      */
-    public function getData($config, Orders $order, $real_fee, Request $request) {
+    public function getData($config, Orders $order, OrderExtend $order_extend, $real_fee) {
         $params['accountId'] = $this->parameter->tough('accountId');
         $params['amount'] = $real_fee;
         $params['notifyUrl'] = urlencode(url('pay_callback/uc'));

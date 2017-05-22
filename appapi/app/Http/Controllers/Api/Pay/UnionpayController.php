@@ -1,10 +1,9 @@
 <?php // 银联技术文档地址：https://open.unionpay.com/ajweb/product/detail?id=3
 namespace App\Http\Controllers\Api\Pay;
 
-use Illuminate\Http\Request;
 use App\Exceptions\ApiException;
-use App\Parameter;
 use App\Model\Orders;
+use App\Model\OrderExtend;
 
 class UnionpayController extends Controller {
 
@@ -14,7 +13,7 @@ class UnionpayController extends Controller {
     const PayText = 'unionpay';
     const PayTypeText = '银联';
 
-    public function getData($config, Orders $order, $real_fee) {
+    public function getData($config, Orders $order, OrderExtend $order_extend, $real_fee) {
         openssl_pkcs12_read(base64_decode($config['pfx']), $cert, $config['pfx_pwd']);
         $x509 = openssl_x509_read($cert['cert']);
         $certinfo = openssl_x509_parse($x509);

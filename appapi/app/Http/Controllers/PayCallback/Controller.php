@@ -59,7 +59,7 @@ abstract class Controller extends \App\Controller
             // XXX 记录订单信息
             $order_extend->third_order_no = $this->getTradeOrderNo($data, $order);;
             $order_extend->extra_params = json_encode($data);
-            $order_extend->real_fee = $order->real_fee * 100;
+            // $order_extend->real_fee = $order->real_fee * 100;
             $order_extend->asyncSave();
 
             if (!$this->handler($data, $order)) {
@@ -91,7 +91,7 @@ abstract class Controller extends \App\Controller
 
         if($order_extend && $order_extend->callback) {
             if(preg_match('/^https*:/', $order_extend->callback)) {
-                if(strpos($order_extend->callback, '?') == -1) {
+                if(strpos($order_extend->callback, '?') === false) {
                     $baseurl = $order_extend->callback . '?';
                 } else {
                     $baseurl = $order_extend->callback . '&';

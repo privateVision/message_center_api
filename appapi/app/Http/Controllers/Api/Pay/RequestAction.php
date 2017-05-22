@@ -119,15 +119,11 @@ trait RequestAction {
         if($pay_type == 0) {
             // XXX 为了兼容旧的代码
             // $data['data'] = $this->getData($config, $order, $fee);
-            $data = array_merge($data, $this->getData($config, $order, $fee));
+            $data = array_merge($data, $this->getData($config, $order, $order_extend, $fee));
         } elseif($pay_type == 1) {
-            $data['url_scheme'] = $this->getUrlScheme($config, $order, $fee);
+            $data['url_scheme'] = $this->getUrlScheme($config, $order, $order_extend, $fee);
         } elseif($pay_type == 2) {
-            $data['url'] = $this->getUrl($config, $order, $fee);
-            $callback = $this->parameter->get('callback');
-            if($callback) {
-                $order_extend->callback = $callback;
-            }
+            $data['url'] = $this->getUrl($config, $order, $order_extend, $fee);
         } else {
             throw new ApiException(ApiException::Remind, trans('messages.not_allow_pay_type'));
         }
@@ -139,6 +135,7 @@ trait RequestAction {
         $order_extend->pay_method = static::PayMethod;
         $order_extend->pay_type = $pay_type;
         $order_extend->real_fee = $fee;
+        $order_extend->callback = $this->parameter->get('callback', '');
         $order_extend->asyncSave();
 
         $order->getConnection()->commit();
@@ -152,7 +149,7 @@ trait RequestAction {
      * @param $real_fee
      * @return mixed
      */
-    protected function getData($config, Orders $order, $real_fee) {
+    protected function getData($config, Orders $order, OrderExtend $order_extend, $real_fee) {
         throw new ApiException(ApiException::Remind, trans('messages.not_allow_pay_type'));
     }
 
@@ -162,7 +159,7 @@ trait RequestAction {
      * @param $real_fee
      * @return mixed
      */
-    protected function getUrl($config, Orders $order, $real_fee) {
+    protected function getUrl($config, Orders $order, OrderExtend $order_extend, $real_fee) {
         throw new ApiException(ApiException::Remind, trans('messages.not_allow_pay_type'));
     }
 
@@ -172,7 +169,7 @@ trait RequestAction {
      * @param $real_fee
      * @return mixed
      */
-    protected function getUrlScheme($config, Orders $order, $real_fee) {
+    protected function getUrlScheme($config, Orders $order, OrderExtend $order_extend, $real_fee) {
         throw new ApiException(ApiException::Remind, trans('messages.not_allow_pay_type'));
     }
 }
