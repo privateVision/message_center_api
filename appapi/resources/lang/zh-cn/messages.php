@@ -74,6 +74,7 @@ return [
     'not_allow_pay_type'                    => '不支持该支付场景', // error
     'app_package_not_set'                   => 'procedures_extend.package_name 未配置', // error
     'http_request_error'                    => '连接第三方服务器失败',
+    'order_not_exist'                       => '订单信息不存在',
 ];
 /*
 return [
