@@ -1,7 +1,6 @@
 # _*_ coding: utf8 _*_
 from kafka import KafkaConsumer
 
-from MiddleWare import local_service_logger
 from run import app
 
 if __name__ == '__main__':
@@ -13,5 +12,6 @@ if __name__ == '__main__':
         print msg.offset
         f.write(msg.value)
         f.write('\n')
+        f.flush()
         # local_service_logger.info(msg.value)
     f.close()

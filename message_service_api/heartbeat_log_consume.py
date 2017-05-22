@@ -13,5 +13,6 @@ if __name__ == '__main__':
         print msg.offset
         f.write(msg.value)
         f.write('\n')
+        f.flush()
         # local_service_logger.info(msg.value)
     f.close()
