@@ -160,6 +160,7 @@ class UserSubController extends AuthController
         $ucuserSubService->src_ucid = $srcUcid;
         $ucuserSubService->status = $status;
         $ucuserSubService->save();
+
         return [];
     }
 }
