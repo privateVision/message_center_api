@@ -290,6 +290,7 @@ class  AppleController extends Controller{
             'balance' => $this->user->balance,
             'coupons' => $list,
             'package' => $dat[0]->bundle_id,
+            'product_name'=> $dat[0]->product_name,
         ];
 
 
