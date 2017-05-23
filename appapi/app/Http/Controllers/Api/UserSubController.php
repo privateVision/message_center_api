@@ -150,13 +150,13 @@ class UserSubController extends AuthController
         $userSub = UcuserSub::tableSlice($srcUcid)->where('id', $subUserId)->where('ucid', $srcUcid)->first();
 
         if(!$userSub){
-            throw new ApiException(ApiException::Remind, trans('messages.game_sub_user_err'));
+            throw new ApiException(ApiException::Remind, trans('messages.sub_user_err'));
         }
 
         $ucuserSubService = new UcuserSubService();
         $ucuserSubService->ucid = 0;
         $ucuserSubService->user_sub_id = $subUserId;
-        $ucuserSubService->pid = $pid;
+        $ucuserSubService->pid = $userSub->pid;
         $ucuserSubService->src_ucid = $srcUcid;
         $ucuserSubService->status = $status;
         $ucuserSubService->save();

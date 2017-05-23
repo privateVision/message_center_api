@@ -80,7 +80,7 @@ return [
     'order_extend_info_error'               => '订单扩展数据异常',
     'http_request_error'                    => '连接第三方服务器失败',
     'game_not_found'                        => '游戏不存在',
-    'game_sub_user_err'                     => '游戏与小号或者用户错误',
+    'sub_user_err'                          => '小号不存在',
 ];
 /*
 return [
