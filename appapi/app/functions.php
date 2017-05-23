@@ -560,3 +560,8 @@ function check_money($money,$del=4){
     if(!preg_match("/^(\d{0,8}).?(?=\d+)(.\d{0,$del})?$/",$money)) return false;
     return true;
 }
+
+function check_url($url){
+    if(!preg_match("/^http[s]?.*/",$url)) return false;
+    return true;
+}

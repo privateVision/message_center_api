@@ -25,30 +25,31 @@ class  AppleController extends Controller{
 
     public function validateReceiptAction ()
     {
+        $sn  = $this->request->input("order_id"); //生成订单的时候返回的订单号
+        //获取当前的订单的ID
+        $oid = $this->request->input("id"); //处理当前的操作
       //匹配当前的操作的实现
         $receipt = $this->request->input('receipt');
         $transaction = $this->parameter->tough("transaction_id");
         $receipt_a = urldecode($receipt);
         $mds = md5($receipt_a);
 
+        $orders =  Orders::where("id",$oid)->where("sn",$sn)->first();
+
+        if (!$orders || $orders->status != 0) return ["code"=>0,"msg"=>trans("messages.app_buy_faild")];
+
         $logsql = "select id from ios_receipt_log WHERE receipt_md5 = '{$mds}'";
         $log_data = app('db')->select($logsql);
-        if(count($log_data)) throw new ApiException(ApiException::Remind,"had in ");
+        if(count($log_data) && $orders->status != 0 ) return ["code"=>0,"msg"=>trans("messages.app_buy_faild")];
 
         //保存当前的操作
-
         $sql = "insert into ios_receipt_log (`receipt_md5`,`receipt_base64`) VALUES ('".$mds."','".$receipt."')";
         app('db')->select($sql);
 
         //订单号
-        $sn  = $this->request->input("order_id"); //生成订单的时候返回的订单号
         $dat = $this->getReceiptData($receipt, true); //开启黑盒测试
 
-        //获取当前的订单的ID
-        $oid = $this->request->input("id"); //处理当前的操作
-
         if(!preg_match("/^\d{1,10}$/",$oid))  return ["code"=>0,"msg"=>trans("messages.app_param_type_error")];
-
 
         if(isset($dat["errNo"]) && $dat["errNo"] ==0 && isset($dat['data']) &&  count($dat['data']) > 0){
             foreach($dat['data'] as $key =>$value){
@@ -84,6 +85,8 @@ class  AppleController extends Controller{
         }
         //订单完成，通知发货，添加日志记录
     }
+
+
     //验证
     protected function getReceiptData($receipt, $isSandbox = false) {
         if ($isSandbox) {
@@ -113,7 +116,7 @@ class  AppleController extends Controller{
             if (!is_array($data)) {
                 return trans("messages.apple_rer_error_type");
             }
-            return $data;
+
             //判断购买时候成功
             if (!isset($data['status']) || $data['status'] != 0) {
                 return trans("messages.app_buy_faild");
@@ -157,9 +160,10 @@ class  AppleController extends Controller{
 
         if(count($ord)) throw new ApiException(ApiException::Remind,trans('messages.order_not_exists')); //限制关闭
 
-        $sql = "select p.fee,p.product_name,con.notify_url,con.iap,con.bundle_id from ios_products as p INNER JOIN ios_application_config as con ON p.app_id = con.app_id WHERE p.product_id = '{$product_id}' AND p.app_id = {$appid}";
+        $sql = "select p.fee,p.product_name,con.notify_url,con.iap,con.bundle_id from ios_products as p LEFT JOIN ios_application_config as con ON p.app_id = con.app_id WHERE p.product_id = '{$product_id}' AND p.app_id = {$appid}";
         $dat = app('db')->select($sql);
         if(count($dat) == 0) throw new ApiException(ApiException::Remind,trans('messages.product_not_exists'));
+
         //验证当前的发货信息
         if(!check_url($dat[0]->notify_url)) throw new ApiException(ApiException::Remind,trans('messages.notifyurl_error'));
         if($dat[0]->bundle_id =='' || !isset($dat[0]->iap)) throw new ApiException(ApiException::Remind,trans('messages.bundle_ipa_not_exists'));
