@@ -83,7 +83,10 @@ return [
     'sms_template_not_exists'               => '短信模板不存在', // error
     'sms_limit'                             => '短信发送次数超过限制，请稍候再试',
     'game_not_found'                        => '游戏不存在',
-    'sub_user_err'                          => '小号不存在',
+    'sub_user_err'                          => '小号不存在或状态有误',
+    'service_user_err'                      => '客服账号不存在',
+    'service_err'                           => '客服参数信息有误',
+    'buy_user_err'                          => '不存在此买家',
 ];
 /*
 return [

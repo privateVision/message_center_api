@@ -22,7 +22,7 @@ class GooglePlayController extends Controller {
      * @return array
      */
     public function getData($config, Orders $order, OrderExtend $order_extend, $real_fee) {
-        $packageName = $this->parameter->tough('packageName');
+        $packageName = $this->procedure_extend->package_name;
         $token = $this->parameter->tough('token');
 
         //获取订单扩展信息
