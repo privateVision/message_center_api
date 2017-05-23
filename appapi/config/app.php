@@ -182,7 +182,7 @@ return [
         Laravel\Tinker\TinkerServiceProvider::class,
 
         //laravel_ide_helper
-        Barryvdh\LaravelIdeHelper\IdeHelperServiceProvider::class,
+//        Barryvdh\LaravelIdeHelper\IdeHelperServiceProvider::class,
     ],
 
     /*
