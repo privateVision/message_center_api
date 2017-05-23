@@ -77,10 +77,16 @@ return [
     'order_verify_fail'                     => '订单验证失败', // error
     'order_handle_fail'                     => '订单处理失败', // error
     'order_status_error'                    => '订单状态不正确，或已完成', // 在尝试处理订单时，发现订单已经被处理过
+    'order_extend_info_error'               => '订单扩展数据异常',
     'http_request_error'                    => '连接第三方服务器失败',
+<<<<<<< HEAD
     'sms_fast'                              => '短信发送过于频繁',
     'sms_template_not_exists'               => '短信模板不存在', // error
     'sms_limit'                             => '短信发送次数超过限制，请稍候再试',
+=======
+    'game_not_found'                        => '游戏不存在',
+    'sub_user_err'                          => '小号不存在',
+>>>>>>> 94a14de14311f73fda7efed0d3fa0cc7578ba6e8
 ];
 /*
 return [

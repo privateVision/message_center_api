@@ -16,6 +16,7 @@ class YingYongBaoController extends Controller
 {
     use RequestAction;
 
+
     const PayMethod = '-9';
     const PayText = 'yingyongbao';
     const PayTypeText = '应用宝平台支付';
@@ -23,18 +24,26 @@ class YingYongBaoController extends Controller
     /**
      * @param $config
      * @param Orders $order
+     * @param OrderExtend $order_extend
      * @param $real_fee
-     * @param $accountId
      * @return array
+     * @internal param $accountId
      */
-    public function getData($config, Orders $order, OrderExtend $order_extend, $real_fee) {
-        return [
-            'data' => array()
-        ];
+    public function getData($config, Orders $order, OrderExtend $order_extend, $real_fee)
+    {
+
+        if($this->payM()){
+            order_success($order->id);
+            return [
+                'result'=>'success'
+            ];
+        }
+
     }
 
+
     //查询余额
-    public function getBalanceMAction()
+    public function getBalanceM()
     {
         $params = array(
             'openid' => $this->parameter->tough('openid'),
@@ -43,7 +52,7 @@ class YingYongBaoController extends Controller
             'ts' => time(),
             'pf' => $this->parameter->tough('pf'),
             'pfkey' => $this->parameter->tough('pfkey'),
-            'zoneid' => $this->parameter->tough('zoneid'),
+            'zoneid' => $this->parameter->tough('order_id'),
         );
 
         $accout_type = $this->parameter->tough('accout_type');
@@ -52,7 +61,7 @@ class YingYongBaoController extends Controller
     }
 
     //扣除游戏币
-    public function payMAction()
+    public function payM()
     {
         $params = array(
             'openid' => $this->parameter->tough('openid'),
@@ -63,16 +72,22 @@ class YingYongBaoController extends Controller
             'pfkey' => $this->parameter->tough('pfkey'),
             'zoneid' => $this->parameter->tough('zoneid'),
             'amt'=>$this->parameter->tough('amt'),
-            'billno'=>$this->parameter->tough('billno'),
+            'billno'=>$this->parameter->tough('order_id'),
         );
 
         $accout_type = $this->parameter->tough('accout_type');
 
-        return self::api_pay('/mpay/pay_m', $accout_type, $params, 'post', 'http');
+        $repon = self::api_pay('/mpay/pay_m', $accout_type, $params, 'post', 'http');
+
+        if(isset($repon['ret'])&&$repon['ret']===0){
+            return true;
+        }else{
+            throw new ApiException(ApiException::Remind, isset($repon['msg'])?$repon['msg']:'');
+        }
     }
 
     //取消支付
-    public function cancelPayMAction()
+    public function cancelPayM()
     {
         $params = array(
             'openid' => $this->parameter->tough('openid'),
@@ -83,7 +98,7 @@ class YingYongBaoController extends Controller
             'pfkey' => $this->parameter->tough('pfkey'),
             'zoneid' => $this->parameter->tough('zoneid'),
             'amt'=>$this->parameter->tough('amt'),
-            'billno'=>$this->parameter->tough('billno'),
+            'billno'=>$this->parameter->tough('order_id'),
         );
 
         $accout_type = $this->parameter->tough('accout_type');

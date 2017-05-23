@@ -2,12 +2,16 @@
 namespace App\Http\Controllers\Api\Tool;
 
 use App\Exceptions\ApiException;
+use App\Model\Procedures;
 use Illuminate\Http\Request;
 use App\Session;
 use App\Model\Orders;
 use App\Parameter;
 use App\Model\Ucuser;
 use App\Model\UcuserSession;
+use App\Model\TotalFeePerUser;
+use App\Model\UcuserSub;
+use App\Model\UcuserRole;
 
 class UserController extends AuthController
 {
@@ -53,4 +57,5 @@ class UserController extends AuthController
 
         return ['result' => true];
     }
+
 }

@@ -1,5 +1,4 @@
 <?php
-
 /*
 |--------------------------------------------------------------------------
 | Create The Application
@@ -14,6 +13,26 @@
 $app = new Illuminate\Foundation\Application(
     realpath(__DIR__.'/../')
 );
+
+/*
+|--------------------------------------------------------------------------
+| load env setting
+|--------------------------------------------------------------------------
+|
+*/
+$env = $app->detectEnvironment(function () {
+    $environmentPath = __DIR__ . '/../.env';
+    $setEnv = trim(file_get_contents($environmentPath));
+    if(!file_exists($environmentPath) || empty($setEnv)) {
+        $setEnv = $_SERVER['HTTP_HOST'] == 'sdkv4.qcwan.com'?'online' : ($_SERVER['HTTP_HOST'] == 'sdkv4test.qcwanwan.com'?'testing':'local');
+    }
+    //兼容.env配置APP_ENV=local或者local两种格式
+    $setEnv = str_replace('APP_ENV=', '', $setEnv);
+    putenv("APP_ENV=$setEnv");
+    if(getenv('APP_ENV') && file_exists(__DIR__ . '/../.' . '.env.' . getenv('APP_ENV'))) {
+        Dotenv::load(__DIR__ . '/../', '.' . '.env.' . getenv('APP_ENV'));
+    }
+});
 
 /*
 |--------------------------------------------------------------------------
