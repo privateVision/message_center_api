@@ -10,9 +10,9 @@ use App\Model\VirtualCurrencies;
 use App\Model\ZyCouponLog;
 use App\Model\ZyCoupon;
 use App\Model\ProceduresProducts;
+use App\Model\ForceCloseIaps;
 
 class OrderController extends Controller {
-
     public function NewAction() {
         $zone_id = $this->parameter->get('zone_id', '');
         $zone_name = $this->parameter->get('zone_name', '');
@@ -114,11 +114,23 @@ class OrderController extends Controller {
         // 可用的支付方式
         $pay_methods = [];
 
-        $iap = (($this->procedure_extend->enable & 0x00000100) == 0);
+        $iap = (($this->procedure_extend->enable & (1 << 8)) == 0);
 
-        // 如果设置了切换金额，则在充值达到此额度时关闭iap
-        if($this->procedure_extend->pay_switch_fee > 0 && $this->procedure_extend->pay_switch_fee <= ($fee * 100)) {
-            $iap = false;
+        // 读取用户充值总额
+        $force_close_iaps = ForceCloseIaps::whereRaw("find_in_set({$pid}, appids)")->where('closed', 0)->get();
+        $appids = [];
+        $iap_paysum = 0;
+        foreach($force_close_iaps as $v) {
+            $appids = array_merge($appids, explode(',', $v->appids));
+            $iap_paysum += $v->fee * 100;
+        }
+
+        if($iap_paysum > 0) {
+            $paysum = Orders::whereIn('vid', array_unique($appids))->where('status', '!=', Orders::Status_WaitPay)->where('ucid', $this->user->ucid)->sum('fee');
+
+            if($paysum >= $iap_paysum) {
+                $iap = false;
+            }
         }
 
         // 非官方支付

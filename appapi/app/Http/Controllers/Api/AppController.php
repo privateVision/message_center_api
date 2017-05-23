@@ -123,46 +123,7 @@ class AppController extends Controller
             ''
         ];
     }
-/*
-    public function ConfigAction() {
-        $iap = (($this->procedure_extend->enable & 0x00000100) == 0);
 
-        $pay_methods = [];
-
-        if(!$iap) {
-            $pay_methods_config = config('common.pay_methods');
-
-            for($i = 0; $i <= 31; $i++) {
-                $pay_method = @$pay_methods_config[floor($i/4)];
-                if(!$pay_method) continue;
-
-                if(($this->procedure_extend->pay_method & (1 << $i)) == 0) continue;
-
-                if(in_array($i % 4, $pay_method['pay_type'])) {
-                    $pay_method['pay_type'] = $i % 4;
-                    $pay_methods[floor($i/4)] = $pay_method;
-                }
-            }
-        }
-
-        return [
-            'iap' => $iap,
-            'sandbox' => ($this->procedure_extend->enable & 0x00000080) == 0,
-            'pay_methods' => $pay_methods,
-            'bind_phone' => [
-                'need' => ($this->procedure_extend->enable & 0x00000010) == 0x00000010,
-                'enforce' => ($this->procedure_extend->enable & 0x00000030) == 0x00000030,
-                'interval' => $this->procedure_extend->bind_phone_interval,
-            ],
-            'real_name' => [
-                'need' => ($this->procedure_extend->enable & 0x00000001) == 0x00000001,
-                'enforce' => ($this->procedure_extend->enable & 0x00000003) == 0x00000003,
-                'pay_need' => ($this->procedure_extend->enable & 0x00000004) == 0x00000004,
-                'pay_enforce' => ($this->procedure_extend->enable & 0x0000000C) == 0x0000000C,
-            ],
-        ];
-    }
-*/
     public function LogoutAction() {
         return [
             'img' => $this->procedure_extend->logout_img,

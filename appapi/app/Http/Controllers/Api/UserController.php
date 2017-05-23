@@ -7,16 +7,40 @@ use App\Model\Orders;
 use App\Model\UcuserOauth;
 use App\Model\UcuserInfo;
 use App\Model\Retailers;
+use App\Model\ForceCloseIaps;
 
 class UserController extends AuthController
 {
     public function InfoAction() {
         $user_info = UcuserInfo::from_cache($this->user->ucid);
-        
+
         $retailers = null;
         if($this->user->rid) {
             $retailers = Retailers::find($this->user->rid);
         }
+
+        // 读取用户第三方绑定状态
+        $config = config('common.oauth');
+        $bindlist = [];
+
+        foreach($config as $k => $v) {
+            $bindlist[$k]['is_bind'] = false;
+        }
+
+        $oauth = UcuserOauth::where('ucid', $this->user->ucid)->get();
+        foreach($oauth as $v) {
+            $bindlist[$v->type]['is_bind'] = true;
+            $bindlist[$v->type]['openid'] = $v->openid;
+            $bindlist[$v->type]['unionid'] = $v->unionid;
+        }
+
+        $bindlist['mobile']['is_bind'] = $this->user->mobile ? true : false;
+        if($bindlist['mobile']['is_bind']) {
+            $bindlist['mobile']['unionid'] = $this->user->mobile;
+            $bindlist['mobile']['openid'] = $this->user->mobile;
+        }
+
+        $bindlist['password']['is_bind'] = $this->user->regtype == 6;// TODO App\Http\Controllers\Api\Account\UserController::Type;
 
         return [
             'uid' => $this->user->ucid,
@@ -42,6 +66,7 @@ class UserController extends AuthController
             'regtype' => $this->user->regtype,
             'rid' => $this->user->rid,
             'rtype' => $retailers ? $retailers->rtype : 0,
+            'bindlist' => $bindlist,
         ];
     }
 
@@ -65,7 +90,7 @@ class UserController extends AuthController
             $data['mobile']['unionid'] = $this->user->mobile;
             $data['mobile']['openid'] = $this->user->mobile;
         }
-        
+
         $data['password']['is_bind'] = $this->user->regtype == 6;// TODO App\Http\Controllers\Api\Account\UserController::Type;
 
         return $data;
@@ -78,7 +103,7 @@ class UserController extends AuthController
         $address = $this->parameter->get('address');
         $gender = $this->parameter->get('gender');
         $birthday = $this->parameter->get('birthday', '');
-        
+
         if($birthday && !preg_match('/^\d{8}$/', $birthday)) {
             throw new ApiException(ApiException::Remind, trans('messages.birthday_format_error'));
         }
@@ -141,7 +166,7 @@ class UserController extends AuthController
                 'order_id' => $v->sn,
                 'fee' => $v->fee,
                 'subject' => $v->subject,
-                'otype' => 0, 
+                'otype' => 0,
                 'createTime' => strtotime($v->createTime),
                 'status' => $v->status,
             ];
@@ -161,7 +186,7 @@ class UserController extends AuthController
         $order = $order->where('hide', 0);
         $order = $order->where('vid', $this->procedure->pid);
         $order = $order->where('status', '!=', Orders::Status_WaitPay);
-        
+
         $count = $order->count();
 
         $order = $order->orderBy('id', 'desc');
@@ -195,7 +220,56 @@ class UserController extends AuthController
     }
 
     public function BalanceAction() {
-        return ['balance' => $this->user->balance];
+        $pid = $this->procedure->pid;
+
+        // 是否开启官方支付
+        $iap = (($this->procedure_extend->enable & (1 << 8)) == 0);
+
+        if(!$iap) {
+            // 读取用户充值总额
+            $force_close_iaps = ForceCloseIaps::whereRaw("find_in_set({$pid}, appids)")->where('closed', 0)->get();
+            $appids = [];
+            $iap_paysum = 0;
+            foreach ($force_close_iaps as $v) {
+                $appids = array_merge($appids, explode(',', $v->appids));
+                $iap_paysum += $v->fee * 100;
+            }
+
+            if ($iap_paysum > 0) {
+                $paysum = Orders::whereIn('vid', array_unique($appids))->where('status', '!=', Orders::Status_WaitPay)->where('ucid', $this->user->ucid)->sum('fee');
+
+                if ($paysum >= $iap_paysum) {
+                    $iap = false;
+                }
+            }
+        }
+
+        // 支付方式判断
+
+        $pay_methods = [];
+
+        if(!$iap) {
+            $pay_methods_config = config('common.pay_methods');
+
+            for($i = 0; $i <= 31; $i++) {
+                $pay_method = @$pay_methods_config[floor($i/4)];
+                if(!$pay_method) continue;
+
+                if(($this->procedure_extend->pay_method & (1 << $i)) == 0) continue;
+
+                if(in_array($i % 4, $pay_method['pay_type'])) {
+                    $pay_method['pay_type'] = $i % 4;
+                    $pay_methods[floor($i/4)] = $pay_method;
+                }
+            }
+        }
+
+        return [
+            'balance' => $this->user->balance,
+            'iap' => $iap,
+            'sandbox' => ($this->procedure_extend->enable & (1 << 7)) == 0,
+            'pay_methods' => $pay_methods,
+        ];
     }
 
     public function ByOldPasswordResetAction() {
@@ -261,7 +335,7 @@ class UserController extends AuthController
         if($this->user->mobile) {
             throw new ApiException(ApiException::Remind, trans('messages.user_already_bind_mobile'));
         }
-        
+
         $user = Ucuser::where('uid', $mobile)->orWhere('mobile', $mobile)->first();
         if($user) {
             if($user->ucid != $this->user->ucid) {
@@ -431,7 +505,7 @@ class UserController extends AuthController
         $nickname = $this->parameter->get('nickname');
         $avatar = $this->parameter->get('avatar');
         $forced = $this->parameter->get('forced');
-        
+
         if($type == 'weixin' && $unionid == '') throw new ApiException(ApiException::Error, trans('messages.unionid_empty'));
 
         $count = UcuserOauth::where('type', $type)->where('ucid', $this->user->ucid)->count();
@@ -583,29 +657,29 @@ class UserController extends AuthController
     /*
      * 用户角色等级信息日志
      */
-/*
-    public function UpdateRoleAction(){
-        $zone_id                = $this->parameter->tough('zone_id'); //区服ID
-        $zone_name              = $this->parameter->tough('zone_name'); //区服名称
-        $role_id                = $this->parameter->tough('role_id');  //游戏
-        $role_level             = $this->parameter->tough('level'); //游戏角色扥等级
-        $role_name              = $this->parameter->tough('level_name'); //游戏角色名称
-        $pid                    = $this->user->pid; //游戏ID
-        $ucid                   = $this->user->ucid;   //用户的ID
-        $sud_id                 = $this->session->user_sub_id; //小号id
+    /*
+        public function UpdateRoleAction(){
+            $zone_id                = $this->parameter->tough('zone_id'); //区服ID
+            $zone_name              = $this->parameter->tough('zone_name'); //区服名称
+            $role_id                = $this->parameter->tough('role_id');  //游戏
+            $role_level             = $this->parameter->tough('level'); //游戏角色扥等级
+            $role_name              = $this->parameter->tough('level_name'); //游戏角色名称
+            $pid                    = $this->user->pid; //游戏ID
+            $ucid                   = $this->user->ucid;   //用户的ID
+            $sud_id                 = $this->session->user_sub_id; //小号id
 
-        $logdata                = new RoleDataLog();
-        $logdata->zone_id       = $zone_id;
-        $logdata->zone_name     = $zone_name;
-        $logdata->role_id       = $role_id;
-        $logdata->level         = $role_level;
-        $logdata->level_name    = $role_name;
-        $logdata->game_id       = $pid;
-        $logdata->create_time   = date("Y-m-d H:i:s",time());
-        $logdata->ucid          = $ucid;
-        $logdata->sub_id        = $sud_id;
+            $logdata                = new RoleDataLog();
+            $logdata->zone_id       = $zone_id;
+            $logdata->zone_name     = $zone_name;
+            $logdata->role_id       = $role_id;
+            $logdata->level         = $role_level;
+            $logdata->level_name    = $role_name;
+            $logdata->game_id       = $pid;
+            $logdata->create_time   = date("Y-m-d H:i:s",time());
+            $logdata->ucid          = $ucid;
+            $logdata->sub_id        = $sud_id;
 
-        return $logdata->save()?"true":"false";
-    }
-*/
+            return $logdata->save()?"true":"false";
+        }
+    */
 }
