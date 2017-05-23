@@ -69,7 +69,6 @@ class  AppleController extends Controller{
                     $ore = $od ->save();
                     if($ore){
                         $orders =  Orders::where("id",$oid)->where("sn",$sn)->first();
-                        $orders ->status = 1;
                         $orders->paymentMethod = "AppleStore";
                         $os = $orders->save(); //当前的信息是否保存成功！失败信息回归
                         if(!$os){
