@@ -72,7 +72,7 @@ class SendSMS extends Job
                 // 60s内只能发送同模板短信1条
                 Redis::set(sprintf('sms_%s_%s_60s', $this->mobile, $this->template_id), 1, 'EX', 60);
                 // 24小时相同内容最多5次
-                Redis::INCR(sprintf('sms_%s_%s_60s', $this->mobile, md5_36($this->content)));
+                Redis::INCR(sprintf('sms_%s_%s', $this->mobile, md5_36($this->content)));
                 Redis::expire(sprintf('sms_%s_%s_60s', $this->mobile, md5_36($this->content)), 86400);
                 // 24小时内只能发送10条
                 // 把短信验证码存在redis，有效期900秒

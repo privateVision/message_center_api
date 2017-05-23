@@ -18,6 +18,7 @@ class AlipayController extends Controller {
         $restype = $this->parameter->get('restype');
         if($restype  == 'protocol') {
             return [
+                'restype' => $restype,
                 'protocol' => $this->getUrlScheme($config, $order, $order_extend, $real_fee),
             ];
         } else {
