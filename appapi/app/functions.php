@@ -291,7 +291,7 @@ function order_success($order_id) {
 function send_sms($mobile, $pid, $template_id, $repalce, $code = '') {
     $smsconfig = config('common.smsconfig');
 
-    if(!env('APP_DEBUG') && Redis::exists(sprintf('sms_%s_%s_60s', $template_id, $mobile))) {
+    if(!env('APP_DEBUG') && Redis::exists(sprintf('sms_%s_%s_60s', $mobile, $template_id))) {
         throw new \App\Exceptions\Exception('短信发送过于频繁'); // LANG:sms_fast
     }
 
@@ -309,7 +309,7 @@ function send_sms($mobile, $pid, $template_id, $repalce, $code = '') {
         $content = $smsconfig['template'][$template_id];
     }
 
-    Queue::push(new \App\Jobs\SendSMS($smsconfig, $mobile, $content, $code));
+    Queue::push(new \App\Jobs\SendSMS($smsconfig, $template_id, $mobile, $content, $code));
 
     return $content;
 }

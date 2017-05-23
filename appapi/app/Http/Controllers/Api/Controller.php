@@ -64,7 +64,7 @@ class Controller extends \App\Controller
 
 		$this->procedure = Procedures::from_cache($_appid);
 		if (!$this->procedure) {
-			throw new ApiException(ApiException::Error, trans('messages.invalid_appid', ['appid' => $_appid])); // LANG:appid_missing
+			throw new ApiException(ApiException::Error, trans('messages.invalid_appid', ['appid' => $_appid]));
 		}
 
 		$appkey = $this->procedure->appkey();
@@ -74,7 +74,8 @@ class Controller extends \App\Controller
 		$sign = md5(http_build_query($data) . '&key=' . $appkey);
 
 		if($_sign !== $sign) {
-			throw new ApiException(ApiException::Error, trans('messages.sign_error')); // LANG:sign_verify_error
+		    log_error('sign_error', ['str' => http_build_query($data) . '&key=' . $appkey], trans('messages.sign_error'));
+			throw new ApiException(ApiException::Error, trans('messages.sign_error'));
 		}
 
 		// --------- 平台登录特殊处理 ---------
@@ -83,7 +84,7 @@ class Controller extends \App\Controller
 		if($__appid) {
 			$this->procedure = Procedures::from_cache($__appid);
 			if (!$this->procedure) {
-				throw new ApiException(ApiException::Error, trans('messages.invalid_appid', ['appid' => $_appid])); // LANG:appid_missing
+				throw new ApiException(ApiException::Error, trans('messages.invalid_appid', ['appid' => $_appid]));
 			}
 
 			$this->parameter->set('_appid', $__appid);

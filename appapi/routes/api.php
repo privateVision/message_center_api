@@ -1,4 +1,10 @@
 <?php
+// TODO 上线后改名为outer，同时修改nginx配置文件
+Route::group(['prefix' => 'web'], function () {
+    Route::any('mycard/rescue', 'Web\\MycardController@RescueAction'); // mycard订单补储
+    Route::any('mycard/query', 'Web\\MycardController@QueryAction');   // mycard订单查询
+});
+
 // 支付回调
 Route::group(['prefix' => 'pay_callback'], function () {
     Route::any('nowpay_wechat', 'PayCallback\\NowpayWechatController@CallbackAction');                      // 现代支付，微信支付回调
@@ -87,16 +93,20 @@ Route::group(['prefix' => 'api'], function () {
     Route::any('pay/baidu/request', 'Api\\Pay\\BaiduController@RequestAction');                             // 百度平台支付
     Route::any('pay/yingyongbao/request', 'Api\\Pay\\YingYongBaoController@RequestAction');                 // 应用宝平台支付
 
+    Route::any('ios/order/receipt/verify','Api\\Pay\\AppleController@validateReceiptAction');               // 验证苹果支付的信息
+    Route::any('ios/order/create','Api\\Pay\\AppleController@OrderCreateAction');                           // 验证苹果支付的信息
+    Route::any('ios/applelimit','Api\\Pay\\AppleController@AppleLimitAction');                              // 验证当前是否开启限制
+
     // Apple支付方式将被废弃
-    Route::any('ios/order/receipt/verify','Api\\Pay\\AppleController@validateReceiptAction');               // XXX 4.0 验证苹果支付的信息
-    Route::any('ios/order/create','Api\\Pay\\OrderController@NewAction');                                   // XXX 4.0 验证苹果支付的信息
-    Route::any('ios/applelimit','Api\\Pay\\AppleController@AppleLimitAction');                              // XXX 4.0 验证当前是否开启限制
+    //Route::any('ios/order/receipt/verify','Api\\Pay\\AppleController@validateReceiptAction');               // XXX 4.0 验证苹果支付的信息
+    //Route::any('ios/order/create','Api\\Pay\\OrderController@NewAction');                                   // XXX 4.0 验证苹果支付的信息
+    //Route::any('ios/applelimit','Api\\Pay\\AppleController@AppleLimitAction');                              // XXX 4.0 验证当前是否开启限制
 
     Route::any('tool/reset_password/request','Api\\Tool\\ResetPasswordController@RequestAction');           // 通过token用户自行修改密码
     Route::any('tool/user/reset_password_page','Api\\Tool\\UserController@ResetPasswordPageAction');        // 获取重设密码页面
     Route::any('tool/user/freeze','Api\\Tool\\UserController@FreezeAction');                                // 冻结用户
     Route::any('tool/procedure/query','Api\\Tool\\ProcedureController@QueryAction');                        // 通过包名查询procedure
-    Route::any('tool/user/auth', 'Api\\Tool\\UserController@AuthAccountAction');
+    Route::any('tool/user/auth', 'Api\\Tool\\AuthAccountController@AuthAccountAction');
     
     Route::any('v1.0/cp/info/order','Api\\CP\\OrderController@GetOrderInfoAction');                          //获取订单信息
     Route::any('v1.0/cp/user/auth','Api\\CP\\UserController@CheckAuthAction');                               //验证登陆是否有效

@@ -58,20 +58,21 @@ abstract class Controller extends \App\Controller
 
             // XXX 记录订单信息
             $order_extend->third_order_no = $this->getTradeOrderNo($data, $order);;
-            $order_extend->extra_params = json_encode($data);
-            // $order_extend->real_fee = $order->real_fee * 100;
-            $order_extend->asyncSave();
+            $order_extend->extra_params = ['callback' => $data];
 
-            if (!$this->handler($data, $order)) {
-                return $this->onComplete($data, $order, false);
+            if (!$this->handler($data, $order, $order_extend)) {
+                throw new Exception(trans('messages.order_handle_fail'), 0);
             }
+
+            $order_extend->extra_params = ['is_success' => true];
+            $order_extend->asyncSave();
 
             // 订单状态改变等等全部在这里做
             order_success($order->id);
 
-            return $this->response($data, $order, true, $order_extend);
+            return $this->resdata($data, $order, $order_extend, true);
         } catch(Exception $e) {
-            return $this->response($data, $order, $e->getCode() == 1, $order_extend, $e->getMessage());
+            return $this->resdata($data, $order, $order_extend, $e->getCode() == 1, $e->getMessage());
         } catch(\Exception $e) {
             log_error('error', [
                 'message' => $e->getMessage(),
@@ -82,12 +83,12 @@ abstract class Controller extends \App\Controller
                 'reqdata' => $request->all()
             ]);
 
-            return $this->response($data, $order, false, $order_extend, trans('messages.order_handle_fail'));
+            return $this->resdata($data, $order, $order_extend, false, trans('messages.order_handle_fail'));
         }
     }
 
-    private function response($data, $order, $is_success, $order_extend, $message = null) {
-        $response = $this->onComplete($data, $order, $is_success);
+    private function resdata($data, $order, $order_extend, $is_success, $message = null) {
+        $response = $this->onComplete($data, $order, $order_extend, $is_success);
 
         if($order_extend && $order_extend->callback) {
             if(preg_match('/^https*:/', $order_extend->callback)) {
@@ -99,20 +100,20 @@ abstract class Controller extends \App\Controller
 
                 if($order) {
                     return header('Location:' . $baseurl . http_build_query([
-                        'is_success' => $is_success ? 1 : 0,
-                        'message' => $message ? $message : $response,
-                        'openid' => $order->cp_uid ? $order->cp_uid : $order->ucid,
-                        'order_no' => $order->sn,
-                        'trade_order_no' => $order->vorderid,
-                    ]));
+                            'is_success' => $is_success ? 1 : 0,
+                            'message' => $message ? $message : $response,
+                            'openid' => $order->cp_uid ? $order->cp_uid : $order->ucid,
+                            'order_no' => $order->sn,
+                            'trade_order_no' => $order->vorderid,
+                        ]));
                 } else {
                     return header('Location:' . $baseurl . http_build_query([
-                        'is_success' => $is_success ? 1 : 0,
-                        'message' => $message ? $message : $response,
-                        'openid' => '',
-                        'order_no' => '',
-                        'trade_order_no' => '',
-                    ]));
+                            'is_success' => $is_success ? 1 : 0,
+                            'message' => $message ? $message : $response,
+                            'openid' => '',
+                            'order_no' => '',
+                            'trade_order_no' => '',
+                        ]));
                 }
             } else {
                 if($order) {
@@ -171,7 +172,7 @@ abstract class Controller extends \App\Controller
      * @param   mixed $data getData方法返回的数据
      * @param  \App\Model\Orders $order Orders
      */
-    abstract protected function handler($data, $order);
+    abstract protected function handler($data, $order, $order_extend);
 
     /**
      * 订单完成后的回应，返回值将直接输出给回调方

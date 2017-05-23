@@ -52,7 +52,7 @@ class OrderController extends Controller {
 
         // 如果传了product_id则通过product_id找到计费点信息，否则fee,body,subject必传
 
-        $product_id = $this->parameter->get('product_id');
+        $product_id = $this->parameter->get('product_id', 0);
         if(!$product_id) {
             $fee = $this->parameter->tough('fee');
             $body = $this->parameter->tough('body');
@@ -101,7 +101,7 @@ class OrderController extends Controller {
         $order_extend->role_level = $role_level;
         $order_extend->role_name = $role_name;
         $order_extend->product_type = $product_type;
-        $order_extend->product_id = isset($product) ? $product->id : 0;
+        $order_extend->product_id = $product_id;
         $order_extend->save();
 
         $order->getConnection()->commit();

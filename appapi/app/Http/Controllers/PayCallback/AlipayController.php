@@ -40,7 +40,7 @@ class AlipayController extends Controller
         return $data['trade_status'] == 'TRADE_SUCCESS';
     }
 
-    protected function onComplete($data, $order, $isSuccess) {
+    protected function onComplete($data, $order, $order_extend, $isSuccess) {
         return $isSuccess ? 'success' : 'fail';
     }
 
