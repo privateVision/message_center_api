@@ -402,12 +402,12 @@ def v4_sdk_user_get_recommend_game_list():
             find_game_count_sql = "select count(*) from zy_gameRecom where status = 'normal'" \
                                   " and down_url is not null "
             find_game_info_sql = "select * from zy_gameRecom where status = 'normal' and down_url is not null" \
-                                 " order by sort asc limit %s, %s" % (start_index, end_index)
+                                 " order by sort desc limit %s, %s" % (start_index, end_index)
         else:  # 1 -> ios
             find_game_count_sql = "select count(*) from zy_gameRecom where status = 'normal'" \
                                   " and down_url_ios is not null "
             find_game_info_sql = "select * from zy_gameRecom where status = 'normal' and down_url_ios is not null" \
-                                 " order by sort asc limit %s, %s" % (start_index, end_index)
+                                 " order by sort desc limit %s, %s" % (start_index, end_index)
         game_count = mysql_session.execute(find_game_count_sql).scalar()
         game_info_list = mysql_session.execute(find_game_info_sql).fetchall()
         for game in game_info_list:
