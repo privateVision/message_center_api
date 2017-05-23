@@ -8,7 +8,7 @@ class AuthAccountController extends Controller
 {
     //好充账号验证,并且返回小号列表，角色列表
     public function AuthAccountAction()
-    {
+    {dd(1);
         $username = $this->parameter->tough('username');
         $password = $this->parameter->tough('password');
         $gameCenterId = $this->parameter->tough('gameCenterId');
