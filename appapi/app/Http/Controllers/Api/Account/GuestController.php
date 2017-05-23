@@ -40,6 +40,8 @@ class GuestController extends Controller {
         $user->pid = $this->parameter->tough('_appid');
         $user->regdate = time();
         $user->device_uuid = $uuid;
+        $user->imei = $this->parameter->tough('_imei');
+        $user->device_id = $this->parameter->tough('_device_id');
         $user->save();
 
         user_log($user, $this->procedure, 'register', '【注册】通过“游客登录”注册，用户名(%s)，密码[%s]', $username, $user->password);
