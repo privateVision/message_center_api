@@ -16,6 +16,7 @@ use App\Model\UcusersVC;
 use App\Model\VirtualCurrencies;
 use App\Model\ZyCoupon;
 use App\Model\ZyCouponLog;
+use App\Model\ForceCloseIaps;
 
 class  AppleController extends Controller{
 
@@ -32,8 +33,8 @@ class  AppleController extends Controller{
         $receipt = $this->request->input('receipt');
         $transaction = $this->parameter->tough("transaction_id");
         $receipt_a = urldecode($receipt);
-        $mds = md5($receipt_a);
 
+        $mds = md5($receipt_a);
         $orders =  Orders::where("id",$oid)->where("sn",$sn)->first();
 
         if (!$orders || $orders->status != 0) return ["code"=>0,"msg"=>trans("messages.app_buy_faild")];
@@ -45,9 +46,14 @@ class  AppleController extends Controller{
         //保存当前的操作
         $sql = "insert into ios_receipt_log (`receipt_md5`,`receipt_base64`) VALUES ('".$mds."','".$receipt."')";
         app('db')->select($sql);
+        $appid = $this->parameter->tough("_appid");
 
+        $sanboxsql  = "select c.*,p.psingKey from ios_application_config as c inner join procedures as p where c.app_id = {$appid} LIMIT 1";
+        $sandat = app('db')->select($sanboxsql);
+        $issandbox = ($sandat[0]->sandbox ==1)?true:false;
+      //  log_info("sandbox....................>>>>>>>",$issandbox);
         //订单号
-        $dat = $this->getReceiptData($receipt, true); //开启黑盒测试
+        $dat = $this->getReceiptData($receipt, $issandbox); //开启黑盒测试
 
         if(!preg_match("/^\d{1,10}$/",$oid))  return ["code"=>0,"msg"=>trans("messages.app_param_type_error")];
 
@@ -215,18 +221,26 @@ class  AppleController extends Controller{
         $order->getConnection()->commit();
         $order_is_first = $order->is_first();
 
-        $pay_type = $dat[0]->iap;
+        $iap = $dat[0]->iap;
         //查看当前的充值总金额
-        if($pay_type == 1){
-            $sum = Orders::where("ucid",$ucid)->where("status",1)->sum('fee');
-            //获取限额
-            $sl = "select id,appids,fee from force_close_iaps where closed=0 AND {$appid} IN (appids)";
-            $d = app('db')->select($sl);
-            if(count($d)){
-                $pay_type =  ($sum > $d[0]->fee)?0:1;
+        if($iap == 1) {
+            //  读取用户充值总额
+            $force_close_iaps = ForceCloseIaps::whereRaw("find_in_set({$pid},  appids)")->where('closed', 0)->get();
+            $appids = [];
+            $iap_paysum = 0;
+            foreach ($force_close_iaps as $v) {
+                $appids = array_merge($appids, explode(',', $v->appids));
+                $iap_paysum += $v->fee;
+            }
+            log_info("user_pay_iap_paysum==========>",$iap_paysum);
+            if ($iap_paysum > 0) {
+                $paysum = Orders::whereIn('vid', array_unique($appids))->where('status', '!=', Orders::Status_WaitPay)->where('ucid', $this->user->ucid)->sum('fee');
+                log_info("user_pay==========>",$paysum."_".$this->user->ucid);
+                if ($paysum >= $iap_paysum) {
+                    $iap = 0;
+                }
             }
         }
-
 
         // 储值卡，优惠券
         $list = [];
@@ -271,7 +285,7 @@ class  AppleController extends Controller{
             'order_id' => $order->sn,
             'id'      =>$order->id,//返回当前的订单
             'fee' => $dat[0]->fee,
-            "iap" =>$pay_type ,//支付的方式1 ios 0为第三方支付
+            "iap" =>$iap ,//支付的方式1 ios 0为第三方支付
             'way' => [1, 2, 3],
             'vip' => $user_info && $user_info->vip ? (int)$user_info->vip : 0,
             'balance' => $this->user->balance,
@@ -295,12 +309,21 @@ class  AppleController extends Controller{
         $pay_type = $dat[0]->iap;
         //查看当前的充值总金额
         if($pay_type == 1){
-            $sum = Orders::where("ucid",$ucid)->where("status",1)->sum('fee');
-            //获取限额
-            $sl = "select id,appids,fee from force_close_iaps where closed=0 AND {$appid} IN (appids)";
-            $d = app('db')->select($sl);
-            if(count($d)){
-                $pay_type =  ($sum > $d[0]->fee)?0:1;
+            //$sum = Orders::where("ucid",$ucid)->where("status",1)->sum('fee');
+            $force_close_iaps = ForceCloseIaps::whereRaw("find_in_set({$appid},  appids)")->where('closed', 0)->get();
+            $appids = [];
+            $iap_paysum = 0;
+            foreach ($force_close_iaps as $v) {
+                $appids = array_merge($appids, explode(',', $v->appids));
+                $iap_paysum += $v->fee;
+            }
+            log_info("user_pay_iap_paysum==========>",$iap_paysum);
+            if ($iap_paysum > 0) {
+                $paysum = Orders::whereIn('vid', array_unique($appids))->where('status', '!=', Orders::Status_WaitPay)->where('ucid', $this->user->ucid)->sum('fee');
+                log_info("user_pay==========>",$paysum."_".$this->user->ucid);
+                if ($paysum >= $iap_paysum) {
+                    $pay_type = 0;
+                }
             }
         }
         return ["paytype"=>$pay_type];
