@@ -6,7 +6,7 @@ use Illuminate\Http\Request;
 
 class AuthAccountController extends Controller
 {
-    //好充账号验证
+    //好充账号验证,并且返回小号列表，角色列表
     public function AuthAccountAction()
     {
         $username = $this->parameter->tough('username');
