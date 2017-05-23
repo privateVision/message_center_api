@@ -66,14 +66,14 @@ class GooglePlayController extends Controller {
 
             $optps = array();
             $resp = $service->purchases_products->get( $packageName, $productId, $token, $optps );
-
+            log_info('googleplay_error', 'googleplay平台检查付款', json_encode($resp));
             if($resp['consumptionState'] == 1 && $resp['purchaseState'] == 0){
                 return 1;
             } else {
                 return 2;
             }
         } catch (\Exception $e) {
-            log_error('googleplay_error', null, $e->getCode().'|'.$e->getMessage());
+            log_error('googleplay_error', 'googleplay平台检查付款', $e->getCode().'|'.$e->getMessage());
             return 3;
         }
     }
