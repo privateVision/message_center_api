@@ -5,8 +5,6 @@ import unittest
 import requests
 from mongoengine import Q, connect
 
-from Utils.EncryptUtils import get_cms_md5_sign
-
 """
 消息撤回功能测试
 """
@@ -17,15 +15,15 @@ class MessageRevocationFunctionTest(unittest.TestCase):
         connect('users_message', host='localhost', port=27017)
 
     def test_message_revocation(self):
+        from MongoModel.MessageRevocationModel import MessageRevocation
+        MessageRevocation.objects.delete()
         data = {
             "type": "notice",
-            "mysql_id": 1
+            "mysql_id": "1"
         }
-        headers = {"Content-Type": "application/json"}
-        data_json = json.dumps(data)
-        sign = get_cms_md5_sign(data_json)
-        r = requests.post("http://localhost:5000/msa/v4/app/message_revocation?sign=%s" % (sign,),
-                          data=data_json, headers=headers)
+        from Utils.EncryptUtils import get_md5_sign
+        sign = get_md5_sign(data)
+        r = requests.post("http://localhost:5000/msa/v4/app/message_revocation?sign=%s" % (sign,), data=data)
         self.assertEqual(r.status_code, 200)
         print r.text
 

@@ -193,6 +193,24 @@ def v4_anfeng_helper_gifts_real_time_count():
     ids_list = gift_ids.split('|')
     ids_list_str = ",".join(ids_list)
     data_list = anfeng_helper_get_gift_real_time_count(ids_list_str)
+    # from run import mysql_cms_session
+    # find_gift_info_sql = "select giftId, assignNum, num from cms_gameGiftAssign where platformId = 3 " \
+    #                      "and giftId in (%s)" % (ids_list_str,)
+    # data_list = []
+    # try:
+    #     gift_info_list = mysql_cms_session.execute(find_gift_info_sql).fetchall()
+    #     for data in gift_info_list:
+    #         count_info = {
+    #             'gift_id': data['giftId'],
+    #             'assign_num': data['assignNum'],
+    #             'num': data['num']
+    #         }
+    #         data_list.append(count_info)
+    # except Exception, err:
+    #     mysql_cms_session.rollback()
+    #     return v4_anfeng_helper_gifts_real_time_count()
+    # finally:
+    #     mysql_cms_session.close()
     return response_data(http_code=200, data=data_list)
 
 

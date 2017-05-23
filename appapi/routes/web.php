@@ -11,7 +11,9 @@
 */
 
 $app->get('/', function (Illuminate\Http\Request $request) use ($app) {
-    if(env('APP_DEBUG')) {
+    
+echo date_default_timezone_get();
+if(env('APP_DEBUG')) {
         $mobile = $request->input('m');
     
         if($mobile) {
