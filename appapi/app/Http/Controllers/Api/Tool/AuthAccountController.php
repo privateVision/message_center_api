@@ -2,7 +2,14 @@
 
 namespace App\Http\Controllers\Api\Tool;
 
+use App\Exceptions\ApiException;
 use Illuminate\Http\Request;
+use App\Parameter;
+use App\Model\Ucuser;
+use App\Model\Procedures;
+use App\Model\TotalFeePerUser;
+use App\Model\UcuserSub;
+use App\Model\UcuserRole;
 
 class AuthAccountController extends Controller
 {
@@ -19,11 +26,11 @@ class AuthAccountController extends Controller
             throw new ApiException(ApiException::Remind, trans('messages.login_fail'));
         }
 
-        if($user->getIsFreezeAttribute){
+        if($user->getIsFreezeAttribute()){
             throw new ApiException(ApiException::AccountFreeze, trans('messages.freeze'));
         }
 
-        $pids = Procedures::where('gameCenterId', $gameCenterId)->get('pid')->toArray();
+        $pids = Procedures::where('gameCenterId', $gameCenterId)->get(['pid'])->toArray();
 
         if(!$pids){
             throw new ApiException(ApiException::Remind, trans('messages.game_not_found'));
