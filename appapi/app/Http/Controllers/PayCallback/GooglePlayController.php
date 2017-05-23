@@ -53,7 +53,7 @@ class GooglePlayController extends Controller {
         return true;
     }
 
-    protected function handler($data, $order) {
+    protected function handler($data, $order, $order_extend) {
         return ($data['consumptionState'] == 1 && $data['purchaseState'] == 0) ? true: false;
     }
 

@@ -1,4 +1,6 @@
 .env
+.env.local
+.env.testing
 .settings/
 .project
 *.tar.gz

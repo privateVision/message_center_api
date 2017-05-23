@@ -38,7 +38,7 @@ class UnionpayController extends Controller
         return openssl_verify($params_sha1x16, $sign, $public_key, OPENSSL_ALGO_SHA1);
     }
 
-    protected function handler($data, $order){
+    protected function handler($data, $order, $order_extend){
         return true;
     }
 

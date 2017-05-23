@@ -6,13 +6,15 @@ use App\Redis;
 class SendSMS extends Job
 {
     protected $smsconfig;
+    protected $template_id;
     protected $mobile;
     protected $content;
     protected $code;
 
-    public function __construct($smsconfig, $mobile, $content, $code = 0)
+    public function __construct($smsconfig, $template_id, $mobile, $content, $code = 0)
     {
         $this->smsconfig = $smsconfig;
+        $this->template_id = $template_id;
         $this->mobile = $mobile;
         $this->content = $content;
         $this->code = $code;
@@ -67,8 +69,15 @@ class SendSMS extends Job
             $SMSRecord->save();
 
             if($this->code) {
-                Redis::set(sprintf('sms_%s_60s', $this->mobile), 1, 'EX', 60);
+                // 60s内只能发送同模板短信1条
+                Redis::set(sprintf('sms_%s_%s_60s', $this->mobile, $this->template_id), 1, 'EX', 60);
+                // 24小时相同内容最多5次
+                Redis::INCR(sprintf('sms_%s_%s_60s', $this->mobile, md5_36($this->content)));
+                Redis::expire(sprintf('sms_%s_%s_60s', $this->mobile, md5_36($this->content)), 86400);
+                // 24小时内只能发送10条
+                // 把短信验证码存在redis，有效期900秒
                 Redis::set(sprintf('sms_%s_%s', $this->mobile, $this->code), 1, 'EX', 900);
+
                 $rediskey = sprintf('sms_%s_hourlimit', $this->mobile);
                 if(Redis::exists($rediskey)) {
                     Redis::incr($rediskey);
@@ -78,8 +87,9 @@ class SendSMS extends Job
                 }
                 
             }
-        } elseif(@$res['code'] != 8 && @$res['code'] != 22) {
+        } elseif(@$res['code'] != 8 && @$res['code'] != 17 && @$res['code'] != 22) {
             // 8:  同一个手机号 13065549260 30秒内重复提交相同的内容
+            // 17: 24小时内同一手机号发送次数不能超过5次（相同内容）
             // 22: 验证码类短信1小时内同一手机号发送次数不能超过3次
             log_error('sendsms', ['req' => $data, 'res' => $restext]);
             return $this->release(5);

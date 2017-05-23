@@ -27,9 +27,9 @@ class MycardController extends Controller {
         $data['hash'] = static::mycard_hash($data, $config['FacServerKey']);
 
         //获取authtoken
-        $result = http_request($config['autocode_url'], $data, true);
+        $result = http_request($config['AuthGlobal'], $data, true);
 
-        log_debug('mycard-authcode-request', ['resdata' => $result, 'reqdata' => $data], $config['autocode_url']);
+        log_debug('mycard-authcode-request', ['resdata' => $result, 'reqdata' => $data], $config['AuthGlobal']);
 
         // json decode
         $result = json_decode($result, true);
@@ -41,7 +41,10 @@ class MycardController extends Controller {
             throw new ApiException(ApiException::Remind, $result['ReturnMsg']);
         }
 
-        return $config['webpay_url'] .'?AuthCode='. $result['AuthCode'];
+        // 记录AuthCode
+        $order_extend->extra_params = ['AuthCode' => $result['AuthCode'], 'TradeSeq' => @$result['TradeSeq']];
+
+        return $config['MyCardPay'] .'?AuthCode='. $result['AuthCode'];
     }
 
     protected static function mycard_hash($data, $key) {

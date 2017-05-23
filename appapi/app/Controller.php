@@ -6,6 +6,7 @@ use App\Model\IpRefused;
 use Illuminate\Routing\Controller as BaseController;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
+use Illuminate\View\View;
 
 /**
  * 所有应用都必须继承自该类，并且不能覆盖此构造函数
@@ -61,6 +62,12 @@ class Controller extends BaseController
      */
     public function after(Request $request, Response $response) {
         $endtime = microtime(true);
-        log_debug('response', ['path' => $request->path(), 'reqdata' => $request->all()/*, 'resdata' => $response->getOriginalContent()*/], bcsub($endtime, $this->starttime, 5));
+
+        $resdata = $response->getOriginalContent();
+        if($resdata instanceof View) {
+            $resdata = $resdata->render();
+        }
+
+        log_debug('response', ['path' => $request->path(), 'reqdata' => $request->all(), 'resdata' => $resdata], bcsub($endtime, $this->starttime, 5));
     }
 }

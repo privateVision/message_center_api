@@ -26,6 +26,8 @@ return [
         'apikey' => '560ff300cabf7b7df7e3c02f892bfd43',
         'sender' => 'http://yunpian.com/v1/sms/send.json',
         'hour_limit' => 3, // 每小时短信发送次数限制
+
+        // 注，验证码类短信必需包含“#code#”
         'template' => [
             //  手机注册成功    一键登录    主动短信验证码登录
             'mobile_register'  =>  '【安锋游戏】恭喜您注册成功，用户名：#username#    密码：#password#，您也可以使用手机号码作为账号登录。',
@@ -113,12 +115,14 @@ return [
         ],
         
         'mycard' => [
+            // mycard有多帐号机制，通常在回调里会传FacServiceId，根据FacServiceId调用不同的FacServerKey，验证不同的回调，目前我们这边写死了，默认就这一个账号
             'FacServiceId' => 'NOVAS',
             'FacServerKey' => '83BC614DF932329D52B9FC73F7BA7DEB',
-            'autocode_url' => env('APP_DEBUG') ? 'https://test.b2b.mycard520.com.tw/MyBillingPay/api/AuthGlobal' : 'https://b2b.mycard520.com.tw/MyBillingPay/api/AuthGlobal',
-            'webpay_url' => env('APP_DEBUG') ? 'https://test.mycard520.com.tw/MyCardPay/' : 'https://www.mycard520.com.tw/MyCardPay/',
-            'pay_result_url' => env('APP_DEBUG') ? 'https://test.b2b.mycard520.com.tw/MyBillingPay/api/TradeQuery' : 'https://b2b.mycard520.com.tw/MyBillingPay/api/TradeQuery',
-            'server_host' => env('APP_DEBUG') ? '218.32.37.148' : '220.130.127.125',
+            'AuthGlobal' => env('APP_DEBUG') ? 'https://test.b2b.mycard520.com.tw/MyBillingPay/api/AuthGlobal' : 'https://b2b.mycard520.com.tw/MyBillingPay/api/AuthGlobal',
+            'MyCardPay' => env('APP_DEBUG') ? 'https://test.mycard520.com.tw/MyCardPay/' : 'https://www.mycard520.com.tw/MyCardPay/',
+            'TradeQuery' => env('APP_DEBUG') ? 'https://test.b2b.mycard520.com.tw/MyBillingPay/api/TradeQuery' : 'https://b2b.mycard520.com.tw/MyBillingPay/api/TradeQuery',
+            'TradeQueryHost' => env('APP_DEBUG') ? '218.32.37.148' : '220.130.127.125',
+            'PaymentConfirm' => env('APP_DEBUG') ? 'https://test.b2b.mycard520.com.tw/MyBillingPay/api/PaymentConfirm' : 'https://b2b.mycard520.com.tw/MyBillingPay/api/PaymentConfirm',
         ],
 
         //https://console.developers.google.com/iam-admin/serviceaccounts/project?project=api-project-70324813277

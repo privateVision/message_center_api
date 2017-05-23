@@ -301,6 +301,4 @@ class  AppleController extends Controller{
         }
         return ["paytype"=>$pay_type];
     }
-
-
 }

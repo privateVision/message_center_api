@@ -42,7 +42,7 @@ class WechatController extends Controller {
         return $sign === $_sign;
     }
     
-    protected function handler($data, $order) {
+    protected function handler($data, $order, $order_extend) {
         return $data['result_code'] == 'SUCCESS';
     }
     

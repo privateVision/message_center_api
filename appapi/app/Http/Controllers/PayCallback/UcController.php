@@ -43,7 +43,7 @@ class UcController extends Controller
         return false;
     }
 
-    protected function handler($data, $order)
+    protected function handler($data, $order, $order_extend)
     {
         return $data['data']['orderStatus'] == 'S'?true:false;
     }

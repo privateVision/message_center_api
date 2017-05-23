@@ -37,7 +37,7 @@ class NowpayWechatController extends Controller
         return md5($str . md5($config['secure_key'])) === $sign;
     }
 
-    protected function handler($data, $order){
+    protected function handler($data, $order, $order_extend){
         return true;
     }
 

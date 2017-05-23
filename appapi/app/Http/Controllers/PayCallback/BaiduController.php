@@ -30,7 +30,7 @@ class BaiduController extends Controller
         return $result?true:false;
     }
 
-    protected function handler($data, $order)
+    protected function handler($data, $order, $order_extend)
     {
         $content = base64_decode($data['Content']);
 

@@ -27,7 +27,7 @@ class YingYongBaoController extends Controller
         // TODO: Implement verifySign() method.
     }
 
-    protected function handler($data, $order)
+    protected function handler($data, $order, $order_extend)
     {
         // TODO: Implement handler() method.
     }

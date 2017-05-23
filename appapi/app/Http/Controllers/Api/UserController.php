@@ -2,13 +2,10 @@
 namespace App\Http\Controllers\Api;
 
 use App\Exceptions\ApiException;
-use Illuminate\Http\Request;
-use App\Parameter;
 use App\Model\Ucuser;
 use App\Model\Orders;
 use App\Model\UcuserOauth;
 use App\Model\UcuserInfo;
-use Illuminate\Support\Facades\Session;
 use App\Model\Retailers;
 
 class UserController extends AuthController
