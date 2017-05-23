@@ -3,6 +3,7 @@ namespace App\Http\Controllers\Api\Pay;
 
 use App\Exceptions\ApiException;
 use App\Model\Orders;
+use App\Model\OrderExtend;
 
 class NowpayWechatController extends Controller {
 

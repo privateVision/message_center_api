@@ -13,6 +13,58 @@ use App\Model\ProceduresProducts;
 use App\Model\ForceCloseIaps;
 
 class OrderController extends Controller {
+
+    public function ConfigAction() {
+        $pid = $this->procedure->pid;
+
+        // 是否开启官方支付
+        $iap = (($this->procedure_extend->enable & (1 << 8)) == 0);
+
+        if($iap) {
+            // 读取用户充值总额
+            $force_close_iaps = ForceCloseIaps::whereRaw("find_in_set({$pid}, appids)")->where('closed', 0)->get();
+            $appids = [];
+            $iap_paysum = 0;
+            foreach ($force_close_iaps as $v) {
+                $appids = array_merge($appids, explode(',', $v->appids));
+                $iap_paysum += $v->fee;
+            }
+
+            if ($iap_paysum > 0) {
+                $paysum = Orders::whereIn('vid', array_unique($appids))->where('status', '!=', Orders::Status_WaitPay)->where('ucid', $this->user->ucid)->sum('fee');
+
+                if ($paysum >= $iap_paysum) {
+                    $iap = false;
+                }
+            }
+        }
+
+        // 支付方式判断
+
+        $pay_methods = [];
+
+        if(!$iap) {
+            $pay_methods_config = config('common.pay_methods');
+
+            for($i = 0; $i <= 31; $i++) {
+                $pay_method = @$pay_methods_config[floor($i/4)];
+                if(!$pay_method) continue;
+
+                if(($this->procedure_extend->pay_method & (1 << $i)) == 0) continue;
+
+                if(in_array($i % 4, $pay_method['pay_type'])) {
+                    $pay_method['pay_type'] = $i % 4;
+                    $pay_methods[floor($i/4)] = $pay_method;
+                }
+            }
+        }
+
+        return [
+            'iap' => $iap,
+            'sandbox' => ($this->procedure_extend->enable & (1 << 7)) == 0,
+            'pay_methods' => $pay_methods,
+        ];
+    }
     public function NewAction() {
         $zone_id = $this->parameter->get('zone_id', '');
         $zone_name = $this->parameter->get('zone_name', '');
@@ -116,20 +168,22 @@ class OrderController extends Controller {
 
         $iap = (($this->procedure_extend->enable & (1 << 8)) == 0);
 
-        // 读取用户充值总额
-        $force_close_iaps = ForceCloseIaps::whereRaw("find_in_set({$pid}, appids)")->where('closed', 0)->get();
-        $appids = [];
-        $iap_paysum = 0;
-        foreach($force_close_iaps as $v) {
-            $appids = array_merge($appids, explode(',', $v->appids));
-            $iap_paysum += $v->fee * 100;
-        }
+        if($iap) {
+            // 读取用户充值总额
+            $force_close_iaps = ForceCloseIaps::whereRaw("find_in_set({$pid}, appids)")->where('closed', 0)->get();
+            $appids = [];
+            $iap_paysum = 0;
+            foreach ($force_close_iaps as $v) {
+                $appids = array_merge($appids, explode(',', $v->appids));
+                $iap_paysum += $v->fee;
+            }
 
-        if($iap_paysum > 0) {
-            $paysum = Orders::whereIn('vid', array_unique($appids))->where('status', '!=', Orders::Status_WaitPay)->where('ucid', $this->user->ucid)->sum('fee');
+            if ($iap_paysum > 0) {
+                $paysum = Orders::whereIn('vid', array_unique($appids))->where('status', '!=', Orders::Status_WaitPay)->where('ucid', $this->user->ucid)->sum('fee');
 
-            if($paysum >= $iap_paysum) {
-                $iap = false;
+                if ($paysum >= $iap_paysum) {
+                    $iap = false;
+                }
             }
         }
 
