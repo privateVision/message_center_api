@@ -176,7 +176,6 @@ class UserSubController extends AuthController
                 $ucuserSubService->getConnection()->commit();
 
                 if(!$serviceid)throw new ApiException(ApiException::Error);
-
                 break;
             case 1:
 
