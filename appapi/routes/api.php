@@ -80,6 +80,7 @@ Route::group(['prefix' => 'api'], function () {
     Route::any('pay/order/new', 'Api\\Pay\\OrderController@NewAction');                                     // 创建订单
     Route::any('pay/order/f/new', 'Api\\Pay\\OrderController@NewAction');                                   // XXX 4.0 充值F币的订单
     Route::any('pay/order/info', 'Api\\Pay\\OrderController@InfoAction');                                   // 获取订单信息
+    Route::any('pay/order/config', 'Api\\Pay\\OrderController@ConfigAction');                               // 获取订单(支付）配置
 
     Route::any('pay/nowpay_wechat/request', 'Api\\Pay\\NowpayWechatController@RequestAction');              // 现在支付，微信
     Route::any('pay/wechat/request', 'Api\\Pay\\WechatController@RequestAction');                           // 微信
@@ -97,7 +98,6 @@ Route::group(['prefix' => 'api'], function () {
     Route::any('ios/order/create','Api\\Pay\\AppleController@OrderCreateAction');                           // 验证苹果支付的信息
     Route::any('ios/applelimit','Api\\Pay\\AppleController@AppleLimitAction');                              // 验证当前是否开启限制
 
-    // Apple支付方式将被废弃
     //Route::any('ios/order/receipt/verify','Api\\Pay\\AppleController@validateReceiptAction');               // XXX 4.0 验证苹果支付的信息
     //Route::any('ios/order/create','Api\\Pay\\OrderController@NewAction');                                   // XXX 4.0 验证苹果支付的信息
     //Route::any('ios/applelimit','Api\\Pay\\AppleController@AppleLimitAction');                              // XXX 4.0 验证当前是否开启限制
