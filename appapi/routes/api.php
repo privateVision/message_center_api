@@ -104,6 +104,6 @@ Route::group(['prefix' => 'api'], function () {
     Route::any('tool/user/auth', 'Api\\Tool\\AuthAccountController@AuthAccountAction');
     Route::any('tool/user_sub/freeze', 'Api\\Tool\\AuthAccountController@FreezeSubAction');
     
-    Route::any('v1.0/cp/info/order','Api\\CP\\OrderController@GetOrderInfoAction');                          //获取订单信息
-    Route::any('v1.0/cp/user/auth','Api\\CP\\UserController@CheckAuthAction');                               //验证登陆是否有效
+    Route::any('v1.0/cp/info/order','Api\\CP\\OrderController@GetOrderInfoAction');                          // 获取订单信息
+    Route::any('v1.0/cp/user/auth','Api\\CP\\UserController@CheckAuthAction');                               // 验证登陆是否有效
 });
