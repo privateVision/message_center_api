@@ -48,23 +48,47 @@ class Controller extends \App\Controller
         $this->request = $request;
     }
 
-    public function onError(Request $request, $e) {
+    public function onError(Request $request, \Exception $e) {
         if($e instanceof ApiException) {
             $code = $e->getCode();
             $code = $code == 0 ? 1 : $code;
-            
-            log_warning('ApiException', ['code' => $code], $e->getMessage());
-            return array('code' => $code, 'msg' => $e->getMessage(), 'data' => null);
+            log_warning('ApiException', ['code' => $e->getCode(), 'path' => $request->path(), 'reqdata' => $request->all()], $e->getMessage());
+            $content = ['code' => $e->getCode(), 'msg' => $e->getMessage(), 'data' => $e->getData()];
         } elseif($e instanceof Exception) {
-            log_warning('Exception', ['code' => $e->getCode()], $e->getMessage());
-            return array('code' => 1, 'msg' => $e->getMessage(), 'data' => null);
+            log_warning('Exception', ['code' => $e->getCode(), 'path' => $request->path(), 'reqdata' => $request->all()], $e->getMessage());
+            $content = ['code' =>1, 'msg' => $e->getMessage(), 'data' => null];
         } else {
-            log_error('error', ['message' => $e->getMessage(), 'code' => $e->getCode(), 'file' => $e->getFile(), 'line' => $e->getLine()]);
-            return array('code' => ApiException::Error, 'msg' => 'system error', 'data' => null);
+            log_error('error', [
+                'message' => $e->getMessage(),
+                'code' => $e->getCode(),
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'path' => $request->path(),
+                'reqdata' => $request->all()
+            ]);
+
+            $content = ['code' => ApiException::Error, 'msg' => 'system error', 'data' => null];
         }
+
+        return response($content, 200);
     }
     
-    public function onResponse(Request $request, $data) {
-        return array('code' => 0, 'msg' => null, 'data' => $response);
+    public function onResponse(Request $request, Response $response) {
+        $content = [
+            'code' => 0,
+            'msg' => null,
+            'data' => $response->getOriginalContent()
+        ];
+
+        //XXX 历史遗留问题
+        if($content['data'] == '__true') {
+            $content['data'] = true;
+        }
+        else if($content['data'] == '__false') {
+            $content['data'] = false;
+        }
+        $response->setContent($content);
+
+        return $response;
     }
 }
