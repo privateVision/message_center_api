@@ -132,7 +132,7 @@
                             target.addClass('disabled');
                             $.ajax({
                                 "type":"POST",
-                                "url" : '/index.php/login',
+                                "url" : '/index.php/web/login',
                                 "data" : dt,
                                 "dataType" : 'json',
                                 "success" : function(res) {
@@ -186,7 +186,7 @@
                             target.addClass('disabled');
                             $.ajax({
                                 "type": "POST",
-                                "url": '/index.php/sign',
+                                "url": '/index.php/web/sign',
                                 "data": dt,
                                 "dataType": 'json',
                                 "anyse": false,
