@@ -48,7 +48,7 @@ class AuthAccountController extends Controller
             'username'=>$user->uid,
             'uid'=>$user->ucid,
             'mobile'=>$user->mobile,
-            'subInfo'=>$userSubs,
+            'subInfo'=>json_encode($userSubs, JSON_FORCE_OBJECT),
             'total_fee'=>$total_fee,
         ];
     }
