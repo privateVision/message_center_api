@@ -11,6 +11,9 @@ class TestController extends \App\Controller {
      * @return \Illuminate\Contracts\View\Factory|\Illuminate\View\View
      */
     public function indexAction(){
+        //获取路由原始文件
+        //$routes = $this->get_routes();
+
         //获取路由列表
         $rt = \Route::getRoutes();
         $urls = array();
@@ -18,6 +21,7 @@ class TestController extends \App\Controller {
             $act = $vo->action;
             //print_r($act);exit;
             if($act['prefix'] == '/api') {
+
                 $urls[] = array(
                     'url'=>$vo->uri,
                     'controller'=>$act['controller']
@@ -142,6 +146,24 @@ class TestController extends \App\Controller {
         ksort($params);
         $params['_sign'] = md5(http_build_query($params) . '&key=' . $appkey);
         return $params;
+    }
+
+    protected function get_routes(){
+        $routes = array();
+        $filename = base_path('routes/11.txt');echo $filename;
+        $fh = fopen($filename, 'r');
+
+        while (!feof($fh)) {
+            $line = fgets($fh);echo $line;
+            if(!empty($line)) {
+                preg_match("/Route::any('a-zA-Z\/{1,}'", $line, $match);
+                print_r($match);exit;
+            }
+        }
+
+        fclose($fh);
+        exit;
+        return $routes;
     }
 
     protected function response($status=0, $msg='success', $data=array()){
