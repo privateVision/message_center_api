@@ -40,7 +40,7 @@ class Controller extends \App\Controller
             $str .= "{$k}={$v}&";
         }
 
-        if($_sign !== md5("{$str}sign_key={$appkey1}") && $_sign !== md5("{$str}sign_key={$appkey2}")) {
+        if($_sign !== md5("{$str}sign_key={$appkey1}")/* && $_sign !== md5("{$str}sign_key={$appkey2}")*/) { // XXX 一些CP使用的是appkey2，当时为了兼容，现强制不兼容
             throw new ApiException(ApiException::Error, trans('messages.sign_error')); // LANG:sign_verify_error
         }
 

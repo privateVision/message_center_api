@@ -31,6 +31,9 @@ trait RegisterAction {
 
         // 用户没有可用的小号，创建
         if(!$user_sub) {
+            // XXX 在涉及到出小号的情况下，一个小号出售给别人openid是不变的，再给卖家创建一个同openid的小号是有问题的
+            // 如果判断到用户没有小号的情况下给用户自动创建的第一个小号的openid不再有规律
+
             $user_sub = UcuserSub::tableSlice($user->ucid);
             $user_sub->id = $user->ucid . sprintf('%05d01', $pid);
             $user_sub->ucid = $user->ucid;

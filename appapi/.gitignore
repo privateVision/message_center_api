@@ -2,10 +2,11 @@
 .env.local
 .env.testing
 .env.online
-.settings/
-.project
-*.tar.gz
-swoole_server.php
-tpack.sh
-listen-queue.sh
+.buildpath
+.htaccess
+composer.lock
+package.json
+webpack.mix.json
+yarn.lock
 _ab/
+_script/

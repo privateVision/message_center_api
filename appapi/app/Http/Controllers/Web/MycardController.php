@@ -1,5 +1,5 @@
 <?php
-namespace App\Http\Controllers\Outside;
+namespace App\Http\Controllers\Web;
 use Illuminate\Http\Request;
 use App\Model\OrderExt;
 use App\Model\Orders;
