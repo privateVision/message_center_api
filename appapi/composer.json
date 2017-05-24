@@ -1,6 +1,6 @@
 {
 	"name" : "laravel/laravel",
-	"description" : "The Laravel Framework.",
+	"description" : "AnFengSDK",
 	"keywords" : [
 		"framework",
 		"laravel"
@@ -12,7 +12,6 @@
 		"aporat/store-receipt-validator": "^2.0",
 		"aws/aws-sdk-php": "~3.0",
 		"barryvdh/laravel-cors": "^0.8.6",
-		"barryvdh/laravel-ide-helper": "^2.3",
 		"google/apiclient": "^2.0",
 		"guzzlehttp/guzzle": "^6.2",
 		"illuminate/mail": "^5.4",

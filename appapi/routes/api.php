@@ -1,5 +1,4 @@
 <?php
-// TODO 上线后改名为outer，同时修改nginx配置文件
 Route::group(['prefix' => 'web'], function () {
     Route::any('mycard/rescue', 'Web\\MycardController@RescueAction'); // mycard订单补储
     Route::any('mycard/query', 'Web\\MycardController@QueryAction');   // mycard订单查询
@@ -12,14 +11,10 @@ Route::group(['prefix' => 'pay_callback'], function () {
     Route::any('unionpay', 'PayCallback\\UnionpayController@CallbackAction');                               // 银联支付回调
     Route::any('wechat', 'PayCallback\\WechatController@CallbackAction');                                   // 微信支付回调
 
-
     //渠道支付回调
     Route::any('baidu', 'PayCallback\\BaiduController@CallbackAction');
-
     Route::any('mycard', 'PayCallback\\MycardController@CallbackAction');                                   // mycard支付回调
-
     Route::any('uc', 'PayCallback\\UcController@CallbackAction');                                           // Uc支付回调
-
 });
     
 // 各种回调
