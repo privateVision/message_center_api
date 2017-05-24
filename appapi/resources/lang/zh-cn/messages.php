@@ -88,6 +88,8 @@ return [
     'service_err'                           => '客服参数信息有误',
     'buy_user_err'                          => '不存在此买家',
     'sub_user_normal'                       => '小号状态正常',
+    'error_googlepaly_system'               => 'google play 系统错误', //error
+    'error_googlepaly_verify'               => 'google play 验证订单失败', //error
 ];
 /*
 return [
