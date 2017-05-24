@@ -65,8 +65,8 @@
                                 </div>
                                 <div class="form-group">
                                     <div class="col-sm-12">
-                                        <p>请输入对应接口主要参数（注意json格式）：</p>
-                                        <textarea type="text" name="extend" class="form-control" placeholder="json格式接口参数" rows="4">{"key":""}</textarea>
+                                        <p>请输入对应接口主要参数（注意:请使用键值对格式，多个逗号分隔）：</p>
+                                        <textarea type="text" name="extend" class="form-control" placeholder="键值对格式接口参数" rows="4">key:value</textarea>
                                     </div>
                                 </div>
                                 <div class="form-group text-center">
@@ -76,10 +76,10 @@
                                 </div>
                             </div>
                             <div class="col-md-12" style="border:1px solid #d1d1d1;border-radius:20px; margin-top:5px;">
-                                <h4>请求数据打印如下：</h4>
-                                <p node-type="controller">控制器：<span></span></p>
-                                <p node-type="request">请求数据：<span></span></p>
-                                <p node-type="sign">请求签名：<span></span></p>
+                                <h4>请求数据如下：</h4>
+                                <p node-type="controller" style="word-break:break-all; word-wrap:break-all;">控制器：<span></span></p>
+                                <p node-type="request" style="word-break:break-all; word-wrap:break-all;">请求数据：<span></span></p>
+                                <p node-type="sign" style="word-break:break-all; word-wrap:break-all;">请求签名：<span></span></p>
                             </div>
                         </div>
                     </div>
@@ -164,12 +164,24 @@
                             alert('_appid或_appkey不能为空！');return ;
                         }
                         var extend = $('textarea[name="extend"]').val();
-                        var json = $.parseJSON(extend);
-                        if(!json){
-                            alert('json格式数据格式化失败！');return ;
+                        var json = {};
+                        extend = $.trim(extend);
+                        if(!!extend){
+                           var orgs = extend.split(',');
+                           for(var i=0; i<orgs.length; i++) {
+                               if(!!orgs[i]){
+                                   var org = $.trim(orgs[i]);
+                                   var tmps = org.split(':');
+                                   var k = $.trim(tmps[0]);
+                                   var v = $.trim(tmps[1]);
+                                   json[k] = v;
+                               }
+                           }
                         }
                         dt.pubs = pubs;
                         dt.extend = JSON.stringify(json);
+                        //console.log(dt);return;
+
                         if(!target.hasClass('disabled')){
                             target.addClass('disabled');
                             $.ajax({
