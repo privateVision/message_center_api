@@ -106,7 +106,7 @@ class AuthAccountController extends Controller
 
                 if(!$ucuserSubService) throw new ApiException(ApiException::Remind, trans('messages.service_err'));
 
-                $ucuserSubService->ucid = $serviceUid;
+                $ucuserSubService->ucid = $serviceUcid->ucid;
                 $ucuserSubService->status = $status;
                 $ucuserSubService->save();
 
@@ -139,7 +139,7 @@ class AuthAccountController extends Controller
 
                 break;
             case 4:
-                $ucuserSubService = UcuserSubService::where('id', $serviceid)->where('status', 3)->first();
+                $ucuserSubService = UcuserSubService::where('id', $serviceid)->where('status', 2)->first();
                 if(!$ucuserSubService) throw new ApiException(ApiException::Remind, trans('messages.service_err'));
 
                 $ucuserSubService->getConnection()->beginTransaction();
@@ -155,7 +155,7 @@ class AuthAccountController extends Controller
 
                 $otherUserSub = UcuserSub::tableSlice($otherUcid);
                 $otherUserSub->id = $userSub->id;
-                $otherUserSub->ucid = $userSub->ucid;
+                $otherUserSub->ucid = $otherUcid;
                 $otherUserSub->pid = $userSub->pid;
                 $otherUserSub->rid = $userSub->rid;
                 $otherUserSub->old_rid = $userSub->old_rid;
@@ -163,9 +163,13 @@ class AuthAccountController extends Controller
                 $otherUserSub->name = $userSub->name;
                 $otherUserSub->priority = $userSub->priority;
                 $otherUserSub->last_login_at = $userSub->last_login_at;
-                $otherUserSub->save();
+                $otherUserSub->is_freeze = 0;/*print_r($otherUserSub);die;*/
 
                 $userSub->delete();
+
+                $otherUserSub->save();
+
+
 
                 $ucuserSubService->getConnection()->commit();
                 break;
