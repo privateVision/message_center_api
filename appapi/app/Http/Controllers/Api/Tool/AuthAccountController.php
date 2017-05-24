@@ -10,6 +10,7 @@ use App\Model\Procedures;
 use App\Model\TotalFeePerUser;
 use App\Model\UcuserSub;
 use App\Model\UcuserRole;
+use App\Model\UcuserSubService;
 
 class AuthAccountController extends Controller
 {
@@ -48,8 +49,128 @@ class AuthAccountController extends Controller
             'username'=>$user->uid,
             'uid'=>$user->ucid,
             'mobile'=>$user->mobile,
-            'subInfo'=>json_encode($userSubs, JSON_FORCE_OBJECT),
+            'subInfo'=>$userSubs,
             'total_fee'=>$total_fee,
         ];
+    }
+
+    public function FreezeSubAction()
+    {
+        $subUserId = $this->parameter->tough('sub_user_id');
+        $srcUcid = $this->parameter->tough('ucid');
+        $status = $this->parameter->tough('status');
+        $serviceUid = $this->parameter->get('service_uid', 0);
+        $serviceid = $this->parameter->get('service_id', 0);
+        $otherUcid = $this->parameter->get('other_ucid', 0);
+
+        $userSub = UcuserSub::tableSlice($srcUcid)->where('id', $subUserId)->where('ucid', $srcUcid)->first();
+
+        if(!$userSub){
+            throw new ApiException(ApiException::Remind, trans('messages.sub_user_err'));
+        }
+
+        switch ($status){
+            //小号状态，0待审核，1审核中，2审核通过，3审核不通过，4交易成功
+            case 0:
+                $serviceUcid = 0;
+
+                //只有状态正常才能卖
+                if($userSub->is_freeze!==0)throw new ApiException(ApiException::Remind, trans('messages.sub_user_err'));
+
+                $ucuserSubService = new UcuserSubService();
+                $ucuserSubService->getConnection()->beginTransaction();
+                $ucuserSubService->ucid = $serviceUcid;
+                $ucuserSubService->user_sub_id = $subUserId;
+                $ucuserSubService->pid = $userSub->pid;
+                $ucuserSubService->src_ucid = $srcUcid;
+                $ucuserSubService->status = $status;
+                $ucuserSubService->save();
+
+                $userSub->is_freeze = 1;
+                $userSub->save();
+                $serviceid = $ucuserSubService->id;
+                $ucuserSubService->getConnection()->commit();
+
+                if(!$serviceid)throw new ApiException(ApiException::Error);
+
+                return [
+                    'service_id'=>$serviceid
+                ];
+                break;
+            case 1:
+
+                $serviceUcid = Ucuser::where('uid', $serviceUid)->first(['ucid']);
+                if(!$serviceUcid) throw new ApiException(ApiException::Remind, trans('messages.service_user_err'));
+
+                $ucuserSubService = UcuserSubService::where('id', $serviceid)->where('status', 0)->first();
+
+                if(!$ucuserSubService) throw new ApiException(ApiException::Remind, trans('messages.service_err'));
+
+                $ucuserSubService->ucid = $serviceUid;
+                $ucuserSubService->status = $status;
+                $ucuserSubService->save();
+
+                break;
+            case 2:
+                $ucuserSubService = UcuserSubService::where('id', $serviceid)->where('status', 1)->first();
+
+                if(!$ucuserSubService) throw new ApiException(ApiException::Remind, trans('messages.service_err'));
+                $ucuserSubService->status = $status;
+                $ucuserSubService->save();
+                break;
+            case 3:
+                $ucuserSubService = UcuserSubService::where('id', $serviceid)->where('status', 1)->first();
+
+                if(!$ucuserSubService) throw new ApiException(ApiException::Remind, trans('messages.service_err'));
+
+                $ucuserSubService->getConnection()->beginTransaction();
+
+                $ucuserSubService->status = $status;
+                $ucuserSubService->save();
+
+                $userSub = UcuserSub::tableSlice($ucuserSubService->src_ucid)->where('id', $ucuserSubService->user_sub_id)->where('is_freeze', 1)->first();
+
+                if(!$userSub)throw new ApiException(ApiException::Remind, trans('messages.sub_user_err'));
+
+                $userSub->is_freeze = 0;
+                $userSub->save();
+
+                $ucuserSubService->getConnection()->commit();
+
+                break;
+            case 4:
+                $ucuserSubService = UcuserSubService::where('id', $serviceid)->where('status', 3)->first();
+                if(!$ucuserSubService) throw new ApiException(ApiException::Remind, trans('messages.service_err'));
+
+                $ucuserSubService->getConnection()->beginTransaction();
+
+                $ucuserSubService->status = $status;
+                $ucuserSubService->save();
+
+                $userSub = UcuserSub::tableSlice($ucuserSubService->src_ucid)->where('id', $ucuserSubService->user_sub_id)->where('is_freeze', 1)->first();
+
+                if(!$userSub)throw new ApiException(ApiException::Remind, trans('messages.sub_user_err'));
+
+                if(!Ucuser::where('ucid', $otherUcid)->first())throw new ApiException(ApiException::Remind, trans('messages.buy_user_err'));
+
+                $otherUserSub = UcuserSub::tableSlice($otherUcid);
+                $otherUserSub->id = $userSub->id;
+                $otherUserSub->ucid = $userSub->ucid;
+                $otherUserSub->pid = $userSub->pid;
+                $otherUserSub->rid = $userSub->rid;
+                $otherUserSub->old_rid = $userSub->old_rid;
+                $otherUserSub->cp_uid = $userSub->cp_uid;
+                $otherUserSub->name = $userSub->name;
+                $otherUserSub->priority = $userSub->priority;
+                $otherUserSub->last_login_at = $userSub->last_login_at;
+                $otherUserSub->save();
+
+                $userSub->delete();
+
+                $ucuserSubService->getConnection()->commit();
+                break;
+        }
+
+        return [];
     }
 }
