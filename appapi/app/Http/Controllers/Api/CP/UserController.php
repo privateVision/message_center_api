@@ -14,9 +14,9 @@ class UserController extends Controller{
         //查询当前的session
         $session = Session::find($token);
         if(!$session || $session->cp_uid !== $openid || $session->pid !== $appid){
-            return false;
+            return '__false';
         } else {
-            return true;
+            return '__true';
         }
     }
 }
