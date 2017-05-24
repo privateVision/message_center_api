@@ -70,7 +70,7 @@ class AuthAccountController extends Controller
         }
 
         switch ($status){
-            //小号状态，0待审核，1审核中，2审核通过，3审核不通过，4交易成功
+            //小号状态，0待审核，1审核中，2审核通过，3审核不通过，4交易成功, 5待审核状态时取消发布， 6审核通过后下架
             case 0:
                 $serviceUcid = 0;
 
@@ -171,6 +171,37 @@ class AuthAccountController extends Controller
 
 
 
+                $ucuserSubService->getConnection()->commit();
+                break;
+
+            case 5:
+                $ucuserSubService = UcuserSubService::where('id', $serviceid)->where('status', 0)->first();
+                if(!$ucuserSubService)throw new ApiException(ApiException::Remind, trans('messages.service_err'));
+
+                $ucuserSubService->getConnection()->beginTransaction();
+                $ucuserSubService->status = $status;
+                $ucuserSubService->save();
+
+                if($userSub->is_freeze===0)throw new ApiException(ApiException::Remind, trans('messages.sub_user_normal'));
+
+                $userSub->is_freeze = 0;
+                $userSub->save();
+
+                $ucuserSubService->getConnection()->commit();
+                break;
+
+            case 6:
+                $ucuserSubService = UcuserSubService::where('id', $serviceid)->where('status', 2)->first();
+                if(!$ucuserSubService) throw new ApiException(ApiException::Remind, trans('messages.service_err'));
+
+                $ucuserSubService->getConnection()->beginTransaction();
+                $ucuserSubService->status = $status;
+                $ucuserSubService->save();
+
+                if($userSub->is_freeze===0)throw new ApiException(ApiException::Remind, trans('messages.sub_user_normal'));
+
+                $userSub->is_freeze = 0;
+                $userSub->save();
                 $ucuserSubService->getConnection()->commit();
                 break;
         }

@@ -87,6 +87,7 @@ return [
     'service_user_err'                      => '客服账号不存在',
     'service_err'                           => '客服参数信息有误',
     'buy_user_err'                          => '不存在此买家',
+    'sub_user_normal'                       => '小号状态正常',
 ];
 /*
 return [
