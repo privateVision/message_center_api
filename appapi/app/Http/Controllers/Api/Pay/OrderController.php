@@ -71,26 +71,27 @@ class OrderController extends Controller {
         $role_id = $this->parameter->get('role_id', '');
         $role_level = $this->parameter->get('role_level', '');
         $role_name = $this->parameter->get('role_name', '');
-        $vorderid = $this->parameter->tough('vorderid');
         $product_type = $this->parameter->get('product_type', 0); // 0 游戏道具，1 F币，2 游币（H5专用）
+
+        // TODO 如何判断老用户购买的是F币
+
+        // 购买F币无需CP订单号
+        $vorderid = '';
+        if($product_type != 1) {
+            $vorderid = $this->parameter->tough('vorderid');
+        }
 
         $pid = $this->procedure->pid;
 
         // TODO 是否强制实名制，改成在发起支付时再判断
-        /*
-        if(($this->procedure_extend->enable & 0x0000000C) == 0x0000000C) {
-            $user_info = UcuserInfo::from_cache($this->user->ucid);
-            if(!$user_info || !$user_info->card_no) {
-                throw new ApiException(ApiException::NotRealName, trans('messages.check_in_before_pay'));
-            }
-        }
-        */
+//        if(($this->procedure_extend->enable & 0x0000000C) == 0x0000000C) {
+//            $user_info = UcuserInfo::from_cache($this->user->ucid);
+//            if(!$user_info || !$user_info->card_no) {
+//                throw new ApiException(ApiException::NotRealName, trans('messages.check_in_before_pay'));
+//            }
+//        }
 
-        // 如果是买F币不用通知地址，否则如果没有通知地址则去数据库看有没有预设置
-        if($pid < 100) {
-            $product_type = 1;
-        }
-
+        // 如果是买F币不用通知地址，否则没有通知地址就去数据库看有没有预设置
         $notify_url = $this->parameter->get('notify_url', '');
         if($product_type != 1) {
             if (!$notify_url) {
@@ -104,7 +105,7 @@ class OrderController extends Controller {
 
         // 如果传了product_id则通过product_id找到计费点信息，否则fee,body,subject必传
 
-        $product_id = $this->parameter->get('product_id', 0);
+        $product_id = $this->parameter->get('product_id', '');
         if(!$product_id) {
             $fee = $this->parameter->tough('fee');
             $body = $this->parameter->tough('body');
@@ -153,7 +154,7 @@ class OrderController extends Controller {
         $order_extend->role_level = $role_level;
         $order_extend->role_name = $role_name;
         $order_extend->product_type = $product_type;
-        $order_extend->product_id = $product_id;
+        $order_extend->product_id = isset($product) ? $product->id : 0;
         $order_extend->save();
 
         $order->getConnection()->commit();

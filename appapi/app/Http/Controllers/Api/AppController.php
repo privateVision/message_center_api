@@ -14,9 +14,90 @@ class AppController extends Controller
     /**
      * 初始化接口（在程序启动时第一时间调用）
      * @api api/app/initialize
+     * @apigroup
      * @apiparam device_apps string N json格式用户设备上所安装的app列表，`[{},{}...]`
-     * @apiparam device_info string Y
-     * @return array
+     * @apiparam device_info string Y json格式用户设备信息 `{"brand":"samsung","model":"SM-A8000","vname":"5.1.1","vcode":22,"imei":"352324076134061","imsi":"460021714867416","number":"","screen":"1080x1920"}`
+     * @apiparam app_version string Y app的版本（非version_code），用于检查更新，当最新更新包的版本不等于app_version时则产生更新
+     * @apireturn allow_sub_num int 该游戏允许创建的小号数量
+     * @apireturn bind_phone array 绑定手机相关设置
+     * @apireturn bind_phone.need bool 是否在登陆后提示绑定手机
+     * @apireturn bind_phone.interval int 每隔多久弹出一次提示，单位（ms）
+     * @apireturn bind_phone.enforce bool 是否强制绑定（不绑定就不能关闭窗口）
+     * @apireturn service array 服务相关设置
+     * @apireturn service.qq string 客户服务QQ号码
+     * @apireturn service.interval int HTTP心跳频率，单位（ms）
+     * @apireturn service.af_download string 安锋下载地址（在小号界面显示安锋助手下载）
+     * @apireturn service.share string 用户分享页（的链接地址）
+     * @apireturn service.phone string 客户服务电话
+     * @apireturn service.page string 客户服务页面
+     * @apireturn af_login bool 是否启用我们自己的（安锋）登陆
+     * @apireturn update array 如果检查到更新则返回更新相关信息
+     * @apireturn update.down_url string 更新包下载地址
+     * @apireturn update.version string 更新包版本
+     * @apireturn update.force_update 是否强制更新
+     * @apireturn real_name array 实名制相关设置
+     * @apireturn real_name.need bool 是否在登陆后弹出实名制提示
+     * @apireturn real_name.enforce bool 是否强制实名制（不实名就不能关闭窗口）
+     * @apireturn real_name.pay_need bool 是否在支付时弹出实名制提示
+     * @apireturn real_name.pay_enforce bool 是否在支付时强制实名（不实名不能支付）
+     * @apireturn protocol array 注册协议
+     * @apireturn protocol.url string 注册协议的URL地址（可web打开）
+     * @apireturn protocol.title string 注册协议的标题
+     * @apireturn oauth_login array 第三方平台登陆设置
+     * @apireturn oauth_login.qq array QQ登陆设置
+     * @apireturn oauth_login.qq.url array QQ登陆URL页面
+     * @apireturn oauth_login.weixin array 微信登陆设置
+     * @apireturn oauth_login.weixin.url array 微信登陆URL页面
+     * @apireturn oauth_login.weibo array 微博登陆设置
+     * @apireturn oauth_login.weibo.url array 微博登陆URL页面
+     * @apireturn ios_app_config IOS应用设置，在`_os=1`有效
+     * @apireturn ios_app_config.bundle_id 应用包名
+     * @apireturn ios_app_config.apple_id 应用ID
+     * @apireturn ios_app_config.name 应用名称
+     * @apierrorcode Success 成功
+     * @apierrorcode Remind 逻辑错误
+     * @apierrorcode Error 系统错误
+     * {
+     *     "allow_sub_num": 1,
+     *     "bind_phone": {
+     *         "need": true,
+     *         "interval": 259200000,
+     *         "enforce": false
+     *     },
+     *     "service": {
+     *         "qq": "4000274365",
+     *         "interval": 2000,
+     *         "af_download": "http://appicdn.anfeng.cn/down/AnFengHelper_lastest.apk",
+     *         "share": "http://www.anfeng.cn/app",
+     *         "phone": "4000274365",
+     *         "page": "http://m.anfeng.cn/service.html"
+     *     },
+     *     "af_login": false,
+     *     "update": {},
+     *     "real_name": {
+     *         "need": false,
+     *         "enforce": false,
+     *         "pay_enforce": false,
+     *         "pay_need": false
+     *     },
+     *     "0": "",
+     *     "protocol": {
+     *         "url": "http://passtest.anfeng.cn/agreement.html",
+     *         "title": "安锋用户协议"
+     *     },
+     *     "oauth_login": {
+     *         "qq": {
+     *             "url": "http://passtest.anfeng.cn/oauth/login/qq?appid=2&rid=255&device_id=2mv4u46k1h44oksow8ccc8k4o"
+     *         },
+     *         "weixin": {
+     *             "url": "http://passtest.anfeng.cn/oauth/login/weixin?appid=2&rid=255&device_id=2mv4u46k1h44oksow8ccc8k4o"
+     *         },
+     *         "weibo": {
+     *             "url": "http://passtest.anfeng.cn/oauth/login/weibo?appid=2&rid=255&device_id=2mv4u46k1h44oksow8ccc8k4o"
+     *         }
+     *     },
+     *     "ios_app_config": {}
+     * }
      */
     public function InitializeAction() {
         $pid = $this->parameter->tough('_appid');
@@ -84,6 +165,7 @@ class AppController extends Controller
         		];
         	}
         }
+
         dispatch((new AdtRequest(["imei"=>$imei,"gameid"=>$pid,"rid"=>$rid]))->onQueue('adtinit'));
 
         return [
@@ -131,6 +213,15 @@ class AppController extends Controller
         ];
     }
 
+
+    /**
+     * 应用退出接口
+     * @api api/app/logout
+     * @apireturn img string 在退出时显示一张广告图（的URL地址）
+     * @apireturn type
+     * @apireturn redirect string 打开图片时跳转到URL地址
+     * @apireturn inside bool 是否在外部打开URL(redirect)地址
+     */
     public function LogoutAction() {
         return [
             'img' => $this->procedure_extend->logout_img,
@@ -151,6 +242,10 @@ class AppController extends Controller
         return ['result' => true];
     }
 
+    /**
+     * 获取一个UUID
+     * @apireturn uuid string 一个24位或25位的唯一（该接口返回的UUID永不重复）字符串
+     */
     public function UuidAction() {
         return ['uuid' => uuid()];
     }
