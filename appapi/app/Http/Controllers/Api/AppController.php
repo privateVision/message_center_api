@@ -11,6 +11,13 @@ use App\Jobs\AdtRequest;
 
 class AppController extends Controller
 {
+    /**
+     * 初始化接口（在程序启动时第一时间调用）
+     * @api api/app/initialize
+     * @apiparam device_apps string N json格式用户设备上所安装的app列表，`[{},{}...]`
+     * @apiparam device_info string Y
+     * @return array
+     */
     public function InitializeAction() {
         $pid = $this->parameter->tough('_appid');
         $rid = $this->parameter->tough('_rid');
