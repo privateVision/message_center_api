@@ -28,12 +28,12 @@ class GooglePlayController extends Controller {
         //获取订单扩展信息
         $product_id = isset($order_extend['product_id'])?$order_extend['product_id']:'';
         if(!$product_id){
-            throw new ApiException(ApiException::Remind,  trans('order_extend_info_error'));
+            throw new ApiException(ApiException::Remind,  trans('messages.order_extend_info_error'));
         }
 
         $product_extend = ProceduresProducts::find($product_id);
         if(!$product_extend){
-            throw new ApiException(ApiException::Remind,  trans('order_extend_info_error'));
+            throw new ApiException(ApiException::Remind,  trans('messages.order_extend_info_error'));
         }
 
         $status = self::handler($product_extend['third_product_id'], $packageName, $token);
@@ -44,8 +44,8 @@ class GooglePlayController extends Controller {
 
         return [
             'data' => array(
-                'packageName'=>$packageName,
-                'productId'=>$product_extend['third_product_id'],
+                'package_name'=>$packageName,
+                'product_id'=>$product_extend['third_product_id'],
                 'token'=>$token,
                 'status'=>$status
             )
