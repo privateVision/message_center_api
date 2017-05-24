@@ -149,6 +149,7 @@ class UserSubController extends AuthController
         $status = $this->parameter->tough('status');
         $serviceUid = $this->parameter->get('service_uid', 0);
         $serviceid = $this->parameter->get('service_id', 0);
+        $otherUcid = $this->parameter->get('other_ucid', 0);
 
         $userSub = UcuserSub::tableSlice($srcUcid)->where('id', $subUserId)->where('ucid', $srcUcid)->first();
 
@@ -176,6 +177,10 @@ class UserSubController extends AuthController
                 $ucuserSubService->getConnection()->commit();
 
                 if(!$serviceid)throw new ApiException(ApiException::Error);
+
+                return [
+                    'service_id'=>$serviceid
+                ];
                 break;
             case 1:
 
@@ -219,10 +224,7 @@ class UserSubController extends AuthController
 
                 break;
             case 4:
-                $otherUcid = $this->parameter->tough('other_ucid');
-
                 $ucuserSubService = UcuserSubService::where('id', $serviceid)->where('status', 3)->first();
-
                 if(!$ucuserSubService) throw new ApiException(ApiException::Remind, trans('messages.service_err'));
 
                 $ucuserSubService->getConnection()->beginTransaction();
@@ -254,8 +256,6 @@ class UserSubController extends AuthController
                 break;
         }
 
-        return [
-            'service_id'=>$subUserId
-        ];
+        return [];
     }
 }

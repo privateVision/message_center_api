@@ -76,7 +76,8 @@ Route::group(['prefix' => 'api'], function () {
     Route::any('user_sub/new', 'Api\\UserSubController@NewAction');                                         // 添加小号
     Route::any('user_sub/game_list', 'Api\\UserSubController@GameListAction');                              // 玩家所有游戏的小号列表
     Route::any('user_sub/set_nickname', 'Api\\UserSubController@SetNicknameAction');                        // 设置小号昵称
-    
+    Route::any('user_sub/freeze', 'Api\\UserSubController@FreezeSubAction');
+
     Route::any('pay/order/new', 'Api\\Pay\\OrderController@NewAction');                                     // 创建订单
     Route::any('pay/order/f/new', 'Api\\Pay\\OrderController@NewAction');                                   // XXX 4.0 充值F币的订单
     Route::any('pay/order/info', 'Api\\Pay\\OrderController@InfoAction');                                   // 获取订单信息
