@@ -46,7 +46,7 @@ class AlipayController extends Controller {
                 'dataString' => $data,
             ]);
 
-            return ['protocol' => sprintf('alipay://alipayclient/?%s', urlencode($data)), 'restype' => 'web_url'];
+            return ['protocol' => sprintf('alipay://alipayclient/?%s', urlencode($data)), 'restype' => $restype];
         } else {
             return ['data' => $data];
         }

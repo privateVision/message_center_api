@@ -108,7 +108,7 @@ class WechatController extends Controller {
                 'prepayId' => $responseData['prepay_id'],
                 'timeStamp' => $responseData['timeStamp'],
                 'sign' => $responseData['sign'],
-            ]))];
+            ])), 'restype' => $restype];
         } else {
             return $responseData;
         }
