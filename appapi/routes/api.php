@@ -71,7 +71,6 @@ Route::group(['prefix' => 'api'], function () {
     Route::any('user_sub/new', 'Api\\UserSubController@NewAction');                                         // 添加小号
     Route::any('user_sub/game_list', 'Api\\UserSubController@GameListAction');                              // 玩家所有游戏的小号列表
     Route::any('user_sub/set_nickname', 'Api\\UserSubController@SetNicknameAction');                        // 设置小号昵称
-    Route::any('user_sub/freeze', 'Api\\UserSubController@FreezeSubAction');
 
     Route::any('pay/order/new', 'Api\\Pay\\OrderController@NewAction');                                     // 创建订单
     Route::any('pay/order/f/new', 'Api\\Pay\\OrderController@NewAction');                                   // XXX 4.0 充值F币的订单
@@ -103,6 +102,7 @@ Route::group(['prefix' => 'api'], function () {
     Route::any('tool/user/freeze','Api\\Tool\\UserController@FreezeAction');                                // 冻结用户
     Route::any('tool/procedure/query','Api\\Tool\\ProcedureController@QueryAction');                        // 通过包名查询procedure
     Route::any('tool/user/auth', 'Api\\Tool\\AuthAccountController@AuthAccountAction');
+    Route::any('tool/user_sub/freeze', 'Api\\Tool\\AuthAccountController@FreezeSubAction');
     
     Route::any('v1.0/cp/info/order','Api\\CP\\OrderController@GetOrderInfoAction');                          //获取订单信息
     Route::any('v1.0/cp/user/auth','Api\\CP\\UserController@CheckAuthAction');                               //验证登陆是否有效
