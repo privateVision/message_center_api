@@ -434,7 +434,7 @@ def get_user_can_see_gift_list(ucid=None, game_id=None, start_index=None, end_in
                                         "and ((a.isSpecify=1 and a.id in (%s)) or (a.isSpecify=0)) or a.id in (%s) ) " \
                                         ") as d " \
                                         "where d.code<>'' or (d.assignNum>0 and d.code='')" \
-                                        " order by d.is_get asc , d.forTime desc, d.id desc limit %s, %s " \
+                                        " group by d.id order by d.is_get asc , d.forTime desc, d.id desc limit %s, %s " \
                                         % (ucid, game_id, now, SDK_PLATFORM_ID, specify_user_gift_id_list_str,
                                            already_get_gift_id_list_str, start_index, end_index)
         else:
@@ -451,7 +451,7 @@ def get_user_can_see_gift_list(ucid=None, game_id=None, start_index=None, end_in
                                         "and (a.isSpecify=0) or a.id in (%s) ) " \
                                         ") as d " \
                                         "where d.code<>'' or (d.assignNum>0 and d.code='')" \
-                                        " order by d.is_get asc , d.forTime desc, d.id desc limit %s, %s " \
+                                        " group by d.id order by d.is_get asc , d.forTime desc, d.id desc limit %s, %s " \
                                         % (ucid, game_id, now, SDK_PLATFORM_ID,
                                            already_get_gift_id_list_str, start_index, end_index)
     else:
