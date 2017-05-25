@@ -58,7 +58,7 @@
                                     <div class="col-sm-8">
                                         <select class="form-control" name="url">
                                             @foreach ($urls as $vo)
-                                            <option value="{{$vo['url']}}" data-controller="{{$vo['controller']}}">{{$vo['url']}}</option>
+                                            <option value="{{$vo['url']}}" data-controller="{{$vo['controller']}}">{{$vo['name']}}&nbsp;&nbsp;{{$vo['url']}}</option>
                                             @endforeach
                                         </select>
                                     </div>
@@ -83,9 +83,9 @@
                             </div>
                         </div>
                     </div>
-                    <div class="col-md-8" style="border:1px solid #d1d1d1;border-radius:20px;min-height:768px;">
+                    <div class="col-md-8" style="border:1px solid #d1d1d1;border-radius:20px;min-height:815px;">
                         <h4>接口返回数据如下：</h4>
-                        <div id="responseShow" style="height: 600px; overflow-y:scroll;"></div>
+                        <div id="responseShow" style="height: 724px; overflow-y:scroll;"></div>
                     </div>
                 </div>
             </div>
