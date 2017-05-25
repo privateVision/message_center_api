@@ -16,7 +16,7 @@ class OrderNotify extends Job
 
     public function handle() {
         $order = Orders::from_cache($this->order_id);
-        if(!$order) return ;
+        if(!$order || $order->status != Orders::Status_NotifySuccess) return ;
 
         if(!preg_match('/^https*:\/\/.*$/', $order->notify_url)) return ;
 
