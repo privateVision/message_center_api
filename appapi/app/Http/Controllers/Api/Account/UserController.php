@@ -116,6 +116,8 @@ class UserController extends Controller {
         $user->rid = $this->parameter->tough('_rid');
         $user->pid = $this->parameter->tough('_appid');
         $user->regdate = time();
+        $user->imei = $this->parameter->get('_imei', '');
+        $user->device_id = $this->parameter->get('_device_id', '');
         $user->save();
         
         user_log($user, $this->procedure, 'register', '【注册】通过“用户名”注册，用户名(%s), 密码[%s]', $username, $user->password);

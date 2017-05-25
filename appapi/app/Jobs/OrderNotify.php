@@ -34,6 +34,7 @@ class OrderNotify extends Job
         $data['sn'] = $order->sn;
         $data['vorder_id'] = $order->vorderid;
         $data['create_time'] = strval($order->createTime);
+        $data['version'] = '4.0';
         ksort($data);
 
         $str = '';

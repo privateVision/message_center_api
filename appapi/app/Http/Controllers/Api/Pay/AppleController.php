@@ -16,6 +16,7 @@ use App\Model\UcusersVC;
 use App\Model\VirtualCurrencies;
 use App\Model\ZyCoupon;
 use App\Model\ZyCouponLog;
+use App\Model\ForceCloseIaps;
 
 class  AppleController extends Controller{
 
@@ -25,36 +26,42 @@ class  AppleController extends Controller{
 
     public function validateReceiptAction ()
     {
+        $sn  = $this->request->input("order_id"); //生成订单的时候返回的订单号
+        //获取当前的订单的ID
+        $oid = $this->request->input("id"); //处理当前的操作
         //匹配当前的操作的实现
         $receipt = $this->request->input('receipt');
         $transaction = $this->parameter->tough("transaction_id");
         $receipt_a = urldecode($receipt);
+
         $mds = md5($receipt_a);
+        $orders =  Orders::where("id",$oid)->where("sn",$sn)->first();
+
+        if (!$orders || $orders->status != 0) return ["code"=>0,"msg"=>trans("messages.app_buy_faild")];
 
         $logsql = "select id from ios_receipt_log WHERE receipt_md5 = '{$mds}'";
         $log_data = app('db')->select($logsql);
-        if(count($log_data)) throw new ApiException(ApiException::Remind,"had in ");
+        if(count($log_data) && $orders->status != 0 ) return ["code"=>0,"msg"=>trans("messages.app_buy_faild")];
 
         //保存当前的操作
-
         $sql = "insert into ios_receipt_log (`receipt_md5`,`receipt_base64`) VALUES ('".$mds."','".$receipt."')";
         app('db')->select($sql);
+        $appid = $this->parameter->tough("_appid");
 
+        $sanboxsql  = "select c.*,p.psingKey from ios_application_config as c inner join procedures as p where c.app_id = {$appid} LIMIT 1";
+        $sandat = app('db')->select($sanboxsql);
+        $issandbox = ($sandat[0]->sandbox ==1)?true:false;
+        //  log_info("sandbox....................>>>>>>>",$issandbox);
         //订单号
-        $sn  = $this->request->input("order_id"); //生成订单的时候返回的订单号
-        $dat = $this->getReceiptData($receipt, true); //开启黑盒测试
+        $dat = $this->getReceiptData($receipt, $issandbox); //开启黑盒测试
 
-        //获取当前的订单的ID
-        $oid = $this->request->input("id"); //处理当前的操作
-
-        if(!preg_match("/^\d{1,10}$/",$oid))  return ["code"=>0,"msg"=>"格式错误"];;
-
+        if(!preg_match("/^\d{1,10}$/",$oid))  return ["code"=>0,"msg"=>trans("messages.app_param_type_error")];
 
         if(isset($dat["errNo"]) && $dat["errNo"] ==0 && isset($dat['data']) &&  count($dat['data']) > 0){
             foreach($dat['data'] as $key =>$value){
                 if($value['transaction_id'] == $transaction){
                     $o_ext = IosOrderExt::where("transaction_id",$transaction)->first();
-                    if($o_ext) return ["code"=>0,"msg"=>"已经使用过"];
+                    if($o_ext) return ["code"=>0,"msg"=>trans("messages.app_buy_faild")];
                     //购买成功写入数据库
                     $od = IosOrderExt::where("oid",$oid)->first();
                     $od ->transaction_id = $transaction;
@@ -62,29 +69,29 @@ class  AppleController extends Controller{
                     $ore = $od ->save();
                     if($ore){
                         $orders =  Orders::where("id",$oid)->where("sn",$sn)->first();
-                        $orders ->status = 1;
                         $orders->paymentMethod = "AppleStore";
                         $os = $orders->save(); //当前的信息是否保存成功！失败信息回归
                         if(!$os){
                             $od->transaction = '';
                             $od->descript = '';
                             $od->save();
-                            return ["code"=>0,"msg"=>"失败"];
+                            return ["code"=>0,"msg"=>trans("messages.app_buy_faild")];
                         }
                         //通知发货
                         order_success($orders->id);
-                        return ["code"=>1,"msg"=>"成功"];
+                        return ["code"=>1,"msg"=>trans("messages.apple_buy_success")];
                     }else{
                         throw new ApiException(ApiException::Remind,trans("messages.app_buy_faild"));
                     }
                 }
             }
         }else{
-            throw  new ApiException(ApiException::Remind,"APP购买失败---".json_encode($dat));
+            throw  new ApiException(ApiException::Remind,trans("messages.app_buy_faild"));
         }
-
         //订单完成，通知发货，添加日志记录
     }
+
+
     //验证
     protected function getReceiptData($receipt, $isSandbox = false) {
         if ($isSandbox) {
@@ -150,20 +157,21 @@ class  AppleController extends Controller{
         if(($this->procedure_extend->enable & 0x0000000C) == 0x0000000C) {
             $user_info = UcuserInfo::from_cache($this->user->ucid);
             if(!$user_info || !$user_info->card_no) {
-                throw new ApiException(ApiException::NotRealName, '帐号未实名制，无法支付，请先实名后再操作');
+                throw new ApiException(ApiException::NotRealName, trans('messages.check_in_before_pay'));
             }
         }
 
         $ord = Orders::where("ucid",$ucid)->where('vorderid',$vorderid)->get();
 
-        if(count($ord)) throw new ApiException(ApiException::Remind,"未找到订单"); //限制关闭
+        if(count($ord)) throw new ApiException(ApiException::Remind,trans('messages.order_not_exists')); //限制关闭
 
-        $sql = "select p.fee,p.product_name,con.notify_url,con.iap,con.bundle_id from ios_products as p INNER JOIN ios_application_config as con ON p.app_id = con.app_id WHERE p.product_id = '{$product_id}' AND p.app_id = {$appid}";
+        $sql = "select p.fee,p.product_name,con.notify_url,con.iap,con.bundle_id from ios_products as p LEFT JOIN ios_application_config as con ON p.app_id = con.app_id WHERE p.product_id = '{$product_id}' AND p.app_id = {$appid}";
         $dat = app('db')->select($sql);
-        if(count($dat) == 0) throw new ApiException(ApiException::Remind,"未找到相关的商品");
+        if(count($dat) == 0) throw new ApiException(ApiException::Remind,trans('messages.product_not_exists'));
+
         //验证当前的发货信息
-        if(!check_url($dat[0]->notify_url)) throw new ApiException(ApiException::Remind,"请填写正确的通知地址");
-        if($dat[0]->bundle_id =='' || !isset($dat[0]->iap)) throw new ApiException(ApiException::Remind,"bundle_id 或iap 不存在");
+        if(!check_url($dat[0]->notify_url)) throw new ApiException(ApiException::Remind,trans('messages.notifyurl_error'));
+        if($dat[0]->bundle_id =='' || !isset($dat[0]->iap)) throw new ApiException(ApiException::Remind,trans('messages.bundle_ipa_not_exists'));
         //验证信息结束
         $order = new Orders;
         $order->getConnection()->beginTransaction();
@@ -171,14 +179,14 @@ class  AppleController extends Controller{
         $order->uid = $uid;
         $order->sn = date('ymdHis') . substr(microtime(), 2, 6) . str_pad(rand(0, 999999), 6, '0', STR_PAD_LEFT);
         $order->vid = $this->procedure->pid;
-        $order->notify_url = $dat[0]->notify_url;
+        $order->notify_url = $dat[0]->notify_url_4 ?: $dat[0]->notify_url;
         $order->vorderid = $vorderid;
         $order->fee = $dat[0]->fee;
         $order->subject = $dat[0]->product_name;
-        $order->body = $dat[0]->product_name;//$order->body = "role_name:" . $role_name . "zone_name:" . $zone_name;
+        $order->body = $dat[0]->product_name;//"role_name:" . $role_name . "zone_name:" . $zone_name;
         $order->createIP = $this->request->ip();
         $order->status = Orders::Status_WaitPay;
-        $order->paymentMethod = Orders::Way_Unknow;
+        $order->paymentMethod = '';
         $order->hide = false;
         $order->cp_uid = $this->session->cp_uid;
         $order->user_sub_id = $this->session->user_sub_id;
@@ -212,18 +220,26 @@ class  AppleController extends Controller{
         $order->getConnection()->commit();
         $order_is_first = $order->is_first();
 
-        $pay_type = $dat[0]->iap;
+        $iap = $dat[0]->iap;
         //查看当前的充值总金额
-        if($pay_type == 1){
-            $sum = Orders::where("ucid",$ucid)->where("status",1)->sum('fee');
-            //获取限额
-            $sl = "select id,appids,fee from force_close_iaps where closed=0 AND {$appid} IN (appids)";
-            $d = app('db')->select($sl);
-            if(count($d)){
-                $pay_type =  ($sum > $d[0]->fee)?0:1;
+        if($iap == 1) {
+            //  读取用户充值总额
+            $force_close_iaps = ForceCloseIaps::whereRaw("find_in_set({$pid},  appids)")->where('closed', 0)->get();
+            $appids = [];
+            $iap_paysum = 0;
+            foreach ($force_close_iaps as $v) {
+                $appids = array_merge($appids, explode(',', $v->appids));
+                $iap_paysum += $v->fee;
+            }
+            log_info("user_pay_iap_paysum==========>",$iap_paysum);
+            if ($iap_paysum > 0) {
+                $paysum = Orders::whereIn('vid', array_unique($appids))->where('status', '!=', Orders::Status_WaitPay)->where('ucid', $this->user->ucid)->sum('fee');
+                log_info("user_pay==========>",$paysum."_".$this->user->ucid);
+                if ($paysum >= $iap_paysum) {
+                    $iap = 0;
+                }
             }
         }
-
 
         // 储值卡，优惠券
         $list = [];
@@ -268,12 +284,13 @@ class  AppleController extends Controller{
             'order_id' => $order->sn,
             'id'      =>$order->id,//返回当前的订单
             'fee' => $dat[0]->fee,
-            "iap" =>$pay_type ,//支付的方式1 ios 0为第三方支付
+            "iap" =>$iap ,//支付的方式1 ios 0为第三方支付
             'way' => [1, 2, 3],
             'vip' => $user_info && $user_info->vip ? (int)$user_info->vip : 0,
             'balance' => $this->user->balance,
             'coupons' => $list,
             'package' => $dat[0]->bundle_id,
+            'product_name'=> $dat[0]->product_name,
         ];
 
 
@@ -281,27 +298,31 @@ class  AppleController extends Controller{
 
     //返回当前的限制的控制
     public function AppleLimitAction(){
+
         $ucid = $this->user->ucid;
-
         $appid  = $this->request->input("_appid");
-
         $sql = "select con.iap from ios_products as p LEFT JOIN ios_application_config as con ON p.app_id = con.app_id WHERE  p.app_id = {$appid}";
         $dat = app('db')->select($sql);
         if(count($dat) == 0) throw new ApiException(ApiException::Remind,"not exists!");
-
-        $pay_type = $dat[0]->iap;
+        $pay_type = is_numeric($dat[0]->iap) ? 0 : $dat[0]->iap;
         //查看当前的充值总金额
         if($pay_type == 1){
-            $sum = Orders::where("ucid",$ucid)->where("status",1)->sum('fee');
-            //获取限额
-            $sl = "select id,appids,fee from force_close_iaps where closed=0 AND {$appid} IN (appids)";
-            $d = app('db')->select($sl);
-            if(count($d)){
-                $pay_type =  ($sum > $d[0]->fee)?0:1;
+            $force_close_iaps = ForceCloseIaps::whereRaw("find_in_set({$appid},  appids)")->where('closed', 0)->get();
+            $appids = [];
+            $iap_paysum = 0;
+            foreach ($force_close_iaps as $v) {
+                $appids = array_merge($appids, explode(',', $v->appids));
+                $iap_paysum += $v->fee;
+            }
+            log_info("user_pay_iap_paysum==========>",$iap_paysum);
+            if ($iap_paysum > 0) {
+                $paysum = Orders::whereIn('vid', array_unique($appids))->where('status', '!=', Orders::Status_WaitPay)->where('ucid', $ucid)->sum('fee');
+                log_info("user_pay==========>",$paysum."_".$this->user->ucid);
+                if ($paysum >= $iap_paysum) {
+                    $pay_type = 0;
+                }
             }
         }
         return ["paytype"=>$pay_type];
     }
-
-
 }

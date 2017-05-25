@@ -213,6 +213,8 @@ class OauthController extends Controller {
         $user->rid = $this->parameter->tough('_rid');
         $user->pid = $this->parameter->tough('_appid');
         $user->regdate = time();
+        $user->imei = $this->parameter->get('_imei', '');
+        $user->device_id = $this->parameter->get('_device_id', '');
         $user->save();
 
         $user_oauth = new UcuserOauth;

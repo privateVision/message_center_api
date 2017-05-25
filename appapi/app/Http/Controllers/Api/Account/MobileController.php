@@ -48,6 +48,8 @@ class MobileController extends Controller {
         $user->rid = $this->parameter->tough('_rid');
         $user->pid = $this->parameter->tough('_appid');
         $user->regdate = time();
+        $user->imei = $this->parameter->get('_imei', '');
+        $user->device_id = $this->parameter->get('_device_id', '');
         $user->save();
 
         user_log($user, $this->procedure, 'register', '【手机号码登录】检测到尚未注册，手机号码{%s}，密码[%s]', $mobile, $user->password);
