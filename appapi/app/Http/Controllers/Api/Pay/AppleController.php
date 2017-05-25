@@ -165,7 +165,7 @@ class  AppleController extends Controller{
 
         if(count($ord)) throw new ApiException(ApiException::Remind,trans('messages.order_not_exists')); //限制关闭
 
-        $sql = "select p.fee,p.product_name,con.notify_url,con.iap,con.bundle_id from ios_products as p LEFT JOIN ios_application_config as con ON p.app_id = con.app_id WHERE p.product_id = '{$product_id}' AND p.app_id = {$appid}";
+        $sql = "select p.fee,p.product_name,con.notify_url,con.notify_url_4,con.iap,con.bundle_id from ios_products as p LEFT JOIN ios_application_config as con ON p.app_id = con.app_id WHERE p.product_id = '{$product_id}' AND p.app_id = {$appid}";
         $dat = app('db')->select($sql);
         if(count($dat) == 0) throw new ApiException(ApiException::Remind,trans('messages.product_not_exists'));
 
@@ -304,7 +304,7 @@ class  AppleController extends Controller{
         $sql = "select con.iap from ios_products as p LEFT JOIN ios_application_config as con ON p.app_id = con.app_id WHERE  p.app_id = {$appid}";
         $dat = app('db')->select($sql);
         if(count($dat) == 0) throw new ApiException(ApiException::Remind,"not exists!");
-        $pay_type = $dat[0]->iap;
+        $pay_type = is_numeric($dat[0]->iap) ? 0 : $dat[0]->iap;
         //查看当前的充值总金额
         if($pay_type == 1){
             $force_close_iaps = ForceCloseIaps::whereRaw("find_in_set({$appid},  appids)")->where('closed', 0)->get();
