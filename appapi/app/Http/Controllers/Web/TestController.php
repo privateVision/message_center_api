@@ -12,7 +12,7 @@ class TestController extends \App\Controller {
      */
     public function indexAction(){
         //获取路由原始文件
-        //$routes = $this->get_routes();
+        $routes = $this->get_routes();
 
         //获取路由列表
         $rt = \Route::getRoutes();
@@ -21,9 +21,10 @@ class TestController extends \App\Controller {
             $act = $vo->action;
             //print_r($act);exit;
             if($act['prefix'] == '/api') {
-
+                $key = str_replace('api/', '', $vo->uri);
                 $urls[] = array(
                     'url'=>$vo->uri,
+                    'name'=>isset($routes[$key])?$routes[$key]:'暂无',
                     'controller'=>$act['controller']
                 );
             }
@@ -149,21 +150,22 @@ class TestController extends \App\Controller {
     }
 
     protected function get_routes(){
-        $routes = array();
-        $filename = base_path('routes/11.txt');echo $filename;
+        $maps = array();
+        $filename = base_path('routes/api.php');
         $fh = fopen($filename, 'r');
 
         while (!feof($fh)) {
-            $line = fgets($fh);echo $line;
+            $line = fgets($fh);
             if(!empty($line)) {
-                preg_match("/Route::any('a-zA-Z\/{1,}'", $line, $match);
-                print_r($match);exit;
+                preg_match('/\s*Route.*?\(\s*(\'|")([\d\.\w\/]+)\\1.*?;\s*\/\/\s*(.*)$/', $line, $match);
+                if(count($match) == 4){
+                    $maps[$match[2]] = $match[3];
+                }
             }
         }
 
         fclose($fh);
-        exit;
-        return $routes;
+        return $maps;
     }
 
     protected function response($status=0, $msg='success', $data=array()){
