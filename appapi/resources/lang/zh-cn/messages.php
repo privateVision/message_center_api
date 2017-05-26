@@ -43,7 +43,7 @@ return [
     'func_disable'                          => '该功能已停用',
     'user_already_bind_mobile'              => '该账号已经绑定了手机号码',
     'not_bind_onunbind'                     => '还未绑定手机号码，无法解绑',
-    'reset_username_onunbind'               => '您必需重设您的用户名才能解绑',
+    'reset_username_onunbind'               => '您必需重设您的用户名才能解绑，请联系客服',
     'username_exists_onbind'                => '解绑失败，用户名已被占用',
     'not_reset_password_unbind_mobile'      => '还未绑定手机号码，无法使用该方式重置密码',
     'cardno_error'                          => '身份证号码不正确',

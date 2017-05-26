@@ -249,68 +249,34 @@ class AppController extends Controller
     public function UuidAction() {
         return ['uuid' => uuid()];
     }
-/*
-    public function ReportAppsAction() {
-        $imei = $this->parameter->tough('imei');
-        $uuid = $this->parameter->tough('_device_id');
-        $apps = $this->parameter->tough('apps');
 
-        $device_apps = new DeviceApps;
-        $device_apps->imei = $imei;
-        $device_apps->uuid = $uuid;
-        $device_apps->apps = $apps;
-        $device_apps->save();
-
-        return ['result' => true];
-    }
-
-    public function ReportDeviceInfoAction() {
-        $imei = $this->parameter->tough('imei');
-        $uuid = $this->parameter->tough('_device_id');
-
-        $device_info = new DeviceInfo;
-        $device_info->imei = $imei;
-        $device_info->uuid = $uuid;
-        $device_info->save();
-
-        return ['result' => true];
-    }
-*/
-
-    /*
-     * 热更新信息
-     **/
     public function HotupdateAction() {
-        //$gps = $this->parameter->tough("gps"); //gps 信息
-        //$imei = $this->parameter->tough("imei"); //设备信息
+        $pid = $this->procedure->pid;
+        $sdk_version  = $this->parameter->tough('sdk_version');
 
-        $sdk_version  = $this->parameter->get("sdk_version"); //sdk version
-
-        if(!$sdk_version) return ["code"=>0,"msg"=>"参数","data"=>""];
-
-        if($this->parameter->get('_appid') == '846') {
+        if($pid == '1452') {
             $manifest = [];
-            $manifest["version"] = "1.0.0";
-            $manifest["bundles"][] = ["type"=>"lib","pkg"=>"com.anfeng.pay"];
+            $manifest['version'] = '1.0.0';
+            $manifest['bundles'][] = ['type' => 'lib', 'pkg' => 'com.anfeng.pay'];
 
             $updates = [];
-            $updates["pkg"] = "com.anfeng.pay";
-            $updates["version"] = 410;
-            $updates['use_version'] = 410; // 回退版本，默认与version一致
-            $updates["url"] = "http://afsdkup.qcwan.com/down/com.anfeng.pay.apk";
+            $updates['pkg'] = 'com.anfeng.pay';
+            $updates['version'] = 402;
+            $updates['use_version'] = 402; // 回退版本，默认与version一致
+            $updates['url'] = 'http://afsdkhot.qcwan.com/anfeng/down/com.anfeng.pay402.apk';
         } else {
             $manifest = [];
-            $manifest["version"] = "1.0.0";
-            $manifest["bundles"][] = ["type"=>"lib","pkg"=>"com.anfeng.pay"];
+            $manifest['version'] = '1.0.0';
+            $manifest['bundles'][] = ['type'=>'lib','pkg'=>'com.anfeng.pay'];
 
             $updates = [];
-            $updates["pkg"] = "com.anfeng.pay";
-            $updates["version"] = 40;
+            $updates['pkg'] = 'com.anfeng.pay';
+            $updates['version'] = 40;
             $updates['use_version'] = 40; // 回退版本，默认与version一致
-            $updates["url"] = "http://afsdkup.qcwan.com/down/com.anfeng.pay.apk";
+            $updates['url'] = 'http://afsdkup.qcwan.com/down/com.anfeng.pay.apk';
         }
 
-        return ["manifest"=>$manifest, "updates"=>[$updates]];
+        return ['manifest'=>$manifest, 'updates'=>[$updates]];
     }
 
 }

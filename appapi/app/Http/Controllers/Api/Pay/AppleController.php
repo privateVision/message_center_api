@@ -165,12 +165,12 @@ class  AppleController extends Controller{
 
         if(count($ord)) throw new ApiException(ApiException::Remind,trans('messages.order_not_exists')); //限制关闭
 
-        $sql = "select p.fee,p.product_name,con.notify_url,con.notify_url_4,con.iap,con.bundle_id from ios_products as p LEFT JOIN ios_application_config as con ON p.app_id = con.app_id WHERE p.product_id = '{$product_id}' AND p.app_id = {$appid}";
+        $sql = "select p.fee,p.product_name,con.notify_url,con.notify_url_4,con.notify_url_4,con.iap,con.bundle_id from ios_products as p LEFT JOIN ios_application_config as con ON p.app_id = con.app_id WHERE p.product_id = '{$product_id}' AND p.app_id = {$appid}";
         $dat = app('db')->select($sql);
         if(count($dat) == 0) throw new ApiException(ApiException::Remind,trans('messages.product_not_exists'));
 
         //验证当前的发货信息
-        if(!check_url($dat[0]->notify_url)) throw new ApiException(ApiException::Remind,trans('messages.notifyurl_error'));
+        if(!check_url($dat[0]->notify_url) && !check_url($dat[0]->notify_url_4)) throw new ApiException(ApiException::Remind,trans('messages.notifyurl_error'));
         if($dat[0]->bundle_id =='' || !isset($dat[0]->iap)) throw new ApiException(ApiException::Remind,trans('messages.bundle_ipa_not_exists'));
         //验证信息结束
         $order = new Orders;
