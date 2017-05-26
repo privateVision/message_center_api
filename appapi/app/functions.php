@@ -347,7 +347,7 @@ function log_debug ($keyword, $content, $desc = '') {
         'desc' => $desc,
         'mode' => PHP_SAPI,
         'level' => 'DEBUG', 
-        'ip' => $app->request->get('_ipaddress') ?: $app->request->ip(),
+        'ip' => getClientIp(),
         'pid' => getmypid(),
         'datetime' =>datetime() .'.'. substr(microtime(), 2, 6),
         'content' => $content,
@@ -364,7 +364,7 @@ function log_info ($keyword, $content, $desc = '') {
         'desc' => $desc,
         'mode' => PHP_SAPI,
         'level' => 'INFO', 
-        'ip' => $app->request->get('_ipaddress') ?: $app->request->ip(),
+        'ip' => getClientIp(),
         'pid' => getmypid(),
         'datetime' =>datetime() .'.'. substr(microtime(), 2, 6),
         'content' => $content,
@@ -381,7 +381,7 @@ function log_warning ($keyword, $content, $desc = '') {
         'desc' => $desc,
         'mode' => PHP_SAPI,
         'level' => 'WARNING', 
-        'ip' => $app->request->get('_ipaddress') ?: $app->request->ip(),
+        'ip' => getClientIp(),
         'pid' => getmypid(),
         'datetime' =>datetime() .'.'. substr(microtime(), 2, 6),
         'content' => $content,
@@ -396,7 +396,7 @@ function log_error ($keyword, $content, $desc = '') {
         'desc' => $desc,
         'mode' => PHP_SAPI,
         'level' => 'ERROR', 
-        'ip' => $app->request->get('_ipaddress') ?: $app->request->ip(),
+        'ip' => getClientIp(),
         'pid' => getmypid(),
         'datetime' =>datetime() .'.'. substr(microtime(), 2, 6),
         'content' => $content,
@@ -453,4 +453,12 @@ function check_url($url){
     $url = trim($url);
     if(!preg_match("/^http[s]?:\/\//",$url)) return false;
     return true;
+}
+
+function getClientIp() {
+    if(PHP_SAPI === 'cli') return '0.0.0.0';
+    if(@$_REQUEST['_ipaddress']) return $_REQUEST['_ipaddress'];
+    if(@$_SERVER['HTTP_X_FORWARDED_FOR']) return $_SERVER['HTTP_X_FORWARDED_FOR'];
+    if(@$_SERVER['REMOTE_ADDR']) return $_SERVER['REMOTE_ADDR'];
+    return '';
 }

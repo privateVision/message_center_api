@@ -317,7 +317,7 @@ class UserController extends AuthController
 
             if($this->user->mobile == $this->user->uid) {
                 if(!$username) {
-                    throw new ApiException(ApiException::Remind, "您必需重设您的用户名才能解绑");
+                    throw new ApiException(ApiException::Remind, "您必需重设您的用户名才能解绑，请联系客服");
                 }
 
                 $_user = Ucuser::where('uid', $username)->orWhere('mobile', $username)->orWhere('email', $username)->first();

@@ -21,16 +21,16 @@ class Controller extends \App\Controller
     public function execute(Request $request, $action, $parameters) {
 
 		try {
-
-$ip = @$_REQUEST['_ipaddress'] ?: $request->ip();
-$data = IpRefused::where('ip', $ip)->first();
-if($data){
-    throw new ApiException(ApiException::Error, '账号被封');
-}
+		    // 封号功能
+            $ip = getClientIp();
+            $data = IpRefused::where('ip', $ip)->first();
+            if($data){
+                throw new ApiException(ApiException::Error, '账号被封');
+            }
 
 			$data = $request->all();
 
-			log_info('request', $data, $request->path());
+			log_info('request', [$data,$request->ips()], $request->path());
 			
 			$s = microtime(true);
 
