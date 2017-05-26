@@ -104,7 +104,15 @@ trait LoginAction {
         $user->save();
         $user->updateCache();
 
+        // 计算时间
         $t = time() - date('Z');
+        $d = 0;
+        $s = $t % 86400;
+        if($s < 57600) {
+            $d = intval($t / 86400) - 1;
+        } else {
+            $d = intval($t / 86400);
+        }
         
         $login_log = new LoginLog;
         $login_log->ucid = $user->ucid;
