@@ -147,17 +147,7 @@ class AppController extends Controller
         $pid = $this->procedure->pid;
         $sdk_version  = $this->parameter->tough('sdk_version');
 
-        if($pid == '846') {
-            $manifest = [];
-            $manifest['version'] = '1.0.0';
-            $manifest['bundles'][] = ['type' => 'lib', 'pkg' => 'com.anfeng.pay'];
-
-            $updates = [];
-            $updates['pkg'] = 'com.anfeng.pay';
-            $updates['version'] = 410;
-            $updates['use_version'] = 410; // 回退版本，默认与version一致
-            $updates['url'] = 'http://afsdkup.qcwan.com/down/com.anfeng.pay.apk';
-        } elseif($pid == '1452') {
+        if($pid == '1452') {
             $manifest = [];
             $manifest['version'] = '1.0.0';
             $manifest['bundles'][] = ['type' => 'lib', 'pkg' => 'com.anfeng.pay'];
@@ -166,7 +156,7 @@ class AppController extends Controller
             $updates['pkg'] = 'com.anfeng.pay';
             $updates['version'] = 402;
             $updates['use_version'] = 402; // 回退版本，默认与version一致
-            $updates['url'] = 'http://afsdkhot.qcwan.com/anfeng/down/com.anfeng.pay.apk';
+            $updates['url'] = 'http://afsdkhot.qcwan.com/anfeng/down/com.anfeng.pay402.apk';
         } else {
             $manifest = [];
             $manifest['version'] = '1.0.0';
