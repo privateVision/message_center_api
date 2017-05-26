@@ -107,7 +107,7 @@ trait LoginAction {
         $user->save();
         $user->updateCache();
 
-        $t = time() - date('Z');
+        $t = time();
 
         $login_log = new LoginLog;
         $login_log->ucid = $user->ucid;
