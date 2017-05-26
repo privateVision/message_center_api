@@ -400,13 +400,13 @@ def v4_sdk_user_get_recommend_game_list():
     try:
         if os_type == 0:  # android
             find_game_count_sql = "select count(*) from zy_gameRecom where status = 'normal'" \
-                                  " and down_url is not null "
-            find_game_info_sql = "select * from zy_gameRecom where status = 'normal' and down_url is not null" \
+                                  " and down_url != '' "
+            find_game_info_sql = "select * from zy_gameRecom where status = 'normal' and down_url != '' " \
                                  " order by sort desc limit %s, %s" % (start_index, end_index)
         else:  # 1 -> ios
             find_game_count_sql = "select count(*) from zy_gameRecom where status = 'normal'" \
-                                  " and down_url_ios is not null "
-            find_game_info_sql = "select * from zy_gameRecom where status = 'normal' and down_url_ios is not null" \
+                                  " and down_url_ios != '' "
+            find_game_info_sql = "select * from zy_gameRecom where status = 'normal' and down_url_ios != '' " \
                                  " order by sort desc limit %s, %s" % (start_index, end_index)
         game_count = mysql_session.execute(find_game_count_sql).scalar()
         game_info_list = mysql_session.execute(find_game_info_sql).fetchall()
@@ -426,6 +426,8 @@ def v4_sdk_user_get_recommend_game_list():
                 'version': '',
                 'sort': game['sort']
             }
+            if os_type == 1:
+                game['down_url'] = game['down_url_ios']
             game_list.append(game)
     except Exception, err:
         service_logger.error("根据appid获取游戏信息发生异常：%s" % (err.message,))
