@@ -261,9 +261,9 @@ class AppController extends Controller
 
             $updates = [];
             $updates['pkg'] = 'com.anfeng.pay';
-            $updates['version'] = 402;
-            $updates['use_version'] = 402; // 回退版本，默认与version一致
-            $updates['url'] = 'http://afsdkhot.qcwan.com/anfeng/down/com.anfeng.pay402.apk';
+            $updates['version'] = 403;
+            $updates['use_version'] = 403; // 回退版本，默认与version一致
+            $updates['url'] = 'http://afsdkhot.qcwan.com/anfeng/down/com.anfeng.pay403.apk';
         } else {
             $manifest = [];
             $manifest['version'] = '1.0.0';
