@@ -2,8 +2,6 @@
 namespace App\Http\Controllers\Api\Account;
 
 use App\Exceptions\ApiException;
-use Illuminate\Http\Request;
-use App\Parameter;
 
 use App\Model\Ucuser;
 use App\Model\UcuserOauth;
@@ -21,7 +19,7 @@ class OauthController extends Controller {
         $device_id = $this->parameter->get('_device_id', '');
         $openid = $this->parameter->tough('openid');
         $type = $this->parameter->tough('type');
-        $unionid = $this->parameter->get('unionid', "");
+        $unionid = $this->parameter->get('unionid', '');
         
         if($type == 'weixin' && $unionid == '') throw new ApiException(ApiException::Error, trans('messages.unionid_empty'));
 
