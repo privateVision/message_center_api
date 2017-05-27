@@ -565,3 +565,11 @@ function check_url($url){
     if(!preg_match("/^http[s]?.*/",$url)) return false;
     return true;
 }
+
+function getClientIp() {
+    if(PHP_SAPI === 'cli') return '0.0.0.0';
+    if(@$_REQUEST['_ipaddress']) return $_REQUEST['_ipaddress'];
+    if(@$_SERVER['HTTP_X_FORWARDED_FOR']) return $_SERVER['HTTP_X_FORWARDED_FOR'];
+    if(@$_SERVER['REMOTE_ADDR']) return $_SERVER['REMOTE_ADDR'];
+    return '';
+}
