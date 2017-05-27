@@ -70,12 +70,18 @@ class SendSMS extends Job
 
             if($this->code) {
                 // 60s内只能发送同模板短信1条
-                Redis::set(sprintf('sms_%s_%s_60s', $this->mobile, $this->template_id), 1, 'EX', 60);
-                // 24小时相同内容最多5次
-                Redis::INCR(sprintf('sms_%s_%s', $this->mobile, md5_36($this->content)));
+                Redis::set(sprintf('sms_%s_t_%s_60s', $this->mobile, $this->template_id), 1, 'EX', 60);
+                // 24小时相同内容
+                $rediskey = sprintf('sms_%s_c_%s', $this->mobile, md5_36($this->content));
+                Redis::INCR($rediskey);
+                if(!Redis::EXISTS($rediskey)) {
+                    Redis::set($rediskey, 1, 'EX', 86400);
+                } else {
+                    Redis::INCR($rediskey);
+                }
+                // 24小时短信条数
                 Redis::expire(sprintf('sms_%s_%s_60s', $this->mobile, md5_36($this->content)), 86400);
-                // 24小时内只能发送10条
-                // 把短信验证码存在redis，有效期900秒
+                // 短信验证码有效期900秒
                 Redis::set(sprintf('sms_%s_%s', $this->mobile, $this->code), 1, 'EX', 900);
 
                 $rediskey = sprintf('sms_%s_hourlimit', $this->mobile);

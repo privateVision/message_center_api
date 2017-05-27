@@ -16,11 +16,10 @@ class GuestController extends Controller {
 
     public function getLoginUser() {
         $imei = $this->parameter->get('_imei', '');
-        $device_id = $this->parameter->get('_device_id', '');
         $password = $this->parameter->get('password');
-        $uuid = $this->parameter->tough('_device_id');
+        $device_id = $this->parameter->tough('_device_id');
 
-        $user = Ucuser::from_cache_device_uuid($uuid);
+        $user = Ucuser::from_cache_device_uuid($device_id);
         if($user) {
             return $user;
         }
@@ -42,7 +41,7 @@ class GuestController extends Controller {
         $user->rid = $this->parameter->tough('_rid');
         $user->pid = $this->procedure->pid;
         $user->regdate = time();
-        $user->device_uuid = $uuid;
+        $user->device_uuid = $device_id;
         $user->imei = $imei;
         $user->device_id= $device_id;
         $user->save();
