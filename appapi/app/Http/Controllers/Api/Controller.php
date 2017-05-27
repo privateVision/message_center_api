@@ -142,16 +142,18 @@ class Controller extends \App\Controller
     {
         $config = [
             [
-                'method' => 'RegisterAction',
-                'expire' => 60,
-                'times' => 10,
-                'msg' => 'reg_limit'
+                'method' => 'RegisterAction',   //过滤方法
+                'expire' => 60,                 //持续时间（秒）
+                'times' => 10,                  //次数
+                'msg' => 'reg_limit',           //描述
+                'status'=>'normal',               //状态，'normal':开启验证，'hidden':关闭验证
             ],
             [
                 'method' => 'LoginAction',
                 'expire' => 60,
                 'times' => 10,
-                'msg' => 'login_limit'
+                'msg' => 'login_limit',
+                'status'=>'hidden'
             ]
         ];
 
@@ -159,6 +161,9 @@ class Controller extends \App\Controller
 
         foreach ($config as $k => $v) {
             if ($v['method'] == $methodName) {
+
+                if($v['status']=='close')return;
+
                 $expire = $v['expire'];
                 $times = $v['times'];
                 $msg = $v['msg'];
