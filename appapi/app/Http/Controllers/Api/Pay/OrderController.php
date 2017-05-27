@@ -65,6 +65,7 @@ class OrderController extends Controller {
             'pay_methods' => $pay_methods,
         ];
     }
+
     public function NewAction() {
         $zone_id = $this->parameter->get('zone_id', '');
         $zone_name = $this->parameter->get('zone_name', '');

@@ -17,6 +17,8 @@ class OauthController extends Controller {
     const Type = 3;
     
     public function getRegisterUser() {
+        $imei = $this->parameter->get('_imei', '');
+        $device_id = $this->parameter->get('_device_id', '');
         $openid = $this->parameter->tough('openid');
         $type = $this->parameter->tough('type');
         $unionid = $this->parameter->get('unionid', "");
@@ -62,8 +64,10 @@ class OauthController extends Controller {
         $user->regtype = static::Type;
         $user->regip = getClientIp();
         $user->rid = $this->parameter->tough('_rid');
-        $user->pid = $this->parameter->tough('_appid');
+        $user->pid = $this->procedur->pid;
         $user->regdate = time();
+        $user->imei = $imei;
+        $user->device_id= $device_id;
         $user->save();
         
         $imei = $this->parameter->get('_imei', '');
@@ -137,7 +141,7 @@ class OauthController extends Controller {
                 $user->regtype = static::Type;
                 $user->regip = getClientIp();
                 $user->rid = $this->parameter->tough('_rid');
-                $user->pid = $this->parameter->tough('_appid');
+                $user->pid = $this->procedur->pid;
                 $user->regdate = time();
                 $user->save();
                 

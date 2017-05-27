@@ -15,6 +15,8 @@ class MobileController extends Controller {
     const Type = 2;
 
     public function getLoginUser() {
+        $imei = $this->parameter->get('_imei', '');
+        $device_id = $this->parameter->get('_device_id', '');
         $mobile = $this->parameter->tough('mobile', 'mobile');
         $code = $this->parameter->tough('code', 'smscode');
         $password = $this->parameter->get('password', null, 'password'); // 在注册时有用，用户如果设置了密码则系统不再为其生成密码
@@ -47,19 +49,11 @@ class MobileController extends Controller {
         $user->regtype = static::Type;
         $user->regip = getClientIp();
         $user->rid = $this->parameter->tough('_rid');
-        $user->pid = $this->parameter->tough('_appid');
+        $user->pid = $this->procedur->pid;
         $user->regdate = time();
+        $user->imei = $imei;
+        $user->device_id= $device_id;
         $user->save();
-        
-        $imei = $this->parameter->get('_imei', '');
-        $device_id = $this->parameter->get('_device_id', '');
-        if($imei || $device_id) {
-            $ucusers_uuid =  new UcusersUUID();
-            $ucusers_uuid->ucid = $user->ucid;
-            $ucusers_uuid->imei = $imei;
-            $ucusers_uuid->device_id= $device_id;
-            $ucusers_uuid->asyncSave();
-        }
 
         user_log($user, $this->procedure, 'register', '【手机号码登录】检测到尚未注册，手机号码{%s}，密码[%s]', $mobile, $user->password);
 

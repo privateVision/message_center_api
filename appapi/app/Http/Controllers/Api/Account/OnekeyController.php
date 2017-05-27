@@ -16,8 +16,8 @@ class OnekeyController extends Controller {
     const Type = 4;
 
     public function getLoginUser() {
-        $pid = $this->parameter->tough('_appid');
-        $rid = $this->parameter->tough('_rid');
+        $imei = $this->parameter->get('_imei', '');
+        $device_id = $this->parameter->get('_device_id', '');
         $sms_token = $this->parameter->tough('sms_token');
 
         $yunpian_callback = YunpianCallback::where('text', $sms_token)->first();
@@ -47,19 +47,11 @@ class OnekeyController extends Controller {
         $user->regtype = static::Type;
         $user->regip = getClientIp();
         $user->rid = $this->parameter->tough('_rid');
-        $user->pid = $this->parameter->tough('_appid');
+        $user->pid = $this->procedur->pid;
         $user->regdate = time();
+        $user->imei = $imei;
+        $user->device_id= $device_id;
         $user->save();
-        
-        $imei = $this->parameter->get('_imei', '');
-        $device_id = $this->parameter->get('_device_id', '');
-        if($imei || $device_id) {
-            $ucusers_uuid =  new UcusersUUID();
-            $ucusers_uuid->ucid = $user->ucid;
-            $ucusers_uuid->imei = $imei;
-            $ucusers_uuid->device_id= $device_id;
-            $ucusers_uuid->asyncSave();
-        }
 
         user_log($user, $this->procedure, 'register', '【注册】通过“手机号码一键登录”注册，手机号码{%s}, 密码[%s]', $mobile, $user->password);
 

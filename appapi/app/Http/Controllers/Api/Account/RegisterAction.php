@@ -17,7 +17,7 @@ trait RegisterAction {
     
     public function RegisterAction(){
 
-        $pid = $this->parameter->tough('_appid');
+        $pid = $this->procedur->pid;
         $rid = $this->parameter->tough('_rid');
         
         $user = $this->getRegisterUser();

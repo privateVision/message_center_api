@@ -15,6 +15,8 @@ class GuestController extends Controller {
     const Type = 1;
 
     public function getLoginUser() {
+        $imei = $this->parameter->get('_imei', '');
+        $device_id = $this->parameter->get('_device_id', '');
         $password = $this->parameter->get('password');
         $uuid = $this->parameter->tough('_device_id');
 
@@ -38,20 +40,12 @@ class GuestController extends Controller {
         $user->regtype = static::Type;
         $user->regip = getClientIp();
         $user->rid = $this->parameter->tough('_rid');
-        $user->pid = $this->parameter->tough('_appid');
+        $user->pid = $this->procedur->pid;
         $user->regdate = time();
         $user->device_uuid = $uuid;
+        $user->imei = $imei;
+        $user->device_id= $device_id;
         $user->save();
-        
-        $imei = $this->parameter->get('_imei', '');
-        $device_id = $this->parameter->get('_device_id', '');
-        if($imei || $device_id) {
-            $ucusers_uuid =  new UcusersUUID();
-            $ucusers_uuid->ucid = $user->ucid;
-            $ucusers_uuid->imei = $imei;
-            $ucusers_uuid->device_id= $device_id;
-            $ucusers_uuid->asyncSave();
-        }
 
         user_log($user, $this->procedure, 'register', '【注册】通过“游客登录”注册，用户名(%s)，密码[%s]', $username, $user->password);
 

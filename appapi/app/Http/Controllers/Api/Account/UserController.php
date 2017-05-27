@@ -18,9 +18,10 @@ class UserController extends Controller {
     const Type = 6;
     
     public function getLoginUser() {
+        $imei = $this->parameter->get('_imei', '');
+        $device_id = $this->parameter->get('_device_id', '');
         $username = $this->parameter->tough('username');
         $password = $this->parameter->tough('password', 'password');
-        $device_id = $this->parameter->get('_device_id');
         
         // --------- 登录错误限制
         $key = $device_id;
@@ -73,7 +74,9 @@ class UserController extends Controller {
                 $user->regip = $member->regip;
                 $user->regdate = $member->regdate;
                 $user->rid = $this->parameter->tough('_rid');
-                $user->pid = $this->parameter->tough('_appid');
+                $user->pid = $this->procedur->pid;
+                $user->imei = $imei;
+                $user->device_id= $device_id;
                 $user->save();
             }
         } while(false);
@@ -117,7 +120,7 @@ class UserController extends Controller {
         $user->regtype = static::Type;
         $user->regip = getClientIp();
         $user->rid = $this->parameter->tough('_rid');
-        $user->pid = $this->parameter->tough('_appid');
+        $user->pid = $this->procedur->pid;
         $user->regdate = time();
         $user->save();
         
@@ -132,7 +135,7 @@ class UserController extends Controller {
         }
 
         //登录加入通知队列
-        dispatch((new AdtRequest(["imei"=>$imei,"gameid"=>$this->parameter->tough('_appid'),"rid"=>$this->parameter->tough('_rid'),"ucid"=>$user->uid]))->onQueue('adtinit'));
+        dispatch((new AdtRequest(["imei"=>$imei,"gameid"=>$this->procedur->pid,"rid"=>$this->parameter->tough('_rid'),"ucid"=>$user->uid]))->onQueue('adtinit'));
         
         user_log($user, $this->procedure, 'register', '【注册】通过“用户名”注册，用户名(%s), 密码[%s]', $username, $user->password);
         

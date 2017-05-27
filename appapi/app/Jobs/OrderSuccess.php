@@ -116,13 +116,14 @@ class OrderSuccess extends Job
                     $total_fee_per_user->increment('total_fee', $order->real_fee / 100);
                 }
 
-                $order->status = Orders::Status_Success;
-                $order->save();
-
                 if($order->is_f()) {
                     log_debug('OrderSuccess', $order->toArray(), '购买F币');
                     $user->increment('balance', $order->fee); // 原子操作很重要
+                    $order->status = Orders::Status_NotifySuccess;
+                    $order->save();
                 } else {
+                    $order->status = Orders::Status_Success;
+                    $order->save();
                     Queue::push(new OrderNotify($this->order_id));
                 }
 

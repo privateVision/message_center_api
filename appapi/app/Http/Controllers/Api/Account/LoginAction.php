@@ -17,7 +17,7 @@ use App\Model\LoginLogUUID;
 trait LoginAction {
 
     public function LoginAction() {
-        $pid = $this->parameter->tough('_appid');
+        $pid = $this->procedur->pid;
         $rid = $this->parameter->tough('_rid');
         
         $user = $this->getLoginUser();

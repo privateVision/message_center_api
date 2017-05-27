@@ -100,7 +100,7 @@ class AppController extends Controller
      * }
      */
     public function InitializeAction() {
-        $pid = $this->parameter->tough('_appid');
+        $pid = $this->procedur->pid;
         $rid = $this->parameter->tough('_rid');
         $imei = $this->parameter->get('_imei');
         $uuid = $this->parameter->tough('_device_id');

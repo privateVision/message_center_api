@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use Illuminate\Http\Request;
 use App\Exceptions\ApiException;
+use App\Model\IpRefused;
 use App\Exceptions\Exception;
 use App\Parameter;
 use App\Model\Procedures;
@@ -55,6 +56,12 @@ class Controller extends \App\Controller
 	
     public function before(Request $request) {
         parent::before($request);
+
+        // 封ip
+        $data = IpRefused::where('ip', getClientIp())->first();
+        if($data){
+            throw new ApiException(ApiException::Error, trans('messages.ipfreeze'));
+        }
 
 		$data = array_map(function($v) { return strval($v); }, $request->all());
 
