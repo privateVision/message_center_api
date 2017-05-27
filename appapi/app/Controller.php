@@ -48,8 +48,7 @@ class Controller extends BaseController
         log_info('request', $request->all(), $request->path());
 
         // 封ip
-        $ip = $request->ip();
-        $data = IpRefused::where('ip', $ip)->first();
+        $data = IpRefused::where('ip', getClientIp())->first();
         if($data){
             throw new ApiException(ApiException::Error, trans('messages.ipfreeze'));
         }
