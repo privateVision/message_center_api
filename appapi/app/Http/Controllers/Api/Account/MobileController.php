@@ -40,22 +40,29 @@ class MobileController extends Controller {
             $password = rand(100000, 999999);
         }
 
-        $user = new Ucuser;
-        $user->uid = $username;
-        $user->email = $username . "@anfan.com";
-        $user->mobile = $mobile;
-        $user->nickname = '暂无昵称';
-        $user->setPassword($password);
-        $user->regtype = static::Type;
-        $user->regip = getClientIp();
-        $user->rid = $this->parameter->tough('_rid');
-        $user->pid = $this->procedure->pid;
-        $user->regdate = time();
-        $user->imei = $imei;
-        $user->device_id= $device_id;
-        $user->save();
-
-        user_log($user, $this->procedure, 'register', '【手机号码登录】检测到尚未注册，手机号码{%s}，密码[%s]', $mobile, $user->password);
+//        $user = new Ucuser;
+//        $user->uid = $username;
+//        $user->email = $username . "@anfan.com";
+//        $user->mobile = $mobile;
+//        $user->nickname = '暂无昵称';
+//        $user->setPassword($password);
+//        $user->regtype = static::Type;
+//        $user->regip = getClientIp();
+//        $user->rid = $this->parameter->tough('_rid');
+//        $user->pid = $this->procedure->pid;
+//        $user->regdate = time();
+//        $user->imei = $imei;
+//        $user->device_id= $device_id;
+//        $user->save();
+//
+//        user_log($user, $this->procedure, 'register', '【手机号码登录】检测到尚未注册，手机号码{%s}，密码[%s]', $mobile, $user->password);
+        $udt = array(
+            'uid'=>$username,
+            'mobile'=>$mobile,
+            'password'=>$password
+        );
+        //手机号注册账号
+        $user = self::baseRegisterUser($udt);
 
         if(!$is_set_password) {
             // 将密码发给用户，通过队列异步发送

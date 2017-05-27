@@ -65,19 +65,28 @@ class UserController extends Controller {
                 
                 $user->save();
             } else {
-                $user = new Ucuser;
-                $user->uid = $member->username;
-                $user->email = $member->email ?: ($member->username . '@anfan.com');
-                $user->nickname = $member->username;
-                $user->password =$member->password;
-                $user->salt =$member->salt;
-                $user->regip = $member->regip;
-                $user->regdate = $member->regdate;
-                $user->rid = $this->parameter->tough('_rid');
-                $user->pid = $this->procedure->pid;
-                $user->imei = $imei;
-                $user->device_id= $device_id;
-                $user->save();
+//                $user = new Ucuser;
+//                $user->uid = $member->username;
+//                $user->email = $member->email ?: ($member->username . '@anfan.com');
+//                $user->nickname = $member->username;
+//                $user->password =$member->password;
+//                $user->salt =$member->salt;
+//                $user->regip = $member->regip;
+//                $user->regdate = $member->regdate;
+//                $user->rid = $this->parameter->tough('_rid');
+//                $user->pid = $this->procedure->pid;
+//                $user->imei = $imei;
+//                $user->device_id= $device_id;
+//                $user->save();
+                $udt = array(
+                    'uid'=>$member->username,
+                    'email'=>$member->email ?: ($member->username . '@anfan.com'),
+                    'nickname'=>$member->username,
+                    'password'=>$member->password,
+                    'salt'=>$member->salt
+                );
+                //平台注册账号
+                $user = self::baseRegisterUser($udt);
             }
         } while(false);
         
@@ -104,7 +113,8 @@ class UserController extends Controller {
     public function getRegisterUser(){
         $username = $this->parameter->tough('username', 'username');
         $password = $this->parameter->tough('password', 'password');
-        $imei     = $this->parameter->get("_imei");
+        $imei     = $this->parameter->get("_imei", '');
+        $device_id = $this->parameter->get('_device_id', '');
         
         $isRegister  = Ucuser::where("mobile", $username)->orWhere('uid', $username)->count();
         
@@ -112,33 +122,29 @@ class UserController extends Controller {
             throw new  ApiException(ApiException::Remind, trans('messages.already_register'));
         }
         
-        $user = new Ucuser;
-        $user->uid = $username;
-        $user->email = $username . "@anfan.com";
-        $user->nickname = '暂无昵称';
-        $user->setPassword($password);
-        $user->regtype = static::Type;
-        $user->regip = getClientIp();
-        $user->rid = $this->parameter->tough('_rid');
-        $user->pid = $this->procedure->pid;
-        $user->regdate = time();
-        $user->save();
-        
-        $imei = $this->parameter->get('_imei', '');
-        $device_id = $this->parameter->get('_device_id', '');
-        if($imei || $device_id) {
-            $ucusers_uuid =  new UcusersUUID();
-            $ucusers_uuid->ucid = $user->ucid;
-            $ucusers_uuid->imei = $imei;
-            $ucusers_uuid->device_id= $device_id;
-            $ucusers_uuid->asyncSave();
-        }
+//        $user = new Ucuser;
+//        $user->uid = $username;
+//        $user->email = $username . "@anfan.com";
+//        $user->nickname = '暂无昵称';
+//        $user->setPassword($password);
+//        $user->regtype = static::Type;
+//        $user->regip = getClientIp();
+//        $user->rid = $this->parameter->tough('_rid');
+//        $user->pid = $this->procedure->pid;
+//        $user->regdate = time();
+//        $user->save();
+        $udt = array(
+            'uid'=>$username,
+            'password'=>$password
+        );
+        //平台注册账号
+        $user = self::baseRegisterUser($udt);
 
         //登录加入通知队列
         dispatch((new AdtRequest(["imei"=>$imei,"gameid"=>$this->procedure->pid,"rid"=>$this->parameter->tough('_rid'),"ucid"=>$user->uid]))->onQueue('adtinit'));
         
-        user_log($user, $this->procedure, 'register', '【注册】通过“用户名”注册，用户名(%s), 密码[%s]', $username, $user->password);
-        
+        //user_log($user, $this->procedure, 'register', '【注册】通过“用户名”注册，用户名(%s), 密码[%s]', $username, $user->password);
+
         return $user;
     }
     
