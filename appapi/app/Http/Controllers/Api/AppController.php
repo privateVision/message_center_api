@@ -100,7 +100,7 @@ class AppController extends Controller
      * }
      */
     public function InitializeAction() {
-        $pid = $this->procedur->pid;
+        $pid = $this->procedure->pid;
         $rid = $this->parameter->tough('_rid');
         $imei = $this->parameter->get('_imei');
         $uuid = $this->parameter->tough('_device_id');
@@ -196,7 +196,7 @@ class AppController extends Controller
                 'af_download' => env('af_download'),
             ],
             'bind_phone' => [
-                'need' => ($this->procedure_extend->enable & 0x00000010) == 0x00000010,
+                'need' => ($this->procedure_extend->enable & (1 << 16)) == (1 << 16),
                 'enforce' => ($this->procedure_extend->enable & 0x00000030) == 0x00000030,
                 'interval' => $this->procedure_extend->bind_phone_interval,
             ],

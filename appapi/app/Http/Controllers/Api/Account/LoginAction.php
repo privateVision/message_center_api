@@ -17,7 +17,7 @@ use App\Model\LoginLogUUID;
 trait LoginAction {
 
     public function LoginAction() {
-        $pid = $this->procedur->pid;
+        $pid = $this->procedure->pid;
         $rid = $this->parameter->tough('_rid');
         
         $user = $this->getLoginUser();
@@ -86,8 +86,8 @@ trait LoginAction {
         $session->user_sub_name = $user_sub->name;
         $session->cp_uid = $user_sub->cp_uid;
         $session->save();
-        
-        log_debug('session', ['ucid' => $user->ucid, 'pid' => $pid, 'at' => microtime(true), 'token' => $session->token]);
+
+        log_debug('session', ['ucid' => $user->ucid, 'pid' => $pid, 'at' => microtime(true), 'path' => $this->request->path()], $session->token);
 
         // ucuser_session
         $usession_uuid = joinkey($user->ucid, min($pid, 100));

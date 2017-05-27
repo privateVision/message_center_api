@@ -64,7 +64,7 @@ class OauthController extends Controller {
         $user->regtype = static::Type;
         $user->regip = getClientIp();
         $user->rid = $this->parameter->tough('_rid');
-        $user->pid = $this->procedur->pid;
+        $user->pid = $this->procedure->pid;
         $user->regdate = time();
         $user->imei = $imei;
         $user->device_id= $device_id;
@@ -141,7 +141,7 @@ class OauthController extends Controller {
                 $user->regtype = static::Type;
                 $user->regip = getClientIp();
                 $user->rid = $this->parameter->tough('_rid');
-                $user->pid = $this->procedur->pid;
+                $user->pid = $this->procedure->pid;
                 $user->regdate = time();
                 $user->save();
                 

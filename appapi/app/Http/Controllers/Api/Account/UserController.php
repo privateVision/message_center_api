@@ -74,7 +74,7 @@ class UserController extends Controller {
                 $user->regip = $member->regip;
                 $user->regdate = $member->regdate;
                 $user->rid = $this->parameter->tough('_rid');
-                $user->pid = $this->procedur->pid;
+                $user->pid = $this->procedure->pid;
                 $user->imei = $imei;
                 $user->device_id= $device_id;
                 $user->save();
@@ -120,7 +120,7 @@ class UserController extends Controller {
         $user->regtype = static::Type;
         $user->regip = getClientIp();
         $user->rid = $this->parameter->tough('_rid');
-        $user->pid = $this->procedur->pid;
+        $user->pid = $this->procedure->pid;
         $user->regdate = time();
         $user->save();
         
@@ -135,7 +135,7 @@ class UserController extends Controller {
         }
 
         //登录加入通知队列
-        dispatch((new AdtRequest(["imei"=>$imei,"gameid"=>$this->procedur->pid,"rid"=>$this->parameter->tough('_rid'),"ucid"=>$user->uid]))->onQueue('adtinit'));
+        dispatch((new AdtRequest(["imei"=>$imei,"gameid"=>$this->procedure->pid,"rid"=>$this->parameter->tough('_rid'),"ucid"=>$user->uid]))->onQueue('adtinit'));
         
         user_log($user, $this->procedure, 'register', '【注册】通过“用户名”注册，用户名(%s), 密码[%s]', $username, $user->password);
         

@@ -27,7 +27,7 @@ class GuestController extends Controller {
 
         $username = username();
 
-        // todo: 兼容老的客户端是传过来的密码
+        // XXX 兼容老的客户端是传过来的密码
         if(!$password) {
             $password = rand(100000, 999999);
         }
@@ -40,7 +40,7 @@ class GuestController extends Controller {
         $user->regtype = static::Type;
         $user->regip = getClientIp();
         $user->rid = $this->parameter->tough('_rid');
-        $user->pid = $this->procedur->pid;
+        $user->pid = $this->procedure->pid;
         $user->regdate = time();
         $user->device_uuid = $uuid;
         $user->imei = $imei;

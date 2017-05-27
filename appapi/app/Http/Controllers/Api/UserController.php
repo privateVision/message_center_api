@@ -413,7 +413,7 @@ class UserController extends AuthController
         $role_level = $this->parameter->tough('role_level');
         $role_name = $this->parameter->tough('role_name');
 
-        $pid = $this->procedur->pid;
+        $pid = $this->procedure->pid;
 
         $this->session->zone_id = $zone_id;
         $this->session->zone_name = $zone_name;
