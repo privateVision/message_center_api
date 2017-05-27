@@ -143,17 +143,17 @@ class Controller extends \App\Controller
         $config = [
             [
                 'method' => 'RegisterAction',   //过滤方法
-                'expire' => 60,                 //持续时间（秒）
+                'expire' => 6000,                 //持续时间（豪秒）
                 'times' => 10,                  //次数
                 'msg' => 'reg_limit',           //描述
                 'status'=>'normal',               //状态，'normal':开启验证，'hidden':关闭验证
             ],
             [
                 'method' => 'LoginAction',
-                'expire' => 60,
-                'times' => 10,
+                'expire' => 6000,
+                'times' => 2,
                 'msg' => 'login_limit',
-                'status'=>'hidden'
+                'status'=>'normal'
             ]
         ];
 
@@ -175,7 +175,7 @@ class Controller extends \App\Controller
                 $value = Redis::get($key);
 
                 if (!$value) {
-                    Redis::set($key, serialize(['times' => 1, 'expire' => $expire]), 'EX', $expire);
+                    Redis::set($key, serialize(['times' => 1, 'expire' => $expire]), 'PX', $expire);
                 } else {
 
                     $value = unserialize($value);
