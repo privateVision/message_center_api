@@ -77,7 +77,7 @@ trait RegisterAction {
         // ucuser
         // $user->uuid = $session->token;
         $user->last_login_at = datetime();
-        $user->last_login_ip = $this->parameter->get('_ipaddress', null) ?: $this->request->ip();
+        $user->last_login_ip = getClientIp();
         $user->save();
         $user->updateCache();
         
@@ -89,7 +89,7 @@ trait RegisterAction {
         $login_log->pid = $pid;
         $login_log->loginDate = intval(($t - date('Z'))/ 86400);
         $login_log->loginTime = $t % 86400;
-        $login_log->loginIP = ip2long($this->parameter->get('_ipaddress', null) ?: $this->request->ip());
+        $login_log->loginIP = ip2long(getClientIp());
         $login_log->save();
         
         // login_log_uuid

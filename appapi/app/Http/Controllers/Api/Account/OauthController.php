@@ -60,7 +60,7 @@ class OauthController extends Controller {
         $user->nickname = $nickname ?: $username;
         $user->setPassword($password);
         $user->regtype = static::Type;
-        $user->regip = $this->parameter->get('_ipaddress', null) ?: $this->request->ip();
+        $user->regip = getClientIp();
         $user->rid = $this->parameter->tough('_rid');
         $user->pid = $this->parameter->tough('_appid');
         $user->regdate = time();
@@ -135,7 +135,7 @@ class OauthController extends Controller {
                 $user->nickname = $nickname ?: $username;
                 $user->setPassword($password);
                 $user->regtype = static::Type;
-                $user->regip = $this->parameter->get('_ipaddress', null) ?: $this->request->ip();
+                $user->regip = getClientIp();
                 $user->rid = $this->parameter->tough('_rid');
                 $user->pid = $this->parameter->tough('_appid');
                 $user->regdate = time();

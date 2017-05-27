@@ -78,7 +78,7 @@ class MycardController extends \App\Controller {
         }
 
         $config = config('common.payconfig.mycard');
-        if($request->ip() !== $config['TradeQueryHost']) {
+        if(getClientIp() !== $config['TradeQueryHost']) {
             // TODO 暂时关闭限制
             //return 'HostNotAllow';
         }

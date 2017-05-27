@@ -49,7 +49,7 @@ class WechatController extends Controller {
         $data['body'] = $order->subject;
         $data['out_trade_no'] = $order->sn;
         $data['total_fee'] = env('APP_DEBUG', true) ? 1 : $real_fee;
-        $data['spbill_create_ip'] = $this->parameter->get('_ipaddress', null) ?: $this->request->ip();
+        $data['spbill_create_ip'] = getClientIp();
         $data['notify_url'] = url('pay_callback/wechat');
         $data['trade_type'] = 'APP';
 

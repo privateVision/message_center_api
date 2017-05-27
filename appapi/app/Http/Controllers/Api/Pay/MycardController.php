@@ -17,7 +17,7 @@ class MycardController extends Controller {
         $data['FacServiceId'] = $config['FacServiceId'];
         $data['FacTradeSeq'] = $order->sn;
         $data['TradeType'] = '2';
-        $data['ServerId'] = $this->parameter->get('_ipaddress', null) ?: $this->request->ip();
+        $data['ServerId'] = getClientIp();
         $data['CustomerId'] = $order->ucid;
         $data['ProductName'] = $order->subject ?: "props";
         $data['Amount'] = number_format($real_fee / 100, 2);

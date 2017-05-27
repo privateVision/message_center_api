@@ -128,7 +128,7 @@ class OrderController extends Controller {
         $order->uid = $this->user->uid;
         $order->sn = date('ymdHis') . substr(microtime(), 2, 6) . str_pad(rand(0, 999999), 6, '0', STR_PAD_LEFT);
         $order->vid = $this->procedure->pid;
-        $order->createIP = $this->parameter->get('_ipaddress', null) ?: $this->request->ip();
+        $order->createIP = getClientIp();
         $order->status = Orders::Status_WaitPay;
         $order->cp_uid = $this->session->cp_uid;
         $order->user_sub_id = $this->session->user_sub_id;
