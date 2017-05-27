@@ -304,7 +304,7 @@ class  AppleController extends Controller{
         $sql = "select con.iap from ios_products as p LEFT JOIN ios_application_config as con ON p.app_id = con.app_id WHERE  p.app_id = {$appid}";
         $dat = app('db')->select($sql);
         if(count($dat) == 0) throw new ApiException(ApiException::Remind,"not exists!");
-        $pay_type = is_numeric($dat[0]->iap) ? 0 : $dat[0]->iap;
+        $pay_type = is_numeric($dat[0]->iap) ? $dat[0]->iap : 1;
         //查看当前的充值总金额
         if($pay_type == 1){
             $force_close_iaps = ForceCloseIaps::whereRaw("find_in_set({$appid},  appids)")->where('closed', 0)->get();
