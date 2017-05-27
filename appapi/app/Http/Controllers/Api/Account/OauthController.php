@@ -53,20 +53,27 @@ class OauthController extends Controller {
         $username = username();
         $password = rand(100000, 999999);
         
-        $user = new Ucuser;
-        $user->uid = $username;
-        $user->email = $username . "@anfan.com";
-        $user->mobile = '';
-        $user->nickname = $nickname ?: $username;
-        $user->setPassword($password);
-        $user->regtype = static::Type;
-        $user->regip = getClientIp();
-        $user->rid = $this->parameter->tough('_rid');
-        $user->pid = $this->procedure->pid;
-        $user->regdate = time();
-        $user->imei = $imei;
-        $user->device_id= $device_id;
-        $user->save();
+//        $user = new Ucuser;
+//        $user->uid = $username;
+//        $user->email = $username . "@anfan.com";
+//        $user->mobile = '';
+//        $user->nickname = $nickname ?: $username;
+//        $user->setPassword($password);
+//        $user->regtype = static::Type;
+//        $user->regip = getClientIp();
+//        $user->rid = $this->parameter->tough('_rid');
+//        $user->pid = $this->procedure->pid;
+//        $user->regdate = time();
+//        $user->imei = $imei;
+//        $user->device_id= $device_id;
+//        $user->save();
+        $udt = array(
+            'uid'=>$username,
+            'nickname'=>$nickname ?: $username,
+            'password'=>$password
+        );
+        //平台注册账号
+        $user = self::baseRegisterUser($udt);
 
         $user_oauth = new UcuserOauth;
         $user_oauth->ucid = $user->ucid;
@@ -80,7 +87,7 @@ class OauthController extends Controller {
         $user_info->avatar = $avatar ? $avatar:env('default_avatar');
         $user_info->saveAndCache();
 
-        user_log($user, $this->procedure, 'register', '【注册】通过%s注册，密码[%s]', $ctype['text'], $user->password);
+        //user_log($user, $this->procedure, 'register', '【注册】通过%s注册，密码[%s]', $ctype['text'], $user->password);
         
         return $user;
     }
@@ -120,29 +127,26 @@ class OauthController extends Controller {
                 $username = username();
                 $password = rand(100000, 999999);
                 
-                $user = new Ucuser;
-                $user->uid = $username;
-                $user->email = $username . "@anfan.com";
-                $user->mobile = '';
-                $user->nickname = $nickname ?: $username;
-                $user->setPassword($password);
-                $user->regtype = static::Type;
-                $user->regip = getClientIp();
-                $user->rid = $this->parameter->tough('_rid');
-                $user->pid = $this->procedure->pid;
-                $user->regdate = time();
-                $user->save();
+//                $user = new Ucuser;
+//                $user->uid = $username;
+//                $user->email = $username . "@anfan.com";
+//                $user->mobile = '';
+//                $user->nickname = $nickname ?: $username;
+//                $user->setPassword($password);
+//                $user->regtype = static::Type;
+//                $user->regip = getClientIp();
+//                $user->rid = $this->parameter->tough('_rid');
+//                $user->pid = $this->procedure->pid;
+//                $user->regdate = time();
+//                $user->save();
+                $udt = array(
+                    'uid'=>$username,
+                    'nickname'=>$nickname ?: $username,
+                    'password'=>$password
+                );
+                //平台注册账号
+                $user = self::baseRegisterUser($udt);
                 
-                $imei = $this->parameter->get('_imei', '');
-                $device_id = $this->parameter->get('_device_id', '');
-                if($imei || $device_id) {
-                    $ucusers_uuid =  new UcusersUUID();
-                    $ucusers_uuid->ucid = $user->ucid;
-                    $ucusers_uuid->imei = $imei;
-                    $ucusers_uuid->device_id= $device_id;
-                    $ucusers_uuid->asyncSave();
-                }
-
                 $user_oauth = new UcuserOauth;
                 $user_oauth->ucid = $user->ucid;
                 $user_oauth->type = $type;
@@ -155,7 +159,7 @@ class OauthController extends Controller {
                 $user_info->avatar = $avatar ? $avatar : env('default_avatar');
                 $user_info->saveAndCache();
 
-                user_log($user, $this->procedure, 'register', '【注册】通过%s注册，密码[%s]', $ctype['text'], $user->password);
+                //user_log($user, $this->procedure, 'register', '【注册】通过%s注册，密码[%s]', $ctype['text'], $user->password);
             } else {
                 throw new ApiException(ApiException::OauthNotRegister, trans('messages.not_register'));
             }
