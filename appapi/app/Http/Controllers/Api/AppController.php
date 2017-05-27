@@ -254,7 +254,7 @@ class AppController extends Controller
         $pid = $this->procedure->pid;
         $sdk_version  = $this->parameter->tough('sdk_version');
 
-        if($pid == '1452') {
+        if(in_array($pid, [1452, 1533, 1530])) {
             $manifest = [];
             $manifest['version'] = '1.0.0';
             $manifest['bundles'][] = ['type' => 'lib', 'pkg' => 'com.anfeng.pay'];
