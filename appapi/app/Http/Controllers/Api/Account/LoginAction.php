@@ -105,7 +105,7 @@ trait LoginAction {
         $user->updateCache();
 
         // 计算时间
-        $t = time() - date('Z');
+        $t = time();
         $d = 0;
         $s = $t % 86400;
         if($s < 57600) {

@@ -78,7 +78,7 @@ trait RegisterAction {
         $user->updateCache();
         
         // login_log
-        $t = time() - date('Z');
+        $t = time();
         
         $login_log = new LoginLog;
         $login_log->ucid = $user->ucid;
