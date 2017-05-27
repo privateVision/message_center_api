@@ -69,16 +69,6 @@ class OauthController extends Controller {
         $user->imei = $imei;
         $user->device_id= $device_id;
         $user->save();
-        
-        $imei = $this->parameter->get('_imei', '');
-        $device_id = $this->parameter->get('_device_id', '');
-        if($imei || $device_id) {
-            $ucusers_uuid =  new UcusersUUID();
-            $ucusers_uuid->ucid = $user->ucid;
-            $ucusers_uuid->imei = $imei;
-            $ucusers_uuid->device_id= $device_id;
-            $ucusers_uuid->asyncSave();
-        }
 
         $user_oauth = new UcuserOauth;
         $user_oauth->ucid = $user->ucid;
