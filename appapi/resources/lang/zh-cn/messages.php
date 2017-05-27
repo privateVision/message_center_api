@@ -89,6 +89,12 @@ return [
     'sub_user_normal'                       => '小号状态正常',
     'error_googlepaly_system'               => 'google play 系统错误', //error
     'error_googlepaly_verify'               => 'google play 验证订单失败', //error
+    'upload_fail_info'                      => '文件上传失败：fail_info', // error
+    'sms_template_not_exists'               => '短信模板不存在',
+    'sms_text_same_limit'                   => '短信发送过于频繁，请明天再试', // 25小时相同的短信内容超过5条,
+    'sms_60s_limit'                         => '短信发送过于频繁', // 1分钟之内超过1条
+    'sms_1h_limit'                          => '短信发送次数超过限制，请稍候再试', // 1小时3条
+    'sms_24h_limit'                         => '短信发送次数超过限制，请明天再试', // 24小时10条
 ];
 /*
 return [

@@ -129,7 +129,7 @@ function upload_to_cdn($filename, $filepath, $is_delete = true) {
         $result = $bucketMgr->delete($config['bucket'], $filename);
         if($result && $result->code() != 612 && $result->code() != 200) {
             log_error('cdn_delete_error', ['code' => $result->code(), 'message' => $result->message()]);
-            throw new \App\Exceptions\Exception('文件上传失败：'. $result->message()); // LANG:file_upload_fail
+            throw new \App\Exceptions\Exception(trans('messages.upload_fail_info', ['fail_info' => $result->message()]));
         }
 
     };
@@ -145,7 +145,7 @@ function upload_to_cdn($filename, $filepath, $is_delete = true) {
         if($err) {
             if($err->code() != 614) {
                 log_error('cdn_update_error', ['code' => $ret->code(), 'message' => $ret->message()]);
-                throw new \App\Exceptions\Exception('文件上传失败：'. $ret->message()); // LANG:file_upload_fail
+                trans('messages.upload_fail_info', ['fail_info' => $ret->message()]);
             }
 
             $delete();
@@ -291,16 +291,10 @@ function order_success($order_id) {
 function send_sms($mobile, $pid, $template_id, $repalce, $code = '') {
     $smsconfig = config('common.smsconfig');
 
-    if(!env('APP_DEBUG') && Redis::exists(sprintf('sms_%s_%s_60s', $mobile, $template_id))) {
-        throw new \App\Exceptions\Exception('短信发送过于频繁'); // LANG:sms_fast
-    }
-
-    if(!env('APP_DEBUG') && Redis::get(sprintf('sms_%s_hourlimit', $mobile)) >= 10 ) {
-        throw new \App\Exceptions\Exception('短信发送次数超过限制，请稍候再试'); // LANG:sms_limit
-    }
+    $code = trim($code);
 
     if(!isset($smsconfig['template'][$template_id])) {
-        throw new \App\Exceptions\Exception('短信模板不存在'); // LANG:sms_template_not_exists
+        throw new \App\Exceptions\Exception(trans('messages.sms_template_not_exists'));
     }
 
     if(is_array($repalce) && count($repalce)) {
@@ -309,7 +303,10 @@ function send_sms($mobile, $pid, $template_id, $repalce, $code = '') {
         $content = $smsconfig['template'][$template_id];
     }
 
-    Queue::push(new \App\Jobs\SendSMS($smsconfig, $template_id, $mobile, $content, $code));
+    $sendsms_jobs = new \App\Jobs\SendSMS($smsconfig, $template_id, $mobile, $content, $code);
+    $sendsms_jobs->verify($mobile, $template_id, $content, $code != '');
+
+    Queue::push($sendsms_jobs);
 
     return $content;
 }
@@ -338,8 +335,6 @@ function send_mail($subject, $to, $content) {
 }
 
 function log_debug ($keyword, $content, $desc = '') {
-    global $app;
-
     if(env('log_level') > 0) return;
 
     Queue::push(new \App\Jobs\Log([
@@ -355,8 +350,6 @@ function log_debug ($keyword, $content, $desc = '') {
 }
 
 function log_info ($keyword, $content, $desc = '') {
-    global $app;
-
     if(env('log_level') > 1) return;
 
     Queue::push(new \App\Jobs\Log([
@@ -372,8 +365,6 @@ function log_info ($keyword, $content, $desc = '') {
 }
 
 function log_warning ($keyword, $content, $desc = '') {
-    global $app;
-
     if(env('log_level') > 2) return;
 
     Queue::push(new \App\Jobs\Log([
@@ -389,8 +380,6 @@ function log_warning ($keyword, $content, $desc = '') {
 }
 
 function log_error ($keyword, $content, $desc = '') {
-    global $app;
-
     Queue::push(new \App\Jobs\Log([
         'keyword' => $keyword,
         'desc' => $desc,

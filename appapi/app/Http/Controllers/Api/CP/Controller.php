@@ -80,7 +80,7 @@ class Controller extends \App\Controller
             'data' => $response->getOriginalContent()
         ];
 
-        //XXX 历史遗留问题
+        // XXX 历史遗留问题 to App\Http\Controllers\Api\CP\UserController
         if($content['data'] == '__true') {
             $content['data'] = true;
         }
