@@ -22,8 +22,7 @@ class Controller extends \App\Controller
 
 		try {
 		    // 封号功能
-            $ip = getClientIp();
-            $data = IpRefused::where('ip', $ip)->first();
+            $data = IpRefused::where('ip', getClientIp())->first();
             if($data){
                 throw new ApiException(ApiException::Error, '账号被封');
             }
