@@ -136,7 +136,7 @@ class AppController extends Controller
         // check update
         $update = new \stdClass;
         $update_apks = $this->procedure->update_apks()->orderBy('dt', 'desc')->first();
-        if($update_apks && $update_apks->version != $app_version) {
+        if($update_apks && version_compare($update_apks->version, $app_version, '>')) {
             $update = array(
                 'down_url' => $update_apks->down_uri,
                 'version' => $update_apks->version,
@@ -278,5 +278,4 @@ class AppController extends Controller
 
         return ['manifest'=>$manifest, 'updates'=>[$updates]];
     }
-
 }
