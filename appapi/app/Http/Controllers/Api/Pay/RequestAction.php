@@ -23,12 +23,15 @@ trait RequestAction {
             throw new ApiException(ApiException::Remind, trans('messages.order_already_success'));
         }
 
+        $order_extend = OrderExtend::find($order->id);
+
         $order->getConnection()->beginTransaction();
 
         // XXX 同一笔订单被多次支付利用(清除旧数据)
         OrdersExt::where('oid', $order->id)->delete();
 
-        $is_f = $order->is_f(); // 小于100的应用是内部应用，只能充F币
+        // XXX 4.1和以上版本直接判断$order_extend->is_f()即可
+        $is_f = ($order_extend && $order_extend->is_f()) || $order->is_f();
         $fee = $order->fee * 100;
 
         // 使用储值卡或卡券
@@ -98,9 +101,6 @@ trait RequestAction {
             // XXX 不用支付，直接发货
             order_success($order->id);
         }
-
-        // order_extend
-        $order_extend = OrderExtend::find($order->id);
 
         // 获取配置传给子类
         $config = config('common.payconfig.'.static::PayText);

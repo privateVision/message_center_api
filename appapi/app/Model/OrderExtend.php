@@ -26,4 +26,8 @@ class OrderExtend extends Model
 
         return [];
     }
+
+    public function is_f() {
+        return $this->product_type == 1;
+    }
 }

@@ -74,9 +74,17 @@ class OrderController extends Controller {
         $role_name = $this->parameter->get('role_name', '');
         $product_type = $this->parameter->get('product_type', 0); // 0 游戏道具，1 F币，2 游币（H5专用）
 
-        // TODO 如何判断老用户购买的是F币
+        // XXX 旧版本如果在4.0以下，则通过此方式判断是否购买F币
+        do {
+            if($product_type == 1) break;
+            if(version_compare('4.1', $this->parameter->tough('_version'), '>=')) break;
 
-        // 购买F币无需CP订单号
+            if(!$this->parameter->get('vorderid') && !$this->parameter->get('notify_url')) {
+                $product_type = 1;
+            }
+        } while(false);
+
+        // 非购买F币需CP订单号
         $vorderid = '';
         if($product_type != 1) {
             $vorderid = $this->parameter->tough('vorderid');
@@ -92,11 +100,11 @@ class OrderController extends Controller {
 //            }
 //        }
 
-        // 如果是买F币不用通知地址，否则没有通知地址就去数据库看有没有预设置
+        // 非购买F币没有通知地址就去数据库看有没有预设置
         $notify_url = $this->parameter->get('notify_url', '');
         if($product_type != 1) {
             if (!$notify_url) {
-                $notify_url = $this->procedure_extend->pay_callback_url;
+                $notify_url = $this->procedure_extend->pay_callback_url_4 ?: $this->procedure_extend->pay_callback_url_2;
             }
 
             if (!$notify_url) {
