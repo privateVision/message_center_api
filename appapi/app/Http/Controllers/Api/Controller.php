@@ -151,7 +151,7 @@ class Controller extends \App\Controller
             [
                 'method' => 'LoginAction',
                 'expire' => 6000,
-                'times' => 2,
+                'times' => 10,
                 'msg' => 'login_limit',
                 'status'=>'normal'
             ]
