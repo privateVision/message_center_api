@@ -573,7 +573,3 @@ function getClientIp() {
     if(@$_SERVER['REMOTE_ADDR']) return $_SERVER['REMOTE_ADDR'];
     return '';
 }
-
-function check_ip(){
-
-}

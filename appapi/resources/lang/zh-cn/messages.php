@@ -89,6 +89,8 @@ return [
     'sub_user_normal'                       => '小号状态正常',
     'error_googlepaly_system'               => 'google play 系统错误', //error
     'error_googlepaly_verify'               => 'google play 验证订单失败', //error
+    'reg_limit'                             => '已达到注册限制',
+    'login_limit'                           => '已达到登录限制',
 ];
 /*
 return [
