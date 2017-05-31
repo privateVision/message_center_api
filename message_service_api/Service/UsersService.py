@@ -589,9 +589,9 @@ def get_stored_value_card_list(ucid, status=0, start_index=0, end_index=10):
                     'method': ''
                 }
                 if card['startTime']:
-                    item['start_time'] = card['startTime']
+                    item['start_time'] = "%s" % (card['startTime'],)
                 if card['endTime']:
-                    item['end_time'] = card['endTime']
+                    item['end_time'] = "%s" % (card['endTime'],)
                 if card['untimed'] == 1:
                     item['unlimited_time'] = True
                 if game_info:

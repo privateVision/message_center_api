@@ -98,11 +98,18 @@ class NoticeFunctionTest(unittest.TestCase):
 
     def test_get_notice_list(self):
         body_data = {
-            '_sign': 'd69bfcae81537a571bd84163696e1bb2',
-            '_token': 'bb427a702d53dbb0cdd4f001fb301620',
-            '_appid': 2,
+            "_appid": 1525,
+            "_device_id": "cgrzjjjyc6oso08kw0g480ws0",
+            "_imei": "A9AE2C87-5246-4B86-85E7-2642A6209A7D",
+            "_os": 1,
+            "_rid": 1,
+            "_sign": "72940fa88c88d4c87e763ccf17332e9d",
+            "_sign_type": "md5",
+            "_timestamp": 1495879256,
+            "_token": "d3g20bbdkhwksw8okkwogoc40",
+            "_type": "json"
         }
-        r = requests.post('http://dev.sdkapi.com/msa/v4/notices', data=body_data)
+        r = requests.post('https://sdkv4.qcwan.com/msa/v4/notices', data=body_data)
         print r.text
 
     def tearDown(self):
