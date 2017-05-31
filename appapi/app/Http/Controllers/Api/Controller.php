@@ -9,6 +9,7 @@ use App\Exceptions\Exception;
 use App\Parameter;
 use App\Model\Procedures;
 use App\Model\ProceduresExtend;
+use App\Model\IpRefusedConf;
 use Illuminate\Http\Response;
 use App\Redis;
 
@@ -64,7 +65,7 @@ class Controller extends \App\Controller
         self::checkDevice($request);
 
         // 封ip
-        $data = IpRefused::where('ip', getClientIp())->first();
+        $data = IpRefused::where('ip', getClientIp())->where('unlock_time', '>', time())->first();
         if ($data) {
             throw new ApiException(ApiException::Error, trans('messages.ipfreeze'));
         }
@@ -140,69 +141,66 @@ class Controller extends \App\Controller
 
     public function checkDevice($request)
     {
-        $config = [
-            [
-                'method' => 'RegisterAction',   //过滤方法
-                'expire' => 6000,                 //持续时间（豪秒）
-                'times' => 10,                  //次数
-                'msg' => 'reg_limit',           //描述
-                'status'=>'normal',               //状态，'normal':开启验证，'hidden':关闭验证
-            ],
-            [
-                'method' => 'LoginAction',
-                'expire' => 6000,
-                'times' => 10,
-                'msg' => 'login_limit',
-                'status'=>'normal'
-            ]
-        ];
+//        $config = [
+//            [
+//                'uri' => 'api/account/register',   //过滤方法
+//                'expire' => 86400,                 //持续时间（秒）
+//                'times' => 5,                  //次数
+//                'msg' => 'reg_limit',           //描述
+//                'time' =>86400,                 //封停时长（秒）
+//                'status'=>'normal',               //状态，'normal':开启验证，'hidden':关闭验证
+//            ],
+//            [
+//                'uri' => 'api/account/login',
+//                'expire' => 86400,
+//                'times' => 5,
+//                'msg' => 'login_limit',
+//                'time' =>86400,                 //封停时长（秒）
+//                'status'=>'normal'
+//            ]
+//        ];
 
-        $methodName = $request->route()->getActionMethod();
+        $uri = $request->path();
 
-        foreach ($config as $k => $v) {
-            if ($v['method'] == $methodName) {
+        $config = IpRefusedConf::where('uri', $uri)->where('status', 'normal')->first();
 
-                if($v['status']=='close')return;
+        if ($config->uri == $uri) {
 
-                $expire = $v['expire'];
-                $times = $v['times'];
-                $msg = $v['msg'];
+            if($config->status=='hidden')return;
 
-                $ip = getClientIp();
+            $expire = $config->expire;
+            $times = $config->times;
+            $msg = $config->msg;
+            $time = $config->time;
 
-                $key = md5($methodName . '_' . $ip);
+            $ip = getClientIp();
+
+            $key = md5($uri . '_' . $ip);
+
+            $value = Redis::EXISTS($key);
+
+            if (!$value) {
+                Redis::set($key, 1, 'EX', $expire);
+            } else {
 
                 $value = Redis::get($key);
 
-                if (!$value) {
-                    Redis::set($key, serialize(['times' => 1, 'expire' => $expire]), 'PX', $expire);
-                } else {
+                if ($value >= $times) {
 
-                    $value = unserialize($value);
+                    if(IpRefused::where('ip', $ip)->where('unlock_time', '>', time())->first())return;
 
-                    if ($value['times'] >= $times) {
+                    $ipRefused = new IpRefused();
+                    $ipRefused->ip = $ip;
+                    $ipRefused->lock_time = time();
+                    $ipRefused->unlock_time = time()+$time;
+                    $ipRefused->uri = $uri;
+                    $ipRefused->save();
 
-                        if(IpRefused::where('ip', $ip)->first())return;
+                    return;
 
-                        $ipRefused = new IpRefused();
-                        $ipRefused->ip = $ip;
-                        $ipRefused->time = time();
-                        $ipRefused->method = $methodName;
-                        $ipRefused->save();
-
-                        return;
-
-//                        throw new ApiException(ApiException::Remind, trans('messages.'.$msg));
-                    }
-
-                    $value['times'] = $value['times'] + 1;
-
-                    $value['expire'] = $expire = Redis::ttl($key);
-
-                    Redis::set($key, serialize($value), 'EX', $expire);
                 }
 
-                break;
+                Redis::INCR($key);
             }
         }
 
