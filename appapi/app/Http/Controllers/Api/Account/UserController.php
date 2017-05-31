@@ -3,13 +3,9 @@ namespace App\Http\Controllers\Api\Account;
 
 use App\Exceptions\ApiException;
 use App\Jobs\AdtRequest;
-use Illuminate\Http\Request;
-use App\Parameter;
-
 use App\Redis;
 use App\Model\Ucuser;
 use App\Model\_56GameBBS\Members as Member;
-use App\Model\UcusersUUID;
 
 class UserController extends Controller {
     
@@ -38,7 +34,7 @@ class UserController extends Controller {
         }
         // --------- end
         
-        // TODO 解决老用户会出现同时查找到两个用户的情况
+        // XXX 解决老用户会出现同时查找到两个用户的情况
         $user = Ucuser::where('uid', $username)->first();
         if(!$user) {
             $user = Ucuser::where('mobile', $username)->orWhere('email', $username)->first();
@@ -48,46 +44,20 @@ class UserController extends Controller {
         do {
             if(!isset($user)) break;
             
-            $member = Member::where('uid', $user->ucid)->first();
+            $member = Member::find($user->ucid);
             if(!$member) break;
-            
-            $user = Ucuser::from_cache($member->uid);
-            if($user) {
-                if(!$user->uid) $user->uid = $member->username;
-                if(!$user->email) $user->email = $member->email;
-                if(!$user->nickname) $user->nickname = rand(111111,999999);
-                if(!$user->regip) $user->regip = $member->regip;
-                if(!$user->regdate) $user->regdate = $member->regdate;
-                if(!$user->password) {
-                    $user->password = $member->password;
-                    $user->salt = $member->salt;
-                }
-                
-                $user->save();
-            } else {
-//                $user = new Ucuser;
-//                $user->uid = $member->username;
-//                $user->email = $member->email ?: ($member->username . '@anfan.com');
-//                $user->nickname = $member->username;
-//                $user->password =$member->password;
-//                $user->salt =$member->salt;
-//                $user->regip = $member->regip;
-//                $user->regdate = $member->regdate;
-//                $user->rid = $this->parameter->tough('_rid');
-//                $user->pid = $this->procedure->pid;
-//                $user->imei = $imei;
-//                $user->device_id= $device_id;
-//                $user->save();
-                $udt = array(
-                    'uid'=>$member->username,
-                    'email'=>$member->email ?: ($member->username . '@anfan.com'),
-                    'nickname'=>$member->username,
-                    'password'=>$member->password,
-                    'salt'=>$member->salt
-                );
-                //平台注册账号
-                $user = self::baseRegisterUser($udt);
+
+            if(!$user->uid) $user->uid = $member->username;
+            if(!$user->email) $user->email = $member->email;
+            if(!$user->nickname) $user->nickname = rand(111111, 999999);
+            if(!$user->regip) $user->regip = $member->regip;
+            if(!$user->regdate) $user->regdate = $member->regdate;
+            if(!$user->password) {
+                $user->password = $member->password;
+                $user->salt = $member->salt;
             }
+
+            $user->save();
         } while(false);
         
         if(!$user || !$user->checkPassword($password)) {

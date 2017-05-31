@@ -159,21 +159,27 @@ class Controller extends \App\Controller
 //                'status'=>'normal'
 //            ]
 //        ];
+        $ip = getClientIp();
+
+        $whiteIpList = [
+            '0.0.0.0',
+            '127.0.0.1',
+            '10.13.251.38',
+            '10.13.251.39',
+        ];
+
+        if(in_array($ip, $whiteIpList))return;
 
         $uri = $request->path();
 
         $config = IpRefusedConf::where('uri', $uri)->where('status', 'normal')->first();
 
-        if ($config->uri == $uri) {
-
-            if($config->status=='hidden')return;
+        if ($config) {
 
             $expire = $config->expire;
             $times = $config->times;
             $msg = $config->msg;
             $time = $config->time;
-
-            $ip = getClientIp();
 
             $key = md5($uri . '_' . $ip);
 
