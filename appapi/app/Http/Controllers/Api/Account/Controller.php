@@ -24,7 +24,6 @@ abstract class Controller extends BaseController {
         $user = new Ucuser;
         $user->uid = $data['uid'];
         $user->email = (isset($data['email']) && !empty($data['email'])) ? $data['email'] : $data['uid'].'@anfan.com';
-        $user->setPassword($data['password']);
         $user->nickname = (isset($data['nickname']) && !empty($data['nickname'])) ? $data['nickname'] : '暂无昵称';
 
         if(isset($data['mobile']) && !empty($data['mobile'])) {
@@ -32,6 +31,9 @@ abstract class Controller extends BaseController {
         }
         if(isset($data['salt']) && !empty($data['salt'])) {
             $user->salt = $data['salt'];
+            $user->password = $data['password'];
+        } else {
+            $user->setPassword($data['password']);
         }
         if(isset($data['device_uuid']) && !empty($data['device_uuid'])) {
             $user->device_uuid = $data['device_uuid'];
