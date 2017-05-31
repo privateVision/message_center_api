@@ -34,7 +34,7 @@ class YingYongBaoController extends Controller
         if($this->payM($order->id, $real_fee)){
             order_success($order->id);
             return [
-                'result'=>'true'
+                'result'=>true
             ];
         }
     }
