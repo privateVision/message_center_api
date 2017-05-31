@@ -168,7 +168,7 @@ class Controller extends \App\Controller
             '10.13.251.39',
         ];
 
-//        if (in_array($ip, $whiteIpList)) return;
+        if (in_array($ip, $whiteIpList)) return;
 
         $uri = $request->path();
 
