@@ -89,10 +89,12 @@ Route::group(['prefix' => 'api'], function () {
     Route::any('pay/googleplay/request', 'Api\\Pay\\GooglePlayController@RequestAction');                   // GooglePlay平台支付
     Route::any('pay/baidu/request', 'Api\\Pay\\BaiduController@RequestAction');                             // 百度平台支付
     Route::any('pay/yingyongbao/request', 'Api\\Pay\\YingYongBaoController@RequestAction');                 // 应用宝平台支付
+    Route::any('pay/yingyongbao/check', 'Api\\Pay\\YingYongBaoController@checkPayToken');                   // 应用宝检查token是否有效
+    Route::any('pay/yingyongbao/balance', 'Api\\Pay\\YingYongBaoController@getBalanceM');                   // 应用宝查询余额
     Route::any('pay/ios/request','Api\\Pay\\IOSController@RequestAction');                                  // 验证苹果支付的信息
 
     Route::any('ios/order/receipt/verify','Api\\Pay\\AppleController@validateReceiptAction');               // XXX 验证苹果支付的信息
-    //Route::any('ios/order/create','Api\\Pay\\AppleController@OrderCreateAction');                                    // XXX 4.0 创建苹果订单
+    //Route::any('ios/order/create','Api\\Pay\\AppleController@OrderCreateAction');                         // XXX 4.0 创建苹果订单
     Route::any('ios/order/create','Api\\Pay\\OrderController@NewAction');                                   // XXX 4.0 创建苹果订单
     Route::any('ios/applelimit','Api\\Pay\\AppleController@AppleLimitAction');                              // XXX 验证当前是否开启限制
 

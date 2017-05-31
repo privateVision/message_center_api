@@ -80,6 +80,7 @@
                                 <p node-type="controller" style="word-break:break-all; word-wrap:break-all;">控制器：<span></span></p>
                                 <p node-type="request" style="word-break:break-all; word-wrap:break-all;">请求数据：<span></span></p>
                                 <p node-type="sign" style="word-break:break-all; word-wrap:break-all;">请求签名：<span></span></p>
+                                <p node-type="url" style="word-break:break-all; word-wrap:break-all;">请求的url：<span></span></p>
                             </div>
                         </div>
                     </div>
@@ -212,6 +213,7 @@
                     //请求接口
                     apiRequest : function(params){
                         var url = $('select[name="url"]').val();
+                        $('p[node-type="url"] span').html('/index.php/'+url+'?'+this.buildParams(params));
                         $.ajax({
                             "type": "POST",
                             "url": '/index.php/'+url,
@@ -227,6 +229,13 @@
                                 alert('服务器异常');
                             }
                         });
+                    },
+                    buildParams : function(params) {
+                        var arrs = [];
+                        for( key in params){
+                            arrs.push(key+'='+params[key]);
+                        }
+                        return arrs.join('&');
                     }
                 };
                 new Create();
