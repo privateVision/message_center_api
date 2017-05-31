@@ -137,6 +137,10 @@ return [
             'baseUrl'=>'http://sdk.9game.cn',
             'port'=>'80',
             'prefix'=>'ng/cp/'
-        ]
+        ],
+        'ios' => [
+            'verify_receipt' => 'https://buy.itunes.apple.com/verifyReceipt',
+            'verify_receipt_sandbox' => 'https://sandbox.itunes.apple.com/verifyReceipt',
+        ],
     ],
 ];
