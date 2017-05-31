@@ -62,13 +62,13 @@ class Controller extends \App\Controller
     {
         parent::before($request);
 
-        self::checkDevice($request);
-
         // 封ip
         $data = IpRefused::where('ip', getClientIp())->where('unlock_time', '>', time())->first();
         if ($data) {
             throw new ApiException(ApiException::Error, trans('messages.ipfreeze'));
         }
+
+        self::checkDevice($request);
 
         $data = array_map(function ($v) {
             return strval($v);
@@ -168,7 +168,7 @@ class Controller extends \App\Controller
             '10.13.251.39',
         ];
 
-        if(in_array($ip, $whiteIpList))return;
+//        if (in_array($ip, $whiteIpList)) return;
 
         $uri = $request->path();
 
@@ -183,29 +183,20 @@ class Controller extends \App\Controller
 
             $key = md5($uri . '_' . $ip);
 
-            $value = Redis::EXISTS($key);
+            $value = Redis::get($key);
 
             if (!$value) {
                 Redis::set($key, 1, 'EX', $expire);
+            } elseif ($value + 1 >= $times) {
+
+                $ipRefused = new IpRefused();
+                $ipRefused->ip = $ip;
+                $ipRefused->lock_time = time();
+                $ipRefused->unlock_time = time() + $time;
+                $ipRefused->uri = $uri;
+                $ipRefused->save();
+
             } else {
-
-                $value = Redis::get($key);
-
-                if ($value >= $times) {
-
-                    if(IpRefused::where('ip', $ip)->where('unlock_time', '>', time())->first())return;
-
-                    $ipRefused = new IpRefused();
-                    $ipRefused->ip = $ip;
-                    $ipRefused->lock_time = time();
-                    $ipRefused->unlock_time = time()+$time;
-                    $ipRefused->uri = $uri;
-                    $ipRefused->save();
-
-                    return;
-
-                }
-
                 Redis::INCR($key);
             }
         }
