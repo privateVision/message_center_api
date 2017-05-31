@@ -20,7 +20,6 @@ class YingYongBaoController extends Controller
     const PayMethod = '-9';
     const PayText = 'yingyongbao';
     const PayTypeText = '应用宝平台支付';
-    const PayHttp = 'ysdktest.qq.com';
 
     /**
      * @param $config
@@ -35,7 +34,7 @@ class YingYongBaoController extends Controller
         if($this->payM($order->id, $real_fee)){
             order_success($order->id);
             return [
-                'result'=>'success'
+                'result'=>'true'
             ];
         }
     }
@@ -71,16 +70,18 @@ class YingYongBaoController extends Controller
      */
     public function checkPayToken()
     {
+        $accout_type = $this->parameter->tough('accout_type');
+        $appids = explode(',', $this->procedure_extend->third_appid);
+        $appkeys = explode(',', $this->procedure_extend->third_appkey);
         $params = array(
             'openid' => $this->parameter->tough('openid'),
             'openkey' => $this->parameter->tough('openkey'),
             'timestamp' => time(),
-            'appid'=>$this->procedure_extend->third_appid
+            'appid'=>($accout_type=='qq'?$appids[0]:$appids[1])
         );
-        $params['sig'] =  md5($this->procedure_extend->third_appkey.$params['timestamp']);
+        $params['sig'] =  md5(($accout_type=='qq'?$appkeys[0]:$appkeys[1]).$params['timestamp']);
 
         $method = 'get';
-        $accout_type = $this->parameter->tough('accout_type');
         $script_name = $accout_type=='qq'?'/auth/qq_check_token':'/auth/wx_check_token';
 
         $res = self::api_ysdk($script_name, $params, $method);
@@ -130,7 +131,7 @@ class YingYongBaoController extends Controller
         if(isset($repon['ret'])&&$repon['ret']===0){
             return true;
         }else{
-            throw new ApiException(ApiException::Remind, isset($repon['msg'])?$repon['msg']:'');
+            throw new ApiException(ApiException::Remind, $repon['msg']);
         }
     }
 
@@ -150,7 +151,7 @@ class YingYongBaoController extends Controller
         // add some params: 'version'
         //$params['version'] = 'PHP YSDK v1.0.0';
 
-        $url = $protocol . '://'. self::PayHttp . $script_name;
+        $url = $protocol . '://'. self::getDomain() . $script_name;
 
         // 通过调用以下方法，可以打印出最终发送到YSDK API服务器的请求参数以及url，默认为注释
 //        self::printRequest($url,$params,$method);
@@ -230,7 +231,7 @@ class YingYongBaoController extends Controller
         $sig = self::makeSig($method, $script_sig_name, $params, $secret);
         $params['sig'] = $sig;
 
-        $url = $protocol . '://' . self::PayHttp . $script_name;
+        $url = $protocol . '://' . self::getDomain() . $script_name;
 
         // 通过调用以下方法，可以打印出最终发送到openapi服务器的请求参数以及url，默认为注释
 //        self::printCookies($cookie);
@@ -261,6 +262,10 @@ class YingYongBaoController extends Controller
 //        self::printRespond($result_array);
 
         return $result_array;
+    }
+
+    static public function getDomain() {
+        return env('APP_DEBUG')?'ysdktest.qq.com':'ysdk.qq.com';
     }
 
     /**
