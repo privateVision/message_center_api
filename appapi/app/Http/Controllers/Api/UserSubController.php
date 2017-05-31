@@ -66,7 +66,7 @@ class UserSubController extends AuthController
     }
 
     public function ListAction() {
-        $pid = $this->parameter->tough('_appid');
+        $pid = $this->procedure->pid;
 
         $data = [];
 

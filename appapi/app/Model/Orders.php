@@ -52,11 +52,11 @@ class Orders extends Model
 	}
 
 	/**
-	 * 该订单是否是购买F币
+	 * 该订单是否是购买F币，如果orders_extend存在则以product_type为准，否则才走这里
 	 * @return boolean [description]
 	 */
 	public function is_f() {
-		return $this->vid < 100;
+		return $this->vid < 100 || empty($this->notify_url);
 	}
 
 	public static function whereIsF() {

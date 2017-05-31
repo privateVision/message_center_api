@@ -44,6 +44,7 @@ trait RegisterAction {
             $user_sub->name = '小号1';
             $user_sub->priority = time();
             $user_sub->last_login_at = datetime();
+            $user_sub->save();
         }
 
         $user_sub->priority = time();
