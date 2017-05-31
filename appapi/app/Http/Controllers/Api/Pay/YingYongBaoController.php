@@ -85,7 +85,7 @@ class YingYongBaoController extends Controller
         $script_name = $accout_type=='qq'?'/auth/qq_check_token':'/auth/wx_check_token';
 
         $res = self::api_ysdk($script_name, $params, $method);
-        if($res['ret'] == 0) {
+        if($res['ret'] === 0) {
             return ['result'=>'success'];
         } else {
             throw new ApiException(ApiException::Remind, $res['msg']);
@@ -99,13 +99,13 @@ class YingYongBaoController extends Controller
      */
     public function getBalanceM()
     {
-        $params = self::getParams();
-
         $accout_type = $this->parameter->tough('accout_type');
+
+        $params = self::getParams();
 
         $res = self::api_pay('/mpay/get_balance_m', $accout_type, $params, 'post', 'http');
 
-        if($res['ret'] == 0) {
+        if($res['ret'] === 0) {
             return $res;
         } else {
             throw new ApiException(ApiException::Remind, $res['msg']);
@@ -126,12 +126,12 @@ class YingYongBaoController extends Controller
         $params['amt'] = $real_fee;
         $params['billno'] = $order_id;
 
-        $repon = self::api_pay('/mpay/pay_m', $accout_type, $params, 'post', 'http');
+        $res = self::api_pay('/mpay/pay_m', $accout_type, $params, 'post', 'http');
 
-        if(isset($repon['ret'])&&$repon['ret']===0){
+        if(isset($res['ret']) && $res['ret'] === 0){
             return true;
         }else{
-            throw new ApiException(ApiException::Remind, $repon['msg']);
+            throw new ApiException(ApiException::Remind, $res['msg']);
         }
     }
 
