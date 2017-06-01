@@ -51,7 +51,7 @@ trait LoginAction {
 
             // 查找最近一次登录的小号
             if(!$user_sub) {
-                $user_sub = UcuserSub::tableSlice($user->ucid)->where('ucid', $user->ucid)->where('pid', $pid)->where('is_freeze', false)->orderBy('priority', 'desc')->first();
+                $user_sub = UcuserSub::tableSlice($user->ucid)->where('ucid', $user->ucid)->where('pid', $pid)->where('is_freeze', 0)->orderBy('priority', 'desc')->first();
             }
 
             // 用户没有可用的小号，创建
