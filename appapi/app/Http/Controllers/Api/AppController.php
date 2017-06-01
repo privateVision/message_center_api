@@ -7,6 +7,7 @@ use App\Model\Log\DeviceApps;
 use App\Model\Log\DeviceInfo;
 use App\Model\IosApplicationConfig;
 use App\Model\ZyGame;
+use App\Jobs\AdtRequest;
 
 class AppController extends Controller
 {
@@ -19,6 +20,11 @@ class AppController extends Controller
         $info = $this->parameter->tough('device_info');
         $app_version = $this->parameter->tough('app_version');
         $os = $this->parameter->get('_os');
+
+        // 广告统计，加入另一个队列由其它项目处理
+        if($imei) {
+            dispatch((new AdtRequest(['imei' => $imei, 'gameid' => $pid, 'rid' => $rid]))->onQueue('adtinit'));
+        }
 
         if($apps) {
             $_apps = json_decode($apps, true);
@@ -100,7 +106,7 @@ class AppController extends Controller
                 'page' => $this->procedure_extend->service_page,
                 'phone' => $this->procedure_extend->service_phone,
                 'share' => $this->procedure_extend->service_share,
-                'interval' => max(2000, $this->procedure_extend->heartbeat_interval),
+                'interval' => 86400000,//max(2000, $this->procedure_extend->heartbeat_interval),
                 'af_download' => env('af_download'),
             ],
             'bind_phone' => [

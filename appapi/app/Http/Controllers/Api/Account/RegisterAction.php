@@ -11,15 +11,27 @@ use App\Model\LoginLog;
 use App\Model\UcuserInfo;
 use App\Model\UcuserSession;
 use App\Model\Retailers;
+use App\Jobs\AdtRequest;
 
 trait RegisterAction {
     
     public function RegisterAction(){
-
         $pid = $this->parameter->tough('_appid');
         $rid = $this->parameter->tough('_rid');
         
         $user = $this->getRegisterUser();
+
+        // 广告统计，加入另一个队列由其它项目处理
+        $imei = $this->parameter->get('_imei');
+        if($imei) {
+            dispatch((new AdtRequest([
+                'imei' => $imei,
+                'gameid' => $pid,
+                'rid'=>$rid,
+                'ucid' => $user->ucid
+            ]))->onQueue('adtinit'));
+        }
+
         if(!$user) throw new ApiException(ApiException::OauthNotRegister, '尚未注册第三方账号，请先注册'); // LANG:not_register_3th
         if($user->is_freeze) {
             throw new ApiException(ApiException::AccountFreeze, '账号被冻结，无法登录'); // LANG:freeze_not_login
@@ -78,7 +90,7 @@ trait RegisterAction {
         $user->updateCache();
         
         // login_log
-        $t = time();
+        $t = time();// - date('Z');
         
         $login_log = new LoginLog;
         $login_log->ucid = $user->ucid;

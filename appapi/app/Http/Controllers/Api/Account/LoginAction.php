@@ -12,6 +12,7 @@ use App\Model\UcuserSession;
 use App\Model\LoginLog;
 use App\Model\UcuserInfo;
 use App\Model\Retailers;
+use App\Jobs\AdtRequest;
 
 trait LoginAction {
 
@@ -20,6 +21,18 @@ trait LoginAction {
         $rid = $this->parameter->tough('_rid');
         
         $user = $this->getLoginUser();
+
+        // 广告统计，加入另一个队列由其它项目处理
+        $imei = $this->parameter->get('_imei');
+        if($imei) {
+            dispatch((new AdtRequest([
+                'imei' => $imei,
+                'gameid' => $pid,
+                'rid'=>$rid,
+                'ucid' => $user->ucid
+            ]))->onQueue('adtinit'));
+        }
+
         if($user && $user->is_freeze) {
             throw new ApiException(ApiException::AccountFreeze, '账号已被冻结，无法登录', ['ucid' => $user->ucid]);// LANG:freeze_not_login
         }
@@ -104,15 +117,7 @@ trait LoginAction {
         $user->save();
         $user->updateCache();
 
-        // 计算时间
-        $t = time();
-        $d = 0;
-        $s = $t % 86400;
-        if($s < 57600) {
-            $d = intval($t / 86400) - 1;
-        } else {
-            $d = intval($t / 86400);
-        }
+        $t = time();// - date('Z');
         
         $login_log = new LoginLog;
         $login_log->ucid = $user->ucid;
