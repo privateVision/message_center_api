@@ -77,7 +77,7 @@ class UcController extends Controller {
             if($res['state']['code'] == 1){
                 return $res['data'];
             } else {
-                throw new ApiException(ApiException::Remind, '错误码：'.$res['state']['code'] . $res['state']['msg']);
+                throw new ApiException(ApiException::Remind, $res['state']['msg'].':'.$res['state']['code']);
             }
         } else {
             throw new ApiException(ApiException::Remind, trans('messages.http_request_error'));

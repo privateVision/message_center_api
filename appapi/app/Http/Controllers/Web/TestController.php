@@ -94,7 +94,7 @@ class TestController extends \App\Controller {
         ));
         //print_r(self::get_sign($inits, $appkey));
         $res1 = http_curl(url('api/app/initialize'), self::get_sign($inits, $appkey), true);
-        if($res1['code'] != 1 || !isset($res1['data'])) {
+        if($res1['cd'] != 1 || !isset($res1['data'])) {
             return self::response(1, '初始化信息失败');
         }
 
@@ -104,7 +104,7 @@ class TestController extends \App\Controller {
             'password'=>$pwd
         ));
         $res2 = http_curl(url('api/account/login'), self::get_sign($login, $appkey), true);
-        if($res2['code'] != 1 || !isset($res1['data'])){
+        if($res2['cd'] != 1 || !isset($res1['data'])){
             return self::response(1, '用户登录失败');
         }
 
