@@ -94,7 +94,7 @@ class YingYongBaoController extends Controller
     /**
      * 获取用户余额
      * @param accout_type qq或者wx
-     * @return array|mixed
+     * @return array
      */
     public function getBalanceM()
     {
@@ -113,7 +113,8 @@ class YingYongBaoController extends Controller
 
     /**
      * 扣除游戏币
-     * @param $order_id
+     * @param order
+     * @param order_extend
      * @param accout_type qq或者wx
      * @return bool
      */
@@ -237,8 +238,8 @@ class YingYongBaoController extends Controller
         $url = $protocol . '://' . self::getDomain() . $script_name;
 
         // 通过调用以下方法，可以打印出最终发送到openapi服务器的请求参数以及url，默认为注释
-//        self::printCookies($cookie);
-//        self::printRequest($url,$params,$method);
+        self::printCookies($cookie);
+        self::printRequest($url,$params,$method);
 
         // 发起请求
         $ret = self::makeRequest($url, $params, $cookie, $method, $protocol);
@@ -262,7 +263,7 @@ class YingYongBaoController extends Controller
         }
 
         // 通过调用以下方法，可以打印出调用支付API请求的返回码以及错误信息，默认注释
-//        self::printRespond($result_array);
+        self::printRespond($result_array);
 
         return $result_array;
     }
