@@ -77,7 +77,7 @@ class OrderController extends Controller {
         // XXX 旧版本如果在4.0以下，则通过此方式判断是否购买F币
         do {
             if($product_type == 1) break;
-            if(version_compare('4.1', $this->parameter->tough('_version'), '>=')) break;
+            if(version_compare('4.1', $this->parameter->get('_version', '4.0'), '>=')) break;
 
             if(!$this->parameter->get('vorderid') && !$this->parameter->get('notify_url')) {
                 $product_type = 1;

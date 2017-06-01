@@ -10,6 +10,10 @@ class  AppleController extends Controller {
 
     use RequestAction;
 
+    const PayMethod = '-6';
+    const PayText = 'IOS';
+    const PayTypeText = 'IOS';
+
     public function getData($config, Orders $order, OrderExtend $order_extend, $real_fee) {
         $receipt = $this->parameter->tough('receipt');
         $transaction = $this->parameter->tough("transaction_id");

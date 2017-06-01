@@ -16,8 +16,6 @@ class OnekeyController extends Controller {
     const Type = 4;
 
     public function getLoginUser() {
-        $imei = $this->parameter->get('_imei', '');
-        $device_id = $this->parameter->get('_device_id', '');
         $sms_token = $this->parameter->tough('sms_token');
 
         $yunpian_callback = YunpianCallback::where('text', $sms_token)->first();
@@ -38,28 +36,13 @@ class OnekeyController extends Controller {
         $username = username();
         $password = rand(100000, 999999);
 
-//        $user = new Ucuser;
-//        $user->uid = $username;
-//        $user->email = $username . "@anfan.com";
-//        $user->mobile = $mobile;
-//        $user->nickname = '暂无昵称';
-//        $user->setPassword($password);
-//        $user->regtype = static::Type;
-//        $user->regip = getClientIp();
-//        $user->rid = $this->parameter->tough('_rid');
-//        $user->pid = $this->procedure->pid;
-//        $user->regdate = time();
-//        $user->imei = $imei;
-//        $user->device_id= $device_id;
-//        $user->save();
-//
-//        user_log($user, $this->procedure, 'register', '【注册】通过“手机号码一键登录”注册，手机号码{%s}, 密码[%s]', $mobile, $user->password);
-        $udt = array(
-            'uid'=>$username,
-            'password'=>$password
-        );
         //平台注册账号
-        $user = self::baseRegisterUser($udt);
+        $user = self::baseRegisterUser([
+            'uid' => $username,
+            'password' => $password
+        ]);
+
+        user_log($user, $this->procedure, 'register', '【注册】通过“手机号码一键登录”注册，手机号码{%s}, 密码[%s]', $mobile, $user->password);
 
         try {
             send_sms($mobile, 0, 'mobile_register', ['#username#' => $username, '#password#' => $password]);

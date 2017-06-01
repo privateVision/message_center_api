@@ -88,6 +88,7 @@ Route::group(['prefix' => 'api'], function () {
 
     Route::any('pay/googleplay/request', 'Api\\Pay\\GooglePlayController@RequestAction');                   // GooglePlay平台支付
     Route::any('pay/baidu/request', 'Api\\Pay\\BaiduController@RequestAction');                             // 百度平台支付
+    Route::any('pay/baidu/accout', 'Api\\Pay\\BaiduController@getBaiduAccout');                             // 百度平台获取用户uid
     Route::any('pay/yingyongbao/request', 'Api\\Pay\\YingYongBaoController@RequestAction');                 // 应用宝平台支付
     Route::any('pay/yingyongbao/check', 'Api\\Pay\\YingYongBaoController@checkPayToken');                   // 应用宝检查token是否有效
     Route::any('pay/yingyongbao/balance', 'Api\\Pay\\YingYongBaoController@getBalanceM');                   // 应用宝查询余额

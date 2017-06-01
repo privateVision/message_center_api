@@ -2,8 +2,7 @@
 namespace App\Http\Controllers\Api\Account;
 
 use App\Exceptions\ApiException;
-use Illuminate\Http\Request;
-use App\Parameter;
+use App\Jobs\AdtRequest;
 use App\Session;
 use App\Model\Ucuser;
 use App\Model\UcuserSub;
@@ -16,12 +15,23 @@ use App\Model\LoginLogUUID;
 trait RegisterAction {
     
     public function RegisterAction(){
-
         $pid = $this->procedure->pid;
         $rid = $this->parameter->tough('_rid');
         
         $user = $this->getRegisterUser();
-        if(!$user) throw new ApiException(ApiException::OauthNotRegister, trans('messages.3th_not_register'));
+
+        // 广告统计，加入另一个队列由其它项目处理
+        $imei = $this->parameter->get('_imei');
+        if($imei) {
+            dispatch((new AdtRequest([
+                'imei' => $imei,
+                'gameid' => $pid,
+                'rid'=>$rid,
+                'ucid' => $user->uid
+            ]))->onQueue('adtinit'));
+        }
+
+        //if(!$user) throw new ApiException(ApiException::OauthNotRegister, trans('messages.3th_not_register'));
         if($user->is_freeze) {
             throw new ApiException(ApiException::AccountFreeze, trans('messages.freeze'));
         }
