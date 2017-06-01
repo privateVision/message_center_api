@@ -25,7 +25,6 @@ return [
         'receiver' => '10690735126170',
         'apikey' => '560ff300cabf7b7df7e3c02f892bfd43',
         'sender' => 'http://yunpian.com/v1/sms/send.json',
-        'hour_limit' => 3, // 每小时短信发送次数限制
 
         // 注，验证码类短信必需包含“#code#”
         'template' => [
@@ -137,10 +136,6 @@ return [
             'baseUrl'=>'http://sdk.9game.cn',
             'port'=>'80',
             'prefix'=>'ng/cp/'
-        ],
-        'ios' => [
-            'verify_receipt' => 'https://buy.itunes.apple.com/verifyReceipt',
-            'verify_receipt_sandbox' => 'https://sandbox.itunes.apple.com/verifyReceipt',
-        ],
+        ]
     ],
 ];

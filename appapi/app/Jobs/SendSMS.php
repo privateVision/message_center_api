@@ -134,10 +134,11 @@ class SendSMS extends Job
                 Redis::SET(sprintf('sms_%s_%s', $this->mobile, $this->code), 1, 'EX', 900);
             }
         } elseif(@$res['code'] != 8 && @$res['code'] != 17 && @$res['code'] != 22) {
-            // 8:  同一个手机号 13065549260 30秒内重复提交相同的内容
-            // 17: 24小时内同一手机号发送次数不能超过5次（相同内容）
-            // 22: 验证码类短信1小时内同一手机号发送次数不能超过3次
+            // 8:  同一个手机号30秒内重复提交相同的内容
+            // 17: 规则3：同一个手机号验证码类内容，24小时内最多能获取到5条
+            // 22: 规则2：同一个手机号验证码类内容，每小时最多能获取3条
             log_error('sendsms', ['req' => $data, 'res' => $restext]);
+        } else {
             return $this->release(5);
         }
     }
