@@ -12,7 +12,7 @@ use App\Model\LoginLog;
 use App\Model\UcuserInfo;
 use App\Model\Retailers;
 use App\Model\LoginLogUUID;
-use App\Model\UcuserSubIndex;
+use App\Model\UcuserSubTotal;
 
 trait LoginAction {
 
@@ -68,19 +68,27 @@ trait LoginAction {
 
             // 用户没有可用的小号，创建
             if(!$user_sub) {
-                $user_sub_index = new UcuserSubIndex;
-                $user_sub_index->pid = $pid;
-                $user_sub_index->ucid = $user->ucid;
-                $user_sub_index->save();
+                $user_sub_total_id = joinkey($pid, $user->ucid);
+                $user_sub_total = UcuserSubTotal::find($user_sub_total_id);
+                if(!$user_sub_total) {
+                    $user_sub_total = new UcuserSubIndex;
+                    $user_sub_total->id = $user_sub_total_id;
+                    $user_sub_total->pid = $pid;
+                    $user_sub_total->ucid = $user->ucid;
+                    $user_sub_total->total = 1;
+                    $user_sub_total->save();
+                } else {
+                    $user_sub_total->increment('total', 1);
+                }
 
                 $user_sub = UcuserSub::tableSlice($user->ucid);
-                $user_sub->id = $user_sub_index->id;
+                $user_sub->id = $user->ucid . sprintf('%05d01', $pid);
                 $user_sub->ucid = $user->ucid;
                 $user_sub->pid = $pid;
                 $user_sub->rid = $rid;
                 $user_sub->old_rid = $rid;
-                $user_sub->cp_uid = $user_sub_index->id;
-                $user_sub->name = '小号1';
+                $user_sub->cp_uid = $user_sub_total->total == 1 ? $user->ucid : ($user->ucid . sprintf('%05d%02d', $pid, $user_sub_total->total));
+                $user_sub->name = '小号' . $user_sub_total->total;
                 $user_sub->priority = time();
                 $user_sub->last_login_at = datetime();
             }

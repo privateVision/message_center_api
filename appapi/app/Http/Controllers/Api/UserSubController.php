@@ -2,14 +2,11 @@
 namespace App\Http\Controllers\Api;
 
 use App\Exceptions\ApiException;
-use Illuminate\Http\Request;
-use App\Parameter;
 use App\Redis;
-use App\Model\ProceduresExtend;
 use App\Model\Procedures;
-use App\Model\Ucuser;
 use App\Model\UcuserSub;
 use App\Model\ZyGame;
+use App\Model\UcuserSubTotal;
 
 class UserSubController extends AuthController
 {
@@ -92,25 +89,41 @@ class UserSubController extends AuthController
     public function NewAction() {
         // 自旋锁
         return Redis::spin_lock(sprintf('user_sub_new_lock_%s', $this->user->ucid), function() {
-            $pid = $this->parameter->tough('_appid');
+
+            $pid = $this->procedure->pid;
             $rid = $this->parameter->tough('_rid');
 
             $allow_num = $this->procedure_extend->allow_num;
-
+/*
             $redisfield = $this->user->ucid .'_'. $pid;
             $user_sub_num = Redis::hget('user_sub_num', $redisfield);
             if(!$user_sub_num) {
                 $reset = true;
                 $user_sub_num = UcuserSub::tableSlice($this->user->ucid)->where('ucid', $this->user->ucid)->where('pid', $pid)->count();
             }
+*/
+            // XXX 理论上不存在user_sub_total找不到记录的情况
+            // 因为中途上线，可能会造成问题，所以加了这个判断
+            $user_sub_total_id = joinkey($pid, $this->user->ucid);
+            $user_sub_total = UcuserSubTotal::find($user_sub_total_id);
+            if(!$user_sub_total) {
+                $user_sub_total = new UcuserSubIndex;
+                $user_sub_total->id = $user_sub_total_id;
+                $user_sub_total->pid = $pid;
+                $user_sub_total->ucid = $this->user->ucid;
+                $user_sub_total->total = 1;
+                $user_sub_total->save();
+            } else {
+                $user_sub_total->increment('total', 1);
+            }
 
-            if($allow_num <= $user_sub_num) {
+            if($allow_num <= $user_sub_total->total) {
                 throw new ApiException(ApiException::Remind, trans('messages.usersub_much'));
             }
 
-            $user_sub_num++;
+//            $user_sub_num++;
 
-            $cp_uid = $this->user->ucid . sprintf('%05d%02d', $pid, $user_sub_num);
+            $cp_uid = $this->user->ucid . sprintf('%05d%02d', $pid, $user_sub_total->total);
             
             $user_sub = UcuserSub::tableSlice($this->user->ucid);
             $user_sub->id = $cp_uid;
@@ -119,17 +132,17 @@ class UserSubController extends AuthController
             $user_sub->rid = $rid;
             $user_sub->old_rid = $rid;
             $user_sub->cp_uid = $cp_uid;
-            $user_sub->name = "小号" . ($user_sub_num);
+            $user_sub->name = "小号" . ($user_sub_total->total);
             $user_sub->priority = 0;
             $user_sub->last_login_at = null;
             $user_sub->save();
-
+/*
             if(isset($reset)) {
                 Redis::hset('user_sub_num', $redisfield, $user_sub_num);
             } else {
                 Redis::hincrby('user_sub_num', $redisfield, 1);
             }
-
+*/
             return [
                 'id' => $user_sub->id,
                 'openid' => $user_sub->cp_uid,
