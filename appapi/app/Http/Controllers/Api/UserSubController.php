@@ -107,7 +107,7 @@ class UserSubController extends AuthController
             $user_sub_total_id = joinkey($pid, $this->user->ucid);
             $user_sub_total = UcuserSubTotal::find($user_sub_total_id);
             if(!$user_sub_total) {
-                $user_sub_total = new UcuserSubIndex;
+                $user_sub_total = new UcuserSubTotal();
                 $user_sub_total->id = $user_sub_total_id;
                 $user_sub_total->pid = $pid;
                 $user_sub_total->ucid = $this->user->ucid;
