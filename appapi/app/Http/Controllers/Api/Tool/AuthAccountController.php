@@ -153,6 +153,8 @@ class AuthAccountController extends Controller
 
                 if(!Ucuser::where('ucid', $otherUcid)->first())throw new ApiException(ApiException::Remind, trans('messages.buy_user_err'));
 
+
+
                 $otherUserSub = UcuserSub::tableSlice($otherUcid);
                 $otherUserSub->id = $userSub->id;
                 $otherUserSub->ucid = $otherUcid;
@@ -176,11 +178,7 @@ class AuthAccountController extends Controller
                     $ucuserRole->save();
                 }
 
-
-
                 $otherUserSub->save();
-
-
 
                 $ucuserSubService->getConnection()->commit();
                 break;
