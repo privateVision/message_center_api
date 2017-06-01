@@ -154,7 +154,7 @@ class  AppleController extends Controller{
         $appid  = $this->request->input("_appid");
 
         // 是否强制实名制
-        if(($this->procedure_extend->enable & 0x0000000C) == 0x0000000C) {
+        if(($this->procedure_extend->enable & (3 << 2)) == (3 << 2)) {
             $user_info = UcuserInfo::from_cache($this->user->ucid);
             if(!$user_info || !$user_info->card_no) {
                 throw new ApiException(ApiException::NotRealName, trans('messages.check_in_before_pay'));

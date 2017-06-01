@@ -1,11 +1,8 @@
 <?php
 namespace App\Http\Controllers\Api\Account;
 
-use Illuminate\Http\Request;
 use App\Http\Controllers\Api\Controller as BaseController;
-
 use App\Model\Ucuser;
-use App\Parameter;
 
 abstract class Controller extends BaseController {
 
@@ -22,8 +19,8 @@ abstract class Controller extends BaseController {
     protected function baseRegisterUser($data) {
         $user = new Ucuser;
         $user->uid = $data['uid'];
-        $user->email = $data['email'] ?: $data['uid'].'@anfan.com';
-        $user->nickname = $data['nickname'] ?: '暂无昵称';
+        $user->email = @$data['email'] ?: $data['uid'].'@anfan.com';
+        $user->nickname = @$data['nickname'] ?: '暂无昵称';
 
         if(isset($data['mobile'])) {
             $user->mobile = $data['mobile'];

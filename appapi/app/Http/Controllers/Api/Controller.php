@@ -123,7 +123,7 @@ class Controller extends \App\Controller
             $this->procedure_extend->service_share = env('service_share');
             $this->procedure_extend->heartbeat_data_refresh = 60000;
             $this->procedure_extend->heartbeat_interval = 2000;
-            $this->procedure_extend->enable = 0x00000010 | 0x00000002; // 绑定手机（不强制）、实名（不强制）
+            $this->procedure_extend->enable = (1 << 4) | (1 << 2) | 1; // 绑定手机（不强制）、支付实名（不强制） 、登陆实名（不强制）
             $this->procedure_extend->bind_phone_interval = 259200000;
             $this->procedure_extend->logout_img = env('logout_img');
             $this->procedure_extend->logout_redirect = env('logout_redirect');

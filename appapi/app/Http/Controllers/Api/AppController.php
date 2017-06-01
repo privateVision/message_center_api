@@ -108,6 +108,11 @@ class AppController extends Controller
         $app_version = $this->parameter->tough('app_version');
         $os = $this->parameter->get('_os');
 
+        // 广告统计，加入另一个队列由其它项目处理
+        if($imei) {
+            dispatch((new AdtRequest(['imei' => $imei, 'gameid' => $pid, 'rid' => $rid]))->onQueue('adtinit'));
+        }
+
         if($apps) {
             $_apps = json_decode($apps, true);
             if($_apps) {
@@ -165,9 +170,6 @@ class AppController extends Controller
         	}
         }
 
-        // 广告统计，加入另一个队列由其它项目处理
-        dispatch((new AdtRequest(['imei' => $imei, 'gameid' => $pid,'rid' => $rid]))->onQueue('adtinit'));
-
         return [
             'allow_sub_num' => $this->procedure_extend->allow_num,
             'af_login' => ($this->procedure_extend->enable & (1 << 6)) != 0,
@@ -182,10 +184,12 @@ class AppController extends Controller
                     'url' => $oauth_weibo,
                 ]
             ],
+
             'protocol' => [
                 'title' => env('protocol_title'),
                 'url' => env('protocol_url'),
             ],
+
             'update' => $update,
             'service' => [
                 'qq' => $this->procedure_extend->service_qq,
@@ -196,20 +200,18 @@ class AppController extends Controller
                 'af_download' => env('af_download'),
             ],
             'bind_phone' => [
-                'need' => ($this->procedure_extend->enable & (1 << 16)) == (1 << 16),
-                'enforce' => ($this->procedure_extend->enable & 0x00000030) == 0x00000030,
-                'interval' => $this->procedure_extend->bind_phone_interval,
+                'need' =>       ($this->procedure_extend->enable & (1 << 4)) == (1 << 4),
+                'enforce' =>    ($this->procedure_extend->enable & (3 << 4)) == (3 << 4),
+                'interval' =>   $this->procedure_extend->bind_phone_interval,
             ],
             'real_name' => [
-                'need' => ($this->procedure_extend->enable & 0x00000001) == 0x00000001,
-                'enforce' => ($this->procedure_extend->enable & 0x00000003) == 0x00000003,
-                'pay_need' => ($this->procedure_extend->enable & 0x00000004) == 0x00000004,
-                'pay_enforce' => ($this->procedure_extend->enable & 0x0000000C) == 0x0000000C,
+                'need' =>       ($this->procedure_extend->enable & (1 << 0)) == (1 << 0),
+                'enforce' =>    ($this->procedure_extend->enable & (3 << 0)) == (3 << 0),
+                'pay_need' =>   ($this->procedure_extend->enable & (1 << 2)) == (1 << 2),
+                'pay_enforce' =>($this->procedure_extend->enable & (3 << 2)) == (3 << 2),
             ],
 
             'ios_app_config' => $ios_app_config,
-
-            ''
         ];
     }
 
