@@ -1,7 +1,7 @@
 <?php
 namespace  App\Model;
 
-class UcuserSubIndex extends Model{
+class UcuserSubTotal extends Model{
 
     protected $table = 'ucuser_sub_total';
     protected $primaryKey = 'id';
