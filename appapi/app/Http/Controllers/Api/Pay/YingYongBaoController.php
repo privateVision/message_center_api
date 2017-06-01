@@ -27,7 +27,6 @@ class YingYongBaoController extends Controller
      * @param OrderExtend $order_extend
      * @param $real_fee
      * @return array
-     * @internal param $accountId
      */
     public function getData($config, Orders $order, OrderExtend $order_extend, $real_fee)
     {
@@ -103,7 +102,7 @@ class YingYongBaoController extends Controller
 
         $params = self::getParams();
 
-        $res = self::api_pay('/mpay/get_balance_m', $accout_type, $params, 'post', 'http');
+        $res = self::api_pay('/mpay/get_balance_m', $accout_type, $params);
 
         if($res['ret'] === 0) {
             return $res;
@@ -126,7 +125,7 @@ class YingYongBaoController extends Controller
         $params['amt'] = $real_fee;
         $params['billno'] = $order_id;
 
-        $res = self::api_pay('/mpay/pay_m', $accout_type, $params, 'post', 'http');
+        $res = self::api_pay('/mpay/pay_m', $accout_type, $params);
 
         if(isset($res['ret']) && $res['ret'] === 0){
             return true;
