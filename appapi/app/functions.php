@@ -291,16 +291,10 @@ function order_success($order_id) {
 function send_sms($mobile, $pid, $template_id, $repalce, $code = '') {
     $smsconfig = config('common.smsconfig');
 
-    if(!env('APP_DEBUG') && Redis::exists(sprintf('sms_%s_%s_60s', $template_id, $mobile))) {
-        throw new \App\Exceptions\Exception('短信发送过于频繁');
-    }
-
-    if(!env('APP_DEBUG') && Redis::get(sprintf('sms_%s_hourlimit', $mobile)) >= 3 ) {
-        throw new \App\Exceptions\Exception('短信发送次数超过限制，请稍候再试');
-    }
+    $code = trim($code);
 
     if(!isset($smsconfig['template'][$template_id])) {
-        throw new \App\Exceptions\Exception('短信模板不存在');
+        throw new \App\Exceptions\Exception("短信模板不存在");
     }
 
     if(is_array($repalce) && count($repalce)) {
@@ -309,7 +303,10 @@ function send_sms($mobile, $pid, $template_id, $repalce, $code = '') {
         $content = $smsconfig['template'][$template_id];
     }
 
-    Queue::push(new \App\Jobs\SendSMS($smsconfig, $mobile, $content, $code));
+    $sendsms_jobs = new \App\Jobs\SendSMS($smsconfig, $template_id, $mobile, $content, $code);
+    $sendsms_jobs->verify($mobile, $template_id, $content, $code != '');
+
+    Queue::push($sendsms_jobs);
 
     return $content;
 }
