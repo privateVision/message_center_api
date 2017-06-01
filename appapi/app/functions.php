@@ -466,34 +466,60 @@ function http_curl($url, $param = array(), $is_post = true, $code = 'cd', $heade
         curl_setopt($oCurl, CURLOPT_COOKIE, makeCookieString($cookie));
     }
 
-    $resp = curl_exec($oCurl);
-    $curl_error = curl_error($oCurl);
-    $curl_errno = curl_errno($oCurl);
-    $curl_code = curl_getinfo($oCurl, CURLINFO_HTTP_CODE);
+    $Resp = curl_exec($oCurl);//运行curl
+    $Err = curl_error($oCurl);
 
-    curl_close($oCurl);
-    if (empty($curl_error)) {
-        $res = json_decode($resp, true);
-        if (is_array($res)) {
-            $res[$code] = isset($res[$code])?$res[$code]:1;
-            $response = $res;
-        }
-        else if ($curl_code == 200) {
-            $response = array($code=>1, 'rspmsg'=>'http 200', 'data'=>$resp);
-        }
-        else {
-            $response = array($code=>'0', 'rspmsg'=>'http response error curl_code1:'.$curl_code.' curl_errno1:'.$curl_errno.' curl_error1:'.$curl_error.' resp:'.$resp);
-        }
+    if (false === $Resp || !empty($Err)){
+        $Errno = curl_errno($oCurl);
+        $Info = curl_getinfo($oCurl);
+        curl_close($oCurl);
+
+        return array(
+             $code => 0,
+            'rspmsg' => $Err,
+            'errno' => $Errno,
+            'info' => $Info,
+        );
     }
-    else {
-        if ($curl_code == 200) {
-            $response = array($code=>1, 'rspmsg'=>'http 200', 'data'=>$resp);
-        } else {
-            $response = array($code=>'0', 'rspmsg'=>'http response error curl_code:'.$curl_code.' curl_errno:'.$curl_errno.' curl_error:'.$curl_error.' resp:'.$resp);
-        }
+    curl_close($oCurl);//关闭curl
+
+    $res = json_decode($Resp, true);
+    if (is_array($res)) {
+        $res[$code] = 1;
+    } else {
+        $res = array($code=>1, 'rspmsg'=>'http 200 data error', 'data'=>$Resp);
     }
 
-    return $response;
+    return $res;
+
+//    $resp = curl_exec($oCurl);
+//    $curl_error = curl_error($oCurl);
+//    $curl_errno = curl_errno($oCurl);
+//    $curl_code = curl_getinfo($oCurl, CURLINFO_HTTP_CODE);
+//
+//    curl_close($oCurl);
+//    if (empty($curl_error)) {
+//        $res = json_decode($resp, true);
+//        if (is_array($res)) {
+//            $res[$code] = isset($res[$code])?$res[$code]:1;
+//            $response = $res;
+//        }
+//        else if ($curl_code == 200) {
+//            $response = array($code=>1, 'rspmsg'=>'http 200', 'data'=>$resp);
+//        }
+//        else {
+//            $response = array($code=>'0', 'rspmsg'=>'http response error curl_code1:'.$curl_code.' curl_errno1:'.$curl_errno.' curl_error1:'.$curl_error.' resp:'.$resp);
+//        }
+//    }
+//    else {
+//        if ($curl_code == 200) {
+//            $response = array($code=>1, 'rspmsg'=>'http 200', 'data'=>$resp);
+//        } else {
+//            $response = array($code=>'0', 'rspmsg'=>'http response error curl_code:'.$curl_code.' curl_errno:'.$curl_errno.' curl_error:'.$curl_error.' resp:'.$resp);
+//        }
+//    }
+//
+//    return $response;
 }
 
 //拼接字符串
