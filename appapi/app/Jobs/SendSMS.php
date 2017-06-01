@@ -39,8 +39,8 @@ class SendSMS extends Job
                     throw new Exception(trans('messages.sms_1h_limit'));
                 }
 
-                //规则3：同一个手机号验证码类内容，24小时内最多能获取到10条
-                if (Redis::GET(sprintf('sms_%s_24ht', $mobile)) >= 10) {
+                //规则3：同一个手机号验证码类内容，24小时内最多能获取到5条
+                if (Redis::GET(sprintf('sms_%s_24ht', $mobile)) >= 5) {
                     throw new Exception(trans('messages.sms_24h_limit'));
                 }
             }
