@@ -83,37 +83,20 @@ class UserController extends Controller {
     public function getRegisterUser(){
         $username = $this->parameter->tough('username', 'username');
         $password = $this->parameter->tough('password', 'password');
-        $imei     = $this->parameter->get("_imei", '');
-        $device_id = $this->parameter->get('_device_id', '');
         
         $isRegister  = Ucuser::where("mobile", $username)->orWhere('uid', $username)->count();
         
         if($isRegister) {
             throw new  ApiException(ApiException::Remind, trans('messages.already_register'));
         }
-        
-//        $user = new Ucuser;
-//        $user->uid = $username;
-//        $user->email = $username . "@anfan.com";
-//        $user->nickname = '暂无昵称';
-//        $user->setPassword($password);
-//        $user->regtype = static::Type;
-//        $user->regip = getClientIp();
-//        $user->rid = $this->parameter->tough('_rid');
-//        $user->pid = $this->procedure->pid;
-//        $user->regdate = time();
-//        $user->save();
-        $udt = array(
-            'uid'=>$username,
-            'password'=>$password
-        );
-        //平台注册账号
-        $user = self::baseRegisterUser($udt);
 
-        //登录加入通知队列
-        dispatch((new AdtRequest(["imei"=>$imei,"gameid"=>$this->procedure->pid,"rid"=>$this->parameter->tough('_rid'),"ucid"=>$user->uid]))->onQueue('adtinit'));
+        //平台注册账号
+        $user = self::baseRegisterUser([
+            'uid' => $username,
+            'password' => $password
+        ]);
         
-        //user_log($user, $this->procedure, 'register', '【注册】通过“用户名”注册，用户名(%s), 密码[%s]', $username, $user->password);
+        user_log($user, $this->procedure, 'register', '【注册】通过“用户名”注册，用户名(%s), 密码[%s]', $username, $user->password);
 
         return $user;
     }

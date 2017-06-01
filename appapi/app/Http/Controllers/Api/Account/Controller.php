@@ -20,24 +20,26 @@ abstract class Controller extends BaseController {
      * @param $data['device_uuid'] 可选
      */
     protected function baseRegisterUser($data) {
-
         $user = new Ucuser;
         $user->uid = $data['uid'];
-        $user->email = (isset($data['email']) && !empty($data['email'])) ? $data['email'] : $data['uid'].'@anfan.com';
-        $user->nickname = (isset($data['nickname']) && !empty($data['nickname'])) ? $data['nickname'] : '暂无昵称';
+        $user->email = $data['email'] ?: $data['uid'].'@anfan.com';
+        $user->nickname = $data['nickname'] ?: '暂无昵称';
 
-        if(isset($data['mobile']) && !empty($data['mobile'])) {
+        if(isset($data['mobile'])) {
             $user->mobile = $data['mobile'];
         }
-        if(isset($data['salt']) && !empty($data['salt'])) {
+
+        if(!empty(@$data['salt']) && !empty(@$data['password'])) {
             $user->salt = $data['salt'];
             $user->password = $data['password'];
         } else {
             $user->setPassword($data['password']);
         }
-        if(isset($data['device_uuid']) && !empty($data['device_uuid'])) {
+
+        if(!empty(@$data['device_uuid'])) {
             $user->device_uuid = $data['device_uuid'];
         }
+
         $user->regtype = static::Type;
         $user->regip = getClientIp();
         $user->rid = $this->parameter->tough('_rid');
@@ -45,10 +47,7 @@ abstract class Controller extends BaseController {
         $user->regdate = time();
         $user->imei = $this->parameter->get('_imei', '');
         $user->device_id= $this->parameter->get('_device_id', '');
-
         $user->save();
-
-        user_log($user, $user->procedure, 'register', '【注册】通过“方式'.$user->regtype.'”注册，用户名(%s)，密码[%s]', $data['uid'], $user->password);
 
         return $user;
     }

@@ -2,7 +2,6 @@
 namespace App\Http\Controllers\Api;
 
 use App\Exceptions\ApiException;
-use App\Parameter;
 use App\Model\Log\DeviceApps;
 use App\Model\Log\DeviceInfo;
 use App\Model\IosApplicationConfig;
@@ -166,7 +165,8 @@ class AppController extends Controller
         	}
         }
 
-        dispatch((new AdtRequest(["imei"=>$imei,"gameid"=>$pid,"rid"=>$rid]))->onQueue('adtinit'));
+        // 广告统计，加入另一个队列由其它项目处理
+        dispatch((new AdtRequest(['imei' => $imei, 'gameid' => $pid,'rid' => $rid]))->onQueue('adtinit'));
 
         return [
             'allow_sub_num' => $this->procedure_extend->allow_num,
