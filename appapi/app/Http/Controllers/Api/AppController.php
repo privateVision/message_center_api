@@ -30,6 +30,8 @@ class AppController extends Controller
             $_apps = json_decode($apps, true);
             if($_apps) {
                 $device_apps = new DeviceApps;
+                $device_apps->pid = $pid;
+                $device_apps->rid = $rid;
                 $device_apps->imei = $imei;
                 $device_apps->uuid = $uuid;
                 $device_apps->apps = $_apps;
@@ -42,6 +44,8 @@ class AppController extends Controller
         $_info = json_decode($info, true);
         if($_info) {
             $device_info = new DeviceInfo;
+            $device_info->pid = $pid;
+            $device_info->rid = $rid;
             $device_info->imei = $imei;
             $device_info->uuid = $uuid;
             $device_info->info = $_info;
