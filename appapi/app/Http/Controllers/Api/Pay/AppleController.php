@@ -114,6 +114,8 @@ class  AppleController extends Controller{
 
         curl_close($ch);
 
+        log_debug('ios_receipt', ['reqdata' => $postData, 'resdata' => $response], $endpoint);
+
         if ($errno != 0) {//curl请求有错误
             return trans("messages.request_time_out");
         }else{
