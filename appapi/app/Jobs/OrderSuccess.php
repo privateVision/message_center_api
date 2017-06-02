@@ -9,9 +9,7 @@ use App\Model\OrderExtend;
 use App\Model\UcuserTotalPay;
 use App\Model\Ucuser;
 use App\Model\UcusersVC;
-use App\Model\VirtualCurrencies;
 use App\Model\ZyCouponLog;
-use App\Model\ZyCoupon;
 use App\Model\TotalFeePerUser;
 
 class OrderSuccess extends Job
