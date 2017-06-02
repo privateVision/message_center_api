@@ -268,6 +268,8 @@ class OrderController extends Controller {
             'pay_methods' => array_values($pay_methods),
             'package' => $this->procedure_extend->package_name,
             'product_name' => isset($product) ? $product->third_product_id : '',
+            'order_name' => $subject,
+            'order_desc' => $body,
         ];
     }
 
