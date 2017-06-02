@@ -103,12 +103,21 @@ trait RegisterAction {
         $user->updateCache();
         
         // login_log
-        $t = time() - date('Z');
+        $t = time();
         
         $login_log = new LoginLog;
         $login_log->ucid = $user->ucid;
         $login_log->pid = $pid;
-        $login_log->loginDate = intval(($t - date('Z'))/ 86400);
+        /**
+         * XXX 兼容旧的问题，后台显示是强制
+         * SELECT id,loginDate,loginTime,FROM_UNIXTIME(
+         *   CASE
+         *     WHEN loginTime < 57600 THEN (loginDate+1)*86400+loginTime
+         *     ELSE loginDate*86400+loginTime
+         *   END + 8*3600
+         * ) AS stamp FROM login_log_161013
+         */
+        $login_log->loginDate = intval(($t + 28800) / 86400) - 1;
         $login_log->loginTime = $t % 86400;
         $login_log->loginIP = ip2long(getClientIp());
         $login_log->save();
