@@ -29,7 +29,7 @@ class Controller extends \App\Controller
             throw new ApiException(ApiException::Error, trans('messages.invalid_appid', ['appid' => $_appid])); // LANG:appid_missing
         }
 
-        $appkey1 = $this->procedure->psingKey;
+        $psingKey = $this->procedure->psingKey;
         $appkey2 = $this->procedure->appkey();
 
         unset($data['sign']);
@@ -40,7 +40,7 @@ class Controller extends \App\Controller
             $str .= "{$k}={$v}&";
         }
 
-        if($_sign !== md5("{$str}sign_key={$appkey1}")/* && $_sign !== md5("{$str}sign_key={$appkey2}")*/) { // XXX 一些CP使用的是appkey2，当时为了兼容，现强制不兼容
+        if($_sign !== md5("{$str}sign_key={$psingKey}")/* && $_sign !== md5("{$str}sign_key={$appkey2}")*/) { // XXX 一些CP使用的是appkey2，当时为了兼容，现强制不兼容
             throw new ApiException(ApiException::Error, trans('messages.sign_error')); // LANG:sign_verify_error
         }
 

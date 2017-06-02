@@ -103,7 +103,7 @@ class UserSubController extends AuthController
             }
 */
             // XXX 理论上不存在user_sub_total找不到记录的情况
-            // 因为中途上线，可能会造成问题，所以加了这个判断
+            // 因为玩家如果已在游戏中，此时上线该代码，可能会造成问题，所以加了这个判断
             $user_sub_total_id = joinkey($pid, $this->user->ucid);
             $user_sub_total = UcuserSubTotal::find($user_sub_total_id);
             if(!$user_sub_total) {
