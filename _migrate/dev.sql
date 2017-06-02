@@ -1,0 +1,2 @@
+/**20170602修改表字段类型【未上线】**/
+ALTER TABLE `procedures_extend` CHANGE `third_appsecret` `third_appsecret` VARCHAR(1024) CHARSET utf8 COLLATE utf8_general_ci NULL, CHANGE `third_payprikey` `third_payprikey` VARCHAR(1024) CHARSET utf8 COLLATE utf8_general_ci NULL;
