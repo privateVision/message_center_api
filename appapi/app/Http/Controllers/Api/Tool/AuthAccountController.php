@@ -11,6 +11,7 @@ use App\Model\TotalFeePerUser;
 use App\Model\UcuserSub;
 use App\Model\UcuserRole;
 use App\Model\UcuserSubService;
+use App\Model\UcuserSubTotal;
 
 class AuthAccountController extends Controller
 {
@@ -153,6 +154,10 @@ class AuthAccountController extends Controller
 
                 if(!Ucuser::where('ucid', $otherUcid)->first())throw new ApiException(ApiException::Remind, trans('messages.buy_user_err'));
 
+                $user_sub_total_id = joinkey($userSub->pid, $otherUcid);
+                $user_sub_total = UcuserSubTotal::find($user_sub_total_id);
+                $user_sub_total->increment('total', 1);
+
                 $otherUserSub = UcuserSub::tableSlice($otherUcid);
                 $otherUserSub->id = $userSub->id;
                 $otherUserSub->ucid = $otherUcid;
@@ -160,7 +165,7 @@ class AuthAccountController extends Controller
                 $otherUserSub->rid = $userSub->rid;
                 $otherUserSub->old_rid = $userSub->old_rid;
                 $otherUserSub->cp_uid = $userSub->cp_uid;
-                $otherUserSub->name = $userSub->name;
+                $otherUserSub->name = '小号'.$user_sub_total->total;
                 $otherUserSub->priority = $userSub->priority;
                 $otherUserSub->last_login_at = $userSub->last_login_at;
                 $otherUserSub->is_freeze = 0;/*print_r($otherUserSub);die;*/
@@ -176,11 +181,7 @@ class AuthAccountController extends Controller
                     $ucuserRole->save();
                 }
 
-
-
                 $otherUserSub->save();
-
-
 
                 $ucuserSubService->getConnection()->commit();
                 break;
