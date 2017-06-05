@@ -44,6 +44,10 @@ class VivoController extends Controller
      */
     protected function verifySign($data, $order)
     {
+        $proceduresExtend = ProceduresExtend::where('pid', $order->vid)->first();
+
+        if(!$proceduresExtend)return false;
+
         $params = [
             'respCode' => $data['respCode'],
             'respMsg' => $data['respMsg'],
@@ -61,7 +65,11 @@ class VivoController extends Controller
 
         if($data['signMethod']!='MD5')return false;
 
-        return $data['signature']==self::sign($params);
+        ksort($params);
+
+        $sign = md5(http_build_query($params).'&'.md5($proceduresExtend->third_appkey));
+
+        return $data['signature']==$sign;
     }
 
     /**

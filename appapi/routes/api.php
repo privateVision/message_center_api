@@ -16,6 +16,7 @@ Route::group(['prefix' => 'pay_callback'], function () {
     Route::any('mycard', 'PayCallback\\MycardController@CallbackAction');                                   // mycard支付回调
     Route::any('uc', 'PayCallback\\UcController@CallbackAction');                                           // Uc支付回调
     Route::any('vivo', 'PayCallback\\VivoController@CallbackAction');                                       // vivo支付回调
+    Route::any('xiaomi', 'PayCallback\\MiController@CallbackAction');                                       // 小米支付回调
 });
     
 // 各种回调
@@ -95,6 +96,7 @@ Route::group(['prefix' => 'api'], function () {
     Route::any('pay/yingyongbao/request', 'Api\\Pay\\YingYongBaoController@RequestAction');                 // 应用宝平台支付
     Route::any('pay/yingyongbao/check', 'Api\\Pay\\YingYongBaoController@checkPayToken');                   // 应用宝检查token是否有效
     Route::any('pay/yingyongbao/balance', 'Api\\Pay\\YingYongBaoController@getBalanceM');                   // 应用宝查询余额
+    Route::any('pay/xiaomi/request', 'Api\\Pay\\MiController@RequestAction');                               // 小米平台支付
 
     Route::any('pay/ios/request','Api\\Pay\\IOSController@RequestAction');                                  // 验证苹果支付的信息
 
