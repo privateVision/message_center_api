@@ -27,6 +27,11 @@ function encrypt3des($data, $key = null) {
     return \App\Crypt3DES::encrypt($data, $key);
 }
 
+/**
+ * 如果客户端以HTTPS请求接口，则返回的一些涉及到URL的参数也改为HTTPS
+ * @param $url
+ * @return string
+ */
 function httpsurl($url) {
     if(app('request')->getScheme() == 'https' && substr($url, 0, 5) == 'http:') {
         return 'https:' . substr($url, 5);
