@@ -4,17 +4,16 @@ namespace App\Http\Controllers\PayCallback;
 
 use Illuminate\Http\Request;
 
-class VivoController extends Controller
+class MiController extends Controller
 {
-
+    //
     /**
      * 获取回调的所有数据
      * @param  Request $request
-     * @return mixed
      */
     protected function getData(Request $request)
     {
-        return $_POST;
+        return $_GET;
     }
 
     /**
@@ -23,24 +22,24 @@ class VivoController extends Controller
      */
     protected function getOrderNo($data)
     {
-        return $data['cpOrderNumber'];
+        return $data['cpOrderId'];
     }
 
     /**
      * 获取第三方订单号（微信，支付宝等）
      * @param   mixed $data getData方法返回的数据
      * @param  \App\Model\Orders $order Orders
+     * @return mixed
      */
     protected function getTradeOrderNo($data, $order)
     {
-        return $data['orderNumber'];
+        return $data['orderId'];
     }
 
     /**
      * 验证签名
      * @param   mixed $data getData方法返回的数据
      * @param  \App\Model\Orders $order Orders
-     * @return bool
      */
     protected function verifySign($data, $order)
     {
@@ -49,27 +48,26 @@ class VivoController extends Controller
         if(!$proceduresExtend)return false;
 
         $params = [
-            'respCode' => $data['respCode'],
-            'respMsg' => $data['respMsg'],
-            'tradeType' => $data['tradeType'],
-            'tradeStatus' => $data['tradeStatus'],
-            'cpId' => $data['cpId'],
             'appId' => $data['appId'],
+            'cpOrderId' => $data['cpOrderId'],
+            'cpUserInfo' => $data['cpUserInfo'],
             'uid' => $data['uid'],
-            'cpOrderNumber' => $data['cpOrderNumber'],
-            'orderNumber' => $data['orderNumber'],
-            'orderAmount' => $data['orderAmount'],
-            'extInfo' => $data['extInfo'],
-            'payTime' => $data['payTime']
+            'orderId' => $data['orderId'],
+            'orderStatus' => $data['orderStatus'],
+            'payFee' => $data['payFee'],
+            'productCode' => $data['productCode'],
+            'productName' => $data['productName'],
+            'productCount' => $data['productCount'],
+            'payTime' => $data['payTime'],
+            'partnerGiftConsume' => $data['partnerGiftConsume'],
         ];
 
-        if($data['signMethod']!='MD5')return false;
+        if(isset($data['orderConsumeType'])&&$data['orderConsumeType']) $params['orderConsumeType'] = $data['orderConsumeType'];
 
-        ksort($params);
+        $sign = $this->sign($params, $proceduresExtend->third_appsecret);
 
-        $sign = md5(http_build_query($params).'&'.md5($proceduresExtend->third_appkey));
+        return $sign==$data['signature'];
 
-        return $data['signature']==$sign;
     }
 
     /**
@@ -79,7 +77,7 @@ class VivoController extends Controller
      */
     protected function handler($data, $order, $order_extend)
     {
-        return $data['respCode'] == 200;
+        return true;
     }
 
     /**
@@ -90,15 +88,40 @@ class VivoController extends Controller
      */
     protected function onComplete($data, $order, $is_success)
     {
-        return $is_success?'success':'fail';
+        return $is_success?['errcode'=>200]:['errcode'=>0];
     }
 
-    private function sign($params=[])
-    {
+    /**
+     * 计算hmac-sha1签名
+     * @param array $params
+     * @param type $secretKey
+     * @return type
+     */
+    private function sign(array $params, $secretKey){
+        $sortString = $this->buildSortString($params);
+        $signature = hash_hmac('sha1', $sortString, $secretKey,FALSE);
+
+        return $signature;
+    }
+
+    /**
+     * 构造排序字符串
+     * @param array $params
+     * @return string
+     */
+    private function buildSortString(array $params) {
+        if(empty($params)){
+            return '';
+        }
+
         ksort($params);
 
-        $sign = md5(http_build_query($params).'&'.md5($this->procedure_extend->third_appkey));
+        $fields = array();
 
-        return $sign;
+        foreach ($params as $key => $value) {
+            $fields[] = $key . '=' . $value;
+        }
+
+        return implode('&',$fields);
     }
 }
