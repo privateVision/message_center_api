@@ -59,7 +59,7 @@ class AppController extends Controller
         $update_apks = $this->procedure->update_apks()->orderBy('dt', 'desc')->first();
         if($update_apks && version_compare($update_apks->version, $app_version, '>')) {
             $update = array(
-                'down_url' => $update_apks->down_uri,
+                'down_url' => httpsurl($update_apks->down_uri),
                 'version' => $update_apks->version,
                 'force_update' => env('APP_DEBUG') ? false : $update_apks->force_update,
             );
@@ -91,27 +91,27 @@ class AppController extends Controller
             'allow_sub_num' => $this->procedure_extend->allow_num,
             'oauth_login' => [
                 'qq' => [
-                    'url' => $oauth_qq,
+                    'url' => httpsurl($oauth_qq),
                 ],
                 'weixin' => [
-                    'url' => $oauth_weixin,
+                    'url' => httpsurl($oauth_weixin),
                 ],
                 'weibo' => [
-                    'url' => $oauth_weibo,
+                    'url' => httpsurl($oauth_weibo),
                 ]
             ],
             'protocol' => [
                 'title' => env('protocol_title'),
-                'url' => env('protocol_url'),
+                'url' => httpsurl(env('protocol_url')),
             ],
             'update' => $update,
             'service' => [
                 'qq' => $this->procedure_extend->service_qq,
-                'page' => $this->procedure_extend->service_page,
+                'page' => httpsurl($this->procedure_extend->service_page),
                 'phone' => $this->procedure_extend->service_phone,
-                'share' => $this->procedure_extend->service_share,
+                'share' => httpsurl($this->procedure_extend->service_share),
                 'interval' => 86400000,//max(2000, $this->procedure_extend->heartbeat_interval),
-                'af_download' => env('af_download'),
+                'af_download' => httpsurl(env('af_download')),
             ],
             'bind_phone' => [
                 'need' => ($this->procedure_extend->enable & 0x00000010) == 0x00000010,
@@ -131,9 +131,9 @@ class AppController extends Controller
 
     public function LogoutAction() {
         return [
-            'img' => $this->procedure_extend->logout_img,
+            'img' => httpsurl($this->procedure_extend->logout_img),
             'type' => $this->procedure_extend->logout_type,
-            'redirect' => $this->procedure_extend->logout_redirect,
+            'redirect' => httpsurl($this->procedure_extend->logout_redirect),
             'inside' => $this->procedure_extend->logout_inside,
         ];
     }
@@ -166,7 +166,7 @@ class AppController extends Controller
             $updates['pkg'] = 'com.anfeng.pay';
             $updates['version'] = 403;
             $updates['use_version'] = 403; // 回退版本，默认与version一致
-            $updates['url'] = 'http://afsdkhot.qcwan.com/anfeng/down/com.anfeng.pay403.apk';
+            $updates['url'] = httpsurl('http://afsdkhot.qcwan.com/anfeng/down/com.anfeng.pay403.apk');
         } else {
             $manifest = [];
             $manifest['version'] = '1.0.0';
@@ -176,7 +176,7 @@ class AppController extends Controller
             $updates['pkg'] = 'com.anfeng.pay';
             $updates['version'] = 40;
             $updates['use_version'] = 40; // 回退版本，默认与version一致
-            $updates['url'] = 'http://afsdkup.qcwan.com/down/com.anfeng.pay.apk';
+            $updates['url'] = httpsurl('http://afsdkup.qcwan.com/down/com.anfeng.pay.apk');
         }
 
         return ['manifest'=>$manifest, 'updates'=>[$updates]];

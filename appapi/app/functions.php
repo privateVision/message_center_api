@@ -92,6 +92,19 @@ function parse_card_id($card_id) {
     return ['birthday' => $birthday, 'gender' => $gender, 'province' => $province];
 }
 
+/**
+ * 如果客户端以HTTPS请求接口，则返回的一些涉及到URL的参数也改为HTTPS
+ * @param $url
+ * @return string
+ */
+function httpsurl($url) {
+    if((@$_SERVER['HTTP_X_FORWARDED_PROTO'] == 'https' || app('request')->getScheme() == 'https') && substr($url, 0, 5) == 'http:') {
+        return 'https:' . substr($url, 5);
+    }
+
+    return $url;
+}
+
 function upload_to_cdn($filename, $filepath, $is_delete = true) {
     /*
     200 操作执行成功。

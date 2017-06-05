@@ -122,7 +122,7 @@ trait RegisterAction {
             'username' => $user->uid,
             'nickname' => $user->nickname,
             'mobile' => strval($user->mobile),
-            'avatar' => $user_info && $user_info->avatar ? (string)$user_info->avatar : env('default_avatar'),
+            'avatar' => $user_info && $user_info->avatar ? httpsurl((string)$user_info->avatar) : httpsurl(env('default_avatar')),
             'is_real' => $user_info && $user_info->isReal(),
             'is_adult' => $user_info && $user_info->isAdult(),
             'vip' => $user_info && $user_info->vip ? (int)$user_info->vip : 0,
