@@ -584,10 +584,14 @@ class UserController extends AuthController
             if($user->ucid != $this->user->ucid) {
                 throw new ApiException(ApiException::Remind, trans('messages.username_exists_onset'));
             }
-        } else {
-            $this->user->uid = $username;
-            $this->user->save();
         }
+
+        $old_username = $this->user->uid;
+
+        $this->user->uid = $username;
+        $this->user->save();
+
+        user_log($this->user, $this->procedure, 'reset_username', '【修改用户名】旧:%s，新:%s', $old_username, $username);
 
         return ['result' => true];
     }

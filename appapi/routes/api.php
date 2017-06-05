@@ -29,7 +29,6 @@ Route::group(['prefix' => 'api'], function () {
     Route::any('app/uuid', 'Api\\AppController@UuidAction');                                                // 获取一个UUID，用户无法获取设备UUID时
     Route::any('app/logout', 'Api\\AppController@LogoutAction');                                            // 退出客户端
     Route::any('app/hotupdate','Api\\AppController@HotupdateAction');                                       //获取热更新数据
-    
     Route::any('account/token/login', 'Api\\Account\\TokenController@LoginAction');                         // 自动登录
     Route::any('account/login', 'Api\\Account\\UserController@LoginAction');                                // 用户名或手机号码登陆
     Route::any('account/register', 'Api\\Account\\UserController@RegisterAction');                          // 用户名注册
