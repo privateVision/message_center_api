@@ -563,8 +563,12 @@ class UserController extends AuthController
                 throw new ApiException(ApiException::Remind, '设置失败，用户名已被占用');
             }
         } else {
+            $old_username = $this->user->uid;
+
             $this->user->uid = $username;
             $this->user->save();
+
+            user_log($this->user, $this->procedure, 'reset_username', '【重设用户名】旧:%s,新:%s', $old_username, $username);
         }
 
         return ['result' => true];
