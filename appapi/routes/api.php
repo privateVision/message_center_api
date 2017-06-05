@@ -31,7 +31,6 @@ Route::group(['prefix' => 'api'], function () {
     Route::any('app/uuid', 'Api\\AppController@UuidAction');                                                // 获取一个UUID，用户无法获取设备UUID时
     Route::any('app/logout', 'Api\\AppController@LogoutAction');                                            // 退出客户端
     Route::any('app/hotupdate','Api\\AppController@HotupdateAction');                                       //获取热更新数据
-    
     Route::any('account/token/login', 'Api\\Account\\TokenController@LoginAction');                         // 自动登录
     Route::any('account/login', 'Api\\Account\\UserController@LoginAction');                                // 用户名或手机号码登陆
     Route::any('account/register', 'Api\\Account\\UserController@RegisterAction');                          // 用户名注册
@@ -96,7 +95,10 @@ Route::group(['prefix' => 'api'], function () {
     Route::any('pay/yingyongbao/request', 'Api\\Pay\\YingYongBaoController@RequestAction');                 // 应用宝平台支付
     Route::any('pay/yingyongbao/check', 'Api\\Pay\\YingYongBaoController@checkPayToken');                   // 应用宝检查token是否有效
     Route::any('pay/yingyongbao/balance', 'Api\\Pay\\YingYongBaoController@getBalanceM');                   // 应用宝查询余额
+
     Route::any('pay/xiaomi/request', 'Api\\Pay\\MiController@RequestAction');                               // 小米平台支付
+
+    Route::any('pay/lenovo/request', 'Api\\Pay\\LenovoController@RequestAction');                           // 联想平台支付
 
     Route::any('pay/ios/request','Api\\Pay\\IOSController@RequestAction');                                  // 验证苹果支付的信息
 

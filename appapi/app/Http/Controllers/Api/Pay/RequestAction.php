@@ -89,43 +89,42 @@ trait RequestAction {
             $fee = $fee - $use_fee;
         }
 
-        // 实际支付
-        $data = [];
-        if($fee > 0) {
-            $ordersExt = new OrdersExt;
-            $ordersExt->oid = $order->id;
-            $ordersExt->vcid = static::PayMethod;
-            $ordersExt->fee = $fee / 100;
-            $ordersExt->save();
-        } else {
-            // XXX 不用支付，直接发货
-            order_success($order->id);
-        }
-
-        // 获取配置传给子类
-        $config = config('common.payconfig.'.static::PayText);
-        if(!$config) {
-            // 可以没有配置
-            // throw new ApiException(ApiException::Remind, trans('messages.not_payconfig'));
-        }
-
         $data = [
             'pay_type' => $pay_type,
             'pay_method' => static::PayText,
             'order_id' => $order_id,
             'real_fee' => $fee,
         ];
+        
+        // 实际支付
+        if($fee > 0) {
+            $ordersExt = new OrdersExt;
+            $ordersExt->oid = $order->id;
+            $ordersExt->vcid = static::PayMethod;
+            $ordersExt->fee = $fee / 100;
+            $ordersExt->save();
+            
+            // 获取配置传给子类
+            $config = config('common.payconfig.'.static::PayText);
+            if(!$config) {
+                // 可以没有配置
+                // throw new ApiException(ApiException::Remind, trans('messages.not_payconfig'));
+            }
 
-        if($pay_type == 0) {
-            // XXX 为了兼容旧的代码
-            // $data['data'] = $this->getData($config, $order, $order_extend, $fee);
-            $data = array_merge($data, $this->getData($config, $order, $order_extend, $fee));
-        } elseif($pay_type == 1) {
-            $data['url_scheme'] = $this->getUrlScheme($config, $order, $order_extend, $fee);
-        } elseif($pay_type == 2) {
-            $data['url'] = $this->getUrl($config, $order, $order_extend, $fee);
+            if($pay_type == 0) {
+                // XXX 为了兼容旧的代码
+                // $data['data'] = $this->getData($config, $order, $order_extend, $fee);
+                $data = array_merge($data, $this->getData($config, $order, $order_extend, $fee));
+            } elseif($pay_type == 1) {
+                $data['url_scheme'] = $this->getUrlScheme($config, $order, $order_extend, $fee);
+            } elseif($pay_type == 2) {
+                $data['url'] = $this->getUrl($config, $order, $order_extend, $fee);
+            } else {
+                throw new ApiException(ApiException::Remind, trans('messages.not_allow_pay_type'));
+            }
         } else {
-            throw new ApiException(ApiException::Remind, trans('messages.not_allow_pay_type'));
+            // XXX 不用支付，直接发货
+            order_success($order->id);
         }
 
         $order->paymentMethod = static::PayTypeText;
