@@ -179,29 +179,29 @@ class AppController extends Controller
             'af_login' => ($this->procedure_extend->enable & (1 << 6)) != 0,
             'oauth_login' => [
                 'qq' => [
-                    'url' => httpsurl($oauth_qq),
+                    'url' => $oauth_qq,
                 ],
                 'weixin' => [
-                    'url' => httpsurl($oauth_weixin),
+                    'url' => $oauth_weixin,
                 ],
                 'weibo' => [
-                    'url' => httpsurl($oauth_weibo),
+                    'url' => $oauth_weibo,
                 ]
             ],
 
             'protocol' => [
                 'title' => env('protocol_title'),
-                'url' => httpsurl(env('protocol_url')),
+                'url' => env('protocol_url'),
             ],
 
             'update' => $update,
             'service' => [
                 'qq' => $this->procedure_extend->service_qq,
                 'page' => httpsurl($this->procedure_extend->service_page),
-                'phone' => $this->procedure_extend->service_phone,
-                'share' => httpsurl($this->procedure_extend->service_share),
+                'phone' => httpsurl($this->procedure_extend->service_phone),
+                'share' => httpsurl$this->procedure_extend->service_share),
                 'interval' => max(2000, $this->procedure_extend->heartbeat_interval),
-                'af_download' => httpsurl(env('af_download')),
+                'af_download' => env('af_download'),
             ],
             'bind_phone' => [
                 'need' =>       ($this->procedure_extend->enable & (1 << 4)) == (1 << 4),
@@ -230,9 +230,9 @@ class AppController extends Controller
      */
     public function LogoutAction() {
         return [
-            'img' => $this->procedure_extend->logout_img,
+            'img' => httpsurl($this->procedure_extend->logout_img),
             'type' => $this->procedure_extend->logout_type,
-            'redirect' => $this->procedure_extend->logout_redirect,
+            'redirect' => httpsurl($this->procedure_extend->logout_redirect),
             'inside' => $this->procedure_extend->logout_inside,
         ];
     }
@@ -269,7 +269,7 @@ class AppController extends Controller
             $updates['pkg'] = 'com.anfeng.pay';
             $updates['version'] = 403;
             $updates['use_version'] = 403; // 回退版本，默认与version一致
-            $updates['url'] = 'http://afsdkhot.qcwan.com/anfeng/down/com.anfeng.pay403.apk';
+            $updates['url'] = httpsurl('http://afsdkhot.qcwan.com/anfeng/down/com.anfeng.pay403.apk');
         } else {
             $manifest = [];
             $manifest['version'] = '1.0.0';
@@ -279,7 +279,7 @@ class AppController extends Controller
             $updates['pkg'] = 'com.anfeng.pay';
             $updates['version'] = 40;
             $updates['use_version'] = 40; // 回退版本，默认与version一致
-            $updates['url'] = 'http://afsdkup.qcwan.com/down/com.anfeng.pay.apk';
+            $updates['url'] = httpsurl('http://afsdkup.qcwan.com/down/com.anfeng.pay.apk');
         }
 
         return ['manifest'=>$manifest, 'updates'=>[$updates]];
