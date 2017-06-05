@@ -2,44 +2,28 @@
 namespace App\Http\Controllers\Api;
 
 use App\Exceptions\ApiException;
+use Illuminate\Http\Request;
+use App\Parameter;
 use App\Model\Ucuser;
 use App\Model\Orders;
+use App\Model\UcuserRole;
+use App\Model\ProceduresZone;
+use App\Model\ProceduresExtend;
+use App\Model\UcuserSub;
 use App\Model\UcuserOauth;
 use App\Model\UcuserInfo;
+use Illuminate\Support\Facades\Session;
 use App\Model\Retailers;
 
 class UserController extends AuthController
 {
     public function InfoAction() {
         $user_info = UcuserInfo::from_cache($this->user->ucid);
-
-        $retailers = null;
+	
+	$retailers = null;
         if($this->user->rid) {
             $retailers = Retailers::find($this->user->rid);
         }
-
-        // 读取用户第三方绑定状态
-        $config = config('common.oauth');
-        $bindlist = [];
-
-        foreach($config as $k => $v) {
-            $bindlist[$k]['is_bind'] = false;
-        }
-
-        $oauth = UcuserOauth::where('ucid', $this->user->ucid)->get();
-        foreach($oauth as $v) {
-            $bindlist[$v->type]['is_bind'] = true;
-            $bindlist[$v->type]['openid'] = $v->openid;
-            $bindlist[$v->type]['unionid'] = $v->unionid;
-        }
-
-        $bindlist['mobile']['is_bind'] = $this->user->mobile ? true : false;
-        if($bindlist['mobile']['is_bind']) {
-            $bindlist['mobile']['unionid'] = $this->user->mobile;
-            $bindlist['mobile']['openid'] = $this->user->mobile;
-        }
-
-        $bindlist['password']['is_bind'] = $this->user->regtype == 6;// TODO App\Http\Controllers\Api\Account\UserController::Type;
 
         return [
             'uid' => $this->user->ucid,
@@ -63,9 +47,8 @@ class UserController extends AuthController
             'is_adult' => $user_info && $user_info->isAdult(),
             'reg_time' => $this->user->regdate,
             'regtype' => $this->user->regtype,
-            'rid' => $this->user->rid,
+		'rid' => $this->user->rid,
             'rtype' => $retailers ? $retailers->rtype : 0,
-            'bindlist' => $bindlist,
         ];
     }
 
@@ -89,7 +72,7 @@ class UserController extends AuthController
             $data['mobile']['unionid'] = $this->user->mobile;
             $data['mobile']['openid'] = $this->user->mobile;
         }
-
+        
         $data['password']['is_bind'] = $this->user->regtype == 6;// TODO App\Http\Controllers\Api\Account\UserController::Type;
 
         return $data;
@@ -102,9 +85,9 @@ class UserController extends AuthController
         $address = $this->parameter->get('address');
         $gender = $this->parameter->get('gender');
         $birthday = $this->parameter->get('birthday', '');
-
+        
         if($birthday && !preg_match('/^\d{8}$/', $birthday)) {
-            throw new ApiException(ApiException::Remind, trans('messages.birthday_format_error'));
+            throw new ApiException(ApiException::Remind, "生日格式不正确，yyyymmdd");
         }
 
         $user_info = UcuserInfo::from_cache($this->user->ucid);
@@ -153,9 +136,7 @@ class UserController extends AuthController
         $order = $order->where('ucid', $this->user->ucid);
         $order = $order->where('hide', 0);
         $order = $order->where('status', '!=', Orders::Status_WaitPay);
-
         $count = $order->count();
-
         $order = $order->orderBy('id', 'desc');
         $order = $order->take($limit)->skip($offset)->get();
 
@@ -165,7 +146,7 @@ class UserController extends AuthController
                 'order_id' => $v->sn,
                 'fee' => $v->fee,
                 'subject' => $v->subject,
-                'otype' => 0,
+                'otype' => 0, 
                 'createTime' => strtotime($v->createTime),
                 'status' => $v->status,
             ];
@@ -183,11 +164,10 @@ class UserController extends AuthController
         $order = Orders::whereIsNotF();
         $order = $order->where('ucid', $this->user->ucid);
         $order = $order->where('hide', 0);
-        $order = $order->where('vid', $this->procedure->pid);
+	$order = $order->where('vid', $this->procedure->pid);
         $order = $order->where('status', '!=', Orders::Status_WaitPay);
-
+        
         $count = $order->count();
-
         $order = $order->orderBy('id', 'desc');
         $order = $order->take($limit)->skip($offset)->get();
 
@@ -219,9 +199,7 @@ class UserController extends AuthController
     }
 
     public function BalanceAction() {
-        return [
-            'balance' => $this->user->balance,
-        ];
+        return ['balance' => $this->user->balance];
     }
 
     public function ByOldPasswordResetAction() {
@@ -229,7 +207,7 @@ class UserController extends AuthController
         $new_password = $this->parameter->tough('new_password', 'password');
 
         if(!$this->user->checkPassword($old_password)) {
-            throw new ApiException(ApiException::Remind, trans('messages.oldpassword_error'));
+            throw new ApiException(ApiException::Remind, "旧的密码不正确");
         }
 
         $old_password = $this->user->password;
@@ -249,9 +227,9 @@ class UserController extends AuthController
 
         if($user) {
             if($user->ucid != $this->user->ucid) {
-                throw new ApiException(ApiException::Remind, trans('messages.mobile_bind_other'));
+                throw new ApiException(ApiException::Remind, "手机号码已经绑定了其它账号");
             } elseif($this->user->mobile == $mobile) {
-                throw new ApiException(ApiException::Remind, trans('messages.mobile_already_bind'));
+                throw new ApiException(ApiException::Remind, "该账号已经绑定了这个手机号码");
             }
         }
 
@@ -272,7 +250,7 @@ class UserController extends AuthController
         // todo: 以前绑定手机号绑定邮箱走的同一个接口
         $mobile = $this->request->input('mobile');
         if(preg_match('/^[\w\d\-\_\.]+@\w+(\.\w+)+$/', $mobile)) {
-            throw new ApiException(ApiException::Remind, trans('messages.func_disable'));
+            throw new ApiException(ApiException::Remind, "该功能已停用");
         }
 
         // ---- end ----
@@ -281,17 +259,17 @@ class UserController extends AuthController
         $code = $this->parameter->tough('code', 'smscode');
 
         if(!verify_sms($mobile, $code)) {
-            throw new ApiException(ApiException::Remind, trans('messages.invalid_smscode'));
+            throw new ApiException(ApiException::Remind, "绑定失败，验证码不正确，或已过期");
         }
 
         if($this->user->mobile) {
-            throw new ApiException(ApiException::Remind, trans('messages.user_already_bind_mobile'));
+            throw new ApiException(ApiException::Remind, "该账号已经绑定了手机号码");
         }
-
+        
         $user = Ucuser::where('uid', $mobile)->orWhere('mobile', $mobile)->first();
         if($user) {
             if($user->ucid != $this->user->ucid) {
-                throw new ApiException(ApiException::Remind, trans('messages.mobile_bind_other'));
+                throw new ApiException(ApiException::Remind, "手机号码已经绑定了其它账号");
             } elseif(empty($this->user->mobile)) {
                 $this->user->mobile = $mobile;
                 $this->user->save();
@@ -308,7 +286,7 @@ class UserController extends AuthController
 
     public function SMSUnbindPhoneAction() {
         if(!$this->user->mobile) {
-            throw new ApiException(ApiException::Remind, trans('messages.not_bind_onunbind'));
+            throw new ApiException(ApiException::Remind, "还未绑定手机号码，无法解绑");
         }
 
         $mobile = $this->user->mobile;
@@ -334,19 +312,19 @@ class UserController extends AuthController
             $mobile = $this->user->mobile;
 
             if(!verify_sms($mobile, $code)) {
-                throw new ApiException(ApiException::Remind, trans('messages.invalid_smscode'));
+                throw new ApiException(ApiException::Remind, "手机号码解绑失败，验证码不正确，或已过期");
             }
 
             if($this->user->mobile == $this->user->uid) {
                 if(!$username) {
-                    throw new ApiException(ApiException::Remind, trans('messages.reset_username_onunbind'));
+                    throw new ApiException(ApiException::Remind, "您必需重设您的用户名才能解绑，请联系客服");
                 }
 
                 $_user = Ucuser::where('uid', $username)->orWhere('mobile', $username)->orWhere('email', $username)->first();
                 if(!$_user || $_user->ucid == $this->user->ucid) {
                     $this->user->uid = $username;
                 } else {
-                    throw new ApiException(ApiException::Remind, trans('messages.username_exists_onbind'));
+                    throw new ApiException(ApiException::Remind, "解绑失败，用户名已被占用");
                 }
             }
             $this->user->mobile = '';
@@ -364,7 +342,7 @@ class UserController extends AuthController
 
     public function SMSPhoneResetPasswordAction() {
         if(!$this->user->mobile) {
-            throw new ApiException(ApiException::Remind, trans('messages.not_reset_password_unbind_mobile'));
+            throw new ApiException(ApiException::Remind, "还未绑定手机号码，无法使用该方式重置密码");
         }
 
         $mobile = $this->user->mobile;
@@ -387,13 +365,13 @@ class UserController extends AuthController
         $password = $this->parameter->tough('password', 'password');
 
         if(!$this->user->mobile) {
-            throw new ApiException(ApiException::Remind, trans('messages.not_reset_password_unbind_mobile'));
+            throw new ApiException(ApiException::Remind, "还未绑定手机号码，无法使用该方式重置密码");
         }
 
         $mobile = $this->user->mobile;
 
         if(!verify_sms($mobile, $code)) {
-            throw new ApiException(ApiException::Remind, trans('messages.invalid_smscode'));
+            throw new ApiException(ApiException::Remind, "验证码不正确，或已过期");
         }
 
         $old_password = $this->user->password;
@@ -413,7 +391,7 @@ class UserController extends AuthController
         $role_level = $this->parameter->tough('role_level');
         $role_name = $this->parameter->tough('role_name');
 
-        $pid = $this->procedure->pid;
+        $pid = $this->parameter->tough('_appid');
 
         $this->session->zone_id = $zone_id;
         $this->session->zone_name = $zone_name;
@@ -430,7 +408,7 @@ class UserController extends AuthController
 
         $card_info = parse_card_id($card_no);
         if(!$card_info) {
-            throw new ApiException(ApiException::Remind, trans('messages.cardno_error'));
+            throw new ApiException(ApiException::Remind, "身份证号码不正确");
         }
 
         $user_info = UcuserInfo::from_cache($this->user->ucid);
@@ -457,12 +435,12 @@ class UserController extends AuthController
         $nickname = $this->parameter->get('nickname');
         $avatar = $this->parameter->get('avatar');
         $forced = $this->parameter->get('forced');
-
-        if($type == 'weixin' && $unionid == '') throw new ApiException(ApiException::Error, trans('messages.unionid_empty'));
+        
+        if($type == 'weixin' && $unionid == '') throw new ApiException(ApiException::Error, "unionid不允许为空");
 
         $count = UcuserOauth::where('type', $type)->where('ucid', $this->user->ucid)->count();
         if($count > 0) {
-            throw new ApiException(ApiException::Remind, trans('messages.3th_already_bind', ['type' => config("common.oauth.{$type}.text")]));
+            throw new ApiException(ApiException::Remind, "账号已经绑定了" . config("common.oauth.{$type}.text", '第三方'));
         }
 
         $openid = "{$openid}@{$type}";
@@ -484,7 +462,7 @@ class UserController extends AuthController
             }
 
             if($forced == 0) {
-                throw new ApiException(ApiException::AlreadyBindOauthOther, trans('messages.3th_already_bind_other', ['type' => config("common.oauth.{$type}.text")]));
+                throw new ApiException(ApiException::AlreadyBindOauthOther, config("common.oauth.{$type}.text", '第三方') . "已经绑定了其它账号");
             }
 
             $user_oauth->ucid = $this->user->ucid;
@@ -521,7 +499,7 @@ class UserController extends AuthController
 
         $count = UcuserOauth::where('type', '!=', $type)->where('ucid', $this->user->ucid)->count();
         if($count == 0 && $this->user->mobile == "" && $this->user->regtype != 6) {
-            throw new ApiException(ApiException::Remind, trans('messages.3th_unbind_error'));
+            throw new ApiException(ApiException::Remind, "为了防止遗忘账号，请绑定手机或者其他社交账号后再解除绑定");
         }
 
         $user_oauth = UcuserOauth::where('type', $type)->where('ucid', $this->user->ucid)->first();
@@ -560,7 +538,7 @@ class UserController extends AuthController
                 $avatar_url = upload_to_cdn($filename, $filepath,true);
                 $flush = updateQnCache($avatar_url); //更新七牛文件缓存
             } catch(\App\Exceptions\Exception $e) {
-                throw new ApiException(ApiException::Remind, trans('messages.avatar_set_error', ['eMsg' => $e->getMessage()]));
+                throw new ApiException(ApiException::Remind, '头像上传失败：' . $e->getMessage());
             }
         }
 
@@ -582,16 +560,16 @@ class UserController extends AuthController
         $user = Ucuser::where('uid', $username)->orWhere('mobile', $username)->orWhere('email', $username)->first();
         if($user) {
             if($user->ucid != $this->user->ucid) {
-                throw new ApiException(ApiException::Remind, trans('messages.username_exists_onset'));
+                throw new ApiException(ApiException::Remind, '设置失败，用户名已被占用');
             }
+        } else {
+            $old_username = $this->user->uid;
+
+            $this->user->uid = $username;
+            $this->user->save();
+
+            user_log($this->user, $this->procedure, 'reset_username', '【重设用户名】旧:%s,新:%s', $old_username, $username);
         }
-
-        $old_username = $this->user->uid;
-
-        $this->user->uid = $username;
-        $this->user->save();
-
-        user_log($this->user, $this->procedure, 'reset_username', '【修改用户名】旧:%s，新:%s', $old_username, $username);
 
         return ['result' => true];
     }
@@ -613,29 +591,29 @@ class UserController extends AuthController
     /*
      * 用户角色等级信息日志
      */
-    /*
-        public function UpdateRoleAction(){
-            $zone_id                = $this->parameter->tough('zone_id'); //区服ID
-            $zone_name              = $this->parameter->tough('zone_name'); //区服名称
-            $role_id                = $this->parameter->tough('role_id');  //游戏
-            $role_level             = $this->parameter->tough('level'); //游戏角色扥等级
-            $role_name              = $this->parameter->tough('level_name'); //游戏角色名称
-            $pid                    = $this->user->pid; //游戏ID
-            $ucid                   = $this->user->ucid;   //用户的ID
-            $sud_id                 = $this->session->user_sub_id; //小号id
+/*
+    public function UpdateRoleAction(){
+        $zone_id                = $this->parameter->tough('zone_id'); //区服ID
+        $zone_name              = $this->parameter->tough('zone_name'); //区服名称
+        $role_id                = $this->parameter->tough('role_id');  //游戏
+        $role_level             = $this->parameter->tough('level'); //游戏角色扥等级
+        $role_name              = $this->parameter->tough('level_name'); //游戏角色名称
+        $pid                    = $this->user->pid; //游戏ID
+        $ucid                   = $this->user->ucid;   //用户的ID
+        $sud_id                 = $this->session->user_sub_id; //小号id
 
-            $logdata                = new RoleDataLog();
-            $logdata->zone_id       = $zone_id;
-            $logdata->zone_name     = $zone_name;
-            $logdata->role_id       = $role_id;
-            $logdata->level         = $role_level;
-            $logdata->level_name    = $role_name;
-            $logdata->game_id       = $pid;
-            $logdata->create_time   = date("Y-m-d H:i:s",time());
-            $logdata->ucid          = $ucid;
-            $logdata->sub_id        = $sud_id;
+        $logdata                = new RoleDataLog();
+        $logdata->zone_id       = $zone_id;
+        $logdata->zone_name     = $zone_name;
+        $logdata->role_id       = $role_id;
+        $logdata->level         = $role_level;
+        $logdata->level_name    = $role_name;
+        $logdata->game_id       = $pid;
+        $logdata->create_time   = date("Y-m-d H:i:s",time());
+        $logdata->ucid          = $ucid;
+        $logdata->sub_id        = $sud_id;
 
-            return $logdata->save()?"true":"false";
-        }
-    */
+        return $logdata->save()?"true":"false";
+    }
+*/
 }
