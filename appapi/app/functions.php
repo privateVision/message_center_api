@@ -33,12 +33,13 @@ function encrypt3des($data, $key = null) {
  * @return string
  */
 function httpsurl($url) {
-    if(app('request')->getScheme() == 'https' && substr($url, 0, 5) == 'http:') {
+    if((@$_SERVER['HTTP_X_FORWARDED_PROTO'] == 'https' || app('request')->getScheme() == 'https') && substr($url, 0, 5) == 'http:') {
         return 'https:' . substr($url, 5);
     }
 
     return $url;
 }
+
 
 /**
  * 3DES解密

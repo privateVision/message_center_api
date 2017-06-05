@@ -43,7 +43,7 @@ class Controller extends BaseController
      */
     public function before(Request $request) {
         $this->starttime = microtime(true);
-        log_info('request', $request->all(), $request->path());
+        log_info('request', ['reqdata' => $request->all(), 'shceme' => $request->getScheme()], $request->path());
     }
 
     /**
