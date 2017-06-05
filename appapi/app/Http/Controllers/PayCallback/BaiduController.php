@@ -25,33 +25,47 @@ class BaiduController extends Controller
 
     protected function verifySign($data, $order)
     {
-        $result = ProceduresExtend::where('third_appid', $data['AppID'])->first();
+        $result = ProceduresExtend::where('pid', $order->vid)->first()->toArray;
+        if($data['Sign'] == self::verify([$result['third_appid'], $data['OrderSerial'], $data['CooperatorOrderSerial'], urldecode($data['Content']), $result['third_appkey']])) {
+            return true;
+        }
 
-        return $result?true:false;
+        return false;
     }
 
     protected function handler($data, $order, $order_extend)
     {
-        $content = base64_decode($data['Content']);
-
-        if(!isset($content['OrderStatus'])||!$content['OrderStatus']){
-            return false;
-        }else{
+        $content = base64_decode(urldecode($data['Content']));
+        $res = json_decode($content, true);
+        if($res['OrderStatus'] == 1) {
             return true;
         }
+
+        return false;
     }
 
     protected function onComplete($data, $order, $isSuccess)
     {
-        $result = ProceduresExtend::where('third_appid', $data['AppID'])->first()->toArray;
+        $result = ProceduresExtend::where('pid', $order->vid)->first()->toArray;
 
-        $sign = md5($data['AppID'].$data['OrderSerial'].$data['CooperatorOrderSerial'].$data['Content'].$result['third_appsecret']);
+        $code = $isSuccess?1:0;
+        $sign =  self::verify([$result['third_appid'], $code, $result['third_appkey']]);
 
         return json_encode([
             'AppID'=>$data['AppID'],
-            'ResultCode'=>$isSuccess?1:0,
-            'ResultMsg'=>'',
+            'ResultCode'=>$code,
+            'ResultMsg'=>'success',
             'Sign'=>$sign
         ]);
+    }
+
+    /**
+     * 计算签名
+     * @param $params
+     * @return string
+     */
+    protected function verify($params) {
+        $v = array_values($params);
+        return md5($v);
     }
 }

@@ -49,7 +49,7 @@ class HuaWeiController extends Controller
 
     protected function verifySign($data, $order)
     {
-        $config = ProceduresExtend::where('third_cpid', $data['userName'])->first();
+        $config = ProceduresExtend::where('pid', $order->vid)->first()->toArray;
 
         $content = "";
         $i = 0;
@@ -62,35 +62,31 @@ class HuaWeiController extends Controller
             $i++;
         }
 
+        $pubKey = @file_get_contents($config['third_appsecret']);
+        $openssl_public_key = @openssl_get_publickey($pubKey);
 
+        $ok = @openssl_verify($content,base64_decode($data['sign']), $openssl_public_key);
+        @openssl_free_key($openssl_public_key);
+        if($ok) {
+            return true;
+        }
 
-
-
-        return true;
+        return false;
     }
 
     protected function handler($data, $order, $order_extend)
     {
-        $content = base64_decode($data['Content']);
-
-        if(!isset($content['OrderStatus'])||!$content['OrderStatus']){
-            return false;
-        }else{
+        //验证支付成功
+        if($data['result'] === 0) {
             return true;
         }
+        return false;
     }
 
     protected function onComplete($data, $order, $isSuccess)
     {
-        $result = ProceduresExtend::where('third_appid', $data['AppID'])->first()->toArray;
-
-        $sign = md5($data['AppID'].$data['OrderSerial'].$data['CooperatorOrderSerial'].$data['Content'].$result['third_appsecret']);
-
-        return json_encode([
-            'AppID'=>$data['AppID'],
-            'ResultCode'=>$isSuccess?1:0,
-            'ResultMsg'=>'',
-            'Sign'=>$sign
-        ]);
+        return json_encode(array(
+            "result"=>$isSuccess?0:1
+        ));
     }
 }

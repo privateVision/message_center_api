@@ -84,15 +84,18 @@ Route::group(['prefix' => 'api'], function () {
     Route::any('pay/unionpay/request', 'Api\\Pay\\UnionpayController@RequestAction');                       // 现在支付，银联
     Route::any('pay/f/request', 'Api\\Pay\\FController@RequestAction');                                     // XXX 安锋支付，（帐户余额支付），4.0使用，4.1废弃
     Route::any('pay/mycard/request', 'Api\\Pay\\MycardController@RequestAction');                           // MyCard支付
+
     Route::any('pay/uc/request', 'Api\\Pay\\UcController@RequestAction');                                   // Uc平台支付
     Route::any('pay/uc/accout', 'Api\\Pay\\UcController@getUcAccout');                                      // Uc平台获取用户信息
-
+    Route::any('pay/huawei/request', 'Api\\Pay\\HuaweiController@RequestAction');                           // 华为平台支付
     Route::any('pay/googleplay/request', 'Api\\Pay\\GooglePlayController@RequestAction');                   // GooglePlay平台支付
     Route::any('pay/baidu/request', 'Api\\Pay\\BaiduController@RequestAction');                             // 百度平台支付
     Route::any('pay/baidu/accout', 'Api\\Pay\\BaiduController@getBaiduAccout');                             // 百度平台获取用户uid
+    Route::any('pay/baidu/order', 'Api\\Pay\\BaiduController@getOrderInfo');                                // 百度平台获取订单信息
     Route::any('pay/yingyongbao/request', 'Api\\Pay\\YingYongBaoController@RequestAction');                 // 应用宝平台支付
     Route::any('pay/yingyongbao/check', 'Api\\Pay\\YingYongBaoController@checkPayToken');                   // 应用宝检查token是否有效
     Route::any('pay/yingyongbao/balance', 'Api\\Pay\\YingYongBaoController@getBalanceM');                   // 应用宝查询余额
+
     Route::any('pay/ios/request','Api\\Pay\\IOSController@RequestAction');                                  // 验证苹果支付的信息
 
     Route::any('ios/order/receipt/verify','Api\\Pay\\AppleController@validateReceiptAction');               // XXX 验证苹果支付的信息

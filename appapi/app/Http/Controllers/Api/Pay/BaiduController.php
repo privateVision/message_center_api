@@ -55,6 +55,32 @@ class BaiduController extends Controller {
     }
 
     /**
+     * 查询百度平台订单状态
+     */
+    public function getOrderInfo() {
+        $order_id = $this->parameter->tough('order_id');
+        $appid = $this->procedure_extend->third_appid;
+        $appkey = $this->procedure_extend->third_appkey;
+
+        $params = array(
+            'AppID'=>$appid,
+            'CooperatorOrderSerial'=>$order_id,
+            'Sign'=>self::verify([$appid, $order_id, $appkey]),
+            'OrderType'=>1,
+            'Action'=>'10002'
+        );
+
+        $url = self::PayHttp . 'CpOrderQuery.ashx';
+        $res = http_curl($url, $params, true);
+        if($res['cd'] == 1 && $res['Sign']==self::verify([$appid, $res['ResultCode'], urldecode($res['Content']), $appkey])) {
+            $result = base64_decode(urldecode($res['Content']));
+            return json_decode($result,true);
+        } else {
+            throw new ApiException(ApiException::Remind, $res['rspmsg']);
+        }
+    }
+
+    /**
      * 计算签名
      * @param $params
      * @return string
