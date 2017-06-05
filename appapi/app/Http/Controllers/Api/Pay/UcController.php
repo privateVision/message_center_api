@@ -42,7 +42,7 @@ class UcController extends Controller {
      * @param game_id  uc平台游戏game_id
      * @return array
      */
-    public function getUcAccoutAction($config = array()) {
+    public function getAccoutAction($config = array()) {
         $sid = $this->parameter->tough('sid');
         $gameId = $this->parameter->tough('game_id');
         if(empty($config)) {
