@@ -86,10 +86,10 @@ Route::group(['prefix' => 'api'], function () {
     Route::any('pay/mycard/request', 'Api\\Pay\\MycardController@RequestAction');                           // MyCard支付
 
     Route::any('pay/uc/request', 'Api\\Pay\\UcController@RequestAction');                                   // Uc平台支付
-    Route::any('pay/uc/accout', 'Api\\Pay\\UcController@getUcAccoutAction');                                // Uc平台获取用户信息
+    Route::any('pay/uc/accout', 'Api\\Pay\\UcController@getAccoutAction');                                  // Uc平台获取用户信息
     Route::any('pay/googleplay/request', 'Api\\Pay\\GooglePlayController@RequestAction');                   // GooglePlay平台支付
     Route::any('pay/baidu/request', 'Api\\Pay\\BaiduController@RequestAction');                             // 百度平台支付
-    Route::any('pay/baidu/accout', 'Api\\Pay\\BaiduController@getBaiduAccout');                             // 百度平台获取用户uid
+    Route::any('pay/baidu/accout', 'Api\\Pay\\BaiduController@getAccout');                                  // 百度平台获取用户uid
     Route::any('pay/baidu/order', 'Api\\Pay\\BaiduController@getOrderInfoAction');                          // 百度平台获取订单信息
     Route::any('pay/yingyongbao/request', 'Api\\Pay\\YingYongBaoController@RequestAction');                 // 应用宝平台支付
     Route::any('pay/yingyongbao/check', 'Api\\Pay\\YingYongBaoController@checkPayTokenAction');             // 应用宝检查token是否有效
