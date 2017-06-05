@@ -179,29 +179,29 @@ class AppController extends Controller
             'af_login' => ($this->procedure_extend->enable & (1 << 6)) != 0,
             'oauth_login' => [
                 'qq' => [
-                    'url' => $oauth_qq,
+                    'url' => httpsurl($oauth_qq),
                 ],
                 'weixin' => [
-                    'url' => $oauth_weixin,
+                    'url' => httpsurl($oauth_weixin),
                 ],
                 'weibo' => [
-                    'url' => $oauth_weibo,
+                    'url' => httpsurl($oauth_weibo),
                 ]
             ],
 
             'protocol' => [
                 'title' => env('protocol_title'),
-                'url' => env('protocol_url'),
+                'url' => httpsurl(env('protocol_url')),
             ],
 
             'update' => $update,
             'service' => [
                 'qq' => $this->procedure_extend->service_qq,
-                'page' => $this->procedure_extend->service_page,
+                'page' => httpsurl($this->procedure_extend->service_page),
                 'phone' => $this->procedure_extend->service_phone,
-                'share' => $this->procedure_extend->service_share,
+                'share' => httpsurl($this->procedure_extend->service_share),
                 'interval' => max(2000, $this->procedure_extend->heartbeat_interval),
-                'af_download' => env('af_download'),
+                'af_download' => httpsurl(env('af_download')),
             ],
             'bind_phone' => [
                 'need' =>       ($this->procedure_extend->enable & (1 << 4)) == (1 << 4),

@@ -27,6 +27,14 @@ function encrypt3des($data, $key = null) {
     return \App\Crypt3DES::encrypt($data, $key);
 }
 
+function httpsurl($url) {
+    if(app('request')->getScheme() == 'https' && substr($url, 0, 5) == 'http:') {
+        return 'https:' . substr($url, 5);
+    }
+
+    return $url;
+}
+
 /**
  * 3DES解密
  * @param  [type] $data [description]

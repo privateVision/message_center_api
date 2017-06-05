@@ -37,7 +37,7 @@ class UserController extends AuthController
             'province' => $user_info && $user_info->province ? (string)$user_info->province : "",
             'city' => $user_info && $user_info->city ? (string)$user_info->city : "",
             'address' => $user_info && $user_info->address ? (string)$user_info->address : "",
-            'avatar' => $user_info && $user_info->avatar ? (string)$user_info->avatar : env('default_avatar'),
+            'avatar' => $user_info && $user_info->avatar ? httpsurl((string)$user_info->avatar) : httpsurl(env('default_avatar')),
             'real_name' => $user_info && $user_info->real_name ? (string)$user_info->real_name : "",
             'card_no' => $user_info && $user_info->card_no ? (string)$user_info->card_no : "",
             'exp' => $user_info && $user_info->exp ? (int)$user_info->exp : 0,
