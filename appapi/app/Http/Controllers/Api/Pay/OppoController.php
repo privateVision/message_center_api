@@ -4,13 +4,13 @@ namespace App\Http\Controllers\Api\Pay;
 
 use Illuminate\Http\Request;
 
-class MiController extends Controller
+class OppoController extends Controller
 {
     use RequestAction;
 
-    const PayMethod = '-17';
-    const PayText = 'xiaomi';
-    const PayTypeText = '小米平台支付';
+    const PayMethod = '-16';
+    const PayText = 'oppo';
+    const PayTypeText = 'oppo平台支付';
 
     /**
      * @param $config
