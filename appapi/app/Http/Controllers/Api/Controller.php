@@ -29,7 +29,7 @@ class Controller extends \App\Controller
 
 			$data = $request->all();
 
-			log_info('request', [$data,$request->ips()], $request->path());
+			log_info('request', ['reqdata' => $data, 'shceme' => $request->getScheme()], $request->path());
 			
 			$s = microtime(true);
 
