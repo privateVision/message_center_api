@@ -30,7 +30,7 @@ class YingYongBaoController extends Controller
      */
     public function getData($config, Orders $order, OrderExtend $order_extend, $real_fee)
     {
-        if($this->payM($order, $order_extend)){
+        if($this->payMAction($order, $order_extend)){
             order_success($order->id);
             return [
                 'result'=>true
@@ -67,7 +67,7 @@ class YingYongBaoController extends Controller
      * @param openkey
      * @return array
      */
-    public function checkPayToken()
+    public function checkPayTokenAction()
     {
         $accout_type = $this->parameter->tough('accout_type');
         $appids = explode(',', $this->procedure_extend->third_appid);
@@ -96,7 +96,7 @@ class YingYongBaoController extends Controller
      * @param accout_type qq或者wx
      * @return array
      */
-    public function getBalanceM()
+    public function getBalanceMAction()
     {
         $accout_type = $this->parameter->tough('accout_type');
 
@@ -118,7 +118,7 @@ class YingYongBaoController extends Controller
      * @param accout_type qq或者wx
      * @return bool
      */
-    public function payM($order, $order_extend)
+    public function payMAction($order, $order_extend)
     {
         $accout_type = $this->parameter->tough('accout_type');
 
