@@ -15,6 +15,7 @@ Route::group(['prefix' => 'pay_callback'], function () {
     Route::any('baidu', 'PayCallback\\BaiduController@CallbackAction');
     Route::any('mycard', 'PayCallback\\MycardController@CallbackAction');                                   // mycard支付回调
     Route::any('uc', 'PayCallback\\UcController@CallbackAction');                                           // Uc支付回调
+    Route::any('vivo', 'PayCallback\\VivoController@CallbackAction');                                       // vivo支付回调
 });
     
 // 各种回调

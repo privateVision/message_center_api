@@ -136,6 +136,6 @@ return [
             'baseUrl'=>'http://sdk.9game.cn',
             'port'=>'80',
             'prefix'=>'ng/cp/'
-        ]
+        ],
     ],
 ];
