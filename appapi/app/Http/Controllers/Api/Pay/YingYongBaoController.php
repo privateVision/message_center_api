@@ -67,7 +67,7 @@ class YingYongBaoController extends Controller
      * @param openkey
      * @return array
      */
-    public function checkPayToken()
+    public function checkPayTokenAction()
     {
         $accout_type = $this->parameter->tough('accout_type');
         $appids = explode(',', $this->procedure_extend->third_appid);
@@ -96,7 +96,7 @@ class YingYongBaoController extends Controller
      * @param accout_type qq或者wx
      * @return array
      */
-    public function getBalanceM()
+    public function getBalanceMAction()
     {
         $accout_type = $this->parameter->tough('accout_type');
 
