@@ -32,7 +32,7 @@ class BaiduController extends Controller {
     /**
      * 获取百度平台用户id
      */
-    public function getBaiduAccoutAction() {
+    public function getAccoutAction() {
         $token = $this->parameter->tough('token');
 
         $appid = $this->procedure_extend->third_appid;
