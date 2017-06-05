@@ -47,7 +47,7 @@ class UserController extends AuthController
             'is_adult' => $user_info && $user_info->isAdult(),
             'reg_time' => $this->user->regdate,
             'regtype' => $this->user->regtype,
-		'rid' => $this->user->rid,
+		    'rid' => $this->user->rid,
             'rtype' => $retailers ? $retailers->rtype : 0,
         ];
     }
@@ -73,7 +73,7 @@ class UserController extends AuthController
             $data['mobile']['openid'] = $this->user->mobile;
         }
         
-        $data['password']['is_bind'] = $this->user->regtype == 6;// TODO App\Http\Controllers\Api\Account\UserController::Type;
+        $data['password']['is_bind'] = $this->user->regtype == 6;// XXX App\Http\Controllers\Api\Account\UserController::Type;
 
         return $data;
     }
