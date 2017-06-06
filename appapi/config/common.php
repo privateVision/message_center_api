@@ -18,7 +18,12 @@ return [
         'facebook' => ['text' => 'Facebook'],
         'yyb_qq' => ['text' => '应用宝-QQ'],
         'yyb_weixin' => ['text' => '应用宝-微信'],
-        'yyb_guest' => ['text' => '应用宝-游客']
+        'yyb_guest' => ['text' => '应用宝-游客'],
+        'xiaomi' => ['text' => '小米'],
+        'oppo' => ['text' => 'oppo'],
+        'vivo' => ['text' => 'vivo'],
+        'leshi' => ['text' => '乐视'],
+        'baidu' => ['text' => '百度'],
     ],
 
     'smsconfig' => [
