@@ -18,7 +18,7 @@ return [
         'facebook' => ['text' => 'Facebook'],
         'yyb_qq' => ['text' => '应用宝-QQ'],
         'yyb_weixin' => ['text' => '应用宝-微信'],
-        'yyb_guest' => ['text' => '应用宝-游客'],
+        'yyb_guest' => ['text' => '应用宝-游客']
     ],
 
     'smsconfig' => [
