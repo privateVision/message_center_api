@@ -14,7 +14,7 @@ use App\Model\ForceCloseIaps;
 
 class OrderController extends Controller {
 
-    public function ConfigAction() {
+    protected function getPayConfig() {
         $pid = $this->procedure->pid;
 
         // 是否开启官方支付
@@ -62,8 +62,12 @@ class OrderController extends Controller {
         return [
             'iap' => $iap,
             'sandbox' => ($this->procedure_extend->enable & (1 << 7)) == 0,
-            'pay_methods' => $pay_methods,
+            'pay_methods' => array_values($pay_methods),
         ];
+    }
+
+    public function ConfigAction() {
+        return $this->getPayConfig();
     }
 
     public function NewAction() {
@@ -147,8 +151,6 @@ class OrderController extends Controller {
         $order->subject = $subject;
         $order->notify_url = $notify_url;
         $order->vorderid = $vorderid;
-        //$order->real_fee = $order->fee;
-        //$order->paymentMethod = '';
         $order->save();
 
         // order_extend;
@@ -168,39 +170,18 @@ class OrderController extends Controller {
 
         $order->getConnection()->commit();
 
-        $order_is_first = $order->is_first();
-
         // 储值卡，优惠券
         $list = [];
 
-        // 可用的支付方式
-        $pay_methods = [];
+        $payconf = $this->getPayConfig();
 
-        $iap = (($this->procedure_extend->enable & (1 << 8)) == 0);
-
-        if($iap) {
-            // 读取用户充值总额
-            $force_close_iaps = ForceCloseIaps::whereRaw("find_in_set({$pid}, appids)")->where('closed', 0)->get();
-            $appids = [];
-            $iap_paysum = 0;
-            foreach ($force_close_iaps as $v) {
-                $appids = array_merge($appids, explode(',', $v->appids));
-                $iap_paysum += $v->fee;
-            }
-
-            if ($iap_paysum > 0) {
-                $paysum = Orders::whereIn('vid', array_unique($appids))->where('status', '!=', Orders::Status_WaitPay)->where('ucid', $this->user->ucid)->sum('fee');
-
-                if ($paysum >= $iap_paysum) {
-                    $iap = false;
-                }
-            }
-        }
-
+        $iap = $payconf['iap'];
         // 非官方支付
         if(!$iap) {
             // 购买F币不允许使用储值卡或优惠券
             if($product_type != 1) {
+                $order_is_first = $order->is_first();
+
                 $result = UcusersVC::where('ucid', $this->user->ucid)->get();
                 foreach($result as $v) {
                     $fee = $v->balance * 100;
@@ -237,22 +218,6 @@ class OrderController extends Controller {
                     ];
                 }
             }
-
-            // 从procedures_extend.pay_method读取可用的支付方式
-
-            $pay_methods_config = config('common.pay_methods');
-
-            for($i = 0; $i <= 31; $i++) {
-                $pay_method = @$pay_methods_config[floor($i/4)];
-                if(!$pay_method) continue;
-
-                if(($this->procedure_extend->pay_method & (1 << $i)) == 0) continue;
-
-                if(in_array($i % 4, $pay_method['pay_type'])) {
-                    $pay_method['pay_type'] = $i % 4;
-                    $pay_methods[floor($i/4)] = $pay_method;
-                }
-            }
         }
 
         $user_info = UcuserInfo::from_cache($this->user->ucid);
@@ -265,7 +230,7 @@ class OrderController extends Controller {
             'balance' => $this->user->balance,
             'coupons' => $list,
             'iap' => $iap,
-            'pay_methods' => array_values($pay_methods),
+            'pay_methods' => array_values($payconf['pay_methods']),
             'package' => $this->procedure_extend->package_name,
             'product_name' => isset($product) ? $product->third_product_id : '',
             'order_name' => $subject,

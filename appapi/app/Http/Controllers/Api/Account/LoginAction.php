@@ -75,7 +75,7 @@ trait LoginAction {
                     $user_sub_total->id = $user_sub_total_id;
                     $user_sub_total->pid = $pid;
                     $user_sub_total->ucid = $user->ucid;
-                    $user_sub_total->total = 1;
+                    $user_sub_total->total = UcuserSub::tableSlice($user->ucid)->where('ucid', $user->ucid)->where('pid', $pid)->count();
                     $user_sub_total->save();
                 } else {
                     $user_sub_total->increment('total', 1);

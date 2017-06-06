@@ -146,7 +146,7 @@ class AppController extends Controller
         $update_apks = $this->procedure->update_apks()->orderBy('dt', 'desc')->first();
         if($update_apks && version_compare($update_apks->version, $app_version, '>')) {
             $update = array(
-                'down_url' => $update_apks->down_uri,
+                'down_url' => httpsurl($update_apks->down_uri),
                 'version' => $update_apks->version,
                 'force_update' => env('APP_DEBUG') ? false : $update_apks->force_update,
             );
@@ -179,13 +179,13 @@ class AppController extends Controller
             'af_login' => ($this->procedure_extend->enable & (1 << 6)) != 0,
             'oauth_login' => [
                 'qq' => [
-                    'url' => $oauth_qq,
+                    'url' => httpsurl($oauth_qq),
                 ],
                 'weixin' => [
-                    'url' => $oauth_weixin,
+                    'url' => httpsurl($oauth_weixin),
                 ],
                 'weibo' => [
-                    'url' => $oauth_weibo,
+                    'url' => httpsurl($oauth_weibo),
                 ]
             ],
 
@@ -199,9 +199,9 @@ class AppController extends Controller
                 'qq' => $this->procedure_extend->service_qq,
                 'page' => httpsurl($this->procedure_extend->service_page),
                 'phone' => httpsurl($this->procedure_extend->service_phone),
-                'share' => httpsurl$this->procedure_extend->service_share),
+                'share' => httpsurl($this->procedure_extend->service_share),
                 'interval' => max(2000, $this->procedure_extend->heartbeat_interval),
-                'af_download' => env('af_download'),
+                'af_download' => httpsurl(env('af_download')),
             ],
             'bind_phone' => [
                 'need' =>       ($this->procedure_extend->enable & (1 << 4)) == (1 << 4),
