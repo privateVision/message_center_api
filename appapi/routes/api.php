@@ -98,6 +98,7 @@ Route::group(['prefix' => 'api'], function () {
     Route::any('pay/vivo/request', 'Api\\Pay\\VivoController@RequestAction');                               // vivo平台支付
     Route::any('pay/lenovo/request', 'Api\\Pay\\LenovoController@RequestAction');                           // 联想平台支付
     Route::any('pay/huawei/request', 'Api\\Pay\\HuaweiController@RequestAction');                           // 华为平台支付
+    Route::any('pay/oppo/request', 'Api\\Pay\\OppoController@RequestAction');                               // Oppo平台支付
 
 
     Route::any('pay/ios/request','Api\\Pay\\IOSController@RequestAction');                                  // 验证苹果支付的信息

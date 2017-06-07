@@ -103,6 +103,11 @@ class AuthAccountController extends Controller
                 $serviceUcid = Ucuser::where('uid', $serviceUid)->first(['ucid']);
                 if(!$serviceUcid) throw new ApiException(ApiException::Remind, trans('messages.service_user_err'));
 
+                //一个客服同时只能审核一个账号
+                if(UcuserSubService::where('ucid', $serviceUcid->ucid)->where('status', 1)->first()){
+                    throw new ApiException(ApiException::Remind, trans('messages.service_limit_1'));
+                }
+
                 $ucuserSubService = UcuserSubService::where('id', $serviceid)->where('status', 0)->first();
 
                 if(!$ucuserSubService) throw new ApiException(ApiException::Remind, trans('messages.service_err'));
