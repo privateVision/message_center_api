@@ -55,13 +55,15 @@ trait RegisterAction {
                 $user_sub_total->increment('total', 1);
             }
 
+            $user_sub_id = sprintf('%d%05d%2d', $user->ucid, $pid, $user_sub_total->total);
+
             $user_sub = UcuserSub::tableSlice($user->ucid);
-            $user_sub->id = $user->ucid . sprintf('%05d01', $pid);
+            $user_sub->id = $user_sub_id;
             $user_sub->ucid = $user->ucid;
             $user_sub->pid = $pid;
             $user_sub->rid = $rid;
             $user_sub->old_rid = $rid;
-            $user_sub->cp_uid = $user_sub_total->total == 1 ? $user->ucid : ($user->ucid . sprintf('%05d%02d', $pid, $user_sub_total->total));
+            $user_sub->cp_uid = $user_sub_total->total == 1 ? $user->ucid : $user_sub_id;
             $user_sub->name = '小号' . $user_sub_total->total;
             $user_sub->priority = time();
             $user_sub->last_login_at = datetime();

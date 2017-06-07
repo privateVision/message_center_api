@@ -80,4 +80,41 @@ class ProceduresExtend extends Model
 		$value = trim(@$this->attributes['logout_inside']);
 		return $value !== '' ? (bool)$value : true;
 	}
+
+    /**
+     * 是否开启测试模式
+     * @param $version
+     * @return bool
+     */
+	public function isSandbox($version) {
+        if(!$this->test_version) return false;
+        $versions = explode('|', $this->test_version);
+        foreach($versions as $v) {
+            if(version_compare($v, $version, '=')) return true;
+        }
+
+        return false;
+    }
+
+    /**
+     * 是否启用FB功能
+     */
+    public function isEnableFB() {
+        return ($this->enable & (1 << 9)) != 1;
+    }
+
+    /**
+     * 在切换到安锋支付时也启用官方支付
+     */
+    public function isTooUseIAP() {
+        return ($this->enable & (1 << 7)) != 0;
+    }
+
+    /**
+     * 是否启用官方支付
+     * @return boolean
+     */
+    public function isIAP() {
+        return ($this->enable & (1 << 8)) == 0;
+    }
 }

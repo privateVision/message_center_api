@@ -105,7 +105,12 @@ class AppController extends Controller
         $uuid = $this->parameter->tough('_device_id');
         $apps = $this->parameter->get('device_apps');
         $info = $this->parameter->tough('device_info');
-        $app_version = $this->parameter->tough('app_version');
+
+        $appversion = $this->parameter->get('app_version'); // 4.0
+        if(!$appversion) {
+            $appversion = $this->parameter->tough('_app_version');// 4.1
+        }
+
         $os = $this->parameter->get('_os');
 
         // 广告统计，加入另一个队列由其它项目处理
@@ -144,7 +149,7 @@ class AppController extends Controller
         // check update
         $update = new \stdClass;
         $update_apks = $this->procedure->update_apks()->orderBy('dt', 'desc')->first();
-        if($update_apks && version_compare($update_apks->version, $app_version, '>')) {
+        if($update_apks && version_compare($update_apks->version, $appversion, '>')) {
             $update = array(
                 'down_url' => httpsurl($update_apks->down_uri),
                 'version' => $update_apks->version,
@@ -195,6 +200,7 @@ class AppController extends Controller
             ],
 
             'update' => $update,
+
             'service' => [
                 'qq' => $this->procedure_extend->service_qq,
                 'page' => httpsurl($this->procedure_extend->service_page),
@@ -203,11 +209,13 @@ class AppController extends Controller
                 'interval' => max(2000, $this->procedure_extend->heartbeat_interval),
                 'af_download' => httpsurl(env('af_download')),
             ],
+
             'bind_phone' => [
                 'need' =>       ($this->procedure_extend->enable & (1 << 4)) == (1 << 4),
                 'enforce' =>    ($this->procedure_extend->enable & (3 << 4)) == (3 << 4),
                 'interval' =>   $this->procedure_extend->bind_phone_interval,
             ],
+
             'real_name' => [
                 'need' =>       ($this->procedure_extend->enable & (1 << 0)) == (1 << 0),
                 'enforce' =>    ($this->procedure_extend->enable & (3 << 0)) == (3 << 0),
@@ -216,6 +224,8 @@ class AppController extends Controller
             ],
 
             'ios_app_config' => $ios_app_config,
+
+            'enable_fb' => $this->procedure_extend->isEnableFB(), // 是否禁用F币功能
         ];
     }
 
@@ -258,7 +268,11 @@ class AppController extends Controller
 
     public function HotupdateAction() {
         $pid = $this->procedure->pid;
-        $sdk_version  = $this->parameter->tough('sdk_version');
+
+        $sdkversion = $this->parameter->get('sdk_version'); // 4.0
+        if(!$sdkversion) {
+            $sdkversion = $this->parameter->tough('_version');// 4.1
+        }
 
         if(in_array($pid, [1452, 1533, 1530])) {
             $manifest = [];

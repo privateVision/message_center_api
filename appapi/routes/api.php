@@ -100,13 +100,14 @@ Route::group(['prefix' => 'api'], function () {
     Route::any('pay/lenovo/accout', 'Api\\Pay\\LenovoController@getAccout');                                // 联想平台获取用户信息
     Route::any('pay/huawei/request', 'Api\\Pay\\HuaweiController@RequestAction');                           // 华为平台支付
 
-
     Route::any('pay/ios/request','Api\\Pay\\IOSController@RequestAction');                                  // 验证苹果支付的信息
 
-    Route::any('ios/order/receipt/verify','Api\\Pay\\AppleController@validateReceiptAction');               // XXX 验证苹果支付的信息
-    //Route::any('ios/order/create','Api\\Pay\\AppleController@OrderCreateAction');                         // XXX 4.0 创建苹果订单
-    Route::any('ios/order/create','Api\\Pay\\OrderController@NewAction');                                   // XXX 4.0 创建苹果订单
-    Route::any('ios/applelimit','Api\\Pay\\AppleController@AppleLimitAction');                              // XXX 验证当前是否开启限制
+    //Route::any('ios/order/receipt/verify','Api\\Pay\\AppleController@validateReceiptAction');             // 验证苹果支付的信息 4.0
+    Route::any('ios/order/receipt/verify','Api\\Pay\\IOSController@RequestAction');                         // 验证苹果支付的信息
+    //Route::any('ios/order/create','Api\\Pay\\AppleController@OrderCreateAction');                         // 创建苹果订单 4.0
+    Route::any('ios/order/create','Api\\Pay\\OrderController@NewAction');                                   // 创建苹果订单
+    //Route::any('ios/applelimit','Api\\Pay\\AppleController@AppleLimitAction');                            // 验证当前是否开启限制 4.0
+    Route::any('ios/applelimit','Api\\Pay\\OrderController@ConfigAction');                                  // 验证当前是否开启限制
 
     Route::any('tool/reset_password/request','Api\\Tool\\ResetPasswordController@RequestAction');           // 通过token用户自行修改密码
     Route::any('tool/user/reset_password_page','Api\\Tool\\UserController@ResetPasswordPageAction');        // 获取重设密码页面

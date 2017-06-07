@@ -15,10 +15,11 @@ use App\Model\ForceCloseIaps;
 class OrderController extends Controller {
 
     protected function getPayConfig() {
+        $appversion = $this->parameter->get('_app_version'); // 本来是必传参数，但兼容旧代码，所以无法必传
         $pid = $this->procedure->pid;
 
         // 是否开启官方支付
-        $iap = (($this->procedure_extend->enable & (1 << 8)) == 0);
+        $iap = $this->procedure_extend->isIAP();
 
         if($iap) {
             // 读取用户充值总额
@@ -59,10 +60,20 @@ class OrderController extends Controller {
             }
         }
 
+        // 第三方支付与官方支付并存
+        if($this->procedure_extend->isTooUseIAP() && !$iap) {
+            $pay_methods[] = [
+                'type' => 'iap',
+                'api' => '',
+                'pay_type' => 0,
+            ];
+        }
+
         return [
             'iap' => $iap,
-            'sandbox' => ($this->procedure_extend->enable & (1 << 7)) == 0,
+            'sandbox' =>  $appversion ? $this->procedure_extend->isSandbox($appversion) : false,
             'pay_methods' => array_values($pay_methods),
+            'paytype' => $iap, // 兼容IOS4.0
         ];
     }
 

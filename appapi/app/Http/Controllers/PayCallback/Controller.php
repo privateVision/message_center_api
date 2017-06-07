@@ -117,7 +117,7 @@ abstract class Controller extends \App\Controller
                 }
             } else {
                 if($order) {
-                    return view('pay_callback/cb', [
+                    return view('pay_callback/callback', [
                         'callback' => $order_extend->callback,
                         'is_success' => $is_success,
                         'message' => $message ? $message : $response,
@@ -126,7 +126,7 @@ abstract class Controller extends \App\Controller
                         'trade_order_no' => $order->vorderid,
                     ]);
                 } else {
-                    return view('pay_callback/cb', [
+                    return view('pay_callback/callback', [
                         'callback' => $order_extend->callback,
                         'is_success' => $is_success,
                         'message' => $message ? $message : $response,

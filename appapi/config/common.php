@@ -137,5 +137,10 @@ return [
             'port'=>'80',
             'prefix'=>'ng/cp/'
         ],
+
+        'IOS' => [
+            'verify_receipt_sandbox' => 'https://sandbox.itunes.apple.com/verifyReceipt',
+            'verify_receipt' => 'https://buy.itunes.apple.com/verifyReceipt',
+        ],
     ],
 ];

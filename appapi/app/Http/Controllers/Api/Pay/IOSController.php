@@ -1,12 +1,12 @@
 <?php
-namespace App\Http\Controllers\Api\Pay ;
+namespace App\Http\Controllers\Api\Pay;
 
 use App\Exceptions\ApiException;
 use App\Model\Orders;
 use App\Model\OrderExtend;
 use App\Model\IosReceiptLog;
 
-class  AppleController extends Controller {
+class IOSController extends Controller {
 
     use RequestAction;
 
@@ -15,6 +15,8 @@ class  AppleController extends Controller {
     const PayTypeText = 'IOS';
 
     public function getData($config, Orders $order, OrderExtend $order_extend, $real_fee) {
+        $appversion = $this->parameter->get('_app_version'); // 本来是必传参数，但兼容旧代码，所以无法必传
+
         $receipt = $this->parameter->tough('receipt');
         $transaction = $this->parameter->tough("transaction_id");
         $receipt_a = urldecode($receipt);
@@ -30,15 +32,15 @@ class  AppleController extends Controller {
         $ios_receipt_log->receipt_base64 = $receipt;
         $ios_receipt_log->save();
 
-        $is_sandbox = $this->procedure_extend->enable & (1 << 7) != 0;
+        $isSandbox = $appversion ? $this->procedure_extend->isSandbox($appversion) : false;
 
-        if ($is_sandbox || env('APP_DEBUG')) {
+        if ($isSandbox || env('APP_DEBUG')) {
             $verify_receipt_url = $config['verify_receipt_sandbox'];
         } else {
             $verify_receipt_url = $config['verify_receipt'];
         }
 
-        $reqdata = ['receipt-data' => $receipt];
+        $reqdata = json_encode(['receipt-data' => $receipt]);
 
         $ch = curl_init($verify_receipt_url);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
@@ -49,7 +51,7 @@ class  AppleController extends Controller {
         $response = curl_exec($ch);
         curl_close($ch);
 
-        log_debug('ios_verify_receipt', ['resdata' => $response, 'reqdata' => $reqdata], $verify_receipt_url);
+        log_debug('ios_verify_receipt', ['resdata' => $response], $verify_receipt_url);
 
         if(!$response) {
             throw new ApiException(ApiException::Remind, trans("messages.ios_verify_fail"));
@@ -61,9 +63,40 @@ class  AppleController extends Controller {
         }
 
         if (!isset($response['status']) || $response['status'] != 0) {
-            throw new ApiException(ApiException::Remind, trans("messages.app_buy_faild"));
+            throw new ApiException(ApiException::Remind, trans("messages.app_buy_faild") .' '. @$response['status']);
         }
 
-        return [];
+        $success = false;
+
+        /**
+         [
+            {
+            "quantity":"1",
+            "product_id":"com.anfeng.cqws600",
+            "transaction_id":"1000000260288122",
+            "original_transaction_id":"1000000260288122",
+            "purchase_date":"2016-12-20 03:50:40 Etc/GMT",
+            "purchase_date_ms":"1482205840000",
+            "purchase_date_pst":"2016-12-19 19:50:40 America/Los_Angeles",
+            "original_purchase_date":"2016-12-20 03:50:40 Etc/GMT",
+            "original_purchase_date_ms":"1482205840000",
+            "original_purchase_date_pst":"2016-12-19 19:50:40 America/Los_Angeles",
+            "is_trial_period":"false"
+            }
+         ]
+         */
+        foreach($response['in_app'] as $v) {
+            if($v['transaction_id'] == $transaction) {
+                $success = true;
+
+                $order_extend->third_order_no = $transaction;
+                $order_extend->extra_params = ['verify_result' => $response];
+                $order->asyncSave();
+
+                order_success($order->id);
+            }
+        }
+
+        return ['result' => $success];
     }
 }
