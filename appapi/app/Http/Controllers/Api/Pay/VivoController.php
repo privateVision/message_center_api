@@ -22,7 +22,7 @@ class VivoController extends Controller
             'appId' => $this->procedure_extend->third_appid,
             'cpOrderNumber' => $order->id,
             'notifyUrl' => url()->previous().'pay_callback/vivo',
-            'orderTime' => date('yyyyMMddHHmmss', strtotime($order->createTime)),
+            'orderTime' => date('YmdHis', strtotime($order->createTime)),
             'orderAmount' => $real_fee,
             'orderTitle' => $order->subject,
             'orderDesc' => $order->body,

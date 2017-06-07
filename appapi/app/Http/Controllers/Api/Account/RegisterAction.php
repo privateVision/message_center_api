@@ -40,7 +40,7 @@ trait RegisterAction {
         // 查找最近一次登录的小号
         $user_sub = UcuserSub::tableSlice($user->ucid)->where('ucid', $user->ucid)->where('pid', $pid)->where('is_freeze', false)->orderBy('priority', 'desc')->first();
 
-        // 用户没有可用的小号，创建
+        // XXX 用户没有可用的小号
         if(!$user_sub) {
             $user_sub_total_id = joinkey($pid, $user->ucid);
             $user_sub_total = UcuserSubTotal::find($user_sub_total_id);
@@ -49,7 +49,7 @@ trait RegisterAction {
                 $user_sub_total->id = $user_sub_total_id;
                 $user_sub_total->pid = $pid;
                 $user_sub_total->ucid = $user->ucid;
-                $user_sub_total->total = 1;
+                $user_sub_total->total = UcuserSub::tableSlice($user->ucid)->where('ucid', $user->ucid)->where('pid', $pid)->count() + 1;
                 $user_sub_total->save();
             } else {
                 $user_sub_total->increment('total', 1);

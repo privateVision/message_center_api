@@ -27,4 +27,24 @@ class LenovoController extends Controller {
         ];
     }
 
+    /**
+     * 获取平台用户id
+     */
+    public function getAccoutAction() {
+        $lpsust = $this->parameter->tough('lpsust');
+
+        $params = array(
+            'lpsust'=>$lpsust,
+            'AccessToken'=>$this->procedure_extend->package_name
+        );
+
+        $url = 'http://passport.lenovo.com/interserver/authen/1.2/getaccountid';
+        $res = http_curl($url, $params, false);
+        if($res['cd'] == 1) {
+            return json_decode(json_encode(simplexml_load_string($res['data'])),TRUE);
+        } else {
+            throw new ApiException(ApiException::Remind, $res['rspmsg']);
+        }
+    }
+
 }
