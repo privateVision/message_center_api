@@ -199,7 +199,7 @@ class AuthAccountController extends Controller
                 $ucuserSubService->status = $status;
                 $ucuserSubService->save();
 
-                if($userSub->is_freeze===0)throw new ApiException(ApiException::Remind, trans('messages.sub_user_normal'));
+                if($userSub->is_freeze==0)throw new ApiException(ApiException::Remind, trans('messages.sub_user_normal'));
 
                 $userSub->is_freeze = 0;
                 $userSub->save();
