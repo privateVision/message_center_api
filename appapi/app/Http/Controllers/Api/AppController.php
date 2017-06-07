@@ -58,11 +58,28 @@ class AppController extends Controller
         $update = new \stdClass;
         $update_apks = $this->procedure->update_apks()->orderBy('dt', 'desc')->first();
         if($update_apks && version_compare($update_apks->version, $app_version, '>')) {
-            $update = array(
-                'down_url' => httpsurl($update_apks->down_uri),
-                'version' => $update_apks->version,
-                'force_update' => env('APP_DEBUG') ? false : $update_apks->force_update,
-            );
+            // 如果设置了此字段，只在符合该IP的用户会更新
+            $is_updated = false;
+            if($update_apks->test_ip) {
+                $clientip = getClientIp();
+                $ips = explode(',', $update_apks->test_ip);
+                foreach($ips as $ip) {
+                    if($ip == $clientip) {
+                        $is_updated = true;
+                        break;
+                    }
+                }
+            } else {
+                $is_updated = true;
+            }
+
+            if($is_updated) {
+                $update = array(
+                    'down_url' => httpsurl($update_apks->down_uri),
+                    'version' => $update_apks->version,
+                    'force_update' => env('APP_DEBUG') ? false : $update_apks->force_update,
+                );
+            }
         }
 
         $oauth_params = sprintf('appid=%d&rid=%d&device_id=%s', $pid, $rid, $uuid);
