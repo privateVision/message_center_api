@@ -85,7 +85,7 @@ class IOSController extends Controller {
             }
          ]
          */
-        foreach($response['in_app'] as $v) {
+        foreach($response['receipt']['in_app'] as $v) {
             if($v['transaction_id'] == $transaction) {
                 $success = true;
 
