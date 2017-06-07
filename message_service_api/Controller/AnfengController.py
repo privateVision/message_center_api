@@ -140,40 +140,47 @@ def v4_anfeng_helper_gifts():
     start_index = (int(page) - 1) * int(count)
     end_index = int(count)
     from run import mysql_cms_session
-    find_anfeng_helper_total_count = "select count(*) from cms_gameGift as gift join cms_gameGiftAssign" \
-                                     " as assign on gift.id=assign.giftId where assign.platformId = 3 " \
-                                     "and gift.status='normal' and assign.status='normal' "
-    find_anfeng_helper_gift_list = "select gift.*, assign.assignNum as a_assignNum, assign.num as a_num" \
-                                   " from cms_gameGift as gift join cms_gameGiftAssign as assign " \
-                                   "on gift.id=assign.giftId where assign.platformId = 3 and gift.status='normal'" \
-                                   " and assign.status='normal' limit %s, %s " % (start_index, end_index)
-    total_count = mysql_cms_session.execute(find_anfeng_helper_total_count).scalar()
-    data_list = mysql_cms_session.execute(find_anfeng_helper_gift_list).fetchall()
+    total_count = 0
     gift_list = []
-    for data in data_list:
-        gift = {
-            'id': data['id'],
-            'game_id': data['gameId'],
-            'game_name': data['gameName'],
-            'name': data['name'],
-            'gift': data['gift'],
-            'content': data['content'],
-            'label': data['label'],
-            'total': data['total'],
-            'num': data['num'],
-            'assign_num': data['assignNum'],
-            'publish_time': data['publishTime'],
-            'fail_time': data['failTime'],
-            'create_time': data['createTime'],
-            'is_tao_num': data['isTaoNum'],
-            'is_af_receive': data['isAfReceive'],
-            'is_bind_phone': data['isBindPhone'],
-            'member_level': data['memberLevel'],
-            'is_specify': data['isSpecify'],
-            'a_assign_num': data['a_assignNum'],
-            'a_num': data['a_num']
-        }
-        gift_list.append(gift)
+    try:
+        find_anfeng_helper_total_count = "select count(*) from cms_gameGift as gift join cms_gameGiftAssign" \
+                                         " as assign on gift.id=assign.giftId where assign.platformId = 3 " \
+                                         "and gift.status='normal' and assign.status='normal' "
+        find_anfeng_helper_gift_list = "select gift.*, assign.assignNum as a_assignNum, assign.num as a_num" \
+                                       " from cms_gameGift as gift join cms_gameGiftAssign as assign " \
+                                       "on gift.id=assign.giftId where assign.platformId = 3 and gift.status='normal'" \
+                                       " and assign.status='normal' limit %s, %s " % (start_index, end_index)
+        total_count = mysql_cms_session.execute(find_anfeng_helper_total_count).scalar()
+        data_list = mysql_cms_session.execute(find_anfeng_helper_gift_list).fetchall()
+        for data in data_list:
+            gift = {
+                'id': data['id'],
+                'game_id': data['gameId'],
+                'game_name': data['gameName'],
+                'name': data['name'],
+                'gift': data['gift'],
+                'content': data['content'],
+                'label': data['label'],
+                'total': data['total'],
+                'num': data['num'],
+                'assign_num': data['assignNum'],
+                'publish_time': data['publishTime'],
+                'fail_time': data['failTime'],
+                'create_time': data['createTime'],
+                'is_tao_num': data['isTaoNum'],
+                'is_af_receive': data['isAfReceive'],
+                'is_bind_phone': data['isBindPhone'],
+                'member_level': data['memberLevel'],
+                'is_specify': data['isSpecify'],
+                'a_assign_num': data['a_assignNum'],
+                'a_num': data['a_num']
+            }
+            gift_list.append(gift)
+    except Exception, err:
+        service_logger.error("安锋助手获取礼包列表异常：%s" % (err.message,))
+        mysql_cms_session.rollback()
+    finally:
+        mysql_cms_session.close()
     data = {
         'total_count': total_count,
         'gift_list': gift_list
@@ -280,7 +287,7 @@ def v4_anfeng_helper_get_user_gifts():
 @anfeng_controller.route('/msa/anfeng_helper/is_gift_get', methods=['POST'])
 @anfeng_helper_request_check
 def v4_anfeng_helper_is_user_gift_get():
-    from run import mysql_cms_session
+    from run import mysql_cms_read_session
     if 'ucid' not in request.form and '_token' not in request.form:
         response_data(200, 0, 'ucid和token不能同时为空')
     ucid = 0
@@ -298,10 +305,10 @@ def v4_anfeng_helper_is_user_gift_get():
     try:
         is_exist_sql = "select count(*) from cms_gameGiftLog as log where log.status = 'normal'" \
                        " and log.uid = %s and log.giftId = %s " % (ucid, gift_id)
-        is_exist = mysql_cms_session.execute(is_exist_sql).scalar()
+        is_exist = mysql_cms_read_session.execute(is_exist_sql).scalar()
         find_code_sql = "select code from cms_gameGiftLog as log where log.status = 'normal'" \
                         " and log.uid = %s and log.giftId = %s limit 1" % (ucid, gift_id)
-        code_info = mysql_cms_session.execute(find_code_sql).fetchone()
+        code_info = mysql_cms_read_session.execute(find_code_sql).fetchone()
         assign_num, num = get_gift_real_time_count(3, gift_id)
         data['assign_num'] = assign_num
         data['num'] = num
@@ -309,9 +316,9 @@ def v4_anfeng_helper_is_user_gift_get():
             data['is_get'] = True
             data['code'] = code_info['code']
     except Exception, err:
-        mysql_cms_session.rollback()
+        mysql_cms_read_session.rollback()
     finally:
-        mysql_cms_session.close()
+        mysql_cms_read_session.close()
     return response_data(http_code=200, data=data)
 
 

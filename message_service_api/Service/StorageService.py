@@ -271,6 +271,7 @@ def check_user_is_in_game(ucid=None, game_id=None, zone=None):
                                  "and u.zoneName = '%s' " % (int(int(game_id)/30), ucid, game_id, zone)
     try:
         is_exist = mysql_session.execute(find_users_by_game_sql).scalar()
+        mysql_session.commit()
         if is_exist is None or is_exist == 0:
             return False
         return True

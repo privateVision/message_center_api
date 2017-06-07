@@ -13,7 +13,7 @@ import sys
 reload(sys)
 sys.setdefaultencoding('utf-8')
 
-app, kafka_producer, mysql_session, mysql_cms_session = create_app()
+app, kafka_producer, mysql_session, mysql_cms_session, mysql_cms_read_session = create_app()
 
 # API 请求限流
 # limiter = Limiter(app, key_func=get_remote_address)

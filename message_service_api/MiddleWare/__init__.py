@@ -110,4 +110,8 @@ def create_app():
                                      pool_recycle=28800, poolclass=SingletonThreadPool)
     mysql_cms_session = sessionmaker(autocommit=False, bind=mysql_cms_engine)
 
-    return app, kafka_producer, mysql_session(), mysql_cms_session()
+    mysql_cms_read_engine = create_engine(app.config['SQLALCHEMY_CMS_READ_DATABASE_URI'], encoding="utf-8", echo=True,
+                                          pool_recycle=28800, poolclass=SingletonThreadPool)
+    mysql_cms_read_session = sessionmaker(autocommit=False, bind=mysql_cms_read_engine)
+
+    return app, kafka_producer, mysql_session(), mysql_cms_session(), mysql_cms_read_session()
