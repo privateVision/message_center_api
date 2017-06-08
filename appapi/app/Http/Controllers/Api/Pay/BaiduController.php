@@ -28,32 +28,6 @@ class BaiduController extends Controller {
         ];
     }
 
-
-    /**
-     * 获取百度平台用户id
-     */
-    public function getAccoutAction() {
-        $token = $this->parameter->tough('token');
-
-        $appid = $this->procedure_extend->third_appid;
-        $appkey = $this->procedure_extend->third_appkey;
-
-        $params = array(
-            'AppID'=>$appid,
-            'AccessToken'=>$token,
-            'Sign'=>self::verify([$appid, $token, $appkey])
-        );
-
-        $url = self::PayHttp . 'CpLoginStateQuery.ashx';
-        $res = http_curl($url, $params, true);
-        if($res['cd'] == 1 && $res['Sign']==self::verify([$appid, $res['ResultCode'], urldecode($res['Content']), $appkey])) {
-            $result = base64_decode(urldecode($res['Content']));
-            return json_decode($result,true);
-        } else {
-            throw new ApiException(ApiException::Remind, $res['rspmsg']);
-        }
-    }
-
     /**
      * 查询百度平台订单状态
      */
