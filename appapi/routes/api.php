@@ -48,6 +48,7 @@ Route::group(['prefix' => 'api'], function () {
     //第三方获取用户信息
     Route::any('account/third/uc', 'Api\\Account\\ThirdController@ucAction');                               // Uc平台获取用户信息
     Route::any('account/third/lenovo', 'Api\\Account\\ThirdController@lenovoAction');                       // 联想平台获取用户信息
+    Route::any('account/third/baidu', 'Api\\Account\\ThirdController@baiduAction');                         // 百度平台获取用户信息
 
 
     Route::any('user/recharge', 'Api\\UserController@RechargeAction');                                      // 充值记录（充F币）
@@ -93,7 +94,6 @@ Route::group(['prefix' => 'api'], function () {
     Route::any('pay/uc/request', 'Api\\Pay\\UcController@RequestAction');                                   // Uc平台支付
     Route::any('pay/googleplay/request', 'Api\\Pay\\GooglePlayController@RequestAction');                   // GooglePlay平台支付
     Route::any('pay/baidu/request', 'Api\\Pay\\BaiduController@RequestAction');                             // 百度平台支付
-    //Route::any('pay/baidu/accout', 'Api\\Pay\\BaiduController@getAccout');                                // 百度平台获取用户uid
     Route::any('pay/baidu/order', 'Api\\Pay\\BaiduController@getOrderInfoAction');                          // 百度平台获取订单信息
     Route::any('pay/yingyongbao/request', 'Api\\Pay\\YingYongBaoController@RequestAction');                 // 应用宝平台支付
     Route::any('pay/yingyongbao/check', 'Api\\Pay\\YingYongBaoController@checkPayTokenAction');             // 应用宝检查token是否有效
@@ -101,7 +101,6 @@ Route::group(['prefix' => 'api'], function () {
     Route::any('pay/xiaomi/request', 'Api\\Pay\\MiController@RequestAction');                               // 小米平台支付
     Route::any('pay/vivo/request', 'Api\\Pay\\VivoController@RequestAction');                               // vivo平台支付
     Route::any('pay/lenovo/request', 'Api\\Pay\\LenovoController@RequestAction');                           // 联想平台支付
-    Route::any('pay/lenovo/accout', 'Api\\Pay\\LenovoController@getAccout');                                // 联想平台获取用户信息
     Route::any('pay/huawei/request', 'Api\\Pay\\HuaweiController@RequestAction');                           // 华为平台支付
     Route::any('pay/oppo/request', 'Api\\Pay\\OppoController@RequestAction');                               // Oppo平台支付
     Route::any('pay/ios/request','Api\\Pay\\IOSController@RequestAction');                                  // 验证苹果支付的信息
