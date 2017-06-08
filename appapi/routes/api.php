@@ -2,6 +2,10 @@
 Route::group(['prefix' => 'web'], function () {
     Route::any('mycard/rescue', 'Web\\MycardController@RescueAction'); // mycard订单补储
     Route::any('mycard/query', 'Web\\MycardController@QueryAction');   // mycard订单查询
+
+    Route::any('paypal/payment', 'Web\\PaypalController@PaymentAction'); // Paypal请求支付
+    Route::any('paypal/return', 'Web\\PaypalController@ReturnAction');   // Paypal支付完成返回页面
+    Route::any('paypal/cancel', 'Web\\PaypalController@CancelAction');   // Paypal取消订单返回页面
 });
 
 // 支付回调
@@ -10,6 +14,7 @@ Route::group(['prefix' => 'pay_callback'], function () {
     Route::any('alipay', 'PayCallback\\AlipayController@CallbackAction');                                   // 支付宝支付回调
     Route::any('unionpay', 'PayCallback\\UnionpayController@CallbackAction');                               // 银联支付回调
     Route::any('wechat', 'PayCallback\\WechatController@CallbackAction');                                   // 微信支付回调
+    Route::any('paypal', 'PayCallback\\PaypalController@CallbackAction');                                   // PayPal支付回调
 
     //渠道支付回调
     Route::any('baidu', 'PayCallback\\BaiduController@CallbackAction');
@@ -90,6 +95,7 @@ Route::group(['prefix' => 'api'], function () {
     Route::any('pay/unionpay/request', 'Api\\Pay\\UnionpayController@RequestAction');                       // 现在支付，银联
     Route::any('pay/f/request', 'Api\\Pay\\FController@RequestAction');                                     // XXX 安锋支付，（帐户余额支付），4.0使用，4.1废弃
     Route::any('pay/mycard/request', 'Api\\Pay\\MycardController@RequestAction');                           // MyCard支付
+    Route::any('pay/paypal/request', 'Api\\Pay\\PaypalController@RequestAction');                           // PayPal支付
 
     Route::any('pay/uc/request', 'Api\\Pay\\UcController@RequestAction');                                   // Uc平台支付
     Route::any('pay/googleplay/request', 'Api\\Pay\\GooglePlayController@RequestAction');                   // GooglePlay平台支付
