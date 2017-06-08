@@ -56,6 +56,41 @@ function decrypt3des($data, $key = null) {
 }
 
 /**
+ * 在$intime之内对key进行计数，当计数达到num时则用户IP被加入黑名单，持续$expire
+ * @param $key
+ * @param $num
+ * @param $expire
+ */
+function ipfirewall($key, $num, $expire, $intime = 86400) {
+    $ip = getClientIp();
+
+    $ignore = [
+        '0.0.0.0',
+        '127.0.0.1',
+        '10.13.251.38',
+        '10.13.251.39',
+    ];
+
+    if (in_array($ip, $ignore)) return;
+
+    $key = $key .'_'. $ip;
+
+    $n = Redis::GET($key);
+
+    if(($n + 1) == $num) {
+        $ip_refused = new \App\Model\IpRefused();
+        $ip_refused->ip = $ip;
+        $ip_refused->lock_time = time();
+        $ip_refused->unlock_time = time() + $expire;
+        $ip_refused->save();
+    } elseif($n == 0) {
+        Redis::SET($key, 1, 'EX', $intime);
+    } else {
+        Redis::INCR($key);
+    }
+}
+
+/**
  * 解析身份证号码
  * @param  [type] $card_id [description]
  * @return [type]          [description]

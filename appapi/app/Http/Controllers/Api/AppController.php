@@ -37,7 +37,10 @@ class AppController extends Controller
                 $device_apps->pid = $pid;
                 $device_apps->rid = $rid;
                 $device_apps->imei = $imei;
-                $device_apps->uuid = $uuid;
+                $device_apps->uuid = $uuid; // 兼容字段，以后都使用device_id
+                $device_apps->device_id = $uuid;
+                $device_apps->version = $this->parameter->get('_version');
+                $device_apps->app_version = $this->parameter->get('_app_version');
                 $device_apps->apps = $_apps;
                 $device_apps->asyncSave();
             } else {
@@ -52,6 +55,9 @@ class AppController extends Controller
             $device_info->rid = $rid;
             $device_info->imei = $imei;
             $device_info->uuid = $uuid;
+            $device_info->device_id = $uuid;
+            $device_info->version = $this->parameter->get('_version');
+            $device_info->app_version = $this->parameter->get('_app_version');
             $device_info->info = $_info;
             $device_info->asyncSave();
         } else {

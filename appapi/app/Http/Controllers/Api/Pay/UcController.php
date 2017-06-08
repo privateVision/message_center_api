@@ -21,7 +21,10 @@ class UcController extends Controller {
      */
     public function getData($config, Orders $order, OrderExtend $order_extend, $real_fee) {
         //获取uc用户id
-        $account = self::getAccout($config);
+        $sid = $this->parameter->tough('sid');
+        $gameId = $this->parameter->tough('game_id');
+
+        $account = self::getAccout($sid, $gameId, $config);
 
         $params['accountId'] = $account['accountId'];
         $params['amount'] = $real_fee;
@@ -42,9 +45,11 @@ class UcController extends Controller {
      * @param game_id  uc平台游戏game_id
      * @return array
      */
-    public function getAccoutAction(){
+    public function getAccoutAction() {
+        $sid = $this->parameter->tough('sid');
+        $gameId = $this->parameter->tough('game_id');
         $config = config('common.payconfig.uc');
-        self::getAccout($config);
+        return self::getAccout($sid, $gameId, $config);
     }
 
     /**
@@ -52,10 +57,7 @@ class UcController extends Controller {
      * @return mixed
      * @throws ApiException
      */
-    protected function getAccout($config) {
-        $sid = $this->parameter->tough('sid');
-        $gameId = $this->parameter->tough('game_id');
-
+    protected function getAccout($sid, $gameId, $config) {
         $params = array(
             'sid' => $sid
         );
