@@ -45,6 +45,11 @@ Route::group(['prefix' => 'api'], function () {
     Route::any('account/oauth/register', 'Api\\Account\\OauthController@RegisterAction');                   // 平台注册
     Route::any('account/oauth/login', 'Api\\Account\\OauthController@LoginAction');                         // 平台登陆
 
+    //第三方获取用户信息
+    Route::any('account/third/uc', 'Api\\Account\\UcController@ucAction');                                  // Uc平台获取用户信息
+
+
+
     Route::any('user/recharge', 'Api\\UserController@RechargeAction');                                      // 充值记录（充F币）
     Route::any('user/consume', 'Api\\UserController@ConsumeAction');                                        // 消费记录
     Route::any('user/hide_order', 'Api\\UserController@HideOrderAction');                                   // 隐藏订单
@@ -86,7 +91,6 @@ Route::group(['prefix' => 'api'], function () {
     Route::any('pay/mycard/request', 'Api\\Pay\\MycardController@RequestAction');                           // MyCard支付
 
     Route::any('pay/uc/request', 'Api\\Pay\\UcController@RequestAction');                                   // Uc平台支付
-    Route::any('pay/uc/accout', 'Api\\Pay\\UcController@getAccoutAction');                                  // Uc平台获取用户信息
     Route::any('pay/googleplay/request', 'Api\\Pay\\GooglePlayController@RequestAction');                   // GooglePlay平台支付
     Route::any('pay/baidu/request', 'Api\\Pay\\BaiduController@RequestAction');                             // 百度平台支付
     Route::any('pay/baidu/accout', 'Api\\Pay\\BaiduController@getAccout');                                  // 百度平台获取用户uid
