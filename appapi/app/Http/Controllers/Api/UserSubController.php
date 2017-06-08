@@ -17,7 +17,7 @@ class UserSubController extends AuthController
         foreach($result as $v) {
             $pid = $v->pid;
 
-            if($pid < 100) continue;
+            if($pid <= 97) continue; // 98,99用于测试小号功能
 
             if(!isset($data[$pid])) {
                 $procedure = Procedures::from_cache($pid);
@@ -69,7 +69,7 @@ class UserSubController extends AuthController
 
         $user_sub = UcuserSub::tableSlice($this->user->ucid)->where('ucid', $this->user->ucid)->where('pid', $pid)->orderBy('name', 'asc')->get();
         foreach($user_sub as $v) {
-            if($v->pid < 100) continue;
+            if($v->pid <= 97) continue; // 98,99用于测试小号功能
             $data[] = [
                 'id' => $v->id,
                 'openid' => $v->cp_uid,

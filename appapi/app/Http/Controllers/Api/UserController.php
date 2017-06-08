@@ -2,17 +2,10 @@
 namespace App\Http\Controllers\Api;
 
 use App\Exceptions\ApiException;
-use Illuminate\Http\Request;
-use App\Parameter;
 use App\Model\Ucuser;
 use App\Model\Orders;
-use App\Model\UcuserRole;
-use App\Model\ProceduresZone;
-use App\Model\ProceduresExtend;
-use App\Model\UcuserSub;
 use App\Model\UcuserOauth;
 use App\Model\UcuserInfo;
-use Illuminate\Support\Facades\Session;
 use App\Model\Retailers;
 
 class UserController extends AuthController
@@ -20,33 +13,10 @@ class UserController extends AuthController
     public function InfoAction() {
         $user_info = UcuserInfo::from_cache($this->user->ucid);
 	
-	$retailers = null;
+	    $retailers = null;
         if($this->user->rid) {
             $retailers = Retailers::find($this->user->rid);
         }
-
-        // 读取用户第三方绑定状态
-        $config = config('common.oauth');
-        $bindlist = [];
-
-        foreach($config as $k => $v) {
-            $bindlist[$k]['is_bind'] = false;
-        }
-
-        $oauth = UcuserOauth::where('ucid', $this->user->ucid)->get();
-        foreach($oauth as $v) {
-            $bindlist[$v->type]['is_bind'] = true;
-            $bindlist[$v->type]['openid'] = $v->openid;
-            $bindlist[$v->type]['unionid'] = $v->unionid;
-        }
-
-        $bindlist['mobile']['is_bind'] = $this->user->mobile ? true : false;
-        if($bindlist['mobile']['is_bind']) {
-            $bindlist['mobile']['unionid'] = $this->user->mobile;
-            $bindlist['mobile']['openid'] = $this->user->mobile;
-        }
-
-        $bindlist['password']['is_bind'] = $this->user->regtype == 6;// TODO App\Http\Controllers\Api\Account\UserController::Type;
 
         return [
             'uid' => $this->user->ucid,
@@ -72,11 +42,15 @@ class UserController extends AuthController
             'regtype' => $this->user->regtype,
 		    'rid' => $this->user->rid,
             'rtype' => $retailers ? $retailers->rtype : 0,
-            'bindlist' => $bindlist,
+            'bindlist' => $this->getBindList(),
         ];
     }
 
     public function BindListAction() {
+        return $this->getBindList();
+    }
+
+    public function getBindList() {
         $config = config('common.oauth');
         $data = [];
 
@@ -96,8 +70,8 @@ class UserController extends AuthController
             $data['mobile']['unionid'] = $this->user->mobile;
             $data['mobile']['openid'] = $this->user->mobile;
         }
-        
-        $data['password']['is_bind'] = $this->user->regtype == 6;// XXX App\Http\Controllers\Api\Account\UserController::Type;
+
+        $data['password']['is_bind'] = $this->user->regtype == 6; // XXX App\Http\Controllers\Api\Account\UserController::Type;
 
         return $data;
     }
@@ -589,7 +563,7 @@ class UserController extends AuthController
         $user = Ucuser::where('uid', $username)->orWhere('mobile', $username)->orWhere('email', $username)->first();
         if($user) {
             if($user->ucid != $this->user->ucid) {
-                throw new ApiException(ApiException::Remind, '设置失败，用户名已被占用');
+                throw new ApiException(ApiException::Remind, trans('messages.username_exists_onset'));
             }
         } else {
             $old_username = $this->user->uid;
@@ -630,33 +604,4 @@ class UserController extends AuthController
 
         return ['result' => true];
     }
-
-    /*
-     * 用户角色等级信息日志
-     */
-/*
-    public function UpdateRoleAction(){
-        $zone_id                = $this->parameter->tough('zone_id'); //区服ID
-        $zone_name              = $this->parameter->tough('zone_name'); //区服名称
-        $role_id                = $this->parameter->tough('role_id');  //游戏
-        $role_level             = $this->parameter->tough('level'); //游戏角色扥等级
-        $role_name              = $this->parameter->tough('level_name'); //游戏角色名称
-        $pid                    = $this->user->pid; //游戏ID
-        $ucid                   = $this->user->ucid;   //用户的ID
-        $sud_id                 = $this->session->user_sub_id; //小号id
-
-        $logdata                = new RoleDataLog();
-        $logdata->zone_id       = $zone_id;
-        $logdata->zone_name     = $zone_name;
-        $logdata->role_id       = $role_id;
-        $logdata->level         = $role_level;
-        $logdata->level_name    = $role_name;
-        $logdata->game_id       = $pid;
-        $logdata->create_time   = date("Y-m-d H:i:s",time());
-        $logdata->ucid          = $ucid;
-        $logdata->sub_id        = $sud_id;
-
-        return $logdata->save()?"true":"false";
-    }
-*/
 }

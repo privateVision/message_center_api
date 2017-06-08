@@ -57,6 +57,7 @@ return [
         2 => ['type' => 'unionpay', 'api' => 'api/pay/unionpay/request', 'pay_type' => [0]],
         3 => ['type' => 'mycard', 'api' => 'api/pay/mycard/request', 'pay_type' => [2]],
         4 => ['type' => 'nowpay_wechat', 'api' => 'api/pay/nowpay_wechat/request', 'pay_type' => [0]],
+        5 => ['type' => 'paypal', 'api' => 'api/pay/paypal/request', 'pay_type' => [2]],
     ],
 
     'payconfig' => [
@@ -147,5 +148,10 @@ return [
             'verify_receipt_sandbox' => 'https://sandbox.itunes.apple.com/verifyReceipt',
             'verify_receipt' => 'https://buy.itunes.apple.com/verifyReceipt',
         ],
+
+        'paypal' => [
+            'ClientID' => env('APP_DEBUG', true) ? 'AVKsKYJ2c3PWKyeSIfbrHw5SRJPSs_4uq9FuuAyXhYdcwoDnbMZ3a_XdusnOn1LxxWgTCQPhUqOCC7zC' : 'AbY9SzC7g_xppRt1xAWQljHbz3FBQU7XXOGGTpKBP6quZZnvFXdzguCX3ZBqcNOmAaXuEwrQ1C0eaQns',
+            'Secret' => env('APP_DEBUG', true) ? 'EAPw8swZBsOtySBYaXYzKRyPRIIWY_-aEbzTGMSoXSdsfSO44E48h3qFxez6GWWHBdRNZYG7kVabtVNX' : 'ECduHwsLdmLpldfrpESOjmKkyIN7Buqg6Tww1NXtQ4V2GMH6VO6B9a11-jdoGlW4eypIhPaoTpioYDqv',
+        ]
     ],
 ];

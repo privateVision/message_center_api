@@ -89,7 +89,7 @@ Route::group(['prefix' => 'api'], function () {
     Route::any('pay/uc/accout', 'Api\\Pay\\UcController@getAccoutAction');                                  // Uc平台获取用户信息
     Route::any('pay/googleplay/request', 'Api\\Pay\\GooglePlayController@RequestAction');                   // GooglePlay平台支付
     Route::any('pay/baidu/request', 'Api\\Pay\\BaiduController@RequestAction');                             // 百度平台支付
-    Route::any('pay/baidu/accout', 'Api\\Pay\\BaiduController@getAccout');                                  // 百度平台获取用户uid
+    //Route::any('pay/baidu/accout', 'Api\\Pay\\BaiduController@getAccout');                                // 百度平台获取用户uid
     Route::any('pay/baidu/order', 'Api\\Pay\\BaiduController@getOrderInfoAction');                          // 百度平台获取订单信息
     Route::any('pay/yingyongbao/request', 'Api\\Pay\\YingYongBaoController@RequestAction');                 // 应用宝平台支付
     Route::any('pay/yingyongbao/check', 'Api\\Pay\\YingYongBaoController@checkPayTokenAction');             // 应用宝检查token是否有效
@@ -100,14 +100,12 @@ Route::group(['prefix' => 'api'], function () {
     Route::any('pay/lenovo/accout', 'Api\\Pay\\LenovoController@getAccout');                                // 联想平台获取用户信息
     Route::any('pay/huawei/request', 'Api\\Pay\\HuaweiController@RequestAction');                           // 华为平台支付
     Route::any('pay/oppo/request', 'Api\\Pay\\OppoController@RequestAction');                               // Oppo平台支付
-
     Route::any('pay/ios/request','Api\\Pay\\IOSController@RequestAction');                                  // 验证苹果支付的信息
+    Route::any('pay/paypal/request','Api\\Pay\\PaypalController@RequestAction');                            // PayPal
 
-    //Route::any('ios/order/receipt/verify','Api\\Pay\\AppleController@validateReceiptAction');             // 验证苹果支付的信息 4.0
+    // 兼容4.0
     Route::any('ios/order/receipt/verify','Api\\Pay\\IOSController@RequestAction');                         // 验证苹果支付的信息
-    //Route::any('ios/order/create','Api\\Pay\\AppleController@OrderCreateAction');                         // 创建苹果订单 4.0
     Route::any('ios/order/create','Api\\Pay\\OrderController@NewAction');                                   // 创建苹果订单
-    //Route::any('ios/applelimit','Api\\Pay\\AppleController@AppleLimitAction');                            // 验证当前是否开启限制 4.0
     Route::any('ios/applelimit','Api\\Pay\\OrderController@ConfigAction');                                  // 验证当前是否开启限制
 
     Route::any('tool/reset_password/request','Api\\Tool\\ResetPasswordController@RequestAction');           // 通过token用户自行修改密码
