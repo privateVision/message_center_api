@@ -152,6 +152,7 @@ return [
         'paypal' => [
             'ClientID' => env('APP_DEBUG', true) ? 'AVKsKYJ2c3PWKyeSIfbrHw5SRJPSs_4uq9FuuAyXhYdcwoDnbMZ3a_XdusnOn1LxxWgTCQPhUqOCC7zC' : 'AbY9SzC7g_xppRt1xAWQljHbz3FBQU7XXOGGTpKBP6quZZnvFXdzguCX3ZBqcNOmAaXuEwrQ1C0eaQns',
             'Secret' => env('APP_DEBUG', true) ? 'EAPw8swZBsOtySBYaXYzKRyPRIIWY_-aEbzTGMSoXSdsfSO44E48h3qFxez6GWWHBdRNZYG7kVabtVNX' : 'ECduHwsLdmLpldfrpESOjmKkyIN7Buqg6Tww1NXtQ4V2GMH6VO6B9a11-jdoGlW4eypIhPaoTpioYDqv',
+            'business' => env('APP_DEBUG', true) ? 'sss60m@qq.com' : 'guxuan@novasmobi.com', // 收款帐号，付款帐号：sss60b@qq.com
         ]
     ],
 ];
