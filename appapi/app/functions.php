@@ -279,7 +279,7 @@ function datetime($time = 0) {
  * @return [type] [description]
  */
 function smscode() {
-    return rand(100000, 999999);
+    return env('APP_DEBUG', true) ? '123456' : rand(100000, 999999); // 测试服不发验证码
 }
 
 /**
