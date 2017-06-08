@@ -46,8 +46,8 @@ Route::group(['prefix' => 'api'], function () {
     Route::any('account/oauth/login', 'Api\\Account\\OauthController@LoginAction');                         // 平台登陆
 
     //第三方获取用户信息
-    Route::any('account/third/uc', 'Api\\Account\\UcController@ucAction');                                  // Uc平台获取用户信息
-
+    Route::any('account/third/uc', 'Api\\Account\\ThirdController@ucAction');                               // Uc平台获取用户信息
+    Route::any('account/third/lenovo', 'Api\\Account\\ThirdController@lenovoAction');                       // 联想平台获取用户信息
 
 
     Route::any('user/recharge', 'Api\\UserController@RechargeAction');                                      // 充值记录（充F币）
