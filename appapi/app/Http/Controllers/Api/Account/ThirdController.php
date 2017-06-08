@@ -5,7 +5,7 @@ use App\Exceptions\ApiException;
 use Illuminate\Http\Request;
 use App\Parameter;
 
-class Thirdntroller extends Controller {
+class ThirdController extends Controller {
     /**
      * @param sid   uc平台sid
      * @param game_id  uc平台游戏game_id
@@ -36,7 +36,7 @@ class Thirdntroller extends Controller {
         //把参数序列化成一个json字符串
         $requestBody = json_encode($requestParam);
         //请求url
-        $requestUrl = $config['baseUrl'] . ":" . $config['port'] . "/" . $config['prefix'] . "account.getRealNameStatus";
+        $requestUrl = $config['baseUrl'] . ":" . $config['port'] . "/" . $config['prefix'] . "account.verifySession";
 
         //发送请求
         $res = http_curl($requestUrl, $requestBody);
@@ -65,7 +65,7 @@ class Thirdntroller extends Controller {
 
 
     /**
-     * 获取平台用户id
+     * 获取联想平台用户id
      */
     public function lenovoAction() {
         $lpsust = $this->parameter->tough('lpsust');
@@ -82,6 +82,41 @@ class Thirdntroller extends Controller {
         } else {
             throw new ApiException(ApiException::Remind, $res['rspmsg']);
         }
+    }
+
+    /**
+     * 获取百度平台用户id
+     */
+    public function baiduAction() {
+        $token = $this->parameter->tough('token');
+
+        $appid = $this->procedure_extend->third_appid;
+        $appkey = $this->procedure_extend->third_appkey;
+
+        $params = array(
+            'AppID'=>$appid,
+            'AccessToken'=>$token,
+            'Sign'=>self::baiduVerify([$appid, $token, $appkey])
+        );
+
+        $url = self::PayHttp . 'CpLoginStateQuery.ashx';
+        $res = http_curl($url, $params, true);
+        if($res['cd'] == 1 && $res['Sign']==self::baiduVerify([$appid, $res['ResultCode'], urldecode($res['Content']), $appkey])) {
+            $result = base64_decode(urldecode($res['Content']));
+            return json_decode($result,true);
+        } else {
+            throw new ApiException(ApiException::Remind, $res['rspmsg']);
+        }
+    }
+
+    /**
+     * 计算签名
+     * @param $params
+     * @return string
+     */
+    protected function baiduVerify($params) {
+        $v = array_values($params);
+        return md5($v);
     }
 
 
