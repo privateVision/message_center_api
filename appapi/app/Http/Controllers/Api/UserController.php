@@ -585,35 +585,20 @@ class UserController extends AuthController
 
     public function EventAction() {
         $event = $this->parameter->tough('event');
+        $data = $this->parameter->tough('data');
+
+        $user_event_log = new \App\Model\Log\UserEventLog;
+        $user_event_log->event = $event;
+        $user_event_log->data = json_decode($data, true) ?: $data;
+        $user_event_log->ucid = $this->user->ucid;
+        $user_event_log->pid = $this->procedure->pid;
+        $user_event_log->rid = $this->parameter->get('_rid');
+        $user_event_log->imei = $this->parameter->get('_imei');
+        $user_event_log->device_id = $this->parameter->get('_device_id');
+        $user_event_log->version = $this->parameter->get('_version');
+        $user_event_log->app_version = $this->parameter->get('_app_version');
+        $user_event_log->save();
+
         return ['result' => true];
     }
-
-    /*
-     * 用户角色等级信息日志
-     */
-/*
-    public function UpdateRoleAction(){
-        $zone_id                = $this->parameter->tough('zone_id'); //区服ID
-        $zone_name              = $this->parameter->tough('zone_name'); //区服名称
-        $role_id                = $this->parameter->tough('role_id');  //游戏
-        $role_level             = $this->parameter->tough('level'); //游戏角色扥等级
-        $role_name              = $this->parameter->tough('level_name'); //游戏角色名称
-        $pid                    = $this->user->pid; //游戏ID
-        $ucid                   = $this->user->ucid;   //用户的ID
-        $sud_id                 = $this->session->user_sub_id; //小号id
-
-        $logdata                = new RoleDataLog();
-        $logdata->zone_id       = $zone_id;
-        $logdata->zone_name     = $zone_name;
-        $logdata->role_id       = $role_id;
-        $logdata->level         = $role_level;
-        $logdata->level_name    = $role_name;
-        $logdata->game_id       = $pid;
-        $logdata->create_time   = date("Y-m-d H:i:s",time());
-        $logdata->ucid          = $ucid;
-        $logdata->sub_id        = $sud_id;
-
-        return $logdata->save()?"true":"false";
-    }
-*/
 }
