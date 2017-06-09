@@ -116,7 +116,7 @@ class Controller extends \App\Controller
         $this->procedure_extend = ProceduresExtend::find($this->procedure->pid);
         if (!$this->procedure_extend) {
             $this->procedure_extend = new ProceduresExtend;
-            $this->procedure_extend->pid = $_appid;
+            $this->procedure_extend->pid = $this->procedure->pid;
             $this->procedure_extend->service_qq = env('service_qq');
             $this->procedure_extend->service_page = env('service_page');
             $this->procedure_extend->service_phone = env('service_phone');

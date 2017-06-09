@@ -15,8 +15,8 @@ class PaypalController extends \App\Controller {
 
         log_info('paypal:payment:sign', $data, $sign);
 
-        $return_url = url('web/paypal/return?sign=' . $sign);
-        $calcel_url = url('web/paypal/calcel?sign=' . $sign);
+        $return_url = url('web/paypal/return?sign=' . urlencode($sign));
+        $calcel_url = url('web/paypal/cancel?sign=' . urlencode($sign));
         $notify_url = url('pay_callback/paypal');
 
 $html = <<<HTML
@@ -55,11 +55,31 @@ HTML;
     }
 
     public function ReturnAction(Request $request) {
-        return 'return';
+        $sign = $request->get('sign');
+
+        $data = decrypt3des($sign);
+        if(!$data) return;
+
+        $data = json_decode($data, true);
+        if(!$data) return;
+
+        log_info('paypal:payment:sign', $data, $sign);
+
+        return view('pay_callback/callback', ['order' => $data['order_id'], 'is_success' => true]);
     }
 
     public function CancelAction(Request $request) {
-        return 'cancel';
+        $sign = $request->get('sign');
+
+        $data = decrypt3des($sign);
+        if(!$data) return;
+
+        $data = json_decode($data, true);
+        if(!$data) return;
+
+        log_info('paypal:payment:sign', $data, $sign);
+
+        return view('pay_callback/callback', ['order' => $data['order_id'], 'is_success' => false, 'message' => trans('messages.pay_cancel')]);
     }
 
 }

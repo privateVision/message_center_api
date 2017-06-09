@@ -46,7 +46,7 @@ class WechatController extends Controller {
         return $data['result_code'] == 'SUCCESS';
     }
     
-    protected function onComplete($data, $order, $order_extend, $isSuccess) {
+    protected function onComplete($data, $order, $order_extend, $isSuccess, $message = null) {
         if($isSuccess) {
             return "<xml><return_code><![CDATA[SUCCESS]]></return_code><return_msg><![CDATA[OK]]></return_msg></xml>";
         } else {

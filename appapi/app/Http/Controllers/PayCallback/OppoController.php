@@ -67,7 +67,7 @@ class OppoController extends Controller
      * @param  \App\Model\Orders $order Orders
      * @param  boolean $is_success 订单是否处理成功
      */
-    protected function onComplete ( $data , $order, $order_extend , $is_success )
+    protected function onComplete ( $data , $order, $order_extend , $is_success, $message = null)
     {
         return $is_success?'result=OK&resultMsg=ok':'result=FAIL&resultMsg=fail';
     }

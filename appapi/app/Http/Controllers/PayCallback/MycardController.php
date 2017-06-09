@@ -67,17 +67,8 @@ class MycardController extends Controller
         return @$data['PayResult'] == '3';
     }
 
-    protected function onComplete($data, $order, $order_extend, $isSuccess) {
-        if($isSuccess) {
-            return trans('messages.mycard_callback_success', [
-                'name' => $order ? $order->subject : trans('messages.product_default_name')
-            ]);
-        } else {
-            return trans('messages.mycard_callback_fail', [
-                'name' => $order ? $order->subject : trans('messages.product_default_name'),
-                'ReturnMsg' => urldecode(@$data['ReturnMsg'])
-            ]);
-        }
+    protected function onComplete($data, $order, $order_extend, $isSuccess, $message = null) {
+        return view('pay_callback/callback', ['order' => $order, 'order_extend' => $order_extend, 'is_success' => $isSuccess, 'message' => $message]);
     }
 
     protected static function mycard_hash($data, $key) {

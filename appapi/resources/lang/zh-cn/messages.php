@@ -68,8 +68,9 @@ return [
     "app_param_type_error"                  => "您好，传递的参数的格式错误！",
     "request_time_out"                      => "您好，请求超时，请重试！",
     "apple_rer_error_type"                  => "苹果返回的数据有误，请重新尝试！",
-    'mycard_callback_success'               => '购买“:name”成功',
-    'mycard_callback_fail'                  => '购买“:name”失败，:ReturnMsg',
+    'pay_success'                           => '购买“:name”成功',
+    'pay_fail'                              => '购买“:name”失败，:message',
+    'pay_cancel'                            => '已取消', // 购买“:name”失败，已取消
     'not_set_notify_url'                    => '未设置订单成功通知地址',
     'not_payconfig'                         => '未获取到支付配置', // error
     'not_allow_pay_type'                    => '不支持该支付场景', // error
@@ -97,8 +98,7 @@ return [
     'sms_60s_limit'                         => '短信发送过于频繁', // 1分钟之内超过1条
     'sms_1h_limit'                          => '短信发送次数超过限制，请稍候再试', // 1小时3条
     'sms_24h_limit'                         => '短信发送次数超过限制，请明天再试', // 24小时10条
-    'service_limit_1'                       => '一个客服同时只能审核一个账号'
-
+    'service_limit_1'                       => '一个客服同时只能审核一个账号',
 ];
 /*
 return [

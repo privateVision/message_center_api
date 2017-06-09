@@ -18,6 +18,7 @@ class PaypalController extends Controller {
         $data['product_name'] = $order->subject;
         $data['amount'] = $real_fee / 100;
         $data['order_no'] = $order->sn;
+        $data['order_id'] = $order->id;
 
         return url('web/paypal/payment?sign=') . urlencode(encrypt3des(json_encode($data)));
     }

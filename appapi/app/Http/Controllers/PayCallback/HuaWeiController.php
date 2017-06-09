@@ -83,7 +83,7 @@ class HuaWeiController extends Controller
         return false;
     }
 
-    protected function onComplete($data, $order, $order_extend, $isSuccess)
+    protected function onComplete($data, $order, $order_extend, $isSuccess, $message = null)
     {
         return json_encode(array(
             "result"=>$isSuccess?0:1

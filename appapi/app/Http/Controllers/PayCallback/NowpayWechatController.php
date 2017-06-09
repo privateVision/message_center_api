@@ -41,7 +41,7 @@ class NowpayWechatController extends Controller
         return true;
     }
 
-    protected function onComplete($data, $order, $order_extend, $isSuccess) {
+    protected function onComplete($data, $order, $order_extend, $isSuccess, $message = null) {
         return $isSuccess ? 'success' : 'fail';
     }
 }

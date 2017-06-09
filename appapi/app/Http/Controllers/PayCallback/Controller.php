@@ -72,9 +72,10 @@ abstract class Controller extends \App\Controller
             // 订单状态改变等等全部在这里做
             order_success($order->id);
 
-            return $this->resdata($data, $order, $order_extend, true);
+            return $this->onComplete($data, $order, $order_extend, true);
         } catch(Exception $e) {
-            return $this->resdata($data, $order, $order_extend, $e->getCode() == 1, $e->getMessage());
+            // 抛出的Exception错误，只要code=1就视为订单成功
+            return $this->onComplete($data, $order, $order_extend, $e->getCode() == 1, $e->getMessage());
         } catch(\Exception $e) {
             log_error('error', [
                 'message' => $e->getMessage(),
@@ -85,61 +86,7 @@ abstract class Controller extends \App\Controller
                 'reqdata' => $request->all()
             ]);
 
-            return $this->resdata($data, $order, $order_extend, false, trans('messages.order_handle_fail'));
-        }
-    }
-
-    private function resdata($data, $order, $order_extend, $is_success, $message = null) {
-        $response = $this->onComplete($data, $order, $order_extend, $is_success);
-
-        if($order_extend && $order_extend->callback) {
-            if(preg_match('/^https*:/', $order_extend->callback)) {
-                if(strpos($order_extend->callback, '?') === false) {
-                    $baseurl = $order_extend->callback . '?';
-                } else {
-                    $baseurl = $order_extend->callback . '&';
-                }
-
-                if($order) {
-                    return header('Location:' . $baseurl . http_build_query([
-                            'is_success' => $is_success ? 1 : 0,
-                            'message' => $message ? $message : $response,
-                            'openid' => $order->cp_uid ? $order->cp_uid : $order->ucid,
-                            'order_no' => $order->sn,
-                            'trade_order_no' => $order->vorderid,
-                        ]));
-                } else {
-                    return header('Location:' . $baseurl . http_build_query([
-                            'is_success' => $is_success ? 1 : 0,
-                            'message' => $message ? $message : $response,
-                            'openid' => '',
-                            'order_no' => '',
-                            'trade_order_no' => '',
-                        ]));
-                }
-            } else {
-                if($order) {
-                    return view('pay_callback/callback', [
-                        'callback' => $order_extend->callback,
-                        'is_success' => $is_success,
-                        'message' => $message ? $message : $response,
-                        'openid' => $order->cp_uid ? $order->cp_uid : $order->ucid,
-                        'order_no' => $order->sn,
-                        'trade_order_no' => $order->vorderid,
-                    ]);
-                } else {
-                    return view('pay_callback/callback', [
-                        'callback' => $order_extend->callback,
-                        'is_success' => $is_success,
-                        'message' => $message ? $message : $response,
-                        'openid' => null,
-                        'order_no' => null,
-                        'trade_order_no' => null,
-                    ]);
-                }
-            }
-        } else {
-            return $response;
+            return $this->onComplete($data, $order, $order_extend, false, trans('messages.order_handle_fail'));
         }
     }
 
@@ -182,5 +129,5 @@ abstract class Controller extends \App\Controller
      * @param  \App\Model\Orders $order Orders
      * @param  boolean $is_success 订单是否处理成功
      */
-    abstract protected function onComplete($data, $order, $order_extend, $is_success);
+    abstract protected function onComplete($data, $order, $order_extend, $is_success, $message = null);
 }

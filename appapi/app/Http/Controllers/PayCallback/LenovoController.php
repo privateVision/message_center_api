@@ -48,7 +48,7 @@ class LenovoController extends Controller
         return false;
     }
 
-    protected function onComplete($data, $order, $order_extend, $isSuccess)
+    protected function onComplete($data, $order, $order_extend, $isSuccess, $message = null)
     {
         return $isSuccess?'SUCCESS':'FAILTURE';
     }
