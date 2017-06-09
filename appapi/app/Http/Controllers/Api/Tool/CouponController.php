@@ -11,12 +11,16 @@ class CouponController extends Controller
     {
         $couponId = $this->parameter->tough('coupon_id');
 
-        $result = DB::table('zy_coupon_log')
+        $usedNum = DB::table('zy_coupon_log')
                     ->where('is_used', '=', 1)
                     ->where('coupon_id', '=', $couponId)
                     ->count();
+        $total = DB::table('zy_coupon_log')
+                    ->where('coupon_id', '=', $couponId)
+                    ->count();
         return [
-            'count'=>$result
+            'used_num'=>$usedNum,
+            'total' => $total
         ];
     }
 }
