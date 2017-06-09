@@ -18,7 +18,7 @@ class UcController extends Controller
         return $data['data']['cpOrderId'];
     }
 
-    protected function getTradeOrderNo($data, $order)
+    protected function getTradeOrderNo($data, $order, $order_extend)
     {
         return $data['data']['orderId'];
     }
@@ -48,7 +48,7 @@ class UcController extends Controller
         return $data['data']['orderStatus'] == 'S'?true:false;
     }
 
-    protected function onComplete($data, $order, $isSuccess)
+    protected function onComplete($data, $order, $order_extend, $isSuccess)
     {
         return $isSuccess?'SUCCESS':'FAILURE';
     }

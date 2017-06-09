@@ -30,7 +30,7 @@ class LeshiController extends Controller
      * @param   mixed $data getData方法返回的数据
      * @param  \App\Model\Orders $order Orders
      */
-    protected function getTradeOrderNo ( $data , $order )
+    protected function getTradeOrderNo ( $data , $order, $order_extend )
     {
         return $data['out_trade_no'];
     }
@@ -40,7 +40,7 @@ class LeshiController extends Controller
      * @param   mixed $data getData方法返回的数据
      * @param  \App\Model\Orders $order Orders
      */
-    protected function verifySign ( $data , $order )
+    protected function verifySign ( $data , $order, $order_extend )
     {
         $proceduresExtend = ProceduresExtend::where('pid', $order->vid)->first();
 
@@ -76,7 +76,7 @@ class LeshiController extends Controller
      * @param  \App\Model\Orders $order Orders
      * @param  boolean $is_success 订单是否处理成功
      */
-    protected function onComplete ( $data , $order , $is_success )
+    protected function onComplete ( $data , $order, $order_extend , $is_success )
     {
         return $is_success?'success':'fail';
     }

@@ -18,12 +18,12 @@ class BaiduController extends Controller
         return $data['CooperatorOrderSerial'];
     }
 
-    protected function getTradeOrderNo($data, $order)
+    protected function getTradeOrderNo($data, $order, $order_extend)
     {
         return $data['OrderSerial'];
     }
 
-    protected function verifySign($data, $order)
+    protected function verifySign($data, $order, $order_extend)
     {
         $result = ProceduresExtend::where('pid', $order->vid)->first()->toArray;
         if($data['Sign'] == self::verify([$result['third_appid'], $data['OrderSerial'], $data['CooperatorOrderSerial'], urldecode($data['Content']), $result['third_appkey']])) {
@@ -44,7 +44,7 @@ class BaiduController extends Controller
         return false;
     }
 
-    protected function onComplete($data, $order, $isSuccess)
+    protected function onComplete($data, $order, $order_extend, $isSuccess)
     {
         $result = ProceduresExtend::where('pid', $order->vid)->first()->toArray;
 

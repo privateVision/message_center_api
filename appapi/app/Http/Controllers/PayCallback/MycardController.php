@@ -15,11 +15,11 @@ class MycardController extends Controller
         return $data['FacTradeSeq'];
     }
 
-    protected function getTradeOrderNo($data, $order) {
+    protected function getTradeOrderNo($data, $order, $order_extend) {
         return $data['MyCardTradeNo'];
     }
 
-    protected function verifySign($data, $order) {
+    protected function verifySign($data, $order, $order_extend) {
         $config = config('common.payconfig.mycard');
         return static::mycard_hash($data, $config['FacServerKey']) === $data['Hash'];
     }
@@ -67,7 +67,7 @@ class MycardController extends Controller
         return @$data['PayResult'] == '3';
     }
 
-    protected function onComplete($data, $order, $isSuccess) {
+    protected function onComplete($data, $order, $order_extend, $isSuccess) {
         if($isSuccess) {
             return trans('messages.mycard_callback_success', [
                 'name' => $order ? $order->subject : trans('messages.product_default_name')

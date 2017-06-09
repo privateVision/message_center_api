@@ -14,11 +14,11 @@ class AlipayController extends Controller
         return $data['out_trade_no'];
     }
 
-    protected function getTradeOrderNo($data, $order) {
+    protected function getTradeOrderNo($data, $order, $order_extend) {
         return $data['trade_no'];
     }
 
-    protected function verifySign($data, $order) {
+    protected function verifySign($data, $order, $order_extend) {
         $config = config('common.payconfig.alipay');
 
         $sign = $data['sign'];
@@ -36,7 +36,7 @@ class AlipayController extends Controller
         return static::rsaVerify($str, $config['PubKey'], $sign);
     }
 
-    protected function handler($data, $order){
+    protected function handler($data, $order, $order_extend){
         return $data['trade_status'] == 'TRADE_SUCCESS';
     }
 

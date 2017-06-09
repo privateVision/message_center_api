@@ -14,11 +14,11 @@ class UnionpayController extends Controller
         return $data['orderId'];
     }
 
-    protected function getTradeOrderNo($data, $order) {
+    protected function getTradeOrderNo($data, $order, $order_extend) {
         return $data['queryId'];
     }
 
-    protected function verifySign($data, $order) {
+    protected function verifySign($data, $order, $order_extend) {
         $config = config('common.payconfig.unionpay');
 
         $sign = $data['signature'];
@@ -43,7 +43,7 @@ class UnionpayController extends Controller
     }
 
     // 商户返回码为200时，银联判定为通知成功，其他返回码为通知失败。
-    protected function onComplete($data, $order, $isSuccess) {
+    protected function onComplete($data, $order, $order_extend, $isSuccess) {
         return http_response_code(200);
     }
 }

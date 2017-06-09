@@ -2,6 +2,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Exceptions\ApiException;
+use App\Model\OrderExtend;
 use App\Model\Ucuser;
 use App\Model\Orders;
 use App\Model\UcuserOauth;
@@ -130,29 +131,31 @@ class UserController extends AuthController
 
         $offset = max(0, ($page - 1) * $limit);
 
-        $order = Orders::whereIsF();
-        $order = $order->where('ucid', $this->user->ucid);
+        $order = Orders::where('ucid', $this->user->ucid);
         $order = $order->where('hide', 0);
         $order = $order->where('status', '!=', Orders::Status_WaitPay);
+        $order = $order->orderBy('id', 'desc');
 
         $count = $order->count();
 
-        $order = $order->orderBy('id', 'desc');
-        $order = $order->take($limit)->skip($offset)->get();
+        $order = $order->get();
 
         $data = [];
         foreach($order as $v) {
-            $data[] = [
-                'order_id' => $v->sn,
-                'fee' => $v->fee,
-                'subject' => $v->subject,
-                'otype' => 0,
-                'createTime' => strtotime($v->createTime),
-                'status' => $v->status,
-            ];
+            $order_extend = OrderExtend::where('oid', $v->id)->first();
+            if($v->is_f() || ($order_extend && $order_extend->is_f())) {
+                $data[] = [
+                    'order_id' => $v->sn,
+                    'fee' => $v->fee,
+                    'subject' => $v->subject,
+                    'otype' => 0,
+                    'createTime' => strtotime($v->createTime),
+                    'status' => $v->status,
+                ];
+            }
         }
 
-        return ['count' => $count, 'list' => $data];
+        return ['count' => $count, 'list' => array_slice($data, $offset, $limit)];
     }
 
     public function ConsumeAction() {
@@ -161,30 +164,31 @@ class UserController extends AuthController
 
         $offset = max(0, ($page - 1) * $limit);
 
-        $order = Orders::whereIsNotF();
-        $order = $order->where('ucid', $this->user->ucid);
+        $order = Orders::where('ucid', $this->user->ucid);
         $order = $order->where('hide', 0);
-        $order = $order->where('vid', $this->procedure->pid);
         $order = $order->where('status', '!=', Orders::Status_WaitPay);
+        $order = $order->orderBy('id', 'desc');
 
         $count = $order->count();
 
-        $order = $order->orderBy('id', 'desc');
-        $order = $order->take($limit)->skip($offset)->get();
+        $order = $order->get();
 
         $data = [];
         foreach($order as $v) {
-            $data[] = [
-                'order_id' => $v->sn,
-                'fee' => $v->fee,
-                'subject' => $v->subject,
-                'otype' => 0, // todo: 这是什么鬼？
-                'createTime' => strtotime($v->createTime),
-                'status' => $v->status,
-            ];
+            $order_extend = OrderExtend::where('oid', $v->id)->first();
+            if(!$v->is_f() && !($order_extend && $order_extend->is_f())) {
+                $data[] = [
+                    'order_id' => $v->sn,
+                    'fee' => $v->fee,
+                    'subject' => $v->subject,
+                    'otype' => 0,
+                    'createTime' => strtotime($v->createTime),
+                    'status' => $v->status,
+                ];
+            }
         }
 
-        return ['count' => $count, 'list' => $data];
+        return ['count' => $count, 'list' => array_slice($data, $offset, $limit)];
     }
 
     public function HideOrderAction() {

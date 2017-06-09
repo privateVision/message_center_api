@@ -5,19 +5,21 @@ use Illuminate\Http\Request;
 class PaypalController extends \App\Controller {
 
     public function PaymentAction(Request $request) {
-        return "";
         $sign = $request->get('sign');
+
         $data = decrypt3des($sign);
         if(!$data) return;
 
         $data = json_decode($data, true);
         if(!$data) return;
 
-        $return_url = url('web/paypal/return');
-        $calcel_url = url('web/paypal/calcel');
-        $notify_url = url('web/paypal/notify');
+        log_info('paypal:payment:sign', $data, $sign);
 
-        $html = <<<HTML
+        $return_url = url('web/paypal/return?sign=' . $sign);
+        $calcel_url = url('web/paypal/calcel?sign=' . $sign);
+        $notify_url = url('pay_callback/paypal');
+
+$html = <<<HTML
 <!doctype html>
 <html>
 <meta http-equiv="Content-Type" content="text/html;charset=UTF-8">
@@ -46,7 +48,8 @@ window.onload = function() {
 </body>
 </html>
 HTML;
-        return $html;
+
+        return response($html);
     }
 
     public function ReturnAction(Request $request) {

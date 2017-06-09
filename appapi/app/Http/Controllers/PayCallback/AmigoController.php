@@ -17,12 +17,12 @@ class AmigoController extends Controller
         return $data['requestId'];
     }
 
-    protected function getTradeOrderNo($data, $order)
+    protected function getTradeOrderNo($data, $order, $order_extend)
     {
         return $data['orderId'];
     }
 
-    protected function verifySign($data, $order)
+    protected function verifySign($data, $order, $order_extend)
     {
         $config = ProceduresExtend::where('pid', $order->vid)->first()->toArray;
 
@@ -58,7 +58,7 @@ class AmigoController extends Controller
         return false;
     }
 
-    protected function onComplete($data, $order, $isSuccess)
+    protected function onComplete($data, $order, $order_extend, $isSuccess)
     {
         return json_encode(array(
             "result"=>$isSuccess?0:1

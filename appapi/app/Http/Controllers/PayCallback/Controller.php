@@ -34,11 +34,15 @@ abstract class Controller extends \App\Controller
             }
 
             $order_extend = OrderExtend::find($order->id);
-            if (!$order_extend) { // 理论上是不可能不存在的（4.0可能不存在）
+            if (!$order_extend) { // XXX 理论上是不可能不存在的（4.0可能不存在）
                 $order_extend = new OrderExtend();
+                $order_extend->oid = $order->id;
             }
 
-            if (!$this->verifySign($data, $order)) {
+            $order_extend->extra_params = ['callback' => $data];
+            $order_extend->asyncSave();
+
+            if (!$this->verifySign($data, $order, $order_extend)) {
                 throw new Exception(trans('messages.sign_error'), 0);
             }
 
@@ -57,15 +61,13 @@ abstract class Controller extends \App\Controller
             $order->save();
 
             // XXX 记录订单信息
-            $order_extend->third_order_no = $this->getTradeOrderNo($data, $order);;
-            $order_extend->extra_params = ['callback' => $data];
+            $order_extend->third_order_no = $this->getTradeOrderNo($data, $order, $order_extend);
 
             if (!$this->handler($data, $order, $order_extend)) {
                 throw new Exception(trans('messages.order_handle_fail'), 0);
             }
 
             $order_extend->extra_params = ['is_success' => true];
-            $order_extend->asyncSave();
 
             // 订单状态改变等等全部在这里做
             order_success($order->id);
@@ -158,14 +160,14 @@ abstract class Controller extends \App\Controller
      * @param   mixed $data getData方法返回的数据
      * @param  \App\Model\Orders $order Orders
      */
-    abstract protected function getTradeOrderNo($data, $order);
+    abstract protected function getTradeOrderNo($data, $order, $order_extend);
 
     /**
      * 验证签名
      * @param   mixed $data getData方法返回的数据
      * @param  \App\Model\Orders $order Orders
      */
-    abstract protected function verifySign($data, $order);
+    abstract protected function verifySign($data, $order, $order_extend);
 
     /**
      * 订单特殊处理逻辑判断，如果返回false则视为订单支付失败
@@ -180,5 +182,5 @@ abstract class Controller extends \App\Controller
      * @param  \App\Model\Orders $order Orders
      * @param  boolean $is_success 订单是否处理成功
      */
-    abstract protected function onComplete($data, $order, $is_success);
+    abstract protected function onComplete($data, $order, $order_extend, $is_success);
 }
