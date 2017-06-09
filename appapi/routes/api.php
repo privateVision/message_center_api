@@ -123,6 +123,7 @@ Route::group(['prefix' => 'api'], function () {
     Route::any('tool/procedure/query','Api\\Tool\\ProcedureController@QueryAction');                        // 通过包名查询procedure
     Route::any('tool/user/auth', 'Api\\Tool\\AuthAccountController@AuthAccountAction');                     // 检查用户认证
     Route::any('tool/user_sub/freeze', 'Api\\Tool\\AuthAccountController@FreezeSubAction');                 // 检查用户账号冻结
+    Route::any('tool/coupon/used_num', 'Api\\Tool\\CouponController@GetCouponUsedAction');                  //获取优惠券已使用数量
     
     Route::any('v1.0/cp/info/order','Api\\CP\\OrderController@GetOrderInfoAction');                          // 获取订单信息
     Route::any('v1.0/cp/user/auth','Api\\CP\\UserController@CheckAuthAction');                               // 验证登陆是否有效
