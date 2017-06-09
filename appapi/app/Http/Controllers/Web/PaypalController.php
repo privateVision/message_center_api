@@ -23,12 +23,9 @@ $html = <<<HTML
 <!doctype html>
 <html>
 <meta http-equiv="Content-Type" content="text/html;charset=UTF-8">
-<head><title></title></head>
-<script type="text/javascript">
-window.onload = function() {
-    document.getElementById('buyform').submit();
-}
-</script>
+<head>
+<title></title>
+</head>
 
 <body>
 <form action="https://www.sandbox.paypal.com/cgi-bin/webscr" method="post" id="buyform">
@@ -45,6 +42,11 @@ window.onload = function() {
 <input type="hidden" name="cancel_return" value="{$calcel_url}">
 <input type="hidden" name="notify_url" value="{$notify_url}">
 </form>
+<script type="text/javascript">
+window.onload = function() {
+    document.getElementById('buyform').submit();
+}
+</script>
 </body>
 </html>
 HTML;

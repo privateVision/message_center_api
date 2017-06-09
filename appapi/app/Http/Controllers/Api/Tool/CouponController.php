@@ -3,7 +3,6 @@
 namespace App\Http\Controllers\Api\Tool;
 
 use App\Model\ZyCouponLog;
-use Illuminate\Http\Request;
 
 class CouponController extends Controller
 {

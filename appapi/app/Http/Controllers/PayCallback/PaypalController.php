@@ -76,20 +76,17 @@ class PaypalController extends Controller
 
         log_info('paypal_verify', ['reqdata' => $req, 'resdata' => $res], $url);
 
-        if (!($res)) {
-            $errno = curl_errno($ch);
-            $errstr = curl_error($ch);
+        if (!$res) {
             curl_close($ch);
             return false;
         }
 
         $info = curl_getinfo($ch);
+        curl_close($ch);
         $http_code = $info['http_code'];
         if ($http_code != 200) {
             return false;
         }
-
-        curl_close($ch);
 
         if ($res == 'VERIFIED') {
             return true;
