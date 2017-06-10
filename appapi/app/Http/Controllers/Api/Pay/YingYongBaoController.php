@@ -24,10 +24,11 @@ class YingYongBaoController extends Controller
     /**
      * yingyongbao config
      * {
-     *      "qq_app_id":"f28613464145a3a861869bc4ae35335f",
-     *      "qq_app_key":"81tKZhcpxI0wOoGgSwcgwk0WC",
-     *      "wx_app_id":"f28613464145a3a861869bc4ae35335f",
-     *      "wx_app_key":"81tKZhcpxI0wOoGgSwcgwk0WC"
+     *      "qq_app_id":"1105442440",
+     *      "qq_app_key":"zyWX2zZZ7T8ZZorE",
+     *      "wx_app_id":"wxf671fb41a6dbcc03",
+     *      "wx_app_key":"71e9270844dca0cad18e25ebdca4f7b6",
+     *      "app_key":"gdcaJrEZwdmDDoaYw4rAwvdz8uIJXYkH" //支付测试key
      * }
      */
 
@@ -79,16 +80,21 @@ class YingYongBaoController extends Controller
      */
     public function checkPayTokenAction()
     {
+        $cfg = $this->procedure_extend->third_config;
+        if(empty($cfg) || !isset($cfg['qq_app_id'])) {
+            throw new ApiException(ApiException::Remind, trans('message.error_third_params'));
+        }
         $accout_type = $this->parameter->tough('accout_type');
-        $appids = explode(',', $this->procedure_extend->third_appid);
-        $appkeys = explode(',', $this->procedure_extend->third_appkey);
+        $app_id = $accout_type=='qq'?$cfg['qq_app_id']:$cfg['wx_app_id'];
+        $app_key = $accout_type=='qq'?$cfg['qq_app_key']:$cfg['wx_app_key'];
+
         $params = array(
             'openid' => $this->parameter->tough('openid'),
             'openkey' => $this->parameter->tough('openkey'),
             'timestamp' => time(),
-            'appid'=>($accout_type=='qq'?$appids[0]:$appids[1])
+            'appid'=>$app_id
         );
-        $params['sig'] =  md5(($accout_type=='qq'?$appkeys[0]:$appkeys[1]).$params['timestamp']);
+        $params['sig'] =  md5($app_key.$params['timestamp']);
 
         $method = 'get';
         $script_name = $accout_type=='qq'?'/auth/qq_check_token':'/auth/wx_check_token';
