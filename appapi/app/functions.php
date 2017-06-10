@@ -572,30 +572,6 @@ function makeCookieString($params)
     return $cookie_string;
 }
 
-//监测当前的格式
-function check_name($username,$len = 32){
-    if(!preg_match("/^[\w\_\-\.\@\:]+$/",$username) || strlen($username) > $len ) return false;
-    return true;
-}
-
-//监测的手机格式的判定
-function check_mobile($mobile){
-    if(!preg_match("/^1[34578]\d{9}$/",$mobile)) return false;
-    return true;
-}
-
-//监测短信验证码
-function check_code($code,$len=6){
-    if(!preg_match("/^\d{$len}$/",$code)) return false;
-    return true;
-}
-
-//检查当前的金额 12.34 or 12  参数一金额 参数二监测小数点后的数据 bug 没法控制全部是0
-function check_money($money,$del=4){
-    if(!preg_match("/^(\d{0,8}).?(?=\d+)(.\d{0,$del})?$/",$money)) return false;
-    return true;
-}
-
 function check_url($url){
     if(!preg_match("/^http[s]?.*/",$url)) return false;
     return true;
@@ -607,4 +583,21 @@ function getClientIp() {
     if(@$_SERVER['HTTP_X_FORWARDED_FOR']) return $_SERVER['HTTP_X_FORWARDED_FOR'];
     if(@$_SERVER['REMOTE_ADDR']) return $_SERVER['REMOTE_ADDR'];
     return '';
+}
+
+function exchange_rate($n, $currency) {
+    $exchange = \App\Model\ExchangeRate::where('currency', $currency)->first();
+    if(!$exchange) {
+        return false;
+    }
+
+    $n = bcmul(sprintf('%.2f', $n), sprintf('%.5f', $exchange->rate), 5);
+
+    if(str_pad(substr($n, -3), 3, '0', STR_PAD_RIGHT) !== '000') {
+        $n = bcadd($n, '0.01', 2);
+    } else {
+        $n = bcadd($n, '0', 2);
+    }
+
+    return $n;
 }

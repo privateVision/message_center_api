@@ -1,5 +1,23 @@
 <?php
 return [
+    'basic' => [
+        'default_avatar' => 'http://avatar.anfeng.com/avatar_default.png', // 默认头像
+        'service_share' => 'http://www.anfeng.cn/app', // 分享页面
+        'service_page' => 'http://m.anfeng.cn/service.html', // 客服页面
+        'service_phone' => '4000274365', // 客服电话
+        'service_qq' => '4000274365', // 客服QQ
+        'af_download' => 'http://appicdn.anfeng.cn/down/AnFengHelper_lastest.apk', // 安锋助手下载地址
+        'default_heartbeat_interval' => '2000', //默认心跳时长，毫秒
+        'logout_img' => 'http://appicdn.anfeng.cn/app/upload/appforsdk.jpg', // 客户端“退出”时，展示图片
+        'logout_redirect' => 'http://www.anfeng.cn/', // 客户端“退出”时，点击图片要跳转的地址
+        'protocol_title' => '安锋用户协议', // 用户协议标题
+        'protocol_url' => 'http://passtest.anfeng.cn/agreement.html', // 用户协议
+        'oauth_url_qq' => 'http://passtest.anfeng.cn/oauth/login/qq', // QQ登陆地址
+        'oauth_url_weixin' => 'http://passtest.anfeng.cn/oauth/login/weixin', // 微信登陆地址
+        'oauth_url_weibo' => 'http://passtest.anfeng.cn/oauth/login/weibo', // 微博登陆地址
+        'reset_password_url' => 'http://passtest.anfeng.cn/reset_password.html', // 用户重设密码接口地址
+    ],
+
     'storage_cdn' => [
         // doc: http://developer.qiniu.com/kodo/sdk/1241/php
         'qiniu' => [

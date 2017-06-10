@@ -1,6 +1,7 @@
 <?php
 namespace App\Http\Controllers\Web;
 use Illuminate\Http\Request;
+use App\Model\ExchangeRate;
 
 class PaypalController extends \App\Controller {
 
@@ -14,6 +15,11 @@ class PaypalController extends \App\Controller {
         if(!$data) return;
 
         log_info('paypal:payment:sign', $data, $sign);
+
+        $amount = exchange_rate($data['amount'], 'USD');
+        if(!$amount || $amount === '0.00') {
+            return;
+        }
 
         $return_url = url('web/paypal/return?sign=' . urlencode($sign));
         $calcel_url = url('web/paypal/cancel?sign=' . urlencode($sign));
@@ -33,7 +39,7 @@ $html = <<<HTML
 <input name="business" type="hidden" value="{$data['business']}">
 <input name="item_name" type="hidden" value="{$data['product_name']}">
 <input name="item_number" type="hidden" value="{$data['product_name']}">
-<input name="amount" type="hidden" value="{$data['amount']}">
+<input name="amount" type="hidden" value="{$amount}">
 <input name="quantity" type="hidden" value="1">
 <input name="no_shipping" type="hidden" value="1">
 <input name="currency_code" type="hidden" value="USD">

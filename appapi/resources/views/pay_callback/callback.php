@@ -14,7 +14,7 @@ message
 <?php
 if(!is_object($order)) {
     $order = \App\Model\Orders::find($order);
-    $order_extend = \App\Model\OrderExtend::where('oid', $order->id)->first();
+    if($order) $order_extend = \App\Model\OrderExtend::where('oid', $order->id)->first();
 }
 
 if($is_success) {
