@@ -25,7 +25,7 @@ class UcController extends Controller {
         $accountId = $this->parameter->tough('account_id');
 
         $params['accountId'] = $accountId;
-        $params['amount'] = $real_fee;
+        $params['amount'] = $real_fee/100;
         $params['notifyUrl'] = urlencode(url('pay_callback/uc'));
         $params['cpOrderId'] = $this->parameter->tough('order_id');
         $params['callbackInfo'] = '';
