@@ -99,6 +99,8 @@ return [
     'sms_1h_limit'                          => '短信发送次数超过限制，请稍候再试', // 1小时3条
     'sms_24h_limit'                         => '短信发送次数超过限制，请明天再试', // 24小时10条
     'service_limit_1'                       => '一个客服同时只能审核一个账号',
+    'error_third_system'                    => '第三方系统错误', // error
+    'error_third_params'                    => '第三方参数错误', // error
 ];
 /*
 return [

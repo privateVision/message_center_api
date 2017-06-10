@@ -15,6 +15,11 @@ class UcController extends Controller {
     const PayTypeText = 'uc平台支付';
 
     /**
+     * uc config
+     * 比较特殊 不用填写所有参数
+     */
+
+    /**
      * @param $config
      * @param Orders $order
      * @param $real_fee

@@ -90,8 +90,12 @@ class ThirdController extends Controller {
     public function baiduAction() {
         $token = $this->parameter->tough('token');
 
-        $appid = $this->procedure_extend->third_appid;
-        $appkey = $this->procedure_extend->third_appkey;
+        $cfg = $this->procedure_extend->third_config;
+        if(empty($cfg) || !isset($cfg['app_id'])) {
+            throw new ApiException(ApiException::Remind, trans('message.error_third_params'));
+        }
+        $appid = $cfg['app_id'];
+        $appkey = $cfg['app_key'];
 
         $params = array(
             'AppID'=>$appid,
@@ -99,7 +103,7 @@ class ThirdController extends Controller {
             'Sign'=>self::baiduVerify([$appid, $token, $appkey])
         );
 
-        $url = self::PayHttp . 'CpLoginStateQuery.ashx';
+        $url = 'http://querysdkapi.91.com/CpLoginStateQuery.ashx';
         $res = http_curl($url, $params, true);
         if($res['cd'] == 1 && $res['Sign']==self::baiduVerify([$appid, $res['ResultCode'], urldecode($res['Content']), $appkey])) {
             $result = base64_decode(urldecode($res['Content']));
@@ -117,6 +121,26 @@ class ThirdController extends Controller {
     protected function baiduVerify($params) {
         $v = array_values($params);
         return md5($v);
+    }
+
+    /**
+     * 获取vivo平台用户id
+     * @param authtoken
+     */
+    public function vivoAction() {
+        $authtoken = $this->parameter->tough('authtoken');
+
+        $url = 'https://usrsys.vivo.com.cn/sdk/user/auth.do';
+        $res = http_curl($url, array('authtoken'=>$authtoken), true);
+        if($res['cd'] == 1) {
+            if($res['retcode'] == 0){
+                return $res['data'];
+            } else {
+                throw new ApiException(ApiException::Remind, trans('messages.error_third_system').$res['retcode']);
+            }
+        } else {
+            throw new ApiException(ApiException::Remind, $res['rspmsg']);
+        }
     }
 
 

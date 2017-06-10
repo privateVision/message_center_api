@@ -25,20 +25,24 @@ class VivoController extends Controller
 
     public function getData($config, Orders $order, OrderExtend $order_extend, $real_fee)
     {
+        $cfg = $this->procedure_extend->third_config;
+        if(empty($cfg) || !isset($cfg['app_id'])) {
+            throw new ApiException(ApiException::Remind, trans('message.error_third_params'));
+        }
         $params = [
             'version' => '1.0.0',
-            'cpId' => $this->procedure_extend->third_cpid,
-            'appId' => $this->procedure_extend->third_appid,
-            'cpOrderNumber' => $order->id,
-            'notifyUrl' => url()->previous().'pay_callback/vivo',
+            'cpId' => $cfg['cp_id'],
+            'appId' => $cfg['app_id'],
+            'cpOrderNumber' => $order->sn,
+            'notifyUrl' => url('pay_callback/vivo'),
             'orderTime' => date('YmdHis', strtotime($order->createTime)),
             'orderAmount' => $real_fee,
             'orderTitle' => $order->subject,
             'orderDesc' => $order->body,
-            'extInfo' => 1
+            'extInfo' => '111'
         ];
 
-        $sign = self::sign($params);
+        $sign = self::sign($params, $cfg['app_key']);
 
         $params['signMethod'] = 'MD5';
         $params['signature'] = $sign;
@@ -59,13 +63,18 @@ class VivoController extends Controller
 
     }
 
-    protected function sign($params=[])
+    protected function sign($params, $appkey)
     {
         ksort($params);
 
-        $sign = md5(http_build_query($params).'&'.md5($this->procedure_extend->third_appkey));
+        $str = '';
+        foreach($params as $k=>$v) {
+            if(!empty($v)) {
+                $str .=  $k.'='.$v.'&';
+            }
+        }
 
-        return $sign;
+        return md5($str . strtolower(md5($appkey)));
     }
 
 }

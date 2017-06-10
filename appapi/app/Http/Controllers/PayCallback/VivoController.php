@@ -6,6 +6,14 @@ use Illuminate\Http\Request;
 
 class VivoController extends Controller
 {
+    /**
+     * vivo config
+     * {
+     *      "cp_id":"20160504231334318356",
+     *      "app_id":"f28613464145a3a861869bc4ae35335f",
+     *      "app_key":"81tKZhcpxI0wOoGgSwcgwk0WC"
+     * }
+     */
 
     /**
      * 获取回调的所有数据
@@ -46,7 +54,10 @@ class VivoController extends Controller
     {
         $proceduresExtend = ProceduresExtend::where('pid', $order->vid)->first();
 
-        if(!$proceduresExtend)return false;
+        $cfg = json_decode($proceduresExtend->third_config, true);
+        if(empty($cfg) || !isset($cfg['app_id'])) {
+            return false;
+        }
 
         $params = [
             'respCode' => $data['respCode'],
@@ -65,11 +76,9 @@ class VivoController extends Controller
 
         if($data['signMethod']!='MD5')return false;
 
-        ksort($params);
+        $sign = self::sign($params, $cfg['app_key']);
 
-        $sign = md5(http_build_query($params).'&'.md5($proceduresExtend->third_appkey));
-
-        return $data['signature']==$sign;
+        return $data['signature'] == $sign;
     }
 
     /**
@@ -93,12 +102,17 @@ class VivoController extends Controller
         return $is_success ? 'success':'fail';
     }
 
-    private function sign($params=[])
+    private function sign($params, $appkey)
     {
         ksort($params);
 
-        $sign = md5(http_build_query($params).'&'.md5($this->procedure_extend->third_appkey));
+        $str = '';
+        foreach($params as $k=>$v) {
+            if(!empty($v)) {
+                $str .=  $k.'='.$v.'&';
+            }
+        }
 
-        return $sign;
+        return md5($str . strtolower(md5($appkey)));
     }
 }

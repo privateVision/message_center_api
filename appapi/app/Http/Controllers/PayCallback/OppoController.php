@@ -57,9 +57,12 @@ class OppoController extends Controller
 
         unset($data['sign']);
 
-        $third_config = $proceduresExtend->third_config;
+        $cfg = json_decode($proceduresExtend->third_config, true);
+        if(empty($cfg) || !isset($cfg['app_id'])) {
+            return false;
+        }
 
-        return $this->rsa_verify($data, $third_config['pay_pub_key'])==1?true:false;
+        return $this->rsa_verify($data, $cfg['pay_pub_key'])==1?true:false;
     }
 
     /**
