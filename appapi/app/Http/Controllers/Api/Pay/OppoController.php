@@ -2,7 +2,9 @@
 
 namespace App\Http\Controllers\Api\Pay;
 
-use Illuminate\Http\Request;
+use App\Exceptions\ApiException;
+use App\Model\OrderExtend;
+use App\Model\Orders;
 
 class OppoController extends Controller
 {
@@ -22,7 +24,13 @@ class OppoController extends Controller
      */
     public function getData($config, Orders $order, OrderExtend $order_extend, $real_fee) {
         return [
-            'data' => array()
+            'data' => array(
+                'order'=>$order->sn,
+                'amount'=>$real_fee,
+                'productName'=>$order->subject,
+                'productDesc'=>$order->body,
+                'callbackUrl'=>url('pay_callback/oppo')
+            )
         ];
     }
 }
