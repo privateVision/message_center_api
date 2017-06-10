@@ -11,6 +11,11 @@ class ProceduresExtend extends Model
 		return  $this->belongsTo(Procedures::class, 'pid', 'pid');
 	}
 
+    public function getThirdConfigAttribute() {
+        $value = trim(@$this->attributes['third_config']);
+        return json_decode($value, true) ?: [];
+    }
+
 	public function getBindPhoneNeedAttribute() {
 		$value = trim(@$this->attributes['bind_phone_need']);
 		return $value !== '' ? (bool)$value : true;
