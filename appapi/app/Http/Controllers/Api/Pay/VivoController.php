@@ -4,7 +4,7 @@ namespace App\Http\Controllers\Api\Pay;
 
 use App\Model\OrderExtend;
 use App\Model\Orders;
-use Illuminate\Http\Request;
+use App\Exceptions\ApiException;
 
 class VivoController extends Controller
 {
@@ -37,8 +37,8 @@ class VivoController extends Controller
             'notifyUrl' => url('pay_callback/vivo'),
             'orderTime' => date('YmdHis', strtotime($order->createTime)),
             'orderAmount' => $real_fee,
-            'orderTitle' => $order->subject,
-            'orderDesc' => $order->body,
+            'orderTitle' => 'title',//mb_substr($order->title, 45),
+            'orderDesc' => 'desc',//mb_substr($order->subject, 100),
             'extInfo' => '111'
         ];
 

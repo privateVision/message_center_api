@@ -22,6 +22,16 @@ class YingYongBaoController extends Controller
     const PayTypeText = '应用宝平台支付';
 
     /**
+     * yingyongbao config
+     * {
+     *      "qq_app_id":"f28613464145a3a861869bc4ae35335f",
+     *      "qq_app_key":"81tKZhcpxI0wOoGgSwcgwk0WC",
+     *      "wx_app_id":"f28613464145a3a861869bc4ae35335f",
+     *      "wx_app_key":"81tKZhcpxI0wOoGgSwcgwk0WC"
+     * }
+     */
+
+    /**
      * @param $config
      * @param Orders $order
      * @param OrderExtend $order_extend
