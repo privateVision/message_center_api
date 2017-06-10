@@ -6,7 +6,16 @@ use Illuminate\Http\Request;
 
 class OppoController extends Controller
 {
-    //
+    /**
+     * oppo config
+     * {
+     *      "app_id":"2183622",
+     *      "app_key":"81tKZhcpxI0wOoGgSwcgwk0WC",
+     *      "app_secret":"2a838e1Aaef9412e5412d511a644a5b3",
+     *      "pay_pub_key":"MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQCmreYIkPwVovKR8rLHWlFVw7YDfm9uQOJKL89Smt6ypXGVdrAKKl0wNYc3/jecAoPi2ylChfa2iRu5gunJyNmpWZzlCNRIau55fxGW0XEu553IiprOZcaw5OuYGlf60ga8QT6qToP0/dpiL/ZbmNUO9kUhosIjEu22uFgR+5cYyQIDAQAB"
+     * }
+     */
+
     /**
      * 获取回调的所有数据
      * @param  Request $request
@@ -48,7 +57,9 @@ class OppoController extends Controller
 
         unset($data['sign']);
 
-        return $this->rsa_verify($data, $proceduresExtend->third_paykey)==1?true:false;
+        $third_config = $proceduresExtend->third_config;
+
+        return $this->rsa_verify($data, $third_config['pay_pub_key'])==1?true:false;
     }
 
     /**

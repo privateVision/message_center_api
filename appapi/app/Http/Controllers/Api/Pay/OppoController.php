@@ -15,6 +15,16 @@ class OppoController extends Controller
     const PayTypeText = 'oppo平台支付';
 
     /**
+     * oppo config
+     * {
+     *      "app_id":"2183622",
+     *      "app_key":"81tKZhcpxI0wOoGgSwcgwk0WC",
+     *      "app_secret":"2a838e1Aaef9412e5412d511a644a5b3",
+     *      "pay_pub_key":"MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQCmreYIkPwVovKR8rLHWlFVw7YDfm9uQOJKL89Smt6ypXGVdrAKKl0wNYc3/jecAoPi2ylChfa2iRu5gunJyNmpWZzlCNRIau55fxGW0XEu553IiprOZcaw5OuYGlf60ga8QT6qToP0/dpiL/ZbmNUO9kUhosIjEu22uFgR+5cYyQIDAQAB"
+     * }
+     */
+
+    /**
      * @param $config
      * @param Orders $order
      * @param OrderExtend $order_extend

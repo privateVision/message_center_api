@@ -9,3 +9,7 @@ ALTER TABLE `anfanapi`.`procedures_extend`
   
 ALTER TABLE `anfanapi`.`procedures_extend`   
   CHANGE `sandbox_version` `test_version` VARCHAR(20) CHARSET utf8 COLLATE utf8_general_ci NULL   COMMENT '指定要开启测试模式的版本号，多个版本号之间竖线分隔\n1.0|1.1|1.2|1.7';
+
+/**20170610**/
+ALTER TABLE `anfanapi`.`procedures_extend` ADD COLUMN `third_config` TEXT NULL COMMENT '第三方渠道配置文件' AFTER `pay_method`;
+ALTER TABLE `anfanapi`.`procedures_extend` DROP COLUMN `third_cpid`, DROP COLUMN `third_appid`, DROP COLUMN `third_appkey`, DROP COLUMN `third_appsecret`, DROP COLUMN `third_payid`, DROP COLUMN `third_paykey`, DROP COLUMN `third_payprikey`;

@@ -14,6 +14,15 @@ class VivoController extends Controller
     const PayText = 'vivo';
     const PayTypeText = 'vivo平台支付';
 
+    /**
+     * vivo config
+     * {
+     *      "cp_id":"20160504231334318356",
+     *      "app_id":"f28613464145a3a861869bc4ae35335f",
+     *      "app_key":"81tKZhcpxI0wOoGgSwcgwk0WC"
+     * }
+     */
+
     public function getData($config, Orders $order, OrderExtend $order_extend, $real_fee)
     {
         $params = [
