@@ -1,5 +1,6 @@
 .env
 .env.dkapi.anfan.com
+config/local.sdkapi.com/
 
 .buildpath
 .htaccess
