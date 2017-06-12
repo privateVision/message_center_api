@@ -109,6 +109,7 @@ $app->group(['prefix' => 'api'], function () use ($app) {
     $app->post('tool/user/reset_password_page','Api\\Tool\\UserController@ResetPasswordPageAction');        // 获取重设密码页面
     $app->post('tool/user/freeze','Api\\Tool\\UserController@FreezeAction');                                // 冻结用户
     $app->post('tool/procedure/query','Api\\Tool\\ProcedureController@QueryAction');                        // 通过包名查询procedure
+    $app->post('tool/coupon/used_num', 'Api\\Tool\\CouponController@GetCouponUsedAction');	
 
     $app->post('v1.0/cp/info/order','Api\\CP\\OrderController@GetOrderInfoAction');                          //获取订单信息
     $app->post('v1.0/cp/user/auth','Api\\CP\\UserController@CheckAuthAction');                               //验证登陆是否有效

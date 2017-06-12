@@ -11,15 +11,27 @@ use App\Model\LoginLog;
 use App\Model\UcuserInfo;
 use App\Model\UcuserSession;
 use App\Model\Retailers;
+use App\Jobs\AdtRequest;
 
 trait RegisterAction {
     
     public function RegisterAction(){
-
         $pid = $this->parameter->tough('_appid');
         $rid = $this->parameter->tough('_rid');
         
         $user = $this->getRegisterUser();
+
+        // 广告统计，加入另一个队列由其它项目处理
+        $imei = $this->parameter->get('_imei');
+        if($imei) {
+            dispatch((new AdtRequest([
+                'imei' => $imei,
+                'gameid' => $pid,
+                'rid'=>$rid,
+                'ucid' => $user->ucid
+            ]))->onQueue('adtinit'));
+        }
+
         if(!$user) throw new ApiException(ApiException::OauthNotRegister, '尚未注册第三方账号，请先注册'); // LANG:not_register_3th
         if($user->is_freeze) {
             throw new ApiException(ApiException::AccountFreeze, '账号被冻结，无法登录'); // LANG:freeze_not_login
@@ -73,19 +85,27 @@ trait RegisterAction {
         // ucuser
         // $user->uuid = $session->token;
         $user->last_login_at = datetime();
-        $user->last_login_ip = $this->parameter->get('_ipaddress', null) ?: $this->request->ip();
+        $user->last_login_ip = getClientIp();
         $user->save();
         $user->updateCache();
-        
-        // login_log
-        $t = time() - date('Z');
-        
+
+        $t = time();
+
         $login_log = new LoginLog;
         $login_log->ucid = $user->ucid;
         $login_log->pid = $pid;
-        $login_log->loginDate = intval(($t - date('Z'))/ 86400);
+        /**
+         * XXX 兼容旧的问题，后台显示是强制
+         * SELECT id,loginDate,loginTime,FROM_UNIXTIME(
+         *   CASE
+         *     WHEN loginTime < 57600 THEN (loginDate+1)*86400+loginTime
+         *     ELSE loginDate*86400+loginTime
+         *   END + 8*3600
+         * ) AS stamp FROM login_log_161013
+         */
+        $login_log->loginDate = intval(($t + 28800) / 86400) - 1;
         $login_log->loginTime = $t % 86400;
-	$login_log->loginIP = ip2long($this->parameter->get('_ipaddress', null) ?: $this->request->ip());
+	    $login_log->loginIP = ip2long(getClientIp());
         $login_log->asyncSave();
 
         $user_info = UcuserInfo::from_cache($user->ucid);
@@ -102,7 +122,7 @@ trait RegisterAction {
             'username' => $user->uid,
             'nickname' => $user->nickname,
             'mobile' => strval($user->mobile),
-            'avatar' => $user_info && $user_info->avatar ? (string)$user_info->avatar : env('default_avatar'),
+            'avatar' => $user_info && $user_info->avatar ? httpsurl((string)$user_info->avatar) : httpsurl(env('default_avatar')),
             'is_real' => $user_info && $user_info->isReal(),
             'is_adult' => $user_info && $user_info->isAdult(),
             'vip' => $user_info && $user_info->vip ? (int)$user_info->vip : 0,

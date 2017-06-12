@@ -1,6 +1,6 @@
 #!/usr/bin/bash
 
-HOST="106.75.153.104"
+HOST="106.75.153.1041"
 USERNAME="root"
 PASSWORD="An104Newan!@#.com()_feng.comapi1"
 

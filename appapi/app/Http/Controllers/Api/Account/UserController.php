@@ -23,7 +23,7 @@ class UserController extends Controller {
         // --------- 登录错误限制
         $key = $device_id;
         if(!$key) {
-            $key = $this->parameter->get('_ipaddress', null) ?: $this->request->ip();
+            $key = getClientIp();
         }
         
         $key = md5($key .'_'. $username);
@@ -112,7 +112,7 @@ class UserController extends Controller {
         $user->nickname = '暂无昵称';
         $user->setPassword($password);
         $user->regtype = static::Type;
-        $user->regip = $this->parameter->get('_ipaddress', null) ?: $this->request->ip();
+        $user->regip = getClientIp();
         $user->rid = $this->parameter->tough('_rid');
         $user->pid = $this->parameter->tough('_appid');
         $user->regdate = time();

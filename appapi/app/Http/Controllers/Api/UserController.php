@@ -37,7 +37,7 @@ class UserController extends AuthController
             'province' => $user_info && $user_info->province ? (string)$user_info->province : "",
             'city' => $user_info && $user_info->city ? (string)$user_info->city : "",
             'address' => $user_info && $user_info->address ? (string)$user_info->address : "",
-            'avatar' => $user_info && $user_info->avatar ? (string)$user_info->avatar : env('default_avatar'),
+            'avatar' => $user_info && $user_info->avatar ? httpsurl((string)$user_info->avatar) : httpsurl(env('default_avatar')),
             'real_name' => $user_info && $user_info->real_name ? (string)$user_info->real_name : "",
             'card_no' => $user_info && $user_info->card_no ? (string)$user_info->card_no : "",
             'exp' => $user_info && $user_info->exp ? (int)$user_info->exp : 0,
@@ -47,7 +47,7 @@ class UserController extends AuthController
             'is_adult' => $user_info && $user_info->isAdult(),
             'reg_time' => $this->user->regdate,
             'regtype' => $this->user->regtype,
-		'rid' => $this->user->rid,
+		    'rid' => $this->user->rid,
             'rtype' => $retailers ? $retailers->rtype : 0,
         ];
     }
@@ -317,7 +317,7 @@ class UserController extends AuthController
 
             if($this->user->mobile == $this->user->uid) {
                 if(!$username) {
-                    throw new ApiException(ApiException::Remind, "您必需重设您的用户名才能解绑");
+                    throw new ApiException(ApiException::Remind, "您必需重设您的用户名才能解绑，请联系客服");
                 }
 
                 $_user = Ucuser::where('uid', $username)->orWhere('mobile', $username)->orWhere('email', $username)->first();
@@ -563,8 +563,12 @@ class UserController extends AuthController
                 throw new ApiException(ApiException::Remind, '设置失败，用户名已被占用');
             }
         } else {
+            $old_username = $this->user->uid;
+
             $this->user->uid = $username;
             $this->user->save();
+
+            user_log($this->user, $this->procedure, 'reset_username', '【重设用户名】旧:%s,新:%s', $old_username, $username);
         }
 
         return ['result' => true];
@@ -581,35 +585,20 @@ class UserController extends AuthController
 
     public function EventAction() {
         $event = $this->parameter->tough('event');
+        $data = $this->parameter->tough('data');
+
+        $user_event_log = new \App\Model\Log\UserEventLog;
+        $user_event_log->event = $event;
+        $user_event_log->data = json_decode($data, true) ?: $data;
+        $user_event_log->ucid = $this->user->ucid;
+        $user_event_log->pid = $this->procedure->pid;
+        $user_event_log->rid = $this->parameter->get('_rid');
+        $user_event_log->imei = $this->parameter->get('_imei');
+        $user_event_log->device_id = $this->parameter->get('_device_id');
+        $user_event_log->version = $this->parameter->get('_version');
+        $user_event_log->app_version = $this->parameter->get('_app_version');
+        $user_event_log->save();
+
         return ['result' => true];
     }
-
-    /*
-     * 用户角色等级信息日志
-     */
-/*
-    public function UpdateRoleAction(){
-        $zone_id                = $this->parameter->tough('zone_id'); //区服ID
-        $zone_name              = $this->parameter->tough('zone_name'); //区服名称
-        $role_id                = $this->parameter->tough('role_id');  //游戏
-        $role_level             = $this->parameter->tough('level'); //游戏角色扥等级
-        $role_name              = $this->parameter->tough('level_name'); //游戏角色名称
-        $pid                    = $this->user->pid; //游戏ID
-        $ucid                   = $this->user->ucid;   //用户的ID
-        $sud_id                 = $this->session->user_sub_id; //小号id
-
-        $logdata                = new RoleDataLog();
-        $logdata->zone_id       = $zone_id;
-        $logdata->zone_name     = $zone_name;
-        $logdata->role_id       = $role_id;
-        $logdata->level         = $role_level;
-        $logdata->level_name    = $role_name;
-        $logdata->game_id       = $pid;
-        $logdata->create_time   = date("Y-m-d H:i:s",time());
-        $logdata->ucid          = $ucid;
-        $logdata->sub_id        = $sud_id;
-
-        return $logdata->save()?"true":"false";
-    }
-*/
 }

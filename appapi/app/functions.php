@@ -92,6 +92,19 @@ function parse_card_id($card_id) {
     return ['birthday' => $birthday, 'gender' => $gender, 'province' => $province];
 }
 
+/**
+ * 如果客户端以HTTPS请求接口，则返回的一些涉及到URL的参数也改为HTTPS
+ * @param $url
+ * @return string
+ */
+function httpsurl($url) {
+    if((@$_SERVER['HTTP_X_FORWARDED_PROTO'] == 'https' || app('request')->getScheme() == 'https') && substr($url, 0, 5) == 'http:') {
+        return 'https:' . substr($url, 5);
+    }
+
+    return $url;
+}
+
 function upload_to_cdn($filename, $filepath, $is_delete = true) {
     /*
     200 操作执行成功。
@@ -291,16 +304,10 @@ function order_success($order_id) {
 function send_sms($mobile, $pid, $template_id, $repalce, $code = '') {
     $smsconfig = config('common.smsconfig');
 
-    if(!env('APP_DEBUG') && Redis::exists(sprintf('sms_%s_%s_60s', $template_id, $mobile))) {
-        throw new \App\Exceptions\Exception('短信发送过于频繁');
-    }
-
-    if(!env('APP_DEBUG') && Redis::get(sprintf('sms_%s_hourlimit', $mobile)) >= 3 ) {
-        throw new \App\Exceptions\Exception('短信发送次数超过限制，请稍候再试');
-    }
+    $code = trim($code);
 
     if(!isset($smsconfig['template'][$template_id])) {
-        throw new \App\Exceptions\Exception('短信模板不存在');
+        throw new \App\Exceptions\Exception("短信模板不存在");
     }
 
     if(is_array($repalce) && count($repalce)) {
@@ -309,7 +316,10 @@ function send_sms($mobile, $pid, $template_id, $repalce, $code = '') {
         $content = $smsconfig['template'][$template_id];
     }
 
-    Queue::push(new \App\Jobs\SendSMS($smsconfig, $mobile, $content, $code));
+    $sendsms_jobs = new \App\Jobs\SendSMS($smsconfig, $template_id, $mobile, $content, $code);
+    $sendsms_jobs->verify($mobile, $template_id, $content, $code != '');
+
+    Queue::push($sendsms_jobs);
 
     return $content;
 }
@@ -347,7 +357,7 @@ function log_debug ($keyword, $content, $desc = '') {
         'desc' => $desc,
         'mode' => PHP_SAPI,
         'level' => 'DEBUG', 
-        'ip' => $app->request->get('_ipaddress') ?: $app->request->ip(),
+        'ip' => getClientIp(),
         'pid' => getmypid(),
         'datetime' =>datetime() .'.'. substr(microtime(), 2, 6),
         'content' => $content,
@@ -364,7 +374,7 @@ function log_info ($keyword, $content, $desc = '') {
         'desc' => $desc,
         'mode' => PHP_SAPI,
         'level' => 'INFO', 
-        'ip' => $app->request->get('_ipaddress') ?: $app->request->ip(),
+        'ip' => getClientIp(),
         'pid' => getmypid(),
         'datetime' =>datetime() .'.'. substr(microtime(), 2, 6),
         'content' => $content,
@@ -381,7 +391,7 @@ function log_warning ($keyword, $content, $desc = '') {
         'desc' => $desc,
         'mode' => PHP_SAPI,
         'level' => 'WARNING', 
-        'ip' => $app->request->get('_ipaddress') ?: $app->request->ip(),
+        'ip' => getClientIp(),
         'pid' => getmypid(),
         'datetime' =>datetime() .'.'. substr(microtime(), 2, 6),
         'content' => $content,
@@ -396,7 +406,7 @@ function log_error ($keyword, $content, $desc = '') {
         'desc' => $desc,
         'mode' => PHP_SAPI,
         'level' => 'ERROR', 
-        'ip' => $app->request->get('_ipaddress') ?: $app->request->ip(),
+        'ip' => getClientIp(),
         'pid' => getmypid(),
         'datetime' =>datetime() .'.'. substr(microtime(), 2, 6),
         'content' => $content,
@@ -453,4 +463,12 @@ function check_url($url){
     $url = trim($url);
     if(!preg_match("/^http[s]?:\/\//",$url)) return false;
     return true;
+}
+
+function getClientIp() {
+    if(PHP_SAPI === 'cli') return '0.0.0.0';
+    if(@$_REQUEST['_ipaddress']) return $_REQUEST['_ipaddress'];
+    if(@$_SERVER['HTTP_X_FORWARDED_FOR']) return $_SERVER['HTTP_X_FORWARDED_FOR'];
+    if(@$_SERVER['REMOTE_ADDR']) return $_SERVER['REMOTE_ADDR'];
+    return '';
 }

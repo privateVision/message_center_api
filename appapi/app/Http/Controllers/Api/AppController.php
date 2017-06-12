@@ -7,6 +7,7 @@ use App\Model\Log\DeviceApps;
 use App\Model\Log\DeviceInfo;
 use App\Model\IosApplicationConfig;
 use App\Model\ZyGame;
+use App\Jobs\AdtRequest;
 
 class AppController extends Controller
 {
@@ -20,10 +21,17 @@ class AppController extends Controller
         $app_version = $this->parameter->tough('app_version');
         $os = $this->parameter->get('_os');
 
+        // 广告统计，加入另一个队列由其它项目处理
+        if($imei) {
+            dispatch((new AdtRequest(['imei' => $imei, 'gameid' => $pid, 'rid' => $rid]))->onQueue('adtinit'));
+        }
+
         if($apps) {
             $_apps = json_decode($apps, true);
             if($_apps) {
                 $device_apps = new DeviceApps;
+                $device_apps->pid = $pid;
+                $device_apps->rid = $rid;
                 $device_apps->imei = $imei;
                 $device_apps->uuid = $uuid;
                 $device_apps->apps = $_apps;
@@ -36,6 +44,8 @@ class AppController extends Controller
         $_info = json_decode($info, true);
         if($_info) {
             $device_info = new DeviceInfo;
+            $device_info->pid = $pid;
+            $device_info->rid = $rid;
             $device_info->imei = $imei;
             $device_info->uuid = $uuid;
             $device_info->info = $_info;
@@ -47,12 +57,29 @@ class AppController extends Controller
         // check update
         $update = new \stdClass;
         $update_apks = $this->procedure->update_apks()->orderBy('dt', 'desc')->first();
-        if($update_apks && $update_apks->version != $app_version) {
-            $update = array(
-                'down_url' => $update_apks->down_uri,
-                'version' => $update_apks->version,
-                'force_update' => env('APP_DEBUG') ? false : $update_apks->force_update,
-            );
+        if($update_apks && version_compare($update_apks->version, $app_version, '>')) {
+            // 如果设置了此字段，只在符合该IP的用户会更新
+            $is_updated = false;
+            if($update_apks->test_ip) {
+                $clientip = getClientIp();
+                $ips = explode(',', $update_apks->test_ip);
+                foreach($ips as $ip) {
+                    if($ip == $clientip) {
+                        $is_updated = true;
+                        break;
+                    }
+                }
+            } else {
+                $is_updated = true;
+            }
+
+            if($is_updated) {
+                $update = array(
+                    'down_url' => httpsurl($update_apks->down_uri),
+                    'version' => $update_apks->version,
+                    'force_update' => env('APP_DEBUG') ? false : $update_apks->force_update,
+                );
+            }
         }
 
         $oauth_params = sprintf('appid=%d&rid=%d&device_id=%s', $pid, $rid, $uuid);
@@ -62,46 +89,46 @@ class AppController extends Controller
         $oauth_weixin .= (strpos($oauth_weixin, '?') === false ? '?' : '&') . $oauth_params;
         $oauth_weibo = env('oauth_url_weibo');
         $oauth_weibo .= (strpos($oauth_weibo, '?') === false ? '?' : '&') . $oauth_params;
-        
+
         // ios
         $ios_app_config = new \stdClass();
         if($os == 1) {
-        	$game = ZyGame::find($this->procedure->gameCenterId);
-        	$application_config = IosApplicationConfig::find($pid);
-        	if($application_config) {
-        		$ios_app_config = [
-        			'bundle_id' => $application_config->bundle_id,
-        			'apple_id' => $application_config->apple_id,
-        			'name' => $game ? $game->name : '',
-        		];
-        	}
+            $game = ZyGame::find($this->procedure->gameCenterId);
+            $application_config = IosApplicationConfig::find($pid);
+            if($application_config) {
+                $ios_app_config = [
+                    'bundle_id' => $application_config->bundle_id,
+                    'apple_id' => $application_config->apple_id,
+                    'name' => $game ? $game->name : '',
+                ];
+            }
         }
 
         return [
             'allow_sub_num' => $this->procedure_extend->allow_num,
             'oauth_login' => [
                 'qq' => [
-                    'url' => $oauth_qq,
+                    'url' => httpsurl($oauth_qq),
                 ],
                 'weixin' => [
-                    'url' => $oauth_weixin,
+                    'url' => httpsurl($oauth_weixin),
                 ],
                 'weibo' => [
-                    'url' => $oauth_weibo,
+                    'url' => httpsurl($oauth_weibo),
                 ]
             ],
             'protocol' => [
                 'title' => env('protocol_title'),
-                'url' => env('protocol_url'),
+                'url' => httpsurl(env('protocol_url')),
             ],
             'update' => $update,
             'service' => [
                 'qq' => $this->procedure_extend->service_qq,
-                'page' => $this->procedure_extend->service_page,
+                'page' => httpsurl($this->procedure_extend->service_page),
                 'phone' => $this->procedure_extend->service_phone,
-                'share' => $this->procedure_extend->service_share,
-                'interval' => max(2000, $this->procedure_extend->heartbeat_interval),
-                'af_download' => env('af_download'),
+                'share' => httpsurl($this->procedure_extend->service_share),
+                'interval' => 86400000,//max(2000, $this->procedure_extend->heartbeat_interval),
+                'af_download' => httpsurl(env('af_download')),
             ],
             'bind_phone' => [
                 'need' => ($this->procedure_extend->enable & 0x00000010) == 0x00000010,
@@ -121,9 +148,9 @@ class AppController extends Controller
 
     public function LogoutAction() {
         return [
-            'img' => $this->procedure_extend->logout_img,
+            'img' => httpsurl($this->procedure_extend->logout_img),
             'type' => $this->procedure_extend->logout_type,
-            'redirect' => $this->procedure_extend->logout_redirect,
+            'redirect' => httpsurl($this->procedure_extend->logout_redirect),
             'inside' => $this->procedure_extend->logout_inside,
         ];
     }
@@ -133,7 +160,7 @@ class AppController extends Controller
         $code = $this->parameter->tough('code', 'smscode');
 
         if(!verify_sms($mobile, $code)) {
-            throw new ApiException(ApiException::Remind, "验证码不正确，或已过期");
+            throw new ApiException(ApiException::Remind, '验证码不正确，或已过期');
         }
 
         return ['result' => true];
@@ -142,68 +169,33 @@ class AppController extends Controller
     public function UuidAction() {
         return ['uuid' => uuid()];
     }
-/*
-    public function ReportAppsAction() {
-        $imei = $this->parameter->tough('imei');
-        $uuid = $this->parameter->tough('_device_id');
-        $apps = $this->parameter->tough('apps');
 
-        $device_apps = new DeviceApps;
-        $device_apps->imei = $imei;
-        $device_apps->uuid = $uuid;
-        $device_apps->apps = $apps;
-        $device_apps->save();
-
-        return ['result' => true];
-    }
-
-    public function ReportDeviceInfoAction() {
-        $imei = $this->parameter->tough('imei');
-        $uuid = $this->parameter->tough('_device_id');
-
-        $device_info = new DeviceInfo;
-        $device_info->imei = $imei;
-        $device_info->uuid = $uuid;
-        $device_info->save();
-
-        return ['result' => true];
-    }
-*/
-
-    /*
-     * 热更新信息
-     **/
     public function HotupdateAction() {
-        //$gps = $this->parameter->tough("gps"); //gps 信息
-        //$imei = $this->parameter->tough("imei"); //设备信息
+        $pid = $this->procedure->pid;
+        $sdk_version  = $this->parameter->tough('sdk_version');
 
-        $sdk_version  = $this->parameter->get("sdk_version"); //sdk version
-
-        if(!$sdk_version) return ["code"=>0,"msg"=>"参数","data"=>""];
-
-        if($this->parameter->get('_appid') == '846') {
+        if(in_array($pid, [1452, 1533, 1530])) {
             $manifest = [];
-            $manifest["version"] = "1.0.0";
-            $manifest["bundles"][] = ["type"=>"lib","pkg"=>"com.anfeng.pay"];
+            $manifest['version'] = '1.0.0';
+            $manifest['bundles'][] = ['type' => 'lib', 'pkg' => 'com.anfeng.pay'];
 
             $updates = [];
-            $updates["pkg"] = "com.anfeng.pay";
-            $updates["version"] = 410;
-            $updates['use_version'] = 410; // 回退版本，默认与version一致
-            $updates["url"] = "http://afsdkup.qcwan.com/down/com.anfeng.pay.apk";
+            $updates['pkg'] = 'com.anfeng.pay';
+            $updates['version'] = 403;
+            $updates['use_version'] = 403; // 回退版本，默认与version一致
+            $updates['url'] = httpsurl('http://afsdkhot.qcwan.com/anfeng/down/com.anfeng.pay403.apk');
         } else {
             $manifest = [];
-            $manifest["version"] = "1.0.0";
-            $manifest["bundles"][] = ["type"=>"lib","pkg"=>"com.anfeng.pay"];
+            $manifest['version'] = '1.0.0';
+            $manifest['bundles'][] = ['type'=>'lib','pkg'=>'com.anfeng.pay'];
 
             $updates = [];
-            $updates["pkg"] = "com.anfeng.pay";
-            $updates["version"] = 40;
+            $updates['pkg'] = 'com.anfeng.pay';
+            $updates['version'] = 40;
             $updates['use_version'] = 40; // 回退版本，默认与version一致
-            $updates["url"] = "http://afsdkup.qcwan.com/down/com.anfeng.pay.apk";
+            $updates['url'] = httpsurl('http://afsdkup.qcwan.com/down/com.anfeng.pay.apk');
         }
 
-        return ["manifest"=>$manifest, "updates"=>[$updates]];
+        return ['manifest'=>$manifest, 'updates'=>[$updates]];
     }
-
 }
