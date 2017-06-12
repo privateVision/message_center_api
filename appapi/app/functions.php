@@ -6,6 +6,14 @@ use Qiniu\Storage\BucketManager;
 use Qiniu\Storage\UploadManager;
 use Qiniu\Http\Client;
 
+function configex($key = null, $default = null) {
+    if(PHP_SAPI != 'cli' && @$_SERVER['HTTP_HOST'] && !empty($key)) {
+        $key = $_SERVER['HTTP_HOST'] .'.'. $key;
+    }
+
+    return config($key, $default);
+}
+
 // 设置redis的key在过期时间
 // 1. 一个用户的所有数据应该同时过期
 // 2. 避开在服务器高压状态时过期

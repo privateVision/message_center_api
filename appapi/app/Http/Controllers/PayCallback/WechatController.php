@@ -25,7 +25,7 @@ class WechatController extends Controller {
     }
     
     protected function verifySign($data, $order, $order_extend) {
-        $config = config('common.payconfig.wechat');
+        $config = configex('common.payconfig.wechat');
         
         $sign = $data['sign'];
         unset($data['sign']);

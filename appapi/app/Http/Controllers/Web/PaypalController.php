@@ -18,6 +18,7 @@ class PaypalController extends \App\Controller {
 
         $amount = exchange_rate($data['amount'], 'USD');
         if(!$amount || $amount === '0.00') {
+            // 正常情况不会走到这里，非正常情况就是不怀好意的人，还给他个提示？啊呸！！！
             return;
         }
 

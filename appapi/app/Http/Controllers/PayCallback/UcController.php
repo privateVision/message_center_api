@@ -36,7 +36,7 @@ class UcController extends Controller
             $enData = $enData.$key.'='.$val;
         }
 
-        $sign = md5($enData.config('common.payconfig.uc.apikey'));
+        $sign = md5($enData.configex('common.payconfig.uc.apikey'));
         if($data['sign'] == $sign){
             return true;
         }

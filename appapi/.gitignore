@@ -1,7 +1,6 @@
 .env
-.env.local
-.env.testing
-.env.online
+.env.dkapi.anfan.com
+
 .buildpath
 .htaccess
 composer.lock
