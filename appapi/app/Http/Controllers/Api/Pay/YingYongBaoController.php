@@ -28,7 +28,8 @@ class YingYongBaoController extends Controller
      *      "qq_app_key":"zyWX2zZZ7T8ZZorE",
      *      "wx_app_id":"wxf671fb41a6dbcc03",
      *      "wx_app_key":"71e9270844dca0cad18e25ebdca4f7b6",
-     *      "app_key":"gdcaJrEZwdmDDoaYw4rAwvdz8uIJXYkH" //支付测试key
+     *      "pay_id":"1105442440",
+     *      "pay_key":"gdcaJrEZwdmDDoaYw4rAwvdz8uIJXYkH" //支付测试key
      * }
      */
 
@@ -219,9 +220,13 @@ class YingYongBaoController extends Controller
      */
     public function api_pay($script_name,$accout_type,$params,$method='post', $protocol='http')
     {
+        $cfg = $this->procedure_extend->third_config;
+        if(empty($cfg) || !isset($cfg['pay_id'])) {
+            throw new ApiException(ApiException::Remind, trans('message.error_third_params'));
+        }
 
         // 添加一些参数
-        $params['appid'] = $this->procedure_extend->third_payid;
+        $params['appid'] = $cfg['pay_id'];
         $params['format'] = 'json';
 
         $cookie=array();
@@ -245,7 +250,7 @@ class YingYongBaoController extends Controller
         unset($params['sig']);
 
         // 生成签名
-        $secret = $this->procedure_extend->third_paykey;
+        $secret = $cfg['pay_key'];
 
         $script_sig_name="/v3/r".$script_name;
         $sig = self::makeSig($method, $script_sig_name, $params, $secret);
