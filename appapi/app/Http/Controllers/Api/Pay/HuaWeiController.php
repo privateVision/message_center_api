@@ -73,14 +73,17 @@ class HuaweiController extends Controller {
             $i++;
         }
 
-        $sign = sha1($content);
-        $pem = chunk_split($cfg['pay_pri_key'],64,"\n");
-        $pem = "-----BEGIN RSA PRIVATE KEY-----\n".$pem."-----END RSA PRIVATE KEY-----\n";
-        $pi_key = openssl_pkey_get_private($pem);
-
-        openssl_private_decrypt(base64_encode($sign), $decrypted, $pi_key);
-
-        return $decrypted;
+        $data = sha1($content);
+        $priKey = $cfg['pay_pri_key'];
+        if(strpos($priKey, "BEGIN RSA PRIVATE KEY") === false)
+        {
+            $priKey = wordwrap($priKey, 64, "\n", true);
+            $priKey = "-----BEGIN RSA PRIVATE KEY-----\n".$priKey."\n-----END RSA PRIVATE KEY-----";
+        }
+        $res = openssl_get_privatekey($priKey);
+        openssl_sign($data, $sign, $res);
+        openssl_free_key($res);
+        return base64_encode($sign);
     }
 
 }
