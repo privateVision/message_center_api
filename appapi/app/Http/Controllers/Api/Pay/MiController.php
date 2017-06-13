@@ -34,4 +34,60 @@ class MiController extends Controller
             'data' => array()
         ];
     }
+
+    /**
+     * 小米订单查询接口
+     * @param order_id
+     * @param uid    小米平台用户uid
+     */
+    public function queryOrderAction() {
+        $cfg = $this->procedure_extend->third_config;
+        if(empty($cfg) || !isset($cfg['app_id'])) {
+            throw new ApiException(ApiException::Remind, trans('message.error_third_params'));
+        }
+
+        $params = array(
+            'appId'=>$cfg['app_id'],
+            'cpOrderId'=>$this->parameter->tough('order_id'),
+            'uid'=>$this->parameter->tough('uid')
+        );
+        $params['signature'] =  self::sign($params, $cfg['app_secret']);
+        $url = 'http://mis.migc.xiaomi.com/api/biz/service/queryOrder.do';
+        $res = http_curl($url, $params, false);
+        return $res;
+    }
+
+    /**
+     * 计算hmac-sha1签名
+     * @param array $params
+     * @param type $secretKey
+     * @return type
+     */
+    private function sign(array $params, $secretKey){
+        $sortString = $this->buildSortString($params);
+        $signature = hash_hmac('sha1', $sortString, $secretKey,FALSE);
+
+        return $signature;
+    }
+
+    /**
+     * 构造排序字符串
+     * @param array $params
+     * @return string
+     */
+    private function buildSortString(array $params) {
+        if(empty($params)){
+            return '';
+        }
+
+        ksort($params);
+
+        $fields = array();
+
+        foreach ($params as $key => $value) {
+            $fields[] = $key . '=' . $value;
+        }
+
+        return implode('&',$fields);
+    }
 }

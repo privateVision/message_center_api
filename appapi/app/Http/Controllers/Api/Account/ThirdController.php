@@ -14,13 +14,22 @@ class ThirdController extends Controller {
     public function ucAction() {
         $sid = $this->parameter->tough('sid');
         $gameId = $this->parameter->tough('game_id');
-        $config = configex('common.payconfig.uc');
+
+        $cfg = $this->procedure_extend->third_config;
+        if(empty($cfg) || !isset($cfg['app_id'])) {
+            throw new ApiException(ApiException::Remind, trans('message.error_third_params'));
+        }
+        $cfg =  array_merge($cfg, array(
+            'baseUrl'=>'http://sdk.9game.cn',
+            'port'=>'80',
+            'prefix'=>'ng/cp/'
+        ));
 
         $params = array(
             'sid' => $sid
         );
         //计算签名
-        $sign = self::ucVerify($config, $params);
+        $sign = self::ucVerify($cfg, $params);
 
         ///////////////////组装请求参数-开始////////////////////
         $requestParam = array();
@@ -36,7 +45,7 @@ class ThirdController extends Controller {
         //把参数序列化成一个json字符串
         $requestBody = json_encode($requestParam);
         //请求url
-        $requestUrl = $config['baseUrl'] . ":" . $config['port'] . "/" . $config['prefix'] . "account.verifySession";
+        $requestUrl = $cfg['baseUrl'] . ":" . $cfg['port'] . "/" . $cfg['prefix'] . "account.verifySession";
 
         //发送请求
         $res = http_curl($requestUrl, $requestBody);
@@ -51,7 +60,7 @@ class ThirdController extends Controller {
         }
     }
 
-    protected static function ucVerify($config, $params, $notInKey = array()) {
+    protected static function ucVerify($cfg, $params, $notInKey = array()) {
         ksort($params);
         $enData = '';
         foreach( $params as $key=>$val ){
@@ -60,7 +69,7 @@ class ThirdController extends Controller {
             }
             $enData = $enData.$key.'='.$val;
         }
-        return md5($enData.$config['apikey']);
+        return md5($enData.$cfg['apikey']);
     }
 
 
