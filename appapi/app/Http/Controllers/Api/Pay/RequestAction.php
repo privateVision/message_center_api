@@ -105,7 +105,7 @@ trait RequestAction {
             $ordersExt->save();
             
             // 获取配置传给子类
-            $config = config('common.payconfig.'.static::PayText);
+            $config = configex('common.payconfig.'.static::PayText);
             if(!$config) {
                 // 可以没有配置
                 // throw new ApiException(ApiException::Remind, trans('messages.not_payconfig'));

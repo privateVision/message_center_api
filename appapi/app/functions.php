@@ -176,7 +176,7 @@ function upload_to_cdn($filename, $filepath, $is_delete = true) {
     640 调用列举资源(list)接口时，指定非法的marker参数。
     701 在断点续上传过程中，后续上传接收地址不正确或ctx信息已过期。
     */
-    $config = config('common.storage_cdn.qiniu');
+    $config = configex('common.storage_cdn.qiniu');
 
     $auth = new Auth($config['access_key'], $config['secret_key']);
 
@@ -220,7 +220,7 @@ function upload_to_cdn($filename, $filepath, $is_delete = true) {
 //更新七牛缓存文件
 function updateQnCache($url){
     $data = ["urls"=>[$url]];
-    $config = config('common.storage_cdn.qiniu');
+    $config = configex('common.storage_cdn.qiniu');
 
     $auth = new Auth($config['access_key'], $config['secret_key']);
     $headers = $auth->authorization('http://fusion.qiniuapi.com/v2/tune/refresh');
@@ -346,7 +346,7 @@ function order_success($order_id) {
  * @return [null]                       []
  */
 function send_sms($mobile, $pid, $template_id, $repalce, $code = '') {
-    $smsconfig = config('common.smsconfig');
+    $smsconfig = configex('common.smsconfig');
 
     $code = trim($code);
 
