@@ -27,7 +27,7 @@ class VivoController extends Controller
     {
         $cfg = $this->procedure_extend->third_config;
         if(empty($cfg) || !isset($cfg['app_id'])) {
-            throw new ApiException(ApiException::Remind, trans('message.error_third_params'));
+            throw new ApiException(ApiException::Remind, trans('messages.error_third_params'));
         }
         $params = [
             'version' => '1.0.0',

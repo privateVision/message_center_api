@@ -17,7 +17,7 @@ class ThirdController extends Controller {
 
         $cfg = $this->procedure_extend->third_config;
         if(empty($cfg) || !isset($cfg['app_id'])) {
-            throw new ApiException(ApiException::Remind, trans('message.error_third_params'));
+            throw new ApiException(ApiException::Remind, trans('messages.error_third_params'));
         }
         $cfg =  array_merge($cfg, array(
             'baseUrl'=>'http://sdk.9game.cn',
@@ -101,7 +101,7 @@ class ThirdController extends Controller {
 
         $cfg = $this->procedure_extend->third_config;
         if(empty($cfg) || !isset($cfg['app_id'])) {
-            throw new ApiException(ApiException::Remind, trans('message.error_third_params'));
+            throw new ApiException(ApiException::Remind, trans('messages.error_third_params'));
         }
         $appid = $cfg['app_id'];
         $appkey = $cfg['app_key'];

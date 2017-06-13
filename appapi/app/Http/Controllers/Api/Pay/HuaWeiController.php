@@ -36,14 +36,14 @@ class HuaweiController extends Controller {
 
         $cfg = $this->procedure_extend->third_config;
         if(empty($cfg) || !isset($cfg['app_id'])) {
-            throw new ApiException(ApiException::Remind, trans('message.error_third_params'));
+            throw new ApiException(ApiException::Remind, trans('messages.error_third_params'));
         }
 
         $params = array(
             'userName'=>'武汉爪游互娱科技有限公司',
             'userID'=>$cfg['pay_id'],
             'applicationID'=>$cfg['app_id'],
-            'amount'=>sprintf("%.2f", $real_fee/100),
+            'amount'=>sprintf("%.2f", $real_fee/10000),
             'productName'=>mb_substr($order->subject, 50),
             'requestId'=>$order->sn,
             'productDesc'=>mb_substr($order->body, 100),

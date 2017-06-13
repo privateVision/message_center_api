@@ -83,7 +83,7 @@ class YingYongBaoController extends Controller
     {
         $cfg = $this->procedure_extend->third_config;
         if(empty($cfg) || !isset($cfg['qq_app_id'])) {
-            throw new ApiException(ApiException::Remind, trans('message.error_third_params'));
+            throw new ApiException(ApiException::Remind, trans('messages.error_third_params'));
         }
         $accout_type = $this->parameter->tough('accout_type');
         $app_id = $accout_type=='qq'?$cfg['qq_app_id']:$cfg['wx_app_id'];
@@ -222,7 +222,7 @@ class YingYongBaoController extends Controller
     {
         $cfg = $this->procedure_extend->third_config;
         if(empty($cfg) || !isset($cfg['pay_id'])) {
-            throw new ApiException(ApiException::Remind, trans('message.error_third_params'));
+            throw new ApiException(ApiException::Remind, trans('messages.error_third_params'));
         }
 
         // 添加一些参数
