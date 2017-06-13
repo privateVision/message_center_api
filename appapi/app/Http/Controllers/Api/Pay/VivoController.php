@@ -37,8 +37,8 @@ class VivoController extends Controller
             'notifyUrl' => url('pay_callback/vivo'),
             'orderTime' => date('YmdHis', strtotime($order->createTime)),
             'orderAmount' => $real_fee,
-            'orderTitle' => mb_substr($order->subject, 45),
-            'orderDesc' => mb_substr($order->body, 100),
+            'orderTitle' => mb_substr($order->subject, 0, 45),
+            'orderDesc' => mb_substr($order->body, 0, 100),
             'extInfo' => '111'
         ];
 
