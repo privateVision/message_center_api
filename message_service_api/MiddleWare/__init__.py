@@ -94,12 +94,6 @@ def create_app():
     redis_store.init_app(app)
 
     kafka_producer = KafkaProducer(bootstrap_servers=app.config.get('KAFKA_URL'))
-    # kafka_consumer = KafkaConsumer(bootstrap_servers=app.config.get('KAFKA_URL'), group_id='dev_anfeng_message_service')
-    # kafka_consumer.subscribe([app.config.get('KAFKA_TOPIC')])
-    # from Service.KafkaHandler import kafka_consume_func
-    # kafka_consumer_thread = threading.Thread(target=kafka_consume_func, args=(kafka_consumer,))
-    # kafka_consumer_thread.setDaemon(True)
-    # kafka_consumer_thread.start()
 
     app.config['SQLALCHEMY_DATABASE_URI'] = app.config.get('SQLALCHEMY_DATABASE_URI')
     mysql_engine = create_engine(app.config['SQLALCHEMY_DATABASE_URI'], encoding="utf-8", echo=True,
