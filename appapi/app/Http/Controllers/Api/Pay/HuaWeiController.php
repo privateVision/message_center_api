@@ -40,15 +40,13 @@ class HuaweiController extends Controller {
         }
 
         $params = array(
-            'userName'=>'武汉爪游互娱科技有限公司',
             'userID'=>$cfg['pay_id'],
             'applicationID'=>$cfg['app_id'],
-            'amount'=>$real_fee/100,
+            'amount'=>round($real_fee/100, 2),
             'productName'=>mb_substr($order->subject, 50),
             'requestId'=>$order->sn,
             'productDesc'=>mb_substr($order->body, 100),
-            'notifyUrl'=>url('pay_callback/huawei'),
-            'serviceCatalog'=>'X6'
+//            'notifyUrl'=>url('pay_callback/huawei')
         );
 
         $params['sign'] = self::verify($params, $cfg);
