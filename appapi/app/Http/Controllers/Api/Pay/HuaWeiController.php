@@ -76,7 +76,6 @@ class HuaweiController extends Controller {
             $i++;
         }
 
-        $data = sha1($content);
         $priKey = $cfg['pay_pri_key'];
         if(strpos($priKey, "BEGIN RSA PRIVATE KEY") === false)
         {
@@ -84,7 +83,7 @@ class HuaweiController extends Controller {
             $priKey = "-----BEGIN RSA PRIVATE KEY-----\n".$priKey."\n-----END RSA PRIVATE KEY-----";
         }
         $res = openssl_get_privatekey($priKey);
-        openssl_sign($data, $sign, $res);
+        openssl_sign($content, $sign, $res);
         openssl_free_key($res);
         return base64_encode($sign);
     }

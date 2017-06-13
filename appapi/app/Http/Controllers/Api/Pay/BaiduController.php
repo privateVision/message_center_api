@@ -16,6 +16,15 @@ class BaiduController extends Controller {
     const PayHttp = 'http://querysdkapi.91.com/';
 
     /**
+     * baidu config
+     * {
+     *      "app_id":"8118120",
+     *      "app_key":"zwjMlKrGf7mWwDHU7x7GvE9z",
+     *      "app_secret":"Nfawzw7X7grqiuLkyOCGrxW2YEa3AuQ0"
+     * }
+     */
+
+    /**
      * @param $config
      * @param Orders $order
      * @param $real_fee
@@ -43,20 +52,22 @@ class BaiduController extends Controller {
      */
     public function getOrderInfoAction() {
         $order_id = $this->parameter->tough('order_id');
-        $appid = $this->procedure_extend->third_appid;
-        $appkey = $this->procedure_extend->third_appkey;
+        $cfg = $this->procedure_extend->third_config;
+        if(empty($cfg) || !isset($cfg['app_key'])) {
+            throw new ApiException(ApiException::Remind, trans('messages.error_third_params'));
+        }
 
         $params = array(
-            'AppID'=>$appid,
+            'AppID'=>$cfg['app_id'],
             'CooperatorOrderSerial'=>$order_id,
-            'Sign'=>self::verify([$appid, $order_id, $appkey]),
+            'Sign'=>self::verify([$cfg['app_id'], $order_id, $cfg['app_key']]),
             'OrderType'=>1,
             'Action'=>'10002'
         );
 
         $url = self::PayHttp . 'CpOrderQuery.ashx';
         $res = http_curl($url, $params, true);
-        if($res['cd'] == 1 && $res['Sign']==self::verify([$appid, $res['ResultCode'], urldecode($res['Content']), $appkey])) {
+        if($res['cd'] == 1 && $res['Sign']==self::verify([$cfg['app_id'], $res['ResultCode'], urldecode($res['Content']), $cfg['app_key']])) {
             $result = base64_decode(urldecode($res['Content']));
             return json_decode($result,true);
         } else {
