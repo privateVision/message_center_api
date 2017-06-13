@@ -6,14 +6,22 @@ use Illuminate\Http\Request;
 
 class MiController extends Controller
 {
-    //
+    /**
+     * xiaomi config
+     * {
+     *      "app_id":"2882303761517413186",
+     *      "app_key":"5861741367186",
+     *      "app_secret":"CP8gFYiTUX25qat8xRKwHQ=="
+     * }
+     */
+
     /**
      * 获取回调的所有数据
      * @param  Request $request
      */
     protected function getData(Request $request)
     {
-        return $_GET;
+        return $_REQUEST;
     }
 
     /**
@@ -47,6 +55,11 @@ class MiController extends Controller
 
         if(!$proceduresExtend)return false;
 
+        $cfg = json_decode($proceduresExtend->third_config, true);
+        if(empty($cfg) || !isset($cfg['app_id'])) {
+            return false;
+        }
+
         $params = [
             'appId' => $data['appId'],
             'cpOrderId' => $data['cpOrderId'],
@@ -64,7 +77,7 @@ class MiController extends Controller
 
         if(isset($data['orderConsumeType'])&&$data['orderConsumeType']) $params['orderConsumeType'] = $data['orderConsumeType'];
 
-        $sign = $this->sign($params, $proceduresExtend->third_appsecret);
+        $sign = $this->sign($params, $cfg['app_secret']);
 
         return $sign==$data['signature'];
 

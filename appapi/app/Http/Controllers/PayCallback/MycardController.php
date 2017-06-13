@@ -20,12 +20,12 @@ class MycardController extends Controller
     }
 
     protected function verifySign($data, $order, $order_extend) {
-        $config = config('common.payconfig.mycard');
+        $config = configex('common.payconfig.mycard');
         return static::mycard_hash($data, $config['FacServerKey']) === $data['Hash'];
     }
 
     protected function handler($data, $order, $order_extend) {
-        $config = config('common.payconfig.mycard');
+        $config = configex('common.payconfig.mycard');
 
         // 验证交易结果
         $resdata = ['AuthCode' => $order_extend->extra_params['AuthCode']];

@@ -14,7 +14,7 @@ class ThirdController extends Controller {
     public function ucAction() {
         $sid = $this->parameter->tough('sid');
         $gameId = $this->parameter->tough('game_id');
-        $config = config('common.payconfig.uc');
+        $config = configex('common.payconfig.uc');
 
         $params = array(
             'sid' => $sid

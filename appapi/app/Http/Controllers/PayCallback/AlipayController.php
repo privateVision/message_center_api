@@ -19,7 +19,7 @@ class AlipayController extends Controller
     }
 
     protected function verifySign($data, $order, $order_extend) {
-        $config = config('common.payconfig.alipay');
+        $config = configex('common.payconfig.alipay');
 
         $sign = $data['sign'];
         unset($data['sign'], $data['sign_type']);

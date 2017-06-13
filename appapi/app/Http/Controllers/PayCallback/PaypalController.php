@@ -34,7 +34,7 @@ class PaypalController extends Controller
     }
 
     protected function verifySign($data, $order, $order_extend) {
-        $config = config('common.payconfig.paypal');
+        $config = configex('common.payconfig.paypal');
         return $config['business'] === $data['business'];
     }
 

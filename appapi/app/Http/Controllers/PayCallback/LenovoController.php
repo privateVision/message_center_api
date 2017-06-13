@@ -62,8 +62,8 @@ class LenovoController extends Controller
     protected function sign($data, $priKey) {
         if(strpos($priKey, "BEGIN RSA PRIVATE KEY") === false)
         {
-            //$priKey = wordwrap($priKey, 64, "\n", true);
-            //$priKey = "-----BEGIN PRIVATE KEY-----\n".$priKey."\n-----END PRIVATE KEY-----";
+            $priKey = wordwrap($priKey, 64, "\n", true);
+            $priKey = "-----BEGIN RSA PRIVATE KEY-----\n".$priKey."\n-----END RSA PRIVATE KEY-----";
         }
         $res = openssl_get_privatekey($priKey);
         openssl_sign($data, $sign, $res);

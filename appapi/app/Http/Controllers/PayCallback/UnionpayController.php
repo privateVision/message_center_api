@@ -19,7 +19,7 @@ class UnionpayController extends Controller
     }
 
     protected function verifySign($data, $order, $order_extend) {
-        $config = config('common.payconfig.unionpay');
+        $config = configex('common.payconfig.unionpay');
 
         $sign = $data['signature'];
         unset($data['signature']);

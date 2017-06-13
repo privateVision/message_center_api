@@ -19,7 +19,7 @@ class VivoController extends Controller
      * {
      *      "cp_id":"20160504231334318356",
      *      "app_id":"f28613464145a3a861869bc4ae35335f",
-     *      "app_key":"81tKZhcpxI0wOoGgSwcgwk0WC"
+     *      "app_key":"18d8c752c7f91f1966e498bba54bf490"
      * }
      */
 
@@ -37,8 +37,8 @@ class VivoController extends Controller
             'notifyUrl' => url('pay_callback/vivo'),
             'orderTime' => date('YmdHis', strtotime($order->createTime)),
             'orderAmount' => $real_fee,
-            'orderTitle' => 'title',//mb_substr($order->title, 45),
-            'orderDesc' => 'desc',//mb_substr($order->subject, 100),
+            'orderTitle' => mb_substr($order->subject, 45),
+            'orderDesc' => mb_substr($order->body, 100),
             'extInfo' => '111'
         ];
 

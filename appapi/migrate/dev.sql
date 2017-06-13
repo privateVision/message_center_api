@@ -13,3 +13,8 @@ ALTER TABLE `anfanapi`.`procedures_extend`
 /**20170610**/
 ALTER TABLE `anfanapi`.`procedures_extend` ADD COLUMN `third_config` TEXT NULL COMMENT '第三方渠道配置文件' AFTER `pay_method`;
 ALTER TABLE `anfanapi`.`procedures_extend` DROP COLUMN `third_cpid`, DROP COLUMN `third_appid`, DROP COLUMN `third_appkey`, DROP COLUMN `third_appsecret`, DROP COLUMN `third_payid`, DROP COLUMN `third_paykey`, DROP COLUMN `third_payprikey`;
+
+/**20170612**/
+ALTER TABLE `anfanapi`.`procedures_products`
+  ADD COLUMN `type` TINYINT(1) DEFAULT 0  NULL  COMMENT '商品类型，0通用，1官网商店' AFTER `fee`,
+  ADD COLUMN `pay_method` INT(11) NULL  COMMENT '商品可用的支付方式，0表示所有支付方式，多种支付方式逗号分隔，见procedures_extend.enable字段，从0开始每4位加1：0:wechat,\n1:alipay,\n2:unionpay,\n3:mycard,\n4:nowpay_wechat,\n5:paypal' AFTER `type`;

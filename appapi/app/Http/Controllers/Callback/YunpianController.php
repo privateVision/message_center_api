@@ -30,7 +30,7 @@ class YunpianController extends \App\Controller
             	$data[] = trim($v, ' ');
             }
 
-            $data[] = config('common.smsconfig.apikey');
+            $data[] = configex('common.smsconfig.apikey');
 
             $str = implode(',', $data);
 

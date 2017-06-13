@@ -23,8 +23,18 @@ class BaiduController extends Controller {
      * @return array
      */
     public function getData($config, Orders $order, OrderExtend $order_extend, $real_fee) {
+
+        $uid = $this->parameter->tough('uid');
+
         return [
-            'data' => array()
+            'data' => array(
+                'cooperatorOrderSerial'=>$order->sn,
+                'productName'=>$order->subject,
+                'totalPriceCent'=>$real_fee,
+                'ratio'=>0,
+                'extInfo'=>'111',
+                'uid'=>$uid
+            )
         ];
     }
 

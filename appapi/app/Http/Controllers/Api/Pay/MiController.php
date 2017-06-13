@@ -13,6 +13,15 @@ class MiController extends Controller
     const PayTypeText = '小米平台支付';
 
     /**
+     * xiaomi config
+     * {
+     *      "app_id":"2882303761517413186",
+     *      "app_key":"5861741367186",
+     *      "app_secret":"CP8gFYiTUX25qat8xRKwHQ=="
+     * }
+     */
+
+    /**
      * @param $config
      * @param Orders $order
      * @param OrderExtend $order_extend

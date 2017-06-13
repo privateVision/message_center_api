@@ -54,7 +54,7 @@ class OnekeyController extends Controller {
     }
     
     public function SMSTokenAction() {
-        $config = config('common.smsconfig');
+        $config = configex('common.smsconfig');
         return [
             'sms_token' => uuid(), 
             'send_to' => $config['receiver']

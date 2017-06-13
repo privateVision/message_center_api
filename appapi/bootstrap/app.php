@@ -20,18 +20,14 @@ $app = new Illuminate\Foundation\Application(
 |--------------------------------------------------------------------------
 |
 */
-$env = $app->detectEnvironment(function () {
-    $environmentPath = __DIR__ . '/../.env';
-    $setEnv = trim(file_get_contents($environmentPath));
-    if(!file_exists($environmentPath) || empty($setEnv)) {
-        $setEnv = $_SERVER['HTTP_HOST'] == 'sdkv4.qcwan.com'?'online' : ($_SERVER['HTTP_HOST'] == 'sdkv4test.qcwanwan.com'?'testing':'local');
+$env = $app->detectEnvironment(function () use ($app) {
+    $envfile = '.env.' . @$_SERVER['HTTP_HOST'];
+
+    if(!file_exists($app->basePath() . '/' . $envfile) || PHP_SAPI == 'cli') {
+        $envfile = '.env';
     }
-    //兼容.env配置APP_ENV=local或者local两种格式
-    $setEnv = str_replace('APP_ENV=', '', $setEnv);
-    putenv("APP_ENV=$setEnv");
-    if(getenv('APP_ENV') && file_exists(__DIR__ . '/../.' . '.env.' . getenv('APP_ENV'))) {
-        Dotenv::load(__DIR__ . '/../', '.' . '.env.' . getenv('APP_ENV'));
-    }
+
+    (new \Dotenv\Dotenv($app->basePath(), $envfile))->load();
 });
 
 /*

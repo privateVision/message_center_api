@@ -22,7 +22,7 @@ class NowpayWechatController extends Controller
     }
 
     protected function verifySign($data, $order, $order_extend) {
-        $config = config('common.payconfig.nowpay_wechat');
+        $config = configex('common.payconfig.nowpay_wechat');
 
         $sign = $data['signature'];
         unset($data['signType'], $data['signature']);

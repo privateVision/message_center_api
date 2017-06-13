@@ -37,6 +37,7 @@ class UcController extends Controller {
 
         $notInKey =  array("roleName", "roleId", "grade", "serverId", "signType");
         $params['sign'] = self::verify($config, $params, $notInKey);
+        $params['signType'] = 'MD5';
 
         return [
             'data' => $params
