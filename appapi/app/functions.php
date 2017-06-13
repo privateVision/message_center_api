@@ -593,13 +593,19 @@ function getClientIp() {
     return '';
 }
 
+/**
+ * 计算汇率
+ * @param $n 原币种价值
+ * @param $currency 目标币种类
+ * @return string 目标币种价值，单位元，两位小数
+ */
 function exchange_rate($n, $currency) {
     $exchange = \App\Model\ExchangeRate::where('currency', $currency)->first();
     if(!$exchange) {
-        return false;
+        throw new \App\Exceptions\Exception(trans('currency_not_found', ['currency' => $currency]));
     }
 
-    $n = bcmul(sprintf('%.2f', $n), sprintf('%.5f', $exchange->rate), 5);
+    $n = bcmul(sprintf('%.2f', $n / 100), sprintf('%.5f', $exchange->rate), 5);
 
     if(str_pad(substr($n, -3), 3, '0', STR_PAD_RIGHT) !== '000') {
         $n = bcadd($n, '0.01', 2);

@@ -1,4 +1,6 @@
-<?php // 开源DEMO https://github.com/paypal/ipn-code-samples/blob/master/php/PaypalIPN.php
+<?php
+// 开源DEMO https://github.com/paypal/ipn-code-samples/blob/master/php/PaypalIPN.php
+// WPS(website payment standard)支付回调
 namespace App\Http\Controllers\PayCallback;
 
 use Illuminate\Http\Request;

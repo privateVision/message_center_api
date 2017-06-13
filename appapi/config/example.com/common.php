@@ -133,9 +133,22 @@ return [
         ],
 
         'paypal' => [
-            'ClientID' => env('APP_DEBUG', true) ? 'AVKsKYJ2c3PWKyeSIfbrHw5SRJPSs_4uq9FuuAyXhYdcwoDnbMZ3a_XdusnOn1LxxWgTCQPhUqOCC7zC' : 'AbY9SzC7g_xppRt1xAWQljHbz3FBQU7XXOGGTpKBP6quZZnvFXdzguCX3ZBqcNOmAaXuEwrQ1C0eaQns',
-            'Secret' => env('APP_DEBUG', true) ? 'EAPw8swZBsOtySBYaXYzKRyPRIIWY_-aEbzTGMSoXSdsfSO44E48h3qFxez6GWWHBdRNZYG7kVabtVNX' : 'ECduHwsLdmLpldfrpESOjmKkyIN7Buqg6Tww1NXtQ4V2GMH6VO6B9a11-jdoGlW4eypIhPaoTpioYDqv',
-            'business' => env('APP_DEBUG', true) ? 'sss60m@qq.com' : 'guxuan@novasmobi.com', // 收款帐号，付款帐号：sss60b@qq.com
+            // 默认支付帐户
+            'account_1' => [
+                'ClientID' => env('APP_DEBUG', true) ? 'AVKsKYJ2c3PWKyeSIfbrHw5SRJPSs_4uq9FuuAyXhYdcwoDnbMZ3a_XdusnOn1LxxWgTCQPhUqOCC7zC' : 'AbY9SzC7g_xppRt1xAWQljHbz3FBQU7XXOGGTpKBP6quZZnvFXdzguCX3ZBqcNOmAaXuEwrQ1C0eaQns',
+                'Secret' => env('APP_DEBUG', true) ? 'EAPw8swZBsOtySBYaXYzKRyPRIIWY_-aEbzTGMSoXSdsfSO44E48h3qFxez6GWWHBdRNZYG7kVabtVNX' : 'ECduHwsLdmLpldfrpESOjmKkyIN7Buqg6Tww1NXtQ4V2GMH6VO6B9a11-jdoGlW4eypIhPaoTpioYDqv',
+                'business' => env('APP_DEBUG', true) ? 'sss60m@qq.com' : 'guxuan@novasmobi.com', // 收款帐号，付款帐号：sss60b@qq.com 12345678
+            ],
+
+            // 支付金额大于12USD使用帐户2
+            'account_2' => [
+                'ClientID' => env('APP_DEBUG', true) ? 'AVKsKYJ2c3PWKyeSIfbrHw5SRJPSs_4uq9FuuAyXhYdcwoDnbMZ3a_XdusnOn1LxxWgTCQPhUqOCC7zC' : 'AbY9SzC7g_xppRt1xAWQljHbz3FBQU7XXOGGTpKBP6quZZnvFXdzguCX3ZBqcNOmAaXuEwrQ1C0eaQns',
+                'Secret' => env('APP_DEBUG', true) ? 'EAPw8swZBsOtySBYaXYzKRyPRIIWY_-aEbzTGMSoXSdsfSO44E48h3qFxez6GWWHBdRNZYG7kVabtVNX' : 'ECduHwsLdmLpldfrpESOjmKkyIN7Buqg6Tww1NXtQ4V2GMH6VO6B9a11-jdoGlW4eypIhPaoTpioYDqv',
+                'business' => env('APP_DEBUG', true) ? 'sss60m@qq.com' : 'guxuan@novasmobi.com', // 收款帐号，付款帐号：sss60b@qq.com 12345678
+            ],
+
+            'access_token_url' => env('APP_DEBUG', true) ? 'https://api.sandbox.paypal.com/v1/oauth2/token' : 'https://api.paypal.com/v1/oauth2/token',
+            'payment_url' => env('APP_DEBUG', true) ? 'https://api.sandbox.paypal.com/v1/payments/payment' : 'https://api.paypal.com/v1/payments/payment',
         ]
     ],
 ];
