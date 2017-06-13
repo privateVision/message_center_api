@@ -69,7 +69,7 @@ class ThirdController extends Controller {
             }
             $enData = $enData.$key.'='.$val;
         }
-        return md5($enData.$cfg['apikey']);
+        return md5($enData.$cfg['app_key']);
     }
 
 
