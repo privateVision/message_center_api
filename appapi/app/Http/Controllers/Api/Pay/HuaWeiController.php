@@ -40,13 +40,15 @@ class HuaweiController extends Controller {
         }
 
         $params = array(
+            'userName'=>'武汉爪游互娱科技有限公司',
             'userID'=>$cfg['pay_id'],
             'applicationID'=>$cfg['app_id'],
             'amount'=>round($real_fee/100, 2),
             'productName'=>mb_substr($order->subject, 50),
             'requestId'=>$order->sn,
             'productDesc'=>mb_substr($order->body, 100),
-//            'notifyUrl'=>url('pay_callback/huawei')
+            'notifyUrl'=>url('pay_callback/huawei'),
+            'serviceCatalog'=>'X6'
         );
 
         $params['sign'] = self::verify($params, $cfg);
@@ -58,6 +60,9 @@ class HuaweiController extends Controller {
 
     protected function verify($data, $cfg)
     {
+        //去掉不签名的字段
+        unset($data['userName']);unset($data['notifyUrl']);unset($data['serviceCatalog']);
+
         ksort($data);
 
         $content = "";
