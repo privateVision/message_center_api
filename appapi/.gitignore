@@ -10,7 +10,7 @@ config/sdkv4test.qcwanwan.com/
 *.tar.gz
 tar.py
 
-config/apianfeng.me/
+config/api.anfeng.me/
 .env.api.anfeng.me
 
 .buildpath
