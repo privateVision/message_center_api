@@ -1,6 +1,14 @@
 .env
-.env.dkapi.anfan.com
+.env.local.sdkapi.com
+.env.sdkapi.novasmobi.com
+.env.sdkv4.qcwan.com
+.env.sdkv4test.qcwanwan.com
 config/local.sdkapi.com/
+config/sdkapi.novasmobi.com/
+config/sdkv4.qcwan.com/
+config/sdkv4test.qcwanwan.com/
+*.tar.gz
+tar.py
 
 .buildpath
 .htaccess

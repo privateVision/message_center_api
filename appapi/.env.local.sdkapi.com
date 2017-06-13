@@ -15,7 +15,6 @@ service_page=http://m.anfeng.cn/service.html
 service_phone=4000274365
 service_qq=4000274365
 af_download=http://appicdn.anfeng.cn/down/AnFengHelper_lastest.apk
-default_heartbeat_interval=2000
 logout_img=http://appicdn.anfeng.cn/app/upload/appforsdk.jpg
 logout_redirect=http://www.anfeng.cn/
 protocol_title=安锋用户协议
@@ -24,9 +23,6 @@ oauth_url_qq=http://passtest.anfeng.cn/oauth/login/qq
 oauth_url_weixin=http://passtest.anfeng.cn/oauth/login/weixin
 oauth_url_weibo=http://passtest.anfeng.cn/oauth/login/weibo
 reset_password_url=http://passtest.anfeng.cn/reset_password.html
-
-heartbeat_interval=2000
-realname=false
 
 KAFKA_SERVER=127.0.0.1:9092
 
