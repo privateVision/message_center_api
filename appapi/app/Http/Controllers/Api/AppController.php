@@ -163,6 +163,8 @@ class AppController extends Controller
             'enable_fb' => $this->procedure_extend->isEnableFB(), // 是否禁用F币功能,
             
             'dataeye_id' => $this->procedure->dataeye_id,
+
+            'facebook_home_url' => $this->procedure_extend->facebook_home_url,
         ];
     }
 
@@ -181,6 +183,7 @@ class AppController extends Controller
             'type' => $this->procedure_extend->logout_type,
             'redirect' => httpsurl($this->procedure_extend->logout_redirect),
             'inside' => $this->procedure_extend->logout_inside,
+            'facebook_home_url' => $this->procedure_extend->facebook_home_url,
         ];
     }
 

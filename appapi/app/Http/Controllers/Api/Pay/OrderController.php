@@ -242,8 +242,8 @@ class OrderController extends Controller {
             'coupons' => $list,
             'iap' => $iap,
             'pay_methods' => array_values($payconf['pay_methods']),
-            'package' => $this->procedure_extend->package_name,
-            'product_name' => isset($product) ? $product->third_product_id : '',
+            'package' => strval($this->procedure_extend->package_name),
+            'product_id' => isset($product) ? $product->third_product_id : '',
             'order_name' => $subject,
             'order_desc' => $body,
         ];

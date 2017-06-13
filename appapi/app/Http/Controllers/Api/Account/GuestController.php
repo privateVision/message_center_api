@@ -2,11 +2,8 @@
 namespace App\Http\Controllers\Api\Account;
 
 use App\Exceptions\ApiException;
-use Illuminate\Http\Request;
-use App\Parameter;
 
 use App\Model\Ucuser;
-use App\Model\UcusersUUID;
 
 class GuestController extends Controller {
 
@@ -20,6 +17,12 @@ class GuestController extends Controller {
 
         $user = Ucuser::from_cache_device_uuid($device_id);
         if($user) {
+            /*
+            if($password) {
+                $user->setPassword($password);
+                $user->save();
+            }
+            */
             return $user;
         }
 
