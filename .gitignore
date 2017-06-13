@@ -12,3 +12,4 @@ config.py
 .cache
 /appapi/.settings
 /appapi/.env.local
+/appapi/.env.testing

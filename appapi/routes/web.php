@@ -1,8 +1,6 @@
 <?php
 Route::any('/test', function() {
-    //var_dump(config('sdkapi.anfan.com.common'));
-    //config('common');
-    //\App\Model\Ucuser::find(1);
+
 });
 
 Route::group(['prefix' => 'web'], function () {

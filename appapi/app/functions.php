@@ -609,3 +609,21 @@ function exchange_rate($n, $currency) {
 
     return $n;
 }
+
+/**
+ * 测试输出
+ * @param string/array $value 变量名
+ * @param string $exit 是否停止
+ * @return string
+ */
+if (!function_exists('a'))
+{
+    function a($value,$exit=0)
+    {
+        echo '<pre>';
+        print_r($value);
+        echo '</pre>';
+
+        if ($exit) exit();
+    }
+}
