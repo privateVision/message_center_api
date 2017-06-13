@@ -25,8 +25,13 @@ class BaiduController extends Controller
 
     protected function verifySign($data, $order, $order_extend)
     {
-        $result = ProceduresExtend::where('pid', $order->vid)->first()->toArray;
-        if($data['Sign'] == self::verify([$result['third_appid'], $data['OrderSerial'], $data['CooperatorOrderSerial'], urldecode($data['Content']), $result['third_appkey']])) {
+        $proceduresExtend = ProceduresExtend::where('pid', $order->vid)->first();
+        $cfg = json_decode($proceduresExtend->third_config, true);
+        if(empty($cfg) || !isset($cfg['app_key'])) {
+            return false;
+        }
+
+        if($data['Sign'] == self::verify([$cfg['third_appid'], $data['OrderSerial'], $data['CooperatorOrderSerial'], urldecode($data['Content']), $cfg['third_appkey']])) {
             return true;
         }
 
@@ -46,10 +51,14 @@ class BaiduController extends Controller
 
     protected function onComplete($data, $order, $order_extend, $isSuccess, $message = null)
     {
-        $result = ProceduresExtend::where('pid', $order->vid)->first()->toArray;
+        $proceduresExtend = ProceduresExtend::where('pid', $order->vid)->first();
+        $cfg = json_decode($proceduresExtend->third_config, true);
+        if(empty($cfg) || !isset($cfg['app_key'])) {
+            return false;
+        }
 
         $code = $isSuccess?1:0;
-        $sign =  self::verify([$result['third_appid'], $code, $result['third_appkey']]);
+        $sign =  self::verify([$cfg['app_id'], $code, $cfg['app_key']]);
 
         return json_encode([
             'AppID'=>$data['AppID'],
