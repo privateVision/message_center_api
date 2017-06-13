@@ -105,6 +105,7 @@ Route::group(['prefix' => 'api'], function () {
     Route::any('pay/yingyongbao/check', 'Api\\Pay\\YingYongBaoController@checkPayTokenAction');             // 应用宝检查token是否有效
     Route::any('pay/yingyongbao/balance', 'Api\\Pay\\YingYongBaoController@getBalanceMAction');             // 应用宝查询余额
     Route::any('pay/xiaomi/request', 'Api\\Pay\\MiController@RequestAction');                               // 小米平台支付
+    Route::any('pay/xiaomi/order', 'Api\\Pay\\MiController@queryOrderAction');                              // 小米平台订单查询
     Route::any('pay/vivo/request', 'Api\\Pay\\VivoController@RequestAction');                               // vivo平台支付
     Route::any('pay/lenovo/request', 'Api\\Pay\\LenovoController@RequestAction');                           // 联想平台支付
     Route::any('pay/huawei/request', 'Api\\Pay\\HuaweiController@RequestAction');                           // 华为平台支付

@@ -127,15 +127,6 @@ return [
             'cert' => __DIR__ . '/google_play.json'  //通过google play控制台生产秘钥账号
         ],
 
-        //uc游戏平台
-        'uc'=>[
-            'cpId'=>'71659',
-            'apikey'=>'74f3041cb9ee30ed01119b8ff4e5f94f',
-            'baseUrl'=>'http://sdk.9game.cn',
-            'port'=>'80',
-            'prefix'=>'ng/cp/'
-        ],
-
         'IOS' => [
             'verify_receipt_sandbox' => 'https://sandbox.itunes.apple.com/verifyReceipt',
             'verify_receipt' => 'https://buy.itunes.apple.com/verifyReceipt',

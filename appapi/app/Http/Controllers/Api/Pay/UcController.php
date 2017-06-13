@@ -16,7 +16,10 @@ class UcController extends Controller {
 
     /**
      * uc config
-     * 比较特殊 不用填写所有参数
+     * {
+     *      "cp_id":"71659",
+     *      "app_key":"c763721105d3b331fa160bf303baca2c"
+     * }
      */
 
     /**
@@ -26,6 +29,11 @@ class UcController extends Controller {
      * @return array
      */
     public function getData($config, Orders $order, OrderExtend $order_extend, $real_fee) {
+        $cfg = $this->procedure_extend->third_config;
+        if(empty($cfg) || !isset($cfg['app_id'])) {
+            throw new ApiException(ApiException::Remind, trans('messages.error_third_params'));
+        }
+
         //获取uc用户id
         $accountId = $this->parameter->tough('account_id');
 
@@ -36,7 +44,7 @@ class UcController extends Controller {
         $params['callbackInfo'] = '';
 
         $notInKey =  array("roleName", "roleId", "grade", "serverId", "signType");
-        $params['sign'] = self::verify($config, $params, $notInKey);
+        $params['sign'] = self::verify($cfg, $params, $notInKey);
         $params['signType'] = 'MD5';
 
         return [
@@ -44,7 +52,7 @@ class UcController extends Controller {
         ];
     }
 
-    protected static function verify($config, $params, $notInKey = array()) {
+    protected static function verify($cfg, $params, $notInKey = array()) {
         ksort($params);
         $enData = '';
         foreach( $params as $key=>$val ){
@@ -53,6 +61,6 @@ class UcController extends Controller {
             }
             $enData = $enData.$key.'='.$val;
         }
-        return md5($enData.$config['apikey']);
+        return md5($enData.$cfg['app_key']);
     }
 }

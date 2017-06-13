@@ -27,7 +27,7 @@ class VivoController extends Controller
     {
         $cfg = $this->procedure_extend->third_config;
         if(empty($cfg) || !isset($cfg['app_id'])) {
-            throw new ApiException(ApiException::Remind, trans('message.error_third_params'));
+            throw new ApiException(ApiException::Remind, trans('messages.error_third_params'));
         }
         $params = [
             'version' => '1.0.0',
@@ -37,8 +37,8 @@ class VivoController extends Controller
             'notifyUrl' => url('pay_callback/vivo'),
             'orderTime' => date('YmdHis', strtotime($order->createTime)),
             'orderAmount' => $real_fee,
-            'orderTitle' => mb_substr($order->subject, 45),
-            'orderDesc' => mb_substr($order->body, 100),
+            'orderTitle' => mb_substr($order->subject, 0, 45),
+            'orderDesc' => mb_substr($order->body, 0, 100),
             'extInfo' => '111'
         ];
 

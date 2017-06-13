@@ -36,17 +36,17 @@ class HuaweiController extends Controller {
 
         $cfg = $this->procedure_extend->third_config;
         if(empty($cfg) || !isset($cfg['app_id'])) {
-            throw new ApiException(ApiException::Remind, trans('message.error_third_params'));
+            throw new ApiException(ApiException::Remind, trans('messages.error_third_params'));
         }
 
         $params = array(
             'userName'=>'武汉爪游互娱科技有限公司',
             'userID'=>$cfg['pay_id'],
             'applicationID'=>$cfg['app_id'],
-            'amount'=>$real_fee/100,
-            'productName'=>mb_substr($order->subject, 50),
+            'amount'=>sprintf("%.2f", $real_fee/100),
+            'productName'=>mb_substr($order->subject, 0, 50),
             'requestId'=>$order->sn,
-            'productDesc'=>mb_substr($order->body, 100),
+            'productDesc'=>mb_substr($order->body, 0, 100),
             'notifyUrl'=>url('pay_callback/huawei'),
             'serviceCatalog'=>'X6'
         );
@@ -60,6 +60,9 @@ class HuaweiController extends Controller {
 
     protected function verify($data, $cfg)
     {
+        //去掉不签名的字段
+        unset($data['userName']);unset($data['notifyUrl']);unset($data['serviceCatalog']);
+
         ksort($data);
 
         $content = "";

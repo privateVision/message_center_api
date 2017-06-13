@@ -7,6 +7,14 @@ use App\Model\ProceduresExtend;
 
 class UcController extends Controller
 {
+    /**
+     * uc config
+     * {
+     *      "cp_id":"71659",
+     *      "app_key":"c763721105d3b331fa160bf303baca2c"
+     * }
+     */
+
     protected function getData(Request $request)
     {
         $request = file_get_contents("php://input");
@@ -25,8 +33,13 @@ class UcController extends Controller
 
     protected function verifySign($data, $order, $notInKey = array())
     {
-        $params = $data['data'];
+        $proceduresExtend = ProceduresExtend::where('pid', $order->vid)->first();
+        $cfg = json_decode($proceduresExtend->third_config, true);
+        if(empty($cfg) || !isset($cfg['app_id'])) {
+            return false;
+        }
 
+        $params = $data['data'];
         ksort($params);
         $enData = '';
         foreach( $params as $key=>$val ){
@@ -36,7 +49,7 @@ class UcController extends Controller
             $enData = $enData.$key.'='.$val;
         }
 
-        $sign = md5($enData.configex('common.payconfig.uc.apikey'));
+        $sign = md5($enData.$cfg['app_key']);
         if($data['sign'] == $sign){
             return true;
         }
