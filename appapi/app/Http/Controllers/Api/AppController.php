@@ -160,7 +160,9 @@ class AppController extends Controller
 
             'ios_app_config' => $ios_app_config,
 
-            'enable_fb' => $this->procedure_extend->isEnableFB(), // 是否禁用F币功能
+            'enable_fb' => $this->procedure_extend->isEnableFB(), // 是否禁用F币功能,
+            
+            'dataeye_id' => $this->procedure->dataeye_id,
         ];
     }
 
