@@ -43,7 +43,7 @@ class HuaweiController extends Controller {
             'userName'=>'武汉爪游互娱科技有限公司',
             'userID'=>$cfg['pay_id'],
             'applicationID'=>$cfg['app_id'],
-            'amount'=>sprintf("%.2f", $real_fee/10000),
+            'amount'=>sprintf("%.2f", $real_fee/100),
             'productName'=>mb_substr($order->subject, 50),
             'requestId'=>$order->sn,
             'productDesc'=>mb_substr($order->body, 100),
