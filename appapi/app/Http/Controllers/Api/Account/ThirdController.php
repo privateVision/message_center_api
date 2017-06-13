@@ -16,7 +16,7 @@ class ThirdController extends Controller {
         $gameId = $this->parameter->tough('game_id');
 
         $cfg = $this->procedure_extend->third_config;
-        if(empty($cfg) || !isset($cfg['app_id'])) {
+        if(empty($cfg) || !isset($cfg['app_key'])) {
             throw new ApiException(ApiException::Remind, trans('messages.error_third_params'));
         }
         $cfg =  array_merge($cfg, array(

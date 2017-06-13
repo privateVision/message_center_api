@@ -35,7 +35,7 @@ class UcController extends Controller
     {
         $proceduresExtend = ProceduresExtend::where('pid', $order->vid)->first();
         $cfg = json_decode($proceduresExtend->third_config, true);
-        if(empty($cfg) || !isset($cfg['app_id'])) {
+        if(empty($cfg) || !isset($cfg['app_key'])) {
             return false;
         }
 
