@@ -55,10 +55,6 @@ def v4_api_post_account_message():
         return response_data(200, 0, get_tips('common', 'client_request_error'))
     else:
         try:
-            print form.data['ucid']
-            print form.data['title']
-            print form.data['description']
-            print form.data['content']
             users_message = UsersMessage()
             users_message.create_timestamp = int(time.time())
             users_message.id = '%s-%s-%s' % ('message', form.data['ucid'], users_message.create_timestamp)
@@ -77,7 +73,7 @@ def v4_api_post_account_message():
             users_message.vip = None
             users_message.sortby = 0
             users_message.app = None
-            # users_message.save()
+            users_message.save()
             # --------------------------------
             user_message = UserMessage()
             user_message.id = users_message.id
@@ -88,7 +84,7 @@ def v4_api_post_account_message():
             user_message.end_time = 0
             user_message.is_time = 0
             user_message.create_timestamp = users_message.create_timestamp
-            # user_message.save()
+            user_message.save()
         except Exception, err:
             service_logger.error("添加账户消息异常：%s" % (err.message,))
             return response_data(http_code=200, code=0, message=get_tips('cms', 'add_account_message_exception'))
@@ -129,7 +125,6 @@ def v4_sdk_get_message_list():
         Q(type='message')
         & Q(ucid=ucid)
         & Q(closed=0)
-        # & Q(is_read=0)
         & Q(start_time__lte=current_timestamp)).order_by('-create_timestamp')[start_index:end_index]
     data_list = []
     for message in message_list:
@@ -172,14 +167,15 @@ def v4_sdk_delete_message_list():
             service_logger.info("用户：%s 删除消息列表，数据id为：%s" % (ucid, id_list))
             try:
                 for mysql_id in id_list:
-                    msg_info = UsersMessage.objects(Q(type='message') & Q(mysql_id=mysql_id) & Q(closed=0)).first()
+                    msg_info = UserMessage.objects(Q(type='message') & Q(mysql_id=mysql_id)
+                                                   & Q(ucid=ucid) & Q(closed=0)).first()
                     if msg_info is not None:
                         UserMessage.objects(
                             Q(type='message')
                             & Q(ucid=ucid)
                             & Q(mysql_id=mysql_id)).update(set__closed=1)
-                        is_msg_readed = UsersMessage.objects(Q(type='message') & Q(mysql_id=mysql_id)
-                                                             & Q(is_read=0)).first()
+                        is_msg_readed = UserMessage.objects(Q(type='message') & Q(mysql_id=mysql_id)
+                                                            & Q(ucid=ucid) & Q(is_read=0)).first()
                         # 减少缓存未读消息数
                         if is_msg_readed:
                             RedisHandle.hdecrby(ucid, 'message')
@@ -187,7 +183,8 @@ def v4_sdk_delete_message_list():
                 service_logger.error("sdk删除用户消息异常：%s", e.message)
                 response_data(200, 0, get_tips('message', 'delete_user_message_exception'))
     if 'delete_all' in request.form:
-        if request.form['delete_all'] == 1:
+        service_logger.info("用户：%s 删除全部消息列表" % (ucid,))
+        if int(request.form['delete_all']) == 1:
             try:
                 UserMessage.objects(
                     Q(type='message')
@@ -210,7 +207,7 @@ def v4_sdk_set_message_list_readed():
             service_logger.info("用户：%s 设置消息已读，数据id为：%s" % (ucid, id_list))
             try:
                 for mysql_id in id_list:
-                    msg_info = UsersMessage.objects(Q(type='message') & Q(mysql_id=mysql_id)
+                    msg_info = UserMessage.objects(Q(type='message') & Q(mysql_id=mysql_id) & Q(ucid=ucid)
                                                     & Q(closed=0) & Q(is_read=0)).first()
                     if msg_info is not None:
                         UserMessage.objects(
@@ -222,8 +219,9 @@ def v4_sdk_set_message_list_readed():
             except Exception, e:
                 service_logger.error("sdk删除用户消息异常：%s", e.message)
                 response_data(200, 0, get_tips('message', 'delete_user_message_exception'))
-    if 'delete_all' in request.form:
-        if request.form['delete_all'] == 1:
+    if 'read_all' in request.form:
+        service_logger.info("用户：%s 设置全部消息列表已读" % (ucid,))
+        if int(request.form['read_all']) == 1:
             try:
                 UserMessage.objects(
                     Q(type='message')

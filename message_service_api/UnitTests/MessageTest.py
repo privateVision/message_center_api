@@ -18,10 +18,10 @@ class MessageFunctionTest(unittest.TestCase):
     # def test_add_message(self):
     #     data = {
     #         "ucid": 10010,
-    #         "title":"测试消息",
-    #         "description":"消息摘要",
-    #         "content":"消息详细内容",
-    #         "_sign": '7f9cbdef11241b2b121df9e736b30392'
+    #         "title":"223123",
+    #         "description":"哎呀4.2",
+    #         "content":"呵呵呵呵呵",
+    #         "_sign": '8a5b4898853549be53cf2065a8d74ff7'
     #     }
     #     r = requests.post("http://localhost:5000/msa/v4.2/account_message", data=data)
     #     self.assertEqual(r.status_code, 200)
@@ -58,14 +58,44 @@ class MessageFunctionTest(unittest.TestCase):
     #     print r.text
 
 
-    def test_set_message_readed(self):
+    # def test_delete_message_list(self):
+    #     body_data = {
+    #         '_sign': 'ed81ac86bc1fca205703c27d16d0d70e',
+    #         '_token': '4da803965a27ce16aba27c597819b17c',
+    #         'id_list': "[1497403898, 1497404654]",
+    #         '_appid': 2
+    #     }
+    #     r = requests.delete('http://localhost:5000/msa/v4.2/messages', data=body_data)
+    #     print r.text
+
+    # def test_delete_all_message(self):
+    #     body_data = {
+    #         '_sign': 'ed81ac86bc1fca205703c27d16d0d70e',
+    #         '_token': '4da803965a27ce16aba27c597819b17c',
+    #         'delete_all': 1,
+    #         '_appid': 2
+    #     }
+    #     r = requests.delete('http://localhost:5000/msa/v4.2/messages', data=body_data)
+    #     print r.text
+
+    # def test_set_message_list_readed(self):
+    #     body_data = {
+    #         '_sign': 'ed81ac86bc1fca205703c27d16d0d70e',
+    #         '_token': '4da803965a27ce16aba27c597819b17c',
+    #         'id_list': "[1497403898]",
+    #         '_appid': 2
+    #     }
+    #     r = requests.post('http://localhost:5000/msa/v4.2/message/read', data=body_data)
+    #     print r.text
+
+    def test_set_all_message_readed(self):
         body_data = {
             '_sign': 'ed81ac86bc1fca205703c27d16d0d70e',
-            '_token': 'bb427a702d53dbb0cdd4f001fb301620',
-            'id_list': "[1, 2, 3]",
+            '_token': '4da803965a27ce16aba27c597819b17c',
+            'read_all': 1,
             '_appid': 2
         }
-        r = requests.delete('http://localhost:5000/msa/v4.2/messages', data=body_data)
+        r = requests.post('http://localhost:5000/msa/v4.2/message/read', data=body_data)
         print r.text
 
     def tearDown(self):
