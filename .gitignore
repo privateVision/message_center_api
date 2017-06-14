@@ -13,3 +13,5 @@ config.py
 /appapi/.settings
 /appapi/.env.local
 /appapi/.env.testing
+/appapi/.env.api.sdk.com
+/appapi/config/api.sdk.com
