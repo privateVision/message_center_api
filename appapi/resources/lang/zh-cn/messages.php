@@ -102,6 +102,7 @@ return [
     'error_third_system'                    => '第三方系统错误', // error
     'error_third_params'                    => '第三方参数错误', // error
     'currency_not_found'                    => '目标汇率不存在：:currency',
+    'balance_not_enough'                    => 'f币余额不足',
 ];
 /*
 return [
