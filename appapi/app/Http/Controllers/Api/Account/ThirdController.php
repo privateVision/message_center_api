@@ -78,10 +78,14 @@ class ThirdController extends Controller {
      */
     public function lenovoAction() {
         $lpsust = $this->parameter->tough('lpsust');
+        $cfg = $this->procedure_extend->third_config;
+        if(empty($cfg) || !isset($cfg['app_id'])) {
+            throw new ApiException(ApiException::Remind, trans('messages.error_third_params'));
+        }
 
         $params = array(
             'lpsust'=>$lpsust,
-            'AccessToken'=>$this->procedure_extend->package_name
+            'realm'=>$cfg['app_id']
         );
 
         $url = 'http://passport.lenovo.com/interserver/authen/1.2/getaccountid';

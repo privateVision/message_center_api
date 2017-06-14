@@ -18,3 +18,19 @@ ALTER TABLE `anfanapi`.`procedures_extend` DROP COLUMN `third_cpid`, DROP COLUMN
 ALTER TABLE `anfanapi`.`procedures_products`
   ADD COLUMN `type` TINYINT(1) DEFAULT 0  NULL  COMMENT '商品类型，0通用，1官网商店' AFTER `fee`,
   ADD COLUMN `pay_method` INT(11) NULL  COMMENT '商品可用的支付方式，0表示所有支付方式，多种支付方式逗号分隔，见procedures_extend.enable字段，从0开始每4位加1：0:wechat,\n1:alipay,\n2:unionpay,\n3:mycard,\n4:nowpay_wechat,\n5:paypal' AFTER `type`;
+
+/**20170613**/
+CREATE TABLE `service_question` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `parent_id` int(11) DEFAULT '0' COMMENT '父id',
+  `status` tinyint(1) DEFAULT '1' COMMENT '1正常 2删除',
+  `ucid` int(11) DEFAULT NULL COMMENT '用戶id',
+  `pid` int(11) DEFAULT NULL COMMENT 'procedures.id',
+  `zoneid` int(11) DEFAULT NULL COMMENT '區服id',
+  `roleid` int(11) DEFAULT NULL COMMENT '角色id',
+  `desc` varchar(1024) DEFAULT NULL COMMENT '描述',
+  `img` varchar(1024) DEFAULT NULL COMMENT '圖片地址',
+  `create_time` int(11) DEFAULT NULL,
+  `update_time` int(11) DEFAULT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=MyISAM AUTO_INCREMENT=7 DEFAULT CHARSET=utf8;

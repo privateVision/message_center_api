@@ -453,7 +453,7 @@ function http_request($url, $data, $is_post = true) {
     $data = http_build_query($data);
 
     if(!$is_post) {
-        $url = strpos($url, '?') == -1 ? ($url .'?'. $data) : ($url .'&'. $data);
+        $url = strpos($url, '?') === false ? ($url .'?'. $data) : ($url .'&'. $data);
     }
 
     $ch = curl_init();
@@ -501,7 +501,7 @@ function http_curl($url, $param = array(), $is_post = true, $code = 'cd', $heade
     }
 
     if (!$is_post) {
-        $url = strpos($url, '?') == -1 ? ($url .'?'. $strPOST) : ($url .'&'. $strPOST);
+        $url = strpos($url, '?') === false ? ($url .'?'. $strPOST) : ($url .'&'. $strPOST);
     }
 
     $oCurl = curl_init();
@@ -512,6 +512,7 @@ function http_curl($url, $param = array(), $is_post = true, $code = 'cd', $heade
     curl_setopt($oCurl, CURLOPT_URL, $url);
     curl_setopt($oCurl, CURLOPT_RETURNTRANSFER, 1 );
     curl_setopt($oCurl, CURLOPT_TIMEOUT, 60);
+    curl_setopt($oCurl, CURLOPT_VERBOSE, 1);
     if ($is_post) {
         curl_setopt($oCurl, CURLOPT_POST,true);
         curl_setopt($oCurl, CURLOPT_POSTFIELDS, $strPOST);
