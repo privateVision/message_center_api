@@ -234,7 +234,6 @@ return [
         
         // mongodb
         'Mongo' => Jenssegers\Mongodb\MongodbServiceProvider::class,
-
     ],
 
 ];

@@ -214,27 +214,15 @@ class AppController extends Controller
             $sdkversion = $this->parameter->tough('_version');// 4.1
         }
 
-        if(in_array($pid, [1452, 1533, 1530])) {
-            $manifest = [];
-            $manifest['version'] = '1.0.0';
-            $manifest['bundles'][] = ['type' => 'lib', 'pkg' => 'com.anfeng.pay'];
+        $manifest = [];
+        $manifest['version'] = '1.0.0';
+        $manifest['bundles'][] = ['type' => 'lib', 'pkg' => 'com.anfeng.pay'];
 
-            $updates = [];
-            $updates['pkg'] = 'com.anfeng.pay';
-            $updates['version'] = 403;
-            $updates['use_version'] = 403; // 回退版本，默认与version一致
-            $updates['url'] = httpsurl('http://afsdkhot.qcwan.com/anfeng/down/com.anfeng.pay403.apk');
-        } else {
-            $manifest = [];
-            $manifest['version'] = '1.0.0';
-            $manifest['bundles'][] = ['type'=>'lib','pkg'=>'com.anfeng.pay'];
-
-            $updates = [];
-            $updates['pkg'] = 'com.anfeng.pay';
-            $updates['version'] = 40;
-            $updates['use_version'] = 40; // 回退版本，默认与version一致
-            $updates['url'] = httpsurl('http://afsdkup.qcwan.com/down/com.anfeng.pay.apk');
-        }
+        $updates = [];
+        $updates['pkg'] = 'com.anfeng.pay';
+        $updates['version'] = 411;
+        $updates['use_version'] = 411; // 回退版本，默认与version一致
+        $updates['url'] = httpsurl('http://sdkup.novasmobi.com/com.anfeng.pay.apk');
 
         return ['manifest'=>$manifest, 'updates'=>[$updates]];
     }

@@ -87,6 +87,10 @@ class ComposerStaticInite0704cbbdcb2b22e78bd6bb659055920
             'PhpParser\\' => 10,
             'Pheanstalk\\' => 11,
         ),
+        'N' => 
+        array (
+            'Naux\\IpLocation\\' => 16,
+        ),
         'M' => 
         array (
             'Monolog\\' => 8,
@@ -282,6 +286,10 @@ class ComposerStaticInite0704cbbdcb2b22e78bd6bb659055920
         'Pheanstalk\\' => 
         array (
             0 => __DIR__ . '/..' . '/pda/pheanstalk/src',
+        ),
+        'Naux\\IpLocation\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/naux/iplocation',
         ),
         'Monolog\\' => 
         array (
@@ -504,6 +512,7 @@ class ComposerStaticInite0704cbbdcb2b22e78bd6bb659055920
         'App\\Http\\Controllers\\PayCallback\\NowpayWechatController' => __DIR__ . '/../..' . '/app/Http/Controllers/PayCallback/NowpayWechatController.php',
         'App\\Http\\Controllers\\PayCallback\\OppoController' => __DIR__ . '/../..' . '/app/Http/Controllers/PayCallback/OppoController.php',
         'App\\Http\\Controllers\\PayCallback\\PaypalController' => __DIR__ . '/../..' . '/app/Http/Controllers/PayCallback/PaypalController.php',
+        'App\\Http\\Controllers\\PayCallback\\PaypalECController' => __DIR__ . '/../..' . '/app/Http/Controllers/PayCallback/PaypalECController.php',
         'App\\Http\\Controllers\\PayCallback\\UcController' => __DIR__ . '/../..' . '/app/Http/Controllers/PayCallback/UcController.php',
         'App\\Http\\Controllers\\PayCallback\\UnionpayController' => __DIR__ . '/../..' . '/app/Http/Controllers/PayCallback/UnionpayController.php',
         'App\\Http\\Controllers\\PayCallback\\VivoController' => __DIR__ . '/../..' . '/app/Http/Controllers/PayCallback/VivoController.php',
@@ -520,6 +529,7 @@ class ComposerStaticInite0704cbbdcb2b22e78bd6bb659055920
         'App\\Http\\Middleware\\RedirectIfAuthenticated' => __DIR__ . '/../..' . '/app/Http/Middleware/RedirectIfAuthenticated.php',
         'App\\Http\\Middleware\\TrimStrings' => __DIR__ . '/../..' . '/app/Http/Middleware/TrimStrings.php',
         'App\\Http\\Middleware\\VerifyCsrfToken' => __DIR__ . '/../..' . '/app/Http/Middleware/VerifyCsrfToken.php',
+        'App\\IPIP' => __DIR__ . '/../..' . '/app/IPIP.php',
         'App\\Jobs\\AdtRequest' => __DIR__ . '/../..' . '/app/Jobs/AdtRequest.php',
         'App\\Jobs\\AsyncExecute' => __DIR__ . '/../..' . '/app/Jobs/AsyncExecute.php',
         'App\\Jobs\\AsyncQuery' => __DIR__ . '/../..' . '/app/Jobs/AsyncQuery.php',
@@ -543,7 +553,6 @@ class ComposerStaticInite0704cbbdcb2b22e78bd6bb659055920
         'App\\Model\\Log\\Model' => __DIR__ . '/../..' . '/app/Model/Log/Model.php',
         'App\\Model\\Log\\UserEventLog' => __DIR__ . '/../..' . '/app/Model/Log/UserEventLog.php',
         'App\\Model\\Log\\UserRoleLog' => __DIR__ . '/../..' . '/app/Model/Log/UserRoleLog.php',
-        'App\\Model\\LoginLog' => __DIR__ . '/../..' . '/app/Model/LoginLog.php',
         'App\\Model\\LoginLogUUID' => __DIR__ . '/../..' . '/app/Model/LoginLogUUID.php',
         'App\\Model\\Model' => __DIR__ . '/../..' . '/app/Model/Model.php',
         'App\\Model\\OrderExtend' => __DIR__ . '/../..' . '/app/Model/OrderExtend.php',
@@ -561,6 +570,7 @@ class ComposerStaticInite0704cbbdcb2b22e78bd6bb659055920
         'App\\Model\\Ucuser' => __DIR__ . '/../..' . '/app/Model/Ucuser.php',
         'App\\Model\\UcuserInfo' => __DIR__ . '/../..' . '/app/Model/UcuserInfo.php',
         'App\\Model\\UcuserLog' => __DIR__ . '/../..' . '/app/Model/UcuserLog.php',
+        'App\\Model\\UcuserLoginLog' => __DIR__ . '/../..' . '/app/Model/UcuserLoginLog.php',
         'App\\Model\\UcuserOauth' => __DIR__ . '/../..' . '/app/Model/UcuserOauth.php',
         'App\\Model\\UcuserRole' => __DIR__ . '/../..' . '/app/Model/UcuserRole.php',
         'App\\Model\\UcuserSession' => __DIR__ . '/../..' . '/app/Model/UcuserSession.php',
@@ -7703,6 +7713,7 @@ class ComposerStaticInite0704cbbdcb2b22e78bd6bb659055920
         'Monolog\\Processor\\UidProcessor' => __DIR__ . '/..' . '/monolog/monolog/src/Monolog/Processor/UidProcessor.php',
         'Monolog\\Processor\\WebProcessor' => __DIR__ . '/..' . '/monolog/monolog/src/Monolog/Processor/WebProcessor.php',
         'Monolog\\Registry' => __DIR__ . '/..' . '/monolog/monolog/src/Monolog/Registry.php',
+        'Naux\\IpLocation\\IpLocation' => __DIR__ . '/..' . '/naux/iplocation/IpLocation.php',
         'PHPUnit\\Framework\\Assert' => __DIR__ . '/..' . '/phpunit/phpunit/src/ForwardCompatibility/Assert.php',
         'PHPUnit\\Framework\\BaseTestListener' => __DIR__ . '/..' . '/phpunit/phpunit/src/ForwardCompatibility/BaseTestListener.php',
         'PHPUnit\\Framework\\TestCase' => __DIR__ . '/..' . '/phpunit/phpunit/src/ForwardCompatibility/TestCase.php',

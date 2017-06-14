@@ -141,8 +141,11 @@ class UserController extends Controller {
         $old_password = $user->password;
         
         $user->setPassword($new_password);
+        if($user->is_freeze == Ucuser::IsFreeze_Abnormal) { // 通过手机号码修改密码时解除帐号异常状态
+            $user->is_freeze = Ucuser::IsFreeze_Normal;
+        }
+
         $user->save();
-        $user->updateCache();
         
         async_execute('expire_session', $user->ucid);
         user_log($user, $this->procedure, 'reset_password', '【重置密码】通过手机验证码重置，手机号码{%s}，旧密码[%s]，新密码[%s]', $mobile, $old_password, $user->password);

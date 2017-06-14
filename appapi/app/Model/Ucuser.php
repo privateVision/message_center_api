@@ -10,6 +10,10 @@ class Ucuser extends Model
     const CREATED_AT = 'createTime';
     const UPDATED_AT = 'updated_at';
 
+    const IsFreeze_Normal = 0;
+    const IsFreeze_Freeze = 1;
+    const IsFreeze_Abnormal = 2;
+
     public function orders() {
         return $this->belongsTo(Orders::class, 'ucid', 'ucid');
     }

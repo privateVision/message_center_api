@@ -1,5 +1,10 @@
 <?php
 return [
+    // 帐户安全等级
+    // 0 没有等级
+    // 5 如果一定时间未登陆则帐户提醒异常
+    'account_safe_level' => 0,
+
     'basic' => [
         'default_avatar' => 'http://avatar.anfeng.com/avatar_default.png', // 默认头像
         'service_share' => 'http://www.anfeng.cn/app', // 分享页面
