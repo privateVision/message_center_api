@@ -42,7 +42,7 @@ class YingYongBaoController extends Controller
      */
     public function getData($config, Orders $order, OrderExtend $order_extend, $real_fee)
     {
-        if($this->payM($order, $order_extend)){
+        if($this->payM($order, $order_extend, $real_fee)){
             order_success($order->id);
             return [
                 'result'=>true
@@ -135,12 +135,12 @@ class YingYongBaoController extends Controller
      * @param accout_type qq或者wx
      * @return bool
      */
-    public function payM($order, $order_extend)
+    public function payM($order, $order_extend, $real_fee)
     {
         $accout_type = $this->parameter->tough('accout_type');
 
         $params = self::getParams();
-        $params['amt'] = $this->parameter->tough('amt');
+        $params['amt'] = intval($real_fee/100);
         $params['billno'] = $order->sn;
         //检查分区
         if(!empty($order_extend->zone_id) && $order_extend->zone_id>1) {
