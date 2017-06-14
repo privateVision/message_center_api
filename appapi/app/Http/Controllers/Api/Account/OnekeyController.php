@@ -7,6 +7,7 @@ use App\Parameter;
 
 use App\Model\Ucuser;
 use App\Model\YunpianCallback;
+use App\Model\UcusersUUID;
 
 class OnekeyController extends Controller {
 
@@ -15,14 +16,12 @@ class OnekeyController extends Controller {
     const Type = 4;
 
     public function getLoginUser() {
-        $pid = $this->parameter->tough('_appid');
-        $rid = $this->parameter->tough('_rid');
         $sms_token = $this->parameter->tough('sms_token');
 
         $yunpian_callback = YunpianCallback::where('text', $sms_token)->first();
 
         if(!$yunpian_callback) {
-            throw new ApiException(ApiException::MobileNotRegister, '服务器等待收到短信...');
+            throw new ApiException(ApiException::MobileNotRegister, trans('messages.not_accept_sms'));
         }
 
         $mobile = $yunpian_callback->mobile;
@@ -37,6 +36,7 @@ class OnekeyController extends Controller {
         $username = username();
         $password = rand(100000, 999999);
 
+<<<<<<< HEAD
         $user = new Ucuser;
         $user->uid = $username;
         $user->email = $username . "@anfan.com";
@@ -51,6 +51,13 @@ class OnekeyController extends Controller {
         $user->imei = $this->parameter->get('_imei', '');
         $user->device_id = $this->parameter->get('_device_id', '');
         $user->save();
+=======
+        //平台注册账号
+        $user = self::baseRegisterUser([
+            'uid' => $username,
+            'password' => $password
+        ]);
+>>>>>>> dev
 
         user_log($user, $this->procedure, 'register', '【注册】通过“手机号码一键登录”注册，手机号码{%s}, 密码[%s]', $mobile, $user->password);
 
@@ -64,7 +71,7 @@ class OnekeyController extends Controller {
     }
     
     public function SMSTokenAction() {
-        $config = config('common.smsconfig');
+        $config = configex('common.smsconfig');
         return [
             'sms_token' => uuid(), 
             'send_to' => $config['receiver']

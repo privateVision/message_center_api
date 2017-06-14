@@ -6,6 +6,14 @@ use Qiniu\Storage\BucketManager;
 use Qiniu\Storage\UploadManager;
 use Qiniu\Http\Client;
 
+function configex($key = null, $default = null) {
+    if(PHP_SAPI != 'cli' && @$_SERVER['HTTP_HOST'] && !empty($key)) {
+        $key = $_SERVER['HTTP_HOST'] .'.'. $key;
+    }
+
+    return config($key, $default);
+}
+
 // 设置redis的key在过期时间
 // 1. 一个用户的所有数据应该同时过期
 // 2. 避开在服务器高压状态时过期
@@ -28,6 +36,20 @@ function encrypt3des($data, $key = null) {
 }
 
 /**
+ * 如果客户端以HTTPS请求接口，则返回的一些涉及到URL的参数也改为HTTPS
+ * @param $url
+ * @return string
+ */
+function httpsurl($url) {
+    if((@$_SERVER['HTTP_X_FORWARDED_PROTO'] == 'https' || app('request')->getScheme() == 'https') && substr($url, 0, 5) == 'http:') {
+        return 'https:' . substr($url, 5);
+    }
+
+    return $url;
+}
+
+
+/**
  * 3DES解密
  * @param  [type] $data [description]
  * @param  [type] $key  [description]
@@ -39,6 +61,41 @@ function decrypt3des($data, $key = null) {
     }
 
     return \App\Crypt3DES::decrypt($data, $key);
+}
+
+/**
+ * 在$intime之内对key进行计数，当计数达到num时则用户IP被加入黑名单，持续$expire
+ * @param $key
+ * @param $num
+ * @param $expire
+ */
+function ipfirewall($key, $num, $expire, $intime = 86400) {
+    $ip = getClientIp();
+
+    $ignore = [
+        '0.0.0.0',
+        '127.0.0.1',
+        '10.13.251.38',
+        '10.13.251.39',
+    ];
+
+    if (in_array($ip, $ignore)) return;
+
+    $key = $key .'_'. $ip;
+
+    $n = Redis::GET($key);
+
+    if(($n + 1) == $num) {
+        $ip_refused = new \App\Model\IpRefused();
+        $ip_refused->ip = $ip;
+        $ip_refused->lock_time = time();
+        $ip_refused->unlock_time = time() + $expire;
+        $ip_refused->save();
+    } elseif($n == 0) {
+        Redis::SET($key, 1, 'EX', $intime);
+    } else {
+        Redis::INCR($key);
+    }
 }
 
 /**
@@ -132,7 +189,7 @@ function upload_to_cdn($filename, $filepath, $is_delete = true) {
     640 调用列举资源(list)接口时，指定非法的marker参数。
     701 在断点续上传过程中，后续上传接收地址不正确或ctx信息已过期。
     */
-    $config = config('common.storage_cdn.qiniu');
+    $config = configex('common.storage_cdn.qiniu');
 
     $auth = new Auth($config['access_key'], $config['secret_key']);
 
@@ -142,7 +199,7 @@ function upload_to_cdn($filename, $filepath, $is_delete = true) {
         $result = $bucketMgr->delete($config['bucket'], $filename);
         if($result && $result->code() != 612 && $result->code() != 200) {
             log_error('cdn_delete_error', ['code' => $result->code(), 'message' => $result->message()]);
-            throw new \App\Exceptions\Exception('文件上传失败：'. $result->message());
+            throw new \App\Exceptions\Exception(trans('messages.upload_fail_info', ['fail_info' => $result->message()]));
         }
 
     };
@@ -158,7 +215,7 @@ function upload_to_cdn($filename, $filepath, $is_delete = true) {
         if($err) {
             if($err->code() != 614) {
                 log_error('cdn_update_error', ['code' => $ret->code(), 'message' => $ret->message()]);
-                throw new \App\Exceptions\Exception('文件上传失败：'. $ret->message());
+                trans('messages.upload_fail_info', ['fail_info' => $ret->message()]);
             }
 
             $delete();
@@ -176,7 +233,7 @@ function upload_to_cdn($filename, $filepath, $is_delete = true) {
 //更新七牛缓存文件
 function updateQnCache($url){
     $data = ["urls"=>[$url]];
-    $config = config('common.storage_cdn.qiniu');
+    $config = configex('common.storage_cdn.qiniu');
 
     $auth = new Auth($config['access_key'], $config['secret_key']);
     $headers = $auth->authorization('http://fusion.qiniuapi.com/v2/tune/refresh');
@@ -243,7 +300,7 @@ function datetime($time = 0) {
  * @return [type] [description]
  */
 function smscode() {
-    return rand(100000, 999999);
+    return env('APP_DEBUG', true) ? '123456' : rand(100000, 999999); // 测试服不发验证码
 }
 
 /**
@@ -302,12 +359,16 @@ function order_success($order_id) {
  * @return [null]                       []
  */
 function send_sms($mobile, $pid, $template_id, $repalce, $code = '') {
-    $smsconfig = config('common.smsconfig');
+    $smsconfig = configex('common.smsconfig');
 
     $code = trim($code);
 
     if(!isset($smsconfig['template'][$template_id])) {
+<<<<<<< HEAD
         throw new \App\Exceptions\Exception("短信模板不存在");
+=======
+        throw new \App\Exceptions\Exception(trans('messages.sms_template_not_exists'));
+>>>>>>> dev
     }
 
     if(is_array($repalce) && count($repalce)) {
@@ -348,8 +409,6 @@ function send_mail($subject, $to, $content) {
 }
 
 function log_debug ($keyword, $content, $desc = '') {
-    global $app;
-
     if(env('log_level') > 0) return;
 
     Queue::push(new \App\Jobs\Log([
@@ -365,8 +424,6 @@ function log_debug ($keyword, $content, $desc = '') {
 }
 
 function log_info ($keyword, $content, $desc = '') {
-    global $app;
-
     if(env('log_level') > 1) return;
 
     Queue::push(new \App\Jobs\Log([
@@ -382,8 +439,6 @@ function log_info ($keyword, $content, $desc = '') {
 }
 
 function log_warning ($keyword, $content, $desc = '') {
-    global $app;
-
     if(env('log_level') > 2) return;
 
     Queue::push(new \App\Jobs\Log([
@@ -399,8 +454,6 @@ function log_warning ($keyword, $content, $desc = '') {
 }
 
 function log_error ($keyword, $content, $desc = '') {
-    global $app;
-
     Queue::push(new \App\Jobs\Log([
         'keyword' => $keyword,
         'desc' => $desc,
@@ -415,17 +468,27 @@ function log_error ($keyword, $content, $desc = '') {
 
 function http_request($url, $data, $is_post = true) {
     $data = http_build_query($data);
+
     if(!$is_post) {
-        $url = strpos($url, '?') == -1 ? ($url .'?'. $data) : ($url .'&'. $data);
+        $url = strpos($url, '?') === false ? ($url .'?'. $data) : ($url .'&'. $data);
     }
 
     $ch = curl_init();
     curl_setopt($ch, CURLOPT_URL, $url);
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+
+    // is https
+    if (stripos($url,"https://") !== FALSE) {
+        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, FALSE);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, FALSE);
+    }
+
+    // is post
     if($is_post) {
         curl_setopt($ch, CURLOPT_POST, true);
         curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
     }
+
     curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 60); //超时限制
     curl_setopt($ch, CURLOPT_TIMEOUT, 60);
     $res = curl_exec($ch);
@@ -434,34 +497,109 @@ function http_request($url, $data, $is_post = true) {
     return $res;
 }
 
-//监测当前的格式
-function check_name($username,$len = 32){
-    if(!preg_match("/^[\w\_\-\.\@\:]+$/",$username) || strlen($username) > $len ) return false;
-    return true;
+/**
+ * @param $url
+ * @param array $param
+ * @param bool $is_post
+ * @param string $code
+ * @param array $header
+ * @param array $cookie
+ * @return array|mixed
+ */
+function http_curl($url, $param = array(), $is_post = true, $code = 'cd', $header = array(), $cookie = array()){
+    if (is_string($param)) {
+        $strPOST = $param;
+    }
+    else if (is_array($param) && count($param)>0) {
+        $strPOST =  makeQueryString($param);
+    }
+    else {
+        $strPOST = '';
+    }
+
+    if (!$is_post) {
+        $url = strpos($url, '?') === false ? ($url .'?'. $strPOST) : ($url .'&'. $strPOST);
+    }
+
+    $oCurl = curl_init();
+    if (stripos($url,"https://") !== FALSE) {
+        curl_setopt($oCurl, CURLOPT_SSL_VERIFYPEER, FALSE);
+        curl_setopt($oCurl, CURLOPT_SSL_VERIFYHOST, FALSE);
+    }
+    curl_setopt($oCurl, CURLOPT_URL, $url);
+    curl_setopt($oCurl, CURLOPT_RETURNTRANSFER, 1 );
+    curl_setopt($oCurl, CURLOPT_TIMEOUT, 60);
+    curl_setopt($oCurl, CURLOPT_VERBOSE, 1);
+    if ($is_post) {
+        curl_setopt($oCurl, CURLOPT_POST,true);
+        curl_setopt($oCurl, CURLOPT_POSTFIELDS, $strPOST);
+    }
+    if (!empty($header)) {
+        curl_setopt($oCurl, CURLOPT_HTTPHEADER,$header);
+    }
+    if (!empty($cookie)) {
+        curl_setopt($oCurl, CURLOPT_COOKIE, makeCookieString($cookie));
+    }
+
+    $Resp = curl_exec($oCurl);//运行curl
+    $Err = curl_error($oCurl);
+
+    if (false === $Resp || !empty($Err)){
+        $Errno = curl_errno($oCurl);
+        $Info = curl_getinfo($oCurl);
+        curl_close($oCurl);
+
+        return array(
+             $code => 0,
+            'rspmsg' => $Err,
+            'errno' => $Errno,
+            'info' => $Info,
+        );
+    }
+    curl_close($oCurl);//关闭curl
+
+    $res = @json_decode($Resp, true);
+    if (is_array($res)) {
+        $res[$code] = 1;
+    } else {
+        $res = array($code=>1, 'rspmsg'=>'http 200 data error', 'data'=>$Resp);
+    }
+
+    return $res;
 }
 
-//监测的手机格式的判定
-function check_mobile($mobile){
-    if(!preg_match("/^1[34578]\d{9}$/",$mobile)) return false;
-    return true;
+//拼接字符串
+function makeQueryString($params)
+{
+    if (is_string($params))
+        return $params;
+
+    $query_string = array();
+    foreach ($params as $key => $value)
+    {
+        array_push($query_string, rawurlencode($key) . '=' . rawurlencode($value));
+    }
+    $query_string = join('&', $query_string);
+    return $query_string;
 }
 
-//监测短信验证码
-function check_code($code,$len=6){
-    if(!preg_match("/^\d{$len}$/",$code)) return false;
-    return true;
+//拼接cookie字符串
+function makeCookieString($params)
+{
+    if (is_string($params))
+        return $params;
+
+    $cookie_string = array();
+    foreach ($params as $key => $value)
+    {
+        array_push($cookie_string, $key . '=' . $value);
+    }
+    $cookie_string = join('; ', $cookie_string);
+    return $cookie_string;
 }
 
-//检查当前的金额 12.34 or 12  参数一金额 参数二监测小数点后的数据 bug 没法控制全部是0
-function check_money($money,$del=4){
-    if(!preg_match("/^(\d{0,8}).?(?=\d+)(.\d{0,$del})?$/",$money)) return false;
-    return true;
-}
-
-//当前是否是合法的http地址
 function check_url($url){
-    $url = trim($url);
-    if(!preg_match("/^http[s]?:\/\//",$url)) return false;
+    if(!preg_match("/^http[s]?.*/",$url)) return false;
     return true;
 }
 
@@ -472,3 +610,47 @@ function getClientIp() {
     if(@$_SERVER['REMOTE_ADDR']) return $_SERVER['REMOTE_ADDR'];
     return '';
 }
+<<<<<<< HEAD
+=======
+
+/**
+ * 计算汇率
+ * @param $n 原币种价值
+ * @param $currency 目标币种类
+ * @return string 目标币种价值，单位元，两位小数
+ */
+function exchange_rate($n, $currency) {
+    $exchange = \App\Model\ExchangeRate::where('currency', $currency)->first();
+    if(!$exchange) {
+        throw new \App\Exceptions\Exception(trans('currency_not_found', ['currency' => $currency]));
+    }
+
+    $n = bcmul(sprintf('%.2f', $n / 100), sprintf('%.5f', $exchange->rate), 5);
+
+    if(str_pad(substr($n, -3), 3, '0', STR_PAD_RIGHT) !== '000') {
+        $n = bcadd($n, '0.01', 2);
+    } else {
+        $n = bcadd($n, '0', 2);
+    }
+
+    return $n;
+}
+
+/**
+ * 测试输出
+ * @param string/array $value 变量名
+ * @param string $exit 是否停止
+ * @return string
+ */
+if (!function_exists('a'))
+{
+    function a($value,$exit=0)
+    {
+        echo '<pre>';
+        print_r($value);
+        echo '</pre>';
+
+        if ($exit) exit();
+    }
+}
+>>>>>>> dev

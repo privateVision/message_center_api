@@ -4,7 +4,8 @@ namespace App\Http\Controllers\PayCallback;
 use Illuminate\Http\Request;
 
 class WechatController extends Controller {
-    
+
+
     protected function getData(Request $request) {
         $content = file_get_contents('php://input', 'r');
         $xml = simplexml_load_string($content);
@@ -19,12 +20,12 @@ class WechatController extends Controller {
         return $data['out_trade_no'];
     }
 
-    protected function getTradeOrderNo($data, $order) {
+    protected function getTradeOrderNo($data, $order, $order_extend) {
         return $data['transaction_id'];
     }
     
-    protected function verifySign($data, $order) {
-        $config = config('common.payconfig.wechat');
+    protected function verifySign($data, $order, $order_extend) {
+        $config = configex('common.payconfig.wechat');
         
         $sign = $data['sign'];
         unset($data['sign']);
@@ -41,11 +42,11 @@ class WechatController extends Controller {
         return $sign === $_sign;
     }
     
-    protected function handler($data, $order) {
+    protected function handler($data, $order, $order_extend) {
         return $data['result_code'] == 'SUCCESS';
     }
     
-    protected function onComplete($data, $order, $isSuccess) {
+    protected function onComplete($data, $order, $order_extend, $isSuccess, $message = null) {
         if($isSuccess) {
             return "<xml><return_code><![CDATA[SUCCESS]]></return_code><return_msg><![CDATA[OK]]></return_msg></xml>";
         } else {

@@ -2,12 +2,9 @@
 namespace App\Http\Controllers\Api\Account;
 
 use App\Exceptions\ApiException;
-use Illuminate\Http\Request;
 use App\Parameter;
-use App\Redis;
 use App\Session;
 use App\Model\Ucuser;
-
 
 class TokenController extends Controller {
 
@@ -20,18 +17,18 @@ class TokenController extends Controller {
 
         $session = Session::find($token);
         if(!$session) {
-            throw new ApiException(ApiException::Remind, '会话失效，请重新登录');
+            throw new ApiException(ApiException::Remind, trans('messages.invalid_token'));
         }
 
         // todo: 验证token有效期
 
         if(!$session->ucid) {
-            throw new ApiException(ApiException::Remind, '会话失效，请重新登录');
+            throw new ApiException(ApiException::Remind, trans('messages.invalid_token'));
         }
 
         $user = Ucuser::from_cache($session->ucid);
         if(!$user) {
-            throw new ApiException(ApiException::Remind, '会话失效，请重新登录');
+            throw new ApiException(ApiException::Remind, trans('messages.invalid_token'));
         }
 
         return $user;

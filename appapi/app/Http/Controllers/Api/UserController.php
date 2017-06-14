@@ -2,17 +2,15 @@
 namespace App\Http\Controllers\Api;
 
 use App\Exceptions\ApiException;
-use Illuminate\Http\Request;
-use App\Parameter;
+use App\Model\OrderExtend;
 use App\Model\Ucuser;
 use App\Model\Orders;
-use App\Model\UcuserRole;
-use App\Model\ProceduresZone;
-use App\Model\ProceduresExtend;
-use App\Model\UcuserSub;
 use App\Model\UcuserOauth;
 use App\Model\UcuserInfo;
+<<<<<<< HEAD
 use Illuminate\Support\Facades\Session;
+=======
+>>>>>>> dev
 use App\Model\Retailers;
 
 class UserController extends AuthController
@@ -20,7 +18,11 @@ class UserController extends AuthController
     public function InfoAction() {
         $user_info = UcuserInfo::from_cache($this->user->ucid);
 	
+<<<<<<< HEAD
 	$retailers = null;
+=======
+	    $retailers = null;
+>>>>>>> dev
         if($this->user->rid) {
             $retailers = Retailers::find($this->user->rid);
         }
@@ -49,10 +51,18 @@ class UserController extends AuthController
             'regtype' => $this->user->regtype,
 		    'rid' => $this->user->rid,
             'rtype' => $retailers ? $retailers->rtype : 0,
+<<<<<<< HEAD
+=======
+            'bindlist' => $this->getBindList(),
+>>>>>>> dev
         ];
     }
 
     public function BindListAction() {
+        return $this->getBindList();
+    }
+
+    public function getBindList() {
         $config = config('common.oauth');
         $data = [];
 
@@ -72,8 +82,8 @@ class UserController extends AuthController
             $data['mobile']['unionid'] = $this->user->mobile;
             $data['mobile']['openid'] = $this->user->mobile;
         }
-        
-        $data['password']['is_bind'] = $this->user->regtype == 6;// TODO App\Http\Controllers\Api\Account\UserController::Type;
+
+        $data['password']['is_bind'] = $this->user->regtype == 6; // XXX App\Http\Controllers\Api\Account\UserController::Type;
 
         return $data;
     }
@@ -85,9 +95,9 @@ class UserController extends AuthController
         $address = $this->parameter->get('address');
         $gender = $this->parameter->get('gender');
         $birthday = $this->parameter->get('birthday', '');
-        
+
         if($birthday && !preg_match('/^\d{8}$/', $birthday)) {
-            throw new ApiException(ApiException::Remind, "生日格式不正确，yyyymmdd");
+            throw new ApiException(ApiException::Remind, trans('messages.birthday_format_error'));
         }
 
         $user_info = UcuserInfo::from_cache($this->user->ucid);
@@ -132,27 +142,31 @@ class UserController extends AuthController
 
         $offset = max(0, ($page - 1) * $limit);
 
-        $order = Orders::whereIsF();
-        $order = $order->where('ucid', $this->user->ucid);
+        $order = Orders::where('ucid', $this->user->ucid);
         $order = $order->where('hide', 0);
         $order = $order->where('status', '!=', Orders::Status_WaitPay);
-        $count = $order->count();
         $order = $order->orderBy('id', 'desc');
-        $order = $order->take($limit)->skip($offset)->get();
+
+        $count = $order->count();
+
+        $order = $order->get();
 
         $data = [];
         foreach($order as $v) {
-            $data[] = [
-                'order_id' => $v->sn,
-                'fee' => $v->fee,
-                'subject' => $v->subject,
-                'otype' => 0, 
-                'createTime' => strtotime($v->createTime),
-                'status' => $v->status,
-            ];
+            $order_extend = OrderExtend::where('oid', $v->id)->first();
+            if($v->is_f() || ($order_extend && $order_extend->is_f())) {
+                $data[] = [
+                    'order_id' => $v->sn,
+                    'fee' => $v->fee,
+                    'subject' => $v->subject,
+                    'otype' => 0,
+                    'createTime' => strtotime($v->createTime),
+                    'status' => $v->status,
+                ];
+            }
         }
 
-        return ['count' => $count, 'list' => $data];
+        return ['count' => $count, 'list' => array_slice($data, $offset, $limit)];
     }
 
     public function ConsumeAction() {
@@ -161,29 +175,32 @@ class UserController extends AuthController
 
         $offset = max(0, ($page - 1) * $limit);
 
-        $order = Orders::whereIsNotF();
-        $order = $order->where('ucid', $this->user->ucid);
+        $order = Orders::where('ucid', $this->user->ucid);
         $order = $order->where('hide', 0);
 	$order = $order->where('vid', $this->procedure->pid);
         $order = $order->where('status', '!=', Orders::Status_WaitPay);
-        
-        $count = $order->count();
         $order = $order->orderBy('id', 'desc');
-        $order = $order->take($limit)->skip($offset)->get();
+
+        $count = $order->count();
+
+        $order = $order->get();
 
         $data = [];
         foreach($order as $v) {
-            $data[] = [
-                'order_id' => $v->sn,
-                'fee' => $v->fee,
-                'subject' => $v->subject,
-                'otype' => 0, // todo: 这是什么鬼？
-                'createTime' => strtotime($v->createTime),
-                'status' => $v->status,
-            ];
+            $order_extend = OrderExtend::where('oid', $v->id)->first();
+            if(!$v->is_f() && !($order_extend && $order_extend->is_f())) {
+                $data[] = [
+                    'order_id' => $v->sn,
+                    'fee' => $v->fee,
+                    'subject' => $v->subject,
+                    'otype' => 0,
+                    'createTime' => strtotime($v->createTime),
+                    'status' => $v->status,
+                ];
+            }
         }
 
-        return ['count' => $count, 'list' => $data];
+        return ['count' => $count, 'list' => array_slice($data, $offset, $limit)];
     }
 
     public function HideOrderAction() {
@@ -199,7 +216,9 @@ class UserController extends AuthController
     }
 
     public function BalanceAction() {
-        return ['balance' => $this->user->balance];
+        return [
+            'balance' => $this->user->balance,
+        ];
     }
 
     public function ByOldPasswordResetAction() {
@@ -207,7 +226,7 @@ class UserController extends AuthController
         $new_password = $this->parameter->tough('new_password', 'password');
 
         if(!$this->user->checkPassword($old_password)) {
-            throw new ApiException(ApiException::Remind, "旧的密码不正确");
+            throw new ApiException(ApiException::Remind, trans('messages.oldpassword_error'));
         }
 
         $old_password = $this->user->password;
@@ -227,9 +246,9 @@ class UserController extends AuthController
 
         if($user) {
             if($user->ucid != $this->user->ucid) {
-                throw new ApiException(ApiException::Remind, "手机号码已经绑定了其它账号");
+                throw new ApiException(ApiException::Remind, trans('messages.mobile_bind_other'));
             } elseif($this->user->mobile == $mobile) {
-                throw new ApiException(ApiException::Remind, "该账号已经绑定了这个手机号码");
+                throw new ApiException(ApiException::Remind, trans('messages.mobile_already_bind'));
             }
         }
 
@@ -250,7 +269,7 @@ class UserController extends AuthController
         // todo: 以前绑定手机号绑定邮箱走的同一个接口
         $mobile = $this->request->input('mobile');
         if(preg_match('/^[\w\d\-\_\.]+@\w+(\.\w+)+$/', $mobile)) {
-            throw new ApiException(ApiException::Remind, "该功能已停用");
+            throw new ApiException(ApiException::Remind, trans('messages.func_disable'));
         }
 
         // ---- end ----
@@ -259,17 +278,17 @@ class UserController extends AuthController
         $code = $this->parameter->tough('code', 'smscode');
 
         if(!verify_sms($mobile, $code)) {
-            throw new ApiException(ApiException::Remind, "绑定失败，验证码不正确，或已过期");
+            throw new ApiException(ApiException::Remind, trans('messages.invalid_smscode'));
         }
 
         if($this->user->mobile) {
-            throw new ApiException(ApiException::Remind, "该账号已经绑定了手机号码");
+            throw new ApiException(ApiException::Remind, trans('messages.user_already_bind_mobile'));
         }
-        
+
         $user = Ucuser::where('uid', $mobile)->orWhere('mobile', $mobile)->first();
         if($user) {
             if($user->ucid != $this->user->ucid) {
-                throw new ApiException(ApiException::Remind, "手机号码已经绑定了其它账号");
+                throw new ApiException(ApiException::Remind, trans('messages.mobile_bind_other'));
             } elseif(empty($this->user->mobile)) {
                 $this->user->mobile = $mobile;
                 $this->user->save();
@@ -286,7 +305,7 @@ class UserController extends AuthController
 
     public function SMSUnbindPhoneAction() {
         if(!$this->user->mobile) {
-            throw new ApiException(ApiException::Remind, "还未绑定手机号码，无法解绑");
+            throw new ApiException(ApiException::Remind, trans('messages.not_bind_onunbind'));
         }
 
         $mobile = $this->user->mobile;
@@ -312,19 +331,23 @@ class UserController extends AuthController
             $mobile = $this->user->mobile;
 
             if(!verify_sms($mobile, $code)) {
-                throw new ApiException(ApiException::Remind, "手机号码解绑失败，验证码不正确，或已过期");
+                throw new ApiException(ApiException::Remind, trans('messages.invalid_smscode'));
             }
 
             if($this->user->mobile == $this->user->uid) {
                 if(!$username) {
+<<<<<<< HEAD
                     throw new ApiException(ApiException::Remind, "您必需重设您的用户名才能解绑，请联系客服");
+=======
+                    throw new ApiException(ApiException::Remind, trans('messages.reset_username_onunbind'));
+>>>>>>> dev
                 }
 
                 $_user = Ucuser::where('uid', $username)->orWhere('mobile', $username)->orWhere('email', $username)->first();
                 if(!$_user || $_user->ucid == $this->user->ucid) {
                     $this->user->uid = $username;
                 } else {
-                    throw new ApiException(ApiException::Remind, "解绑失败，用户名已被占用");
+                    throw new ApiException(ApiException::Remind, trans('messages.username_exists_onbind'));
                 }
             }
             $this->user->mobile = '';
@@ -342,7 +365,7 @@ class UserController extends AuthController
 
     public function SMSPhoneResetPasswordAction() {
         if(!$this->user->mobile) {
-            throw new ApiException(ApiException::Remind, "还未绑定手机号码，无法使用该方式重置密码");
+            throw new ApiException(ApiException::Remind, trans('messages.not_reset_password_unbind_mobile'));
         }
 
         $mobile = $this->user->mobile;
@@ -365,13 +388,13 @@ class UserController extends AuthController
         $password = $this->parameter->tough('password', 'password');
 
         if(!$this->user->mobile) {
-            throw new ApiException(ApiException::Remind, "还未绑定手机号码，无法使用该方式重置密码");
+            throw new ApiException(ApiException::Remind, trans('messages.not_reset_password_unbind_mobile'));
         }
 
         $mobile = $this->user->mobile;
 
         if(!verify_sms($mobile, $code)) {
-            throw new ApiException(ApiException::Remind, "验证码不正确，或已过期");
+            throw new ApiException(ApiException::Remind, trans('messages.invalid_smscode'));
         }
 
         $old_password = $this->user->password;
@@ -391,7 +414,7 @@ class UserController extends AuthController
         $role_level = $this->parameter->tough('role_level');
         $role_name = $this->parameter->tough('role_name');
 
-        $pid = $this->parameter->tough('_appid');
+        $pid = $this->procedure->pid;
 
         $this->session->zone_id = $zone_id;
         $this->session->zone_name = $zone_name;
@@ -408,7 +431,7 @@ class UserController extends AuthController
 
         $card_info = parse_card_id($card_no);
         if(!$card_info) {
-            throw new ApiException(ApiException::Remind, "身份证号码不正确");
+            throw new ApiException(ApiException::Remind, trans('messages.cardno_error'));
         }
 
         $user_info = UcuserInfo::from_cache($this->user->ucid);
@@ -435,12 +458,12 @@ class UserController extends AuthController
         $nickname = $this->parameter->get('nickname');
         $avatar = $this->parameter->get('avatar');
         $forced = $this->parameter->get('forced');
-        
-        if($type == 'weixin' && $unionid == '') throw new ApiException(ApiException::Error, "unionid不允许为空");
+
+        if($type == 'weixin' && $unionid == '') throw new ApiException(ApiException::Error, trans('messages.unionid_empty'));
 
         $count = UcuserOauth::where('type', $type)->where('ucid', $this->user->ucid)->count();
         if($count > 0) {
-            throw new ApiException(ApiException::Remind, "账号已经绑定了" . config("common.oauth.{$type}.text", '第三方'));
+            throw new ApiException(ApiException::Remind, trans('messages.3th_already_bind', ['type' => config("common.oauth.{$type}.text")]));
         }
 
         $openid = "{$openid}@{$type}";
@@ -462,7 +485,7 @@ class UserController extends AuthController
             }
 
             if($forced == 0) {
-                throw new ApiException(ApiException::AlreadyBindOauthOther, config("common.oauth.{$type}.text", '第三方') . "已经绑定了其它账号");
+                throw new ApiException(ApiException::AlreadyBindOauthOther, trans('messages.3th_already_bind_other', ['type' => config("common.oauth.{$type}.text")]));
             }
 
             $user_oauth->ucid = $this->user->ucid;
@@ -499,7 +522,7 @@ class UserController extends AuthController
 
         $count = UcuserOauth::where('type', '!=', $type)->where('ucid', $this->user->ucid)->count();
         if($count == 0 && $this->user->mobile == "" && $this->user->regtype != 6) {
-            throw new ApiException(ApiException::Remind, "为了防止遗忘账号，请绑定手机或者其他社交账号后再解除绑定");
+            throw new ApiException(ApiException::Remind, trans('messages.3th_unbind_error'));
         }
 
         $user_oauth = UcuserOauth::where('type', $type)->where('ucid', $this->user->ucid)->first();
@@ -538,7 +561,7 @@ class UserController extends AuthController
                 $avatar_url = upload_to_cdn($filename, $filepath,true);
                 $flush = updateQnCache($avatar_url); //更新七牛文件缓存
             } catch(\App\Exceptions\Exception $e) {
-                throw new ApiException(ApiException::Remind, '头像上传失败：' . $e->getMessage());
+                throw new ApiException(ApiException::Remind, trans('messages.avatar_set_error', ['eMsg' => $e->getMessage()]));
             }
         }
 
@@ -560,7 +583,7 @@ class UserController extends AuthController
         $user = Ucuser::where('uid', $username)->orWhere('mobile', $username)->orWhere('email', $username)->first();
         if($user) {
             if($user->ucid != $this->user->ucid) {
-                throw new ApiException(ApiException::Remind, '设置失败，用户名已被占用');
+                throw new ApiException(ApiException::Remind, trans('messages.username_exists_onset'));
             }
         } else {
             $old_username = $this->user->uid;

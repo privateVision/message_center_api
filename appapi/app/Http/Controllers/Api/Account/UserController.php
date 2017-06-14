@@ -2,9 +2,13 @@
 namespace App\Http\Controllers\Api\Account;
 
 use App\Exceptions\ApiException;
+<<<<<<< HEAD
 use Illuminate\Http\Request;
 use App\Parameter;
 
+=======
+use App\Jobs\AdtRequest;
+>>>>>>> dev
 use App\Redis;
 use App\Model\Ucuser;
 use App\Model\_56GameBBS\Members as Member;
@@ -16,9 +20,10 @@ class UserController extends Controller {
     const Type = 6;
     
     public function getLoginUser() {
+        $imei = $this->parameter->get('_imei', '');
+        $device_id = $this->parameter->get('_device_id', '');
         $username = $this->parameter->tough('username');
         $password = $this->parameter->tough('password', 'password');
-        $device_id = $this->parameter->get('_device_id');
         
         // --------- 登录错误限制
         $key = $device_id;
@@ -31,11 +36,11 @@ class UserController extends Controller {
         $rediskey_limit = 'login_limit_' . $key;
         
         if(Redis::get($rediskey_lock)) {
-            throw new ApiException(ApiException::Remind, "错误次数太多，请稍后再试");
+            throw new ApiException(ApiException::Remind, trans('messages.login_error'));
         }
         // --------- end
         
-        // TODO 解决老用户会出现同时查找到两个用户的情况
+        // XXX 解决老用户会出现同时查找到两个用户的情况
         $user = Ucuser::where('uid', $username)->first();
         if(!$user) {
             $user = Ucuser::where('mobile', $username)->orWhere('email', $username)->first();
@@ -45,35 +50,20 @@ class UserController extends Controller {
         do {
             if(!isset($user)) break;
             
-            $member = Member::where('uid', $user->ucid)->first();
+            $member = Member::find($user->ucid);
             if(!$member) break;
-            
-            $user = Ucuser::from_cache($member->uid);
-            if($user) {
-                if(!$user->uid) $user->uid = $member->username;
-                if(!$user->email) $user->email = $member->email;
-                if(!$user->nickname) $user->nickname = rand(111111,999999);
-                if(!$user->regip) $user->regip = $member->regip;
-                if(!$user->regdate) $user->regdate = $member->regdate;
-                if(!$user->password) {
-                    $user->password = $member->password;
-                    $user->salt = $member->salt;
-                }
-                
-                $user->save();
-            } else {
-                $user = new Ucuser;
-                $user->uid = $member->username;
-                $user->email = $member->email ?: ($member->username . '@anfan.com');
-                $user->nickname = $member->username;
-                $user->password =$member->password;
-                $user->salt =$member->salt;
-                $user->regip = $member->regip;
-                $user->regdate = $member->regdate;
-                $user->rid = $this->parameter->tough('_rid');
-                $user->pid = $this->parameter->tough('_appid');
-                $user->save();
+
+            if(!$user->uid) $user->uid = $member->username;
+            if(!$user->email) $user->email = $member->email;
+            if(!$user->nickname) $user->nickname = rand(111111, 999999);
+            if(!$user->regip) $user->regip = $member->regip;
+            if(!$user->regdate) $user->regdate = $member->regdate;
+            if(!$user->password) {
+                $user->password = $member->password;
+                $user->salt = $member->salt;
             }
+
+            $user->save();
         } while(false);
         
         if(!$user || !$user->checkPassword($password)) {
@@ -88,7 +78,7 @@ class UserController extends Controller {
             }
             // --------- end
             
-            throw new ApiException(ApiException::Remind, "用户名或者密码不正确");
+            throw new ApiException(ApiException::Remind, trans('messages.login_fail'));
         }
         
         Redis::del($rediskey_limit);
@@ -103,8 +93,9 @@ class UserController extends Controller {
         $isRegister  = Ucuser::where("mobile", $username)->orWhere('uid', $username)->count();
         
         if($isRegister) {
-            throw new  ApiException(ApiException::Remind, "用户已注册，请直接登录");
+            throw new  ApiException(ApiException::Remind, trans('messages.already_register'));
         }
+<<<<<<< HEAD
         
         $user = new Ucuser;
         $user->uid = $username;
@@ -119,9 +110,17 @@ class UserController extends Controller {
         $user->imei = $this->parameter->get('_imei', '');
         $user->device_id = $this->parameter->get('_device_id', '');
         $user->save();
+=======
+
+        //平台注册账号
+        $user = self::baseRegisterUser([
+            'uid' => $username,
+            'password' => $password
+        ]);
+>>>>>>> dev
         
         user_log($user, $this->procedure, 'register', '【注册】通过“用户名”注册，用户名(%s), 密码[%s]', $username, $user->password);
-        
+
         return $user;
     }
     
@@ -131,7 +130,7 @@ class UserController extends Controller {
         $user = Ucuser::where('mobile', $mobile)->first();
         
         if(!$user) {
-            throw new ApiException(ApiException::Remind, '手机号码尚未绑定');
+            throw new ApiException(ApiException::Remind, trans('messages.mobile_not_bind'));
         }
         
         $code = smscode();
@@ -154,12 +153,12 @@ class UserController extends Controller {
         $new_password = $this->parameter->tough('password', 'password');
         
         if(!verify_sms($mobile, $code)) {
-            throw new ApiException(ApiException::Remind, "验证码不正确，或已过期");
+            throw new ApiException(ApiException::Remind, trans('messages.invalid_smscode'));
         }
         
-        $user = Ucuser::where('uid', $mobile)->orWhere('mobile', $mobile)->first();
+        $user = Ucuser::where('mobile', $mobile)->first();
         if(!$user) {
-            throw new ApiException(ApiException::Remind, '手机号码尚未绑定');
+            throw new ApiException(ApiException::Remind, trans('messages.mobile_not_bind'));
         }
         
         $old_password = $user->password;

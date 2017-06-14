@@ -1,24 +1,19 @@
 <?php // 银联技术文档地址：https://open.unionpay.com/ajweb/product/detail?id=3
 namespace App\Http\Controllers\Api\Pay;
 
-use Illuminate\Http\Request;
 use App\Exceptions\ApiException;
-use App\Parameter;
 use App\Model\Orders;
+use App\Model\OrderExtend;
 
 class UnionpayController extends Controller {
 
     use RequestAction;
 
-    const PayType = '-2';
+    const PayMethod = '-2';
+    const PayText = 'unionpay';
     const PayTypeText = '银联';
-    const EnableStoreCard = true;
-    const EnableCoupon = true;
-    const EnableBalance = true;
 
-    public function payHandle(Orders $order, $real_fee) {
-        $config = config('common.payconfig.unionpay');
-
+    public function getData($config, Orders $order, OrderExtend $order_extend, $real_fee) {
         openssl_pkcs12_read(base64_decode($config['pfx']), $cert, $config['pfx_pwd']);
         $x509 = openssl_x509_read($cert['cert']);
         $certinfo = openssl_x509_parse($x509);
@@ -48,14 +43,14 @@ class UnionpayController extends Controller {
         log_info('unionpayRequest', ['reqdata' => $data, 'resdata' => $res]);
 
         if(!$res) {
-            throw new ApiException(ApiException::Remind, '银联支付请求失败');
+            throw new ApiException(ApiException::Remind, trans('messages.unionpay_fail'));
         }
 
         parse_str($res, $resdata);
 
-        // todo: 是否该把银联返回的错误消息返回给用户
+        // 银联返回的错误消息返回给用户
         if($resdata['respCode'] !== '00') {
-            throw new ApiException(ApiException::Remind, '银联支付请求失败 ' . $resdata['respMsg']);
+            throw new ApiException(ApiException::Remind, trans('messages.unionpay_fail_1', ['respMsg' => $resdata['respMsg']]));
         }
 
         return ['tn' => $resdata['tn']];

@@ -5,6 +5,7 @@ use Illuminate\Http\Request;
 
 class AlipayController extends Controller
 {
+
     protected function getData(Request $request) {
         return $_POST;
     }
@@ -13,12 +14,12 @@ class AlipayController extends Controller
         return $data['out_trade_no'];
     }
 
-    protected function getTradeOrderNo($data, $order) {
+    protected function getTradeOrderNo($data, $order, $order_extend) {
         return $data['trade_no'];
     }
 
-    protected function verifySign($data, $order) {
-        $config = config('common.payconfig.alipay');
+    protected function verifySign($data, $order, $order_extend) {
+        $config = configex('common.payconfig.alipay');
 
         $sign = $data['sign'];
         unset($data['sign'], $data['sign_type']);
@@ -35,11 +36,11 @@ class AlipayController extends Controller
         return static::rsaVerify($str, $config['PubKey'], $sign);
     }
 
-    protected function handler($data, $order){
+    protected function handler($data, $order, $order_extend){
         return $data['trade_status'] == 'TRADE_SUCCESS';
     }
 
-    protected function onComplete($data, $order, $isSuccess) {
+    protected function onComplete($data, $order, $order_extend, $isSuccess, $message = null) {
         return $isSuccess ? 'success' : 'fail';
     }
 

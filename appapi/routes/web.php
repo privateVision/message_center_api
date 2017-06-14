@@ -1,15 +1,7 @@
 <?php
-/*
-|--------------------------------------------------------------------------
-| Application Routes
-|--------------------------------------------------------------------------
-|
-| Here is where you can register all of the routes for an application.
-| It is a breeze. Simply tell Lumen the URIs it should respond to
-| and give it the Closure to call when that URI is requested.
-|
-*/
+Route::any('/test', function() {
 
+<<<<<<< HEAD
 $app->get('/', function (Illuminate\Http\Request $request) use ($app) {
     
 echo date_default_timezone_get();
@@ -131,3 +123,12 @@ $app->group(['prefix' => 'tool'], function () use ($app) {
     $app->post("user/sendsms",'Tool\\UserController@sendmsAction');                                          //发送短信验证码
     $app->post("user/authsms",'Tool\\UserController@authsmsAction');                                         //验证码验证
 });
+=======
+});
+
+Route::group(['prefix' => 'web'], function () {
+    Route::get('test', 'Web\\TestController@indexAction');
+    Route::any('login', 'Web\\TestController@loginAction');
+    Route::any('sign', 'Web\\TestController@signAction');
+});
+>>>>>>> dev

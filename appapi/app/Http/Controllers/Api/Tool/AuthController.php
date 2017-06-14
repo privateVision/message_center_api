@@ -10,7 +10,9 @@ class AuthController extends Controller
 {
     protected $user = null;
 
-    public function before() {
+    public function before(Request $request) {
+        parent::before($request);
+        
         $ucid = $this->parameter->tough('ucid');
         
         $user = Ucuser::from_cache($ucid);
@@ -18,7 +20,7 @@ class AuthController extends Controller
             $user = Ucuser::where("ucid",$ucid)->first();
         }
         if(!$user) {
-            throw new ApiException(ApiException::Remind, '用户不存在');
+            throw new ApiException(ApiException::Remind, trans('messages.user_not_exists')); // LANG:user_not_exists
         }
 
         $this->user = $user;

@@ -29,7 +29,11 @@ class  AppleController extends Controller{
         $sn  = $this->request->input("order_id"); //生成订单的时候返回的订单号
         //获取当前的订单的ID
         $oid = $this->request->input("id"); //处理当前的操作
+<<<<<<< HEAD
         //匹配当前的操作的实现
+=======
+      //匹配当前的操作的实现
+>>>>>>> dev
         $receipt = $this->request->input('receipt');
         $transaction = $this->parameter->tough("transaction_id");
         $receipt_a = urldecode($receipt);
@@ -37,11 +41,19 @@ class  AppleController extends Controller{
         $mds = md5($receipt_a);
         $orders =  Orders::where("id",$oid)->where("sn",$sn)->first();
 
+<<<<<<< HEAD
         if (!$orders || $orders->status != 0) return ["code"=>0,"msg"=> "订单不存在或已完成"];
 
         $logsql = "select id from ios_receipt_log WHERE receipt_md5 = '{$mds}'";
         $log_data = app('db')->select($logsql);
         if(count($log_data) && $orders->status != 0 ) return ["code"=>0,"msg"=>"订单已完成!"];
+=======
+        if (!$orders || $orders->status != 0) return ["code"=>0,"msg"=>trans("messages.app_buy_faild")];
+
+        $logsql = "select id from ios_receipt_log WHERE receipt_md5 = '{$mds}'";
+        $log_data = app('db')->select($logsql);
+        if(count($log_data) && $orders->status != 0 ) return ["code"=>0,"msg"=>trans("messages.app_buy_faild")];
+>>>>>>> dev
 
         //保存当前的操作
         $sql = "insert into ios_receipt_log (`receipt_md5`,`receipt_base64`) VALUES ('".$mds."','".$receipt."')";
@@ -51,7 +63,11 @@ class  AppleController extends Controller{
         $sanboxsql  = "select c.*,p.psingKey from ios_application_config as c inner join procedures as p where c.app_id = {$appid} LIMIT 1";
         $sandat = app('db')->select($sanboxsql);
         $issandbox = ($sandat[0]->sandbox ==1)?true:false;
+<<<<<<< HEAD
         //  log_info("sandbox....................>>>>>>>",$issandbox);
+=======
+      //  log_info("sandbox....................>>>>>>>",$issandbox);
+>>>>>>> dev
         //订单号
         $dat = $this->getReceiptData($receipt, $issandbox); //开启黑盒测试
 
@@ -61,7 +77,11 @@ class  AppleController extends Controller{
             foreach($dat['data'] as $key =>$value){
                 if($value['transaction_id'] == $transaction){
                     $o_ext = IosOrderExt::where("transaction_id",$transaction)->first();
+<<<<<<< HEAD
                     if($o_ext) return ["code"=>0,"msg"=>"订单已完成."];
+=======
+                    if($o_ext) return ["code"=>0,"msg"=>trans("messages.app_buy_faild")];
+>>>>>>> dev
                     //购买成功写入数据库
                     $od = IosOrderExt::where("oid",$oid)->first();
                     $od ->transaction_id = $transaction;
@@ -75,7 +95,11 @@ class  AppleController extends Controller{
                             $od->transaction = '';
                             $od->descript = '';
                             $od->save();
+<<<<<<< HEAD
                             return ["code"=>0,"msg"=>"订单处理失败."];
+=======
+                            return ["code"=>0,"msg"=>trans("messages.app_buy_faild")];
+>>>>>>> dev
                         }
                         //通知发货
                         order_success($orders->id);
@@ -86,7 +110,11 @@ class  AppleController extends Controller{
                 }
             }
         }else{
+<<<<<<< HEAD
             throw  new ApiException(ApiException::Remind,"订单验证失败");
+=======
+            throw  new ApiException(ApiException::Remind,trans("messages.app_buy_faild"));
+>>>>>>> dev
         }
         //订单完成，通知发货，添加日志记录
     }
@@ -156,7 +184,7 @@ class  AppleController extends Controller{
         $appid  = $this->request->input("_appid");
 
         // 是否强制实名制
-        if(($this->procedure_extend->enable & 0x0000000C) == 0x0000000C) {
+        if(($this->procedure_extend->enable & (3 << 2)) == (3 << 2)) {
             $user_info = UcuserInfo::from_cache($this->user->ucid);
             if(!$user_info || !$user_info->card_no) {
                 throw new ApiException(ApiException::NotRealName, trans('messages.check_in_before_pay'));
@@ -167,7 +195,11 @@ class  AppleController extends Controller{
 
         if(count($ord)) throw new ApiException(ApiException::Remind,trans('messages.order_not_exists')); //限制关闭
 
+<<<<<<< HEAD
         $sql = "select p.fee,p.product_name,con.notify_url,con.notify_url_4,con.iap,con.bundle_id from ios_products as p LEFT JOIN ios_application_config as con ON p.app_id = con.app_id WHERE p.product_id = '{$product_id}' AND p.app_id = {$appid}";
+=======
+        $sql = "select p.fee,p.product_name,con.notify_url,con.notify_url_4,con.notify_url_4,con.iap,con.bundle_id from ios_products as p LEFT JOIN ios_application_config as con ON p.app_id = con.app_id WHERE p.product_id = '{$product_id}' AND p.app_id = {$appid}";
+>>>>>>> dev
         $dat = app('db')->select($sql);
         if(count($dat) == 0) throw new ApiException(ApiException::Remind,trans('messages.product_not_exists'));
 
@@ -306,7 +338,11 @@ class  AppleController extends Controller{
         $sql = "select con.iap from ios_products as p LEFT JOIN ios_application_config as con ON p.app_id = con.app_id WHERE  p.app_id = {$appid}";
         $dat = app('db')->select($sql);
         if(count($dat) == 0) throw new ApiException(ApiException::Remind,"not exists!");
+<<<<<<< HEAD
         $pay_type = is_numeric($dat[0]->iap) ? $dat[0]->iap : 1;//is_numeric($dat[0]->iap) ? 0 : $dat[0]->iap;
+=======
+        $pay_type = is_numeric($dat[0]->iap) ? $dat[0]->iap : 1;
+>>>>>>> dev
         //查看当前的充值总金额
         if($pay_type == 1){
             $force_close_iaps = ForceCloseIaps::whereRaw("find_in_set({$appid},  appids)")->where('closed', 0)->get();
@@ -325,6 +361,7 @@ class  AppleController extends Controller{
                 }
             }
         }
+
         return ["paytype"=>$pay_type];
     }
 }

@@ -7,9 +7,9 @@
  */
 
 namespace App\Model;
-class IosReceiptLog extends Model{
+class IosReceiptLog extends Model {
 
-    protected $table = 'ios_Receipt_Log';
+    protected $table = 'ios_receipt_log';
     protected $primaryKey = 'id';
 
     const CREATED_AT = null;

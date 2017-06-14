@@ -48,17 +48,17 @@ class Orders extends Model
 
 	public function is_first() {
 		// todo: 单独字段标识，这太Low了
-		return static::where('ucid', $this->ucid)->where('status', '!=', static::Status_WaitPay)->where("vid",$this->vid)->count() == 0;
+		return static::where('ucid', $this->ucid)->where('status', '!=', static::Status_WaitPay)->where("vid", $this->vid)->count() == 0;
 	}
 
 	/**
-	 * 该订单是否是购买F币
+	 * 该订单是否是购买F币，如果orders_extend存在则以product_type为准，否则才走这里
 	 * @return boolean [description]
 	 */
 	public function is_f() {
-		return $this->vid < 100;
+		return $this->vid < 100 || empty($this->notify_url);
 	}
-
+/*
 	public static function whereIsF() {
 		return static::where(function($query) {
 			$query->where('vid', '<', 100);
@@ -70,4 +70,5 @@ class Orders extends Model
 			$query->where('vid', '>=', 100);
 		});
 	}
+*/
 }

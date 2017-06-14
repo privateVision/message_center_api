@@ -7,7 +7,7 @@ use App\Parameter;
 use App\Session;
 use App\Model\UcuserSession;
 use App\Model\Ucuser;
-use App\Model\UcuserInfo;
+use Illuminate\Http\Response;
 
 class AuthController extends Controller {
 
@@ -15,43 +15,43 @@ class AuthController extends Controller {
 	protected $user_info = null;
 	protected $session = null;
 
-	public function before() {
-		parent::before();
+	public function before(Request $request) {
+		parent::before($request);
 
 		$token = $this->parameter->tough('_token');
 		if(!$token) {
-			throw new ApiException(ApiException::Expire, '请先登录');
+			throw new ApiException(ApiException::Expire, trans('messages.invalid_token')); // LANG:must_login
 		}
 
 		$usession = UcuserSession::from_cache_session_token($token);
 		if(!$usession) {
-			throw new ApiException(ApiException::Expire, '会话已失效，请重新登录');
+			throw new ApiException(ApiException::Expire, trans('messages.invalid_token')); // LANG:session_invalid_relogin
 		}
 
 		$user = Ucuser::from_cache($usession->ucid);
 		if(!$user) {
-			throw new ApiException(ApiException::Expire, '会话已失效，请重新登录');
+			throw new ApiException(ApiException::Expire, trans('messages.invalid_token')); // LANG:session_invalid_relogin
 		}
 
 		$session = Session::find($token);
 		if(!$session) {
-			throw new ApiException(ApiException::Expire, '会话已失效，请重新登录');
+			throw new ApiException(ApiException::Expire, trans('messages.invalid_token')); // LANG:session_invalid_relogin
 		}
 
 		if($user->is_freeze) {
-			throw new ApiException(ApiException::AccountFreeze, '账号已被冻结');
+			throw new ApiException(ApiException::AccountFreeze, trans('messages.freeze')); // LANG:freeze
 		}
 
 		$this->session = $session;
 		$this->user = $user;
 	}
 
-	public function execute(Request $request, $action, $parameters) {
-		$response = parent::execute($request, $action, $parameters);
-		if($response['code'] === ApiException::Success) {
-			$response['_token'] = $this->parameter->tough('_token');
-		}
-
-		return $response;
+	public function onResponse(Request $request, Response $response) {
+	    $content = $response->getOriginalContent();
+	    
+    	$content['_token'] = $this->parameter->tough('_token');
+    	$response->setContent($content);
+	    
+	    return parent::onResponse($request, $response);
 	}
 }

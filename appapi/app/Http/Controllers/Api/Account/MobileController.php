@@ -2,9 +2,6 @@
 namespace App\Http\Controllers\Api\Account;
 
 use App\Exceptions\ApiException;
-use Illuminate\Http\Request;
-use App\Parameter;
-
 use App\Model\Ucuser;
 
 class MobileController extends Controller {
@@ -21,7 +18,7 @@ class MobileController extends Controller {
         $is_set_password = !empty($password);
 
         if(!verify_sms($mobile, $code)) {
-            throw new ApiException(ApiException::Remind, "验证码不正确，或已过期");
+            throw new ApiException(ApiException::Remind, trans('messages.invalid_smscode'));
         }
 
         // 登录
@@ -37,6 +34,7 @@ class MobileController extends Controller {
             $password = rand(100000, 999999);
         }
 
+<<<<<<< HEAD
         $user = new Ucuser;
         $user->uid = $username;
         $user->email = $username . "@anfan.com";
@@ -51,15 +49,22 @@ class MobileController extends Controller {
         $user->imei = $this->parameter->get('_imei', '');
         $user->device_id = $this->parameter->get('_device_id', '');
         $user->save();
+=======
+        $user = self::baseRegisterUser([
+            'uid' => $username,
+            'mobile' => $mobile,
+            'password' => $password
+        ]);
+>>>>>>> dev
 
         user_log($user, $this->procedure, 'register', '【手机号码登录】检测到尚未注册，手机号码{%s}，密码[%s]', $mobile, $user->password);
 
+        // 将密码发给用户,通过队列异步发送
         if(!$is_set_password) {
-            // 将密码发给用户，通过队列异步发送
             try {
                 send_sms($mobile, 0, 'mobile_register', ['#username#' => $username, '#password#' => $password]);
             } catch (\App\Exceptions\Exception $e) {
-                log_warning('sendsms', $e->getMessage());
+                log_warning('sendsms', [], $e->getMessage());
                 // throw new ApiException(ApiException::Remind, $e->getMessage());
             }
         }

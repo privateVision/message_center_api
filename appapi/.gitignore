@@ -1,7 +1,31 @@
 .env
+<<<<<<< HEAD
 listen-queue.sh
 .env.test
 .env.sdkv4test
 switchenv.sh
 _ab/
 storage
+=======
+.env.local.sdkapi.com
+.env.sdkapi.novasmobi.com
+.env.sdkv4.qcwan.com
+.env.sdkv4test.qcwanwan.com
+config/local.sdkapi.com/
+config/sdkapi.novasmobi.com/
+config/sdkv4.qcwan.com/
+config/sdkv4test.qcwanwan.com/
+*.tar.gz
+tar.py
+
+config/api.anfeng.me/
+.env.api.anfeng.me
+
+.buildpath
+.htaccess
+composer.lock
+package.json
+webpack.mix.json
+yarn.lock
+_ab/
+>>>>>>> dev

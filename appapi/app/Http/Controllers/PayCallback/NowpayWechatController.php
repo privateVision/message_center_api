@@ -17,12 +17,12 @@ class NowpayWechatController extends Controller
         return $data['mhtOrderNo'];
     }
 
-    protected function getTradeOrderNo($data, $order) {
+    protected function getTradeOrderNo($data, $order, $order_extend) {
         return $data['channelOrderNo'] . "/" . $data['nowPayOrderNo'];
     }
 
-    protected function verifySign($data, $order) {
-        $config = config('common.payconfig.nowpay_wechat');
+    protected function verifySign($data, $order, $order_extend) {
+        $config = configex('common.payconfig.nowpay_wechat');
 
         $sign = $data['signature'];
         unset($data['signType'], $data['signature']);
@@ -37,11 +37,11 @@ class NowpayWechatController extends Controller
         return md5($str . md5($config['secure_key'])) === $sign;
     }
 
-    protected function handler($data, $order){
+    protected function handler($data, $order, $order_extend){
         return true;
     }
 
-    protected function onComplete($data, $order, $isSuccess) {
+    protected function onComplete($data, $order, $order_extend, $isSuccess, $message = null) {
         return $isSuccess ? 'success' : 'fail';
     }
 }

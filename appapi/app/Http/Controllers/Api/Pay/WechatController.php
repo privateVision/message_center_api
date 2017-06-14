@@ -1,26 +1,47 @@
 <?php
 namespace App\Http\Controllers\Api\Pay;
 
-use Illuminate\Http\Request;
 use App\Exceptions\ApiException;
-use App\Parameter;
 use App\Model\Orders;
+use App\Model\OrderExtend;
 
 class WechatController extends Controller {
 
     use RequestAction;
 
-    const PayType = '-5';
+    const PayMethod = '-5';
+    const PayText = 'wechat';
     const PayTypeText = '微信';
-    const EnableStoreCard = true;
-    const EnableCoupon = true;
-    const EnableBalance = true;
 
-    public function payHandle(Orders $order, $real_fee) {
+    public function getData($config, Orders $order, OrderExtend $order_extend, $real_fee)
+    {
+        // XXX 兼容旧版IOS返回scheme
+
         $restype = $this->parameter->get('restype');
+        if($restype  == 'protocol') {
+            return [
+                'restype' => 'web_url', // TODO 不知道加这个参数搞什么鬼
+                'protocol' => $this->getUrlScheme($config, $order, $order_extend, $real_fee),
+            ];
+        } else {
+            return $this->request($config, $order, $real_fee);
+        }
+    }
 
-        $config = config('common.payconfig.wechat');
+    public function getUrlScheme($config, Orders $order, OrderExtend $order_extend, $real_fee) {
+        $responseData = $this->request($config, $order, $real_fee);
 
+        return sprintf('weixin://app/%s/pay/?%s', $config['appid'], http_build_query([
+            'nonceStr' => $responseData['nonce_str'],
+            'package' => $responseData['package'],
+            'partnerId' => $config['mch_id'],
+            'prepayId' => $responseData['prepay_id'],
+            'timeStamp' => $responseData['timeStamp'],
+            'sign' => $responseData['sign'],
+        ]));
+    }
+
+    public function request($config, Orders $order, $real_fee) {
         // 请求参数
         $data['appid'] = $config['appid'];
         $data['mch_id'] = $config['mch_id'];
@@ -54,7 +75,7 @@ class WechatController extends Controller {
 
             $rootNode->appendChild($node);
         }
-        
+
         // curl
         $ch = curl_init();
         curl_setopt($ch, CURLOPT_URL, 'https://api.mch.weixin.qq.com/pay/unifiedorder');
@@ -72,13 +93,13 @@ class WechatController extends Controller {
 
         $result = curl_exec($ch);
         curl_close($ch);
-        
+
         log_debug('微信统一下单', ['url' => 'https://api.mch.weixin.qq.com/pay/unifiedorder', 'reqdata' => $data, 'resdata' => $result]);
 
         if(!$result) {
-            throw new ApiException(ApiException::Remind, '发起支付失败');
+            throw new ApiException(ApiException::Remind, trans('messages.pay_fail'));
         }
-        
+
         $responseData = [];
 
         $xml = simplexml_load_string($result);
@@ -87,19 +108,20 @@ class WechatController extends Controller {
         }
 
         $responseData['out_trade_no'] = $order->sn;
-        
+
         if(!@$responseData['return_code']) {
-            throw new ApiException(ApiException::Remind, '发起支付失败');
+            throw new ApiException(ApiException::Remind, trans('messages.pay_fail'));
         }
-        
+
         if($responseData['return_code'] != 'SUCCESS') {
-            throw new ApiException(ApiException::Remind, '发起支付失败（'.$responseData['return_msg'].'）');
+            throw new ApiException(ApiException::Remind, trans('messages.pay_fail_1', ['return_msg）' => $responseData['return_msg']]));
         }
-        
+
         $responseData['timeStamp'] = time();
         $responseData['package'] = "Sign=WXPay";
         $responseData['sign'] = strtoupper(md5("appid={$config['appid']}&noncestr={$responseData['nonce_str']}&package={$responseData['package']}&partnerid={$config['mch_id']}&prepayid={$responseData['prepay_id']}&timestamp={$responseData['timeStamp']}&key={$config['key']}"));
 
+<<<<<<< HEAD
         if($restype  == 'protocol') {
             return ['protocol' => sprintf('weixin://app/%s/pay/?%s', $config['appid'], http_build_query([
                 'nonceStr' => $responseData['nonce_str'],
@@ -112,5 +134,8 @@ class WechatController extends Controller {
         } else {
             return $responseData;
         }
+=======
+        return $responseData;
+>>>>>>> dev
     }
 }
