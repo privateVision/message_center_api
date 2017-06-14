@@ -3,6 +3,8 @@
 namespace App\Http\Controllers\Api\Tool;
 
 use App\Exceptions\ApiException;
+use App\Model\FLog;
+use App\Model\UcuserSubServiceLog;
 use Illuminate\Http\Request;
 use App\Parameter;
 use App\Model\Ucuser;
@@ -90,6 +92,15 @@ class AuthAccountController extends Controller
                 $userSub->is_freeze = 1;
                 $userSub->save();
                 $serviceid = $ucuserSubService->id;
+
+                $ucuserSubServiceLog = new UcuserSubServiceLog();
+                $ucuserSubServiceLog->ucid = $serviceUcid;
+                $ucuserSubServiceLog->user_sub_id = $subUserId;
+                $ucuserSubServiceLog->pid = $userSub->pid;
+                $ucuserSubServiceLog->src_ucid = $srcUcid;
+                $ucuserSubServiceLog->status = $status;
+                $ucuserSubServiceLog->save();
+
                 $ucuserSubService->getConnection()->commit();
 
                 if(!$serviceid)throw new ApiException(ApiException::Error);
@@ -116,6 +127,14 @@ class AuthAccountController extends Controller
                 $ucuserSubService->status = $status;
                 $ucuserSubService->save();
 
+                $ucuserSubServiceLog = new UcuserSubServiceLog();
+                $ucuserSubServiceLog->ucid = $serviceUcid->ucid;
+                $ucuserSubServiceLog->user_sub_id = $ucuserSubService->user_sub_id;
+                $ucuserSubServiceLog->pid = $ucuserSubService->pid;
+                $ucuserSubServiceLog->src_ucid = $ucuserSubService->src_ucid;
+                $ucuserSubServiceLog->status = $status;
+                $ucuserSubServiceLog->save();
+
                 break;
             case 2:
                 $ucuserSubService = UcuserSubService::where('id', $serviceid)->where('status', 1)->first();
@@ -123,6 +142,14 @@ class AuthAccountController extends Controller
                 if(!$ucuserSubService) throw new ApiException(ApiException::Remind, trans('messages.service_err'));
                 $ucuserSubService->status = $status;
                 $ucuserSubService->save();
+
+                $ucuserSubServiceLog = new UcuserSubServiceLog();
+                $ucuserSubServiceLog->ucid = $ucuserSubService->ucid;
+                $ucuserSubServiceLog->user_sub_id = $ucuserSubService->user_sub_id;
+                $ucuserSubServiceLog->pid = $ucuserSubService->pid;
+                $ucuserSubServiceLog->src_ucid = $ucuserSubService->src_ucid;
+                $ucuserSubServiceLog->status = $status;
+                $ucuserSubServiceLog->save();
                 break;
             case 3:
                 $ucuserSubService = UcuserSubService::where('id', $serviceid)->where('status', 1)->first();
@@ -140,6 +167,14 @@ class AuthAccountController extends Controller
 
                 $userSub->is_freeze = 0;
                 $userSub->save();
+
+                $ucuserSubServiceLog = new UcuserSubServiceLog();
+                $ucuserSubServiceLog->ucid = $ucuserSubService->ucid;
+                $ucuserSubServiceLog->user_sub_id = $ucuserSubService->user_sub_id;
+                $ucuserSubServiceLog->pid = $ucuserSubService->pid;
+                $ucuserSubServiceLog->src_ucid = $ucuserSubService->src_ucid;
+                $ucuserSubServiceLog->status = $status;
+                $ucuserSubServiceLog->save();
 
                 $ucuserSubService->getConnection()->commit();
 
@@ -188,6 +223,14 @@ class AuthAccountController extends Controller
 
                 $otherUserSub->save();
 
+                $ucuserSubServiceLog = new UcuserSubServiceLog();
+                $ucuserSubServiceLog->ucid = $ucuserSubService->ucid;
+                $ucuserSubServiceLog->user_sub_id = $ucuserSubService->user_sub_id;
+                $ucuserSubServiceLog->pid = $ucuserSubService->pid;
+                $ucuserSubServiceLog->src_ucid = $ucuserSubService->src_ucid;
+                $ucuserSubServiceLog->status = $status;
+                $ucuserSubServiceLog->save();
+
                 $ucuserSubService->getConnection()->commit();
                 break;
 
@@ -204,6 +247,14 @@ class AuthAccountController extends Controller
                 $userSub->is_freeze = 0;
                 $userSub->save();
 
+                $ucuserSubServiceLog = new UcuserSubServiceLog();
+                $ucuserSubServiceLog->ucid = $ucuserSubService->ucid;
+                $ucuserSubServiceLog->user_sub_id = $ucuserSubService->user_sub_id;
+                $ucuserSubServiceLog->pid = $ucuserSubService->pid;
+                $ucuserSubServiceLog->src_ucid = $ucuserSubService->src_ucid;
+                $ucuserSubServiceLog->status = $status;
+                $ucuserSubServiceLog->save();
+
                 $ucuserSubService->getConnection()->commit();
                 break;
 
@@ -219,9 +270,54 @@ class AuthAccountController extends Controller
 
                 $userSub->is_freeze = 0;
                 $userSub->save();
+
+                $ucuserSubServiceLog = new UcuserSubServiceLog();
+                $ucuserSubServiceLog->ucid = $ucuserSubService->ucid;
+                $ucuserSubServiceLog->user_sub_id = $ucuserSubService->user_sub_id;
+                $ucuserSubServiceLog->pid = $ucuserSubService->pid;
+                $ucuserSubServiceLog->src_ucid = $ucuserSubService->src_ucid;
+                $ucuserSubServiceLog->status = $status;
+                $ucuserSubServiceLog->save();
+
                 $ucuserSubService->getConnection()->commit();
                 break;
         }
+
+        return [];
+    }
+
+    //f币变动
+    public function ChangeFAction()
+    {
+        $username = $this->parameter->tough('username');
+        $amount = (float)$this->parameter->tough('amount');
+        $type = $this->parameter->tough('type');
+        $msg = $this->parameter->tough('msg');
+        $pid = $this->parameter->tough('_appid');
+
+        $ucuser = Ucuser::where('uid', $username)->first();
+
+        if(!$ucuser)throw new ApiException(ApiException::Remind, trans('messages.user_not_exists'));
+
+        if($ucuser->is_freeze==0)throw new ApiException(ApiException::Remind, trans('messages.freeze'));
+
+        if($ucuser->balance + $amount<0)throw new ApiException(ApiException::Remind, trans('messages.balance_not_enough'));
+
+        $ucuser->getConnection()->beginTransaction();
+        $ucuser->balance = $ucuser->balance + $amount;
+        $ucuser->save();
+
+        $fLog = new FLog();
+        $fLog->pid = $pid;
+        $fLog->amount = $amount;
+        $fLog->ucid = $ucuser->ucid;
+        $fLog->type = $type;
+        $fLog->msg = $msg;
+        $fLog->create_time = time();
+        $fLog->update_time = time();
+        $fLog->save();
+
+        $ucuser->getConnection()->commit();
 
         return [];
     }
