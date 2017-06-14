@@ -16,6 +16,7 @@
 		"guzzlehttp/guzzle": "^6.2",
 		"illuminate/mail": "^5.4",
 		"illuminate/redis": "*",
+		"naux/iplocation": "dev-master",
 		"jenssegers/mongodb": "^3.2",
 		"jeremeamia/SuperClosure": "^2.3",
 		"laravel/framework": "5.4.*",
@@ -63,5 +64,11 @@
 		"preferred-install" : "dist",
 		"sort-packages" : true,
 		"optimize-autoloader" : true
+	},
+	"repositories": {
+		"packagist": {
+			"type": "composer",
+			"url": "https://packagist.phpcomposer.com"
+		}
 	}
 }

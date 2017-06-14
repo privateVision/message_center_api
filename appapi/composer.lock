@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "content-hash": "78049c34627709f28299330a5d8123a8",
+    "content-hash": "f24f7786014568e88eaee97adaf15c73",
     "packages": [
         {
             "name": "aporat/store-receipt-validator",
@@ -65,16 +65,16 @@
         },
         {
             "name": "aws/aws-sdk-php",
-            "version": "3.29.2",
+            "version": "3.29.4",
             "source": {
                 "type": "git",
                 "url": "https://github.com/aws/aws-sdk-php.git",
-                "reference": "1f19f74913a31fac8e98c24cef26040a16c88a33"
+                "reference": "f714ebbcc23945b1c9b4b0e5fdc339cef33dedf6"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/aws/aws-sdk-php/zipball/1f19f74913a31fac8e98c24cef26040a16c88a33",
-                "reference": "1f19f74913a31fac8e98c24cef26040a16c88a33",
+                "url": "https://files.phpcomposer.com/files/aws/aws-sdk-php/f714ebbcc23945b1c9b4b0e5fdc339cef33dedf6.zip",
+                "reference": "f714ebbcc23945b1c9b4b0e5fdc339cef33dedf6",
                 "shasum": ""
             },
             "require": {
@@ -141,7 +141,7 @@
                 "s3",
                 "sdk"
             ],
-            "time": "2017-06-09T18:57:25+00:00"
+            "time": "2017-06-13T17:38:41+00:00"
         },
         {
             "name": "barryvdh/laravel-cors",
@@ -911,16 +911,16 @@
         },
         {
             "name": "laravel/framework",
-            "version": "v5.4.25",
+            "version": "v5.4.26",
             "source": {
                 "type": "git",
                 "url": "https://github.com/laravel/framework.git",
-                "reference": "6bcc9b1f542b3deed16d51f6aa1fe318ab407c2a"
+                "reference": "a7ebbfab64111e24f8e584db64e2be9279ded357"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/laravel/framework/zipball/6bcc9b1f542b3deed16d51f6aa1fe318ab407c2a",
-                "reference": "6bcc9b1f542b3deed16d51f6aa1fe318ab407c2a",
+                "url": "https://files.phpcomposer.com/files/laravel/framework/a7ebbfab64111e24f8e584db64e2be9279ded357.zip",
+                "reference": "a7ebbfab64111e24f8e584db64e2be9279ded357",
                 "shasum": ""
             },
             "require": {
@@ -1036,7 +1036,7 @@
                 "framework",
                 "laravel"
             ],
-            "time": "2017-06-07T13:35:12+00:00"
+            "time": "2017-06-13T18:58:49+00:00"
         },
         {
             "name": "laravel/tinker",
@@ -1418,6 +1418,44 @@
                 "jsonpath"
             ],
             "time": "2016-12-03T22:08:25+00:00"
+        },
+        {
+            "name": "naux/iplocation",
+            "version": "dev-master",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/NauxLiu/IpLocation.git",
+                "reference": "637d1df00fe6edaf8bd636190986a20d6f381ac0"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://files.phpcomposer.com/files/NauxLiu/IpLocation/637d1df00fe6edaf8bd636190986a20d6f381ac0.zip",
+                "reference": "637d1df00fe6edaf8bd636190986a20d6f381ac0",
+                "shasum": ""
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "Naux\\IpLocation\\": ""
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "NauxLiu",
+                    "email": "xuancoder@gmail.com",
+                    "homepage": "http://naux.me"
+                },
+                {
+                    "name": "joyphper",
+                    "homepage": "http://joyphper.net"
+                }
+            ],
+            "description": "基于纯真IP库的,查询IP归属地PHP库",
+            "time": "2014-11-21T16:14:45+00:00"
         },
         {
             "name": "nesbot/carbon",
@@ -4838,6 +4876,7 @@
     "aliases": [],
     "minimum-stability": "stable",
     "stability-flags": {
+        "naux/iplocation": 20,
         "eaglewu/swoole-ide-helper": 20
     },
     "prefer-stable": false,

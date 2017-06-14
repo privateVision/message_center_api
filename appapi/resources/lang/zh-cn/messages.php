@@ -102,6 +102,7 @@ return [
     'error_third_system'                    => '第三方系统错误', // error
     'error_third_params'                    => '第三方参数错误', // error
     'currency_not_found'                    => '目标汇率不存在：:currency',
+    'abnormal_onlogin'                      => '您的帐号存在异常无法登陆，请联系客服解锁或者通过手机号码修改密码后重试',
 ];
 /*
 return [

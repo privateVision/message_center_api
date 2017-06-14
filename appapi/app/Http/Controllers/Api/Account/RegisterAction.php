@@ -6,7 +6,7 @@ use App\Jobs\AdtRequest;
 use App\Session;
 use App\Model\Ucuser;
 use App\Model\UcuserSub;
-use App\Model\LoginLog;
+use App\Model\UcuserLoginLog;
 use App\Model\UcuserInfo;
 use App\Model\UcuserSession;
 use App\Model\Retailers;
@@ -20,6 +20,7 @@ trait RegisterAction {
         $rid = $this->parameter->tough('_rid');
         
         $user = $this->getRegisterUser();
+        $user->asyncSave();
 
         // 广告统计，加入另一个队列由其它项目处理
         $imei = $this->parameter->get('_imei');
@@ -32,7 +33,6 @@ trait RegisterAction {
             ]))->onQueue('adtinit'));
         }
 
-        //if(!$user) throw new ApiException(ApiException::OauthNotRegister, trans('messages.3th_not_register'));
         if($user->is_freeze) {
             throw new ApiException(ApiException::AccountFreeze, trans('messages.freeze'));
         }
@@ -98,32 +98,26 @@ trait RegisterAction {
         $usession->saveAndCache();
         
         // ucuser
-        // $user->uuid = $session->token;
         $user->last_login_at = datetime();
         $user->last_login_ip = getClientIp();
-        $user->save();
-        $user->updateCache();
         
         // login_log
         $t = time();
-        
-        $login_log = new LoginLog;
-        $login_log->ucid = $user->ucid;
-        $login_log->pid = $pid;
-        /**
-         * XXX 兼容旧的问题，后台显示是强制
-         * SELECT id,loginDate,loginTime,FROM_UNIXTIME(
-         *   CASE
-         *     WHEN loginTime < 57600 THEN (loginDate+1)*86400+loginTime
-         *     ELSE loginDate*86400+loginTime
-         *   END + 8*3600
-         * ) AS stamp FROM login_log_161013
-         */
-        $login_log->loginDate = intval(($t + 28800) / 86400) - 1;
-        $login_log->loginTime = $t % 86400;
-        $login_log->loginIP = ip2long(getClientIp());
-        $login_log->save();
-        
+
+        $ucuser_login_log = new UcuserLoginLog;
+        $ucuser_login_log->ucid = $user->ucid;
+        $ucuser_login_log->pid = $pid;
+        $ucuser_login_log->loginDate = intval(($t + 28800) / 86400) - 1;
+        $ucuser_login_log->loginTime = $t % 86400;
+        $ucuser_login_log->loginIP = ip2long(getClientIp());
+        $ucuser_login_log->date = date('Ymd', $t);
+        $ucuser_login_log->ts = $t;
+        $ucuser_login_log->ip = getClientIp();
+        $ucuser_login_log->address =
+        $ucuser_login_log->imei = $this->parameter->get('_imei', '');
+        $ucuser_login_log->device_id = $this->parameter->get('_device_id', '');
+        $ucuser_login_log->save();
+/*
         // login_log_uuid
         $imei = $this->parameter->get('_imei', '');
         $device_id = $this->parameter->get('_device_id', '');
@@ -135,7 +129,7 @@ trait RegisterAction {
             $login_log_uuid->device_id= $device_id;
             $login_log_uuid->asyncSave();
         }
-
+*/
         $user_info = UcuserInfo::from_cache($user->ucid);
         
         $retailers = null;
