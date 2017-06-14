@@ -3,9 +3,9 @@ Route::group(['prefix' => 'web'], function () {
     Route::any('mycard/rescue', 'Web\\MycardController@RescueAction'); // mycard订单补储
     Route::any('mycard/query', 'Web\\MycardController@QueryAction');   // mycard订单查询
 
-    Route::any('paypal/payment', 'Web\\PaypalController@PaymentAction'); // Paypal请求支付
-    Route::any('paypal/return', 'Web\\PaypalController@ReturnAction');   // Paypal支付完成返回页面
-    Route::any('paypal/cancel', 'Web\\PaypalController@CancelAction');   // Paypal取消订单返回页面
+    //Route::any('paypal/payment', 'Web\\PaypalController@PaymentAction'); // Paypal请求支付
+    //Route::any('paypal/return', 'Web\\PaypalController@ReturnAction');   // Paypal支付完成返回页面
+    //Route::any('paypal/cancel', 'Web\\PaypalController@CancelAction');   // Paypal取消订单返回页面
 });
 
 // 支付回调
@@ -14,7 +14,8 @@ Route::group(['prefix' => 'pay_callback'], function () {
     Route::any('alipay', 'PayCallback\\AlipayController@CallbackAction');                                   // 支付宝支付回调
     Route::any('unionpay', 'PayCallback\\UnionpayController@CallbackAction');                               // 银联支付回调
     Route::any('wechat', 'PayCallback\\WechatController@CallbackAction');                                   // 微信支付回调
-    Route::any('paypal', 'PayCallback\\PaypalController@CallbackAction');                                   // PayPal支付回调
+    //Route::any('paypal', 'PayCallback\\PaypalController@CallbackAction');                                 // PayPal的WPS(website payment standard)支付回调
+    Route::any('paypalec', 'PayCallback\\PaypalECController@CallbackAction');                               // PayPal的ExpressCheckout支付回调
 
     //渠道支付回调
     Route::any('baidu', 'PayCallback\\BaiduController@CallbackAction');
