@@ -477,6 +477,9 @@ function http_request($url, $data, $is_post = true) {
     $res = curl_exec($ch);
     curl_close($ch);
 
+    //打印日志
+    log_info('func-http-request', ['reqdata' => $data, 'resdata' => $res], $url);
+
     return $res;
 }
 
@@ -540,6 +543,9 @@ function http_curl($url, $param = array(), $is_post = true, $code = 'cd', $heade
         );
     }
     curl_close($oCurl);//关闭curl
+
+    //打印日志
+    log_info('func-http-curl', ['cookie'=>$cookie, 'reqdata' => $param, 'resdata' => $Resp], $url);
 
     $res = @json_decode($Resp, true);
     if (is_array($res)) {

@@ -140,7 +140,7 @@ class YingYongBaoController extends Controller
         $accout_type = $this->parameter->tough('accout_type');
 
         $params = self::getParams();
-        $params['amt'] = intval($real_fee/100);
+        $params['amt'] = $this->parameter->tough('amt');
         $params['billno'] = $order->sn;
         //检查分区
         if(!empty($order_extend->zone_id) && $order_extend->zone_id>1) {
@@ -174,9 +174,6 @@ class YingYongBaoController extends Controller
 
         $url = $protocol . '://'. self::getDomain() . $script_name;
 
-        // 通过调用以下方法，可以打印出最终发送到YSDK API服务器的请求参数以及url，默认为注释
-//        self::printRequest($url,$params,$method);
-
         $cookie = array();
 
         // 发起请求
@@ -201,9 +198,6 @@ class YingYongBaoController extends Controller
                 );
             }
         }
-
-        // 通过调用以下方法，可以打印出调用openapi请求的返回码以及错误信息，默认注释
-//        self::printRespond($result_array);
 
         return $result_array;
     }
@@ -258,10 +252,6 @@ class YingYongBaoController extends Controller
 
         $url = $protocol . '://' . self::getDomain() . $script_name;
 
-        // 通过调用以下方法，可以打印出最终发送到openapi服务器的请求参数以及url，默认为注释
-//        self::printCookies($cookie);
-//        self::printRequest($url,$params,$method);
-
         // 发起请求
         $ret = self::makeRequest($url, $params, $cookie, $method, $protocol);
 
@@ -282,9 +272,6 @@ class YingYongBaoController extends Controller
                 'msg' => $ret['msg']
             );
         }
-
-        // 通过调用以下方法，可以打印出调用支付API请求的返回码以及错误信息，默认注释
-//        self::printRespond($result_array);
 
         return $result_array;
     }
@@ -377,6 +364,9 @@ class YingYongBaoController extends Controller
         $ret = curl_exec($ch);
         $err = curl_error($ch);
 
+        //打印应用宝日志
+        log_info('yingyongbao-curl', ['cookie'=>$cookie, 'reqdata' => $params, 'resdata' => $ret], $url);
+
         if (false === $ret || !empty($err))
         {
             $errno = curl_errno($ch);
@@ -426,59 +416,6 @@ class YingYongBaoController extends Controller
         }
         $cookie_string = join('; ', $cookie_string);
         return $cookie_string;
-    }
-
-    /**
-     * 打印出请求串的内容，当API中的这个函数的注释放开将会被调用。
-     *
-     * @param string $url 请求串内容
-     * @param array $params 请求串的参数，必须是array
-     * @param string $method 请求的方法 get / post
-     */
-    protected function printRequest($url, $params, $method)
-    {
-        $query_string = self::makeQueryString($params);
-        if($method == 'get')
-        {
-            $url = $url."?".$query_string;
-        }
-        echo "\n============= request info ================\n\n";
-        print_r("method : ".$method."\n");
-        print_r("url    : ".$url."\n");
-
-        if($method == 'post')
-        {
-            print_r("query_string : ".$query_string."\n");
-        }
-        echo "\n";
-        print_r("params : ".print_r($params, true)."\n");
-        echo "\n";
-
-    }
-
-    /**
-     * 打印出请求的cookies，当API中的这个函数的注释放开将会被调用。
-     *
-     * @param array $cookies 待打印的cookies
-     */
-    protected function printCookies($cookies)
-    {
-        echo "\n============= cookie info ================\n\n";
-        print_r("cookies : ".print_r($cookies, true)."\n");
-        echo "\n";
-
-    }
-
-    /**
-     * 打印出返回结果的内容，当API中的这个函数的注释放开将会被调用。
-     *
-     * @param array $array 待打印的array
-     */
-    protected function printRespond($array)
-    {
-        echo "\n============= respond info ================\n\n";
-        print_r($array);
-        echo "\n";
     }
 
 }
