@@ -88,15 +88,15 @@ class MessageFunctionTest(unittest.TestCase):
     #     r = requests.post('http://localhost:5000/msa/v4.2/message/read', data=body_data)
     #     print r.text
 
-    def test_set_all_message_readed(self):
-        body_data = {
-            '_sign': 'ed81ac86bc1fca205703c27d16d0d70e',
-            '_token': '4da803965a27ce16aba27c597819b17c',
-            'read_all': 1,
-            '_appid': 2
-        }
-        r = requests.post('http://localhost:5000/msa/v4.2/message/read', data=body_data)
-        print r.text
+    # def test_set_all_message_readed(self):
+    #     body_data = {
+    #         '_sign': 'ed81ac86bc1fca205703c27d16d0d70e',
+    #         '_token': '4da803965a27ce16aba27c597819b17c',
+    #         'read_all': 1,
+    #         '_appid': 2
+    #     }
+    #     r = requests.post('http://localhost:5000/msa/v4.2/message/read', data=body_data)
+    #     print r.text
 
     def tearDown(self):
         pass
