@@ -21,41 +21,6 @@
 		"laravel/framework": "5.4.*",
 		"laravel/tinker": "~1.0",
 		"pda/pheanstalk": "~3.0",
-<<<<<<< HEAD
-        "jenssegers/mongodb": "^3.2",
-        "illuminate/mail": "^5.4",
-        "guzzlehttp/guzzle": "^6.2",
-        "jeremeamia/SuperClosure": "^2.3",
-        "barryvdh/laravel-cors": "^0.8.6",
-        "qiniu/php-sdk": "^7.1"
-    },
-    "require-dev": {
-        "fzaninotto/faker": "~1.4",
-        "phpunit/phpunit": "~5.0",
-        "mockery/mockery": "~0.9"
-    },
-    "autoload": {
-        "psr-4": {
-            "App\\": "app/"
-        },
-        "files": [
-            "app/functions.php"
-        ]
-    },
-    "autoload-dev": {
-        "classmap": [
-            "tests/",
-            "database/"
-        ]
-    },
-    "scripts": {
-        "post-root-package-install": [
-            "php -r \"copy('.env.example', '.env');\""
-        ]
-    },
-    "minimum-stability": "dev",
-    "prefer-stable": true
-=======
 		"predis/predis": "*",
 		"qiniu/php-sdk": "^7.1"
 	},
@@ -99,5 +64,4 @@
 		"sort-packages" : true,
 		"optimize-autoloader" : true
 	}
->>>>>>> dev
 }

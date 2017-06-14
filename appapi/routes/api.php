@@ -1,7 +1,4 @@
 <?php
-<<<<<<< HEAD
-// 支付回调相关
-=======
 Route::group(['prefix' => 'web'], function () {
     Route::any('mycard/rescue', 'Web\\MycardController@RescueAction'); // mycard订单补储
     Route::any('mycard/query', 'Web\\MycardController@QueryAction');   // mycard订单查询
@@ -12,17 +9,11 @@ Route::group(['prefix' => 'web'], function () {
 });
 
 // 支付回调
->>>>>>> dev
 Route::group(['prefix' => 'pay_callback'], function () {
     Route::any('nowpay_wechat', 'PayCallback\\NowpayWechatController@CallbackAction');                      // 现代支付，微信支付回调
     Route::any('alipay', 'PayCallback\\AlipayController@CallbackAction');                                   // 支付宝支付回调
     Route::any('unionpay', 'PayCallback\\UnionpayController@CallbackAction');                               // 银联支付回调
     Route::any('wechat', 'PayCallback\\WechatController@CallbackAction');                                   // 微信支付回调
-<<<<<<< HEAD
-});
-    
-// 对外公开（无限制的）功能（杂项）
-=======
     //Route::any('paypal', 'PayCallback\\PaypalController@CallbackAction');                                 // PayPal的WPS(website payment standard)支付回调
     Route::any('paypalec', 'PayCallback\\PaypalECController@CallbackAction');                               // PayPal的ExpressCheckout支付回调
 
@@ -35,7 +26,6 @@ Route::group(['prefix' => 'pay_callback'], function () {
 });
     
 // 各种回调
->>>>>>> dev
 Route::group(['prefix' => 'callback'], function () {
     Route::any('yunpian/request', 'Callback\\YunpianController@RequestAction');                             // 云片手机短信回调
 });
@@ -47,10 +37,6 @@ Route::group(['prefix' => 'api'], function () {
     Route::any('app/uuid', 'Api\\AppController@UuidAction');                                                // 获取一个UUID，用户无法获取设备UUID时
     Route::any('app/logout', 'Api\\AppController@LogoutAction');                                            // 退出客户端
     Route::any('app/hotupdate','Api\\AppController@HotupdateAction');                                       //获取热更新数据
-<<<<<<< HEAD
-    
-=======
->>>>>>> dev
     Route::any('account/token/login', 'Api\\Account\\TokenController@LoginAction');                         // 自动登录
     Route::any('account/login', 'Api\\Account\\UserController@LoginAction');                                // 用户名或手机号码登陆
     Route::any('account/register', 'Api\\Account\\UserController@RegisterAction');                          // 用户名注册
@@ -64,9 +50,6 @@ Route::group(['prefix' => 'api'], function () {
     Route::any('account/guest/login', 'Api\\Account\\GuestController@LoginAction');                         // 游客登陆
     Route::any('account/oauth/register', 'Api\\Account\\OauthController@RegisterAction');                   // 平台注册
     Route::any('account/oauth/login', 'Api\\Account\\OauthController@LoginAction');                         // 平台登陆
-<<<<<<< HEAD
-    
-=======
 
     //第三方获取用户信息
     Route::any('account/third/uc', 'Api\\Account\\ThirdController@ucAction');                               // Uc平台获取用户信息
@@ -74,7 +57,6 @@ Route::group(['prefix' => 'api'], function () {
     Route::any('account/third/baidu', 'Api\\Account\\ThirdController@baiduAction');                         // 百度平台获取用户信息
     Route::any('account/third/vivo', 'Api\\Account\\ThirdController@vivoAction');                           // vivo平台获取用户信息
 
->>>>>>> dev
     Route::any('user/recharge', 'Api\\UserController@RechargeAction');                                      // 充值记录（充F币）
     Route::any('user/consume', 'Api\\UserController@ConsumeAction');                                        // 消费记录
     Route::any('user/hide_order', 'Api\\UserController@HideOrderAction');                                   // 隐藏订单
@@ -102,30 +84,16 @@ Route::group(['prefix' => 'api'], function () {
     Route::any('user_sub/new', 'Api\\UserSubController@NewAction');                                         // 添加小号
     Route::any('user_sub/game_list', 'Api\\UserSubController@GameListAction');                              // 玩家所有游戏的小号列表
     Route::any('user_sub/set_nickname', 'Api\\UserSubController@SetNicknameAction');                        // 设置小号昵称
-<<<<<<< HEAD
-    
-    Route::any('pay/order/new', 'Api\\Pay\\OrderController@NewAction');                                     // 创建订单
-    Route::any('pay/order/info', 'Api\\Pay\\OrderController@InfoAction');                                   // 获取订单信息
-    Route::any('pay/order/f/new', 'Api\\Pay\\FController@NewAction');                                       // 充值F币的订单
-=======
 
     Route::any('pay/order/new', 'Api\\Pay\\OrderController@NewAction');                                     // 创建订单
     Route::any('pay/order/f/new', 'Api\\Pay\\OrderController@NewAction');                                   // XXX 4.0 充值F币的订单
     Route::any('pay/order/info', 'Api\\Pay\\OrderController@InfoAction');                                   // 获取订单信息
     Route::any('pay/order/config', 'Api\\Pay\\OrderController@ConfigAction');                               // 获取订单(支付）配置
 
->>>>>>> dev
     Route::any('pay/nowpay_wechat/request', 'Api\\Pay\\NowpayWechatController@RequestAction');              // 现在支付，微信
     Route::any('pay/wechat/request', 'Api\\Pay\\WechatController@RequestAction');                           // 微信
     Route::any('pay/alipay/request', 'Api\\Pay\\AlipayController@RequestAction');                           // 现在支付，支付宝
     Route::any('pay/unionpay/request', 'Api\\Pay\\UnionpayController@RequestAction');                       // 现在支付，银联
-<<<<<<< HEAD
-    Route::any('pay/f/request', 'Api\\Pay\\FController@RequestAction');                                     // 安锋支付，（帐户余额支付）
-    Route::any('ios/order/receipt/verify','Api\\Pay\\AppleController@validateReceiptAction');               // 验证苹果支付的信息
-    Route::any('ios/order/create','Api\\Pay\\AppleController@OrderCreateAction');                           // 验证苹果支付的信息
-    Route::any('ios/applelimit','Api\\Pay\\AppleController@AppleLimitAction');                              // 验证当前是否开启限制
-    
-=======
     Route::any('pay/f/request', 'Api\\Pay\\FController@RequestAction');                                     // XXX 安锋支付，（帐户余额支付），4.0使用，4.1废弃
     Route::any('pay/mycard/request', 'Api\\Pay\\MycardController@RequestAction');                           // MyCard支付
     Route::any('pay/paypal/request', 'Api\\Pay\\PaypalController@RequestAction');                           // PayPal支付
@@ -151,21 +119,14 @@ Route::group(['prefix' => 'api'], function () {
     Route::any('ios/order/create','Api\\Pay\\OrderController@NewAction');                                   // 创建苹果订单
     Route::any('ios/applelimit','Api\\Pay\\OrderController@ConfigAction');                                  // 验证当前是否开启限制
 
->>>>>>> dev
     Route::any('tool/reset_password/request','Api\\Tool\\ResetPasswordController@RequestAction');           // 通过token用户自行修改密码
     Route::any('tool/user/reset_password_page','Api\\Tool\\UserController@ResetPasswordPageAction');        // 获取重设密码页面
     Route::any('tool/user/freeze','Api\\Tool\\UserController@FreezeAction');                                // 冻结用户
     Route::any('tool/procedure/query','Api\\Tool\\ProcedureController@QueryAction');                        // 通过包名查询procedure
-<<<<<<< HEAD
-    
-    Route::any('v1.0/cp/info/order','Api\\CP\\OrderController@GetOrderInfoAction');                          //获取订单信息
-    Route::any('v1.0/cp/user/auth','Api\\CP\\UserController@CheckAuthAction');                               //验证登陆是否有效
-=======
     Route::any('tool/user/auth', 'Api\\Tool\\AuthAccountController@AuthAccountAction');                     // 检查用户认证
     Route::any('tool/user_sub/freeze', 'Api\\Tool\\AuthAccountController@FreezeSubAction');                 // 检查用户账号冻结
     Route::any('tool/coupon/used_num', 'Api\\Tool\\CouponController@GetCouponUsedAction');                  // 获取优惠券发放、使用情况
     
     Route::any('v1.0/cp/info/order','Api\\CP\\OrderController@GetOrderInfoAction');                          // 获取订单信息
     Route::any('v1.0/cp/user/auth','Api\\CP\\UserController@CheckAuthAction');                               // 验证登陆是否有效
->>>>>>> dev
 });

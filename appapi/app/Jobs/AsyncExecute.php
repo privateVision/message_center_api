@@ -44,14 +44,9 @@ class AsyncExecute extends Job
         
         Redis::mutex_lock($user_role_uuid, function() use($user_role_uuid, $ucid, $pid, $user_sub_id, $zone_id, $zone_name, $role_id, $role_name, $role_level) {
             
-<<<<<<< HEAD
-           $user_role = UcuserRole::tableSlice($pid)->from_cache($user_role_uuid);
-           if(!$user_role) {
-=======
             $user_role = UcuserRole::tableSlice($pid)->from_cache($user_role_uuid);
             
             if(!$user_role) {
->>>>>>> dev
                 $user_role = UcuserRole::tableSlice($pid);
                 $user_role->id = $user_role_uuid;
                 $user_role->ucid = $ucid;
@@ -66,7 +61,7 @@ class AsyncExecute extends Job
             $user_role->roleLevel = $role_level;
             $user_role->intRoleLevel = $role_level;
             $user_role->save();
- 
+            
             // 记录日志
             $user_role_log = new UserRoleLog();
             $user_role_log->zone_id = $zone_id;

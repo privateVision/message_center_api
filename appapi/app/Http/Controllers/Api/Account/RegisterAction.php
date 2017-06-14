@@ -10,21 +10,13 @@ use App\Model\LoginLog;
 use App\Model\UcuserInfo;
 use App\Model\UcuserSession;
 use App\Model\Retailers;
-<<<<<<< HEAD
-use App\Jobs\AdtRequest;
-=======
 use App\Model\LoginLogUUID;
 use App\Model\UcuserSubTotal;
->>>>>>> dev
 
 trait RegisterAction {
     
     public function RegisterAction(){
-<<<<<<< HEAD
-        $pid = $this->parameter->tough('_appid');
-=======
         $pid = $this->procedure->pid;
->>>>>>> dev
         $rid = $this->parameter->tough('_rid');
         
         $user = $this->getRegisterUser();
@@ -36,15 +28,6 @@ trait RegisterAction {
                 'imei' => $imei,
                 'gameid' => $pid,
                 'rid'=>$rid,
-<<<<<<< HEAD
-                'ucid' => $user->ucid
-            ]))->onQueue('adtinit'));
-        }
-
-        if(!$user) throw new ApiException(ApiException::OauthNotRegister, '尚未注册第三方账号，请先注册'); // LANG:not_register_3th
-        if($user->is_freeze) {
-            throw new ApiException(ApiException::AccountFreeze, '账号被冻结，无法登录'); // LANG:freeze_not_login
-=======
                 'ucid' => $user->uid
             ]))->onQueue('adtinit'));
         }
@@ -52,7 +35,6 @@ trait RegisterAction {
         //if(!$user) throw new ApiException(ApiException::OauthNotRegister, trans('messages.3th_not_register'));
         if($user->is_freeze) {
             throw new ApiException(ApiException::AccountFreeze, trans('messages.freeze'));
->>>>>>> dev
         }
 
         // 查找最近一次登录的小号
@@ -121,16 +103,10 @@ trait RegisterAction {
         $user->last_login_ip = getClientIp();
         $user->save();
         $user->updateCache();
-<<<<<<< HEAD
-
-        $t = time();
-
-=======
         
         // login_log
         $t = time();
         
->>>>>>> dev
         $login_log = new LoginLog;
         $login_log->ucid = $user->ucid;
         $login_log->pid = $pid;
@@ -145,10 +121,6 @@ trait RegisterAction {
          */
         $login_log->loginDate = intval(($t + 28800) / 86400) - 1;
         $login_log->loginTime = $t % 86400;
-<<<<<<< HEAD
-	    $login_log->loginIP = ip2long(getClientIp());
-        $login_log->asyncSave();
-=======
         $login_log->loginIP = ip2long(getClientIp());
         $login_log->save();
         
@@ -163,7 +135,6 @@ trait RegisterAction {
             $login_log_uuid->device_id= $device_id;
             $login_log_uuid->asyncSave();
         }
->>>>>>> dev
 
         $user_info = UcuserInfo::from_cache($user->ucid);
         
@@ -187,11 +158,7 @@ trait RegisterAction {
             'balance' => $user->balance,
             'real_name' => $user_info && $user_info->real_name ? (string)$user_info->real_name : "",
             'card_no' => $user_info && $user_info->card_no ? (string)$user_info->card_no : "",
-<<<<<<< HEAD
-            'regtype' => intval($user->regtype),
-=======
             'regtype' => $user->regtype,
->>>>>>> dev
             'rid' => $user->rid,
             'rtype' => $retailers ? $retailers->rtype : 0,
         ];

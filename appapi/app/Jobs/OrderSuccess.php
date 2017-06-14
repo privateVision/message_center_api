@@ -124,20 +124,11 @@ class OrderSuccess extends Job
                 if($is_f) {
                     log_debug('OrderSuccess', $order->toArray(), '购买F币');
                     $user->increment('balance', $order->fee); // 原子操作很重要
-<<<<<<< HEAD
-			        $order->status = Orders::Status_NotifySuccess;
-                    $order->save();
-                } else {
-			        $order->status = Orders::Status_Success;
-                    $order->save();
-
-=======
                     $order->status = Orders::Status_NotifySuccess;
                     $order->save();
                 } else {
                     $order->status = Orders::Status_Success;
                     $order->save();
->>>>>>> dev
                     Queue::push(new OrderNotify($this->order_id));
                 }
 

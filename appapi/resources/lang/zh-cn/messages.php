@@ -135,6 +135,10 @@ return [
     "apple_rer_error_type"          => "苹果返回的数据有误，请重新尝试！",
     "apple_buy_success"             => "苹果购买成功！",
     "app_param_type_error"          => "您好，传递的参数的格式错误！",
+    //loginAction
+    "order_info_error"              => "订单信息有误",
+    "param_type_error"              => "参数格式不正确",
+    "product_not_found"             => "您好产品信息未找到" ,
 
 ];
 */

@@ -2,13 +2,7 @@
 namespace App\Http\Controllers\Api\Account;
 
 use App\Exceptions\ApiException;
-<<<<<<< HEAD
-use Illuminate\Http\Request;
-use App\Parameter;
-
-=======
 use App\Jobs\AdtRequest;
->>>>>>> dev
 use App\Redis;
 use App\Model\Ucuser;
 use App\Model\_56GameBBS\Members as Member;
@@ -95,29 +89,12 @@ class UserController extends Controller {
         if($isRegister) {
             throw new  ApiException(ApiException::Remind, trans('messages.already_register'));
         }
-<<<<<<< HEAD
-        
-        $user = new Ucuser;
-        $user->uid = $username;
-        $user->email = $username . "@anfan.com";
-        $user->nickname = '暂无昵称';
-        $user->setPassword($password);
-        $user->regtype = static::Type;
-        $user->regip = getClientIp();
-        $user->rid = $this->parameter->tough('_rid');
-        $user->pid = $this->parameter->tough('_appid');
-        $user->regdate = time();
-        $user->imei = $this->parameter->get('_imei', '');
-        $user->device_id = $this->parameter->get('_device_id', '');
-        $user->save();
-=======
 
         //平台注册账号
         $user = self::baseRegisterUser([
             'uid' => $username,
             'password' => $password
         ]);
->>>>>>> dev
         
         user_log($user, $this->procedure, 'register', '【注册】通过“用户名”注册，用户名(%s), 密码[%s]', $username, $user->password);
 

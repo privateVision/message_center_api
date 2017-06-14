@@ -7,10 +7,6 @@ use App\Model\Ucuser;
 use App\Model\Orders;
 use App\Model\UcuserOauth;
 use App\Model\UcuserInfo;
-<<<<<<< HEAD
-use Illuminate\Support\Facades\Session;
-=======
->>>>>>> dev
 use App\Model\Retailers;
 
 class UserController extends AuthController
@@ -18,11 +14,7 @@ class UserController extends AuthController
     public function InfoAction() {
         $user_info = UcuserInfo::from_cache($this->user->ucid);
 	
-<<<<<<< HEAD
-	$retailers = null;
-=======
 	    $retailers = null;
->>>>>>> dev
         if($this->user->rid) {
             $retailers = Retailers::find($this->user->rid);
         }
@@ -51,10 +43,7 @@ class UserController extends AuthController
             'regtype' => $this->user->regtype,
 		    'rid' => $this->user->rid,
             'rtype' => $retailers ? $retailers->rtype : 0,
-<<<<<<< HEAD
-=======
             'bindlist' => $this->getBindList(),
->>>>>>> dev
         ];
     }
 
@@ -177,7 +166,6 @@ class UserController extends AuthController
 
         $order = Orders::where('ucid', $this->user->ucid);
         $order = $order->where('hide', 0);
-	$order = $order->where('vid', $this->procedure->pid);
         $order = $order->where('status', '!=', Orders::Status_WaitPay);
         $order = $order->orderBy('id', 'desc');
 
@@ -336,11 +324,7 @@ class UserController extends AuthController
 
             if($this->user->mobile == $this->user->uid) {
                 if(!$username) {
-<<<<<<< HEAD
-                    throw new ApiException(ApiException::Remind, "您必需重设您的用户名才能解绑，请联系客服");
-=======
                     throw new ApiException(ApiException::Remind, trans('messages.reset_username_onunbind'));
->>>>>>> dev
                 }
 
                 $_user = Ucuser::where('uid', $username)->orWhere('mobile', $username)->orWhere('email', $username)->first();

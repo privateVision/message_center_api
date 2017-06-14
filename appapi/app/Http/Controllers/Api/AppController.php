@@ -66,13 +66,8 @@ class AppController extends Controller
 
         // 检查更新
         $update = new \stdClass;
-<<<<<<< HEAD
-        $update_apks = $this->procedure->update_apks()->orderBy('dt', 'desc')->first();
-        if($update_apks && version_compare($update_apks->version, $app_version, '>')) {
-=======
         $update_apks = $this->procedure->update_apks()->orderBy('version', 'desc')->first();
         if($update_apks && version_compare($update_apks->version, $appversion, '>')) {
->>>>>>> dev
             // 如果设置了此字段，只在符合该IP的用户会更新
             $is_updated = false;
             if($update_apks->test_ip) {
@@ -104,19 +99,19 @@ class AppController extends Controller
         $oauth_weixin .= (strpos($oauth_weixin, '?') === false ? '?' : '&') . $oauth_params;
         $oauth_weibo = env('oauth_url_weibo');
         $oauth_weibo .= (strpos($oauth_weibo, '?') === false ? '?' : '&') . $oauth_params;
-
+        
         // ios
         $ios_app_config = new \stdClass();
         if($os == 1) {
-            $game = ZyGame::find($this->procedure->gameCenterId);
-            $application_config = IosApplicationConfig::find($pid);
-            if($application_config) {
-                $ios_app_config = [
-                    'bundle_id' => $application_config->bundle_id,
-                    'apple_id' => $application_config->apple_id,
-                    'name' => $game ? $game->name : '',
-                ];
-            }
+        	$game = ZyGame::find($this->procedure->gameCenterId);
+        	$application_config = IosApplicationConfig::find($pid);
+        	if($application_config) {
+        		$ios_app_config = [
+        			'bundle_id' => $application_config->bundle_id,
+        			'apple_id' => $application_config->apple_id,
+        			'name' => $game ? $game->name : '',
+        		];
+        	}
         }
 
         return [
@@ -136,7 +131,7 @@ class AppController extends Controller
 
             'protocol' => [
                 'title' => env('protocol_title'),
-                'url' => httpsurl(env('protocol_url')),
+                'url' => env('protocol_url'),
             ],
 
             'update' => $update,
@@ -144,15 +139,9 @@ class AppController extends Controller
             'service' => [
                 'qq' => $this->procedure_extend->service_qq,
                 'page' => httpsurl($this->procedure_extend->service_page),
-<<<<<<< HEAD
-                'phone' => $this->procedure_extend->service_phone,
-                'share' => httpsurl($this->procedure_extend->service_share),
-                'interval' => 86400000,//max(2000, $this->procedure_extend->heartbeat_interval),
-=======
                 'phone' => httpsurl($this->procedure_extend->service_phone),
                 'share' => httpsurl($this->procedure_extend->service_share),
                 'interval' => max(2000, $this->procedure_extend->heartbeat_interval),
->>>>>>> dev
                 'af_download' => httpsurl(env('af_download')),
             ],
 
@@ -203,11 +192,7 @@ class AppController extends Controller
         $code = $this->parameter->tough('code', 'smscode');
 
         if(!verify_sms($mobile, $code)) {
-<<<<<<< HEAD
-            throw new ApiException(ApiException::Remind, '验证码不正确，或已过期');
-=======
             throw new ApiException(ApiException::Remind, trans('messages.invalid_smscode'));
->>>>>>> dev
         }
 
         return ['result' => true];
@@ -223,15 +208,11 @@ class AppController extends Controller
 
     public function HotupdateAction() {
         $pid = $this->procedure->pid;
-<<<<<<< HEAD
-        $sdk_version  = $this->parameter->tough('sdk_version');
-=======
 
         $sdkversion = $this->parameter->get('sdk_version'); // 4.0
         if(!$sdkversion) {
             $sdkversion = $this->parameter->tough('_version');// 4.1
         }
->>>>>>> dev
 
         if(in_array($pid, [1452, 1533, 1530])) {
             $manifest = [];

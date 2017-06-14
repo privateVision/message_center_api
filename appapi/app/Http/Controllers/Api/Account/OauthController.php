@@ -13,11 +13,7 @@ class OauthController extends Controller {
     use LoginAction, RegisterAction;
 
     const Type = 3;
-<<<<<<< HEAD
-
-=======
     
->>>>>>> dev
     public function getRegisterUser() {
         $openid = $this->parameter->tough('openid');
         $type = $this->parameter->tough('type');
@@ -54,23 +50,6 @@ class OauthController extends Controller {
         // 注册
         $username = username();
         $password = rand(100000, 999999);
-<<<<<<< HEAD
-        
-        $user = new Ucuser;
-        $user->uid = $username;
-        $user->email = $username . "@anfan.com";
-        $user->mobile = '';
-        $user->nickname = $nickname ?: $username;
-        $user->setPassword($password);
-        $user->regtype = static::Type;
-        $user->regip = getClientIp();
-        $user->rid = $this->parameter->tough('_rid');
-        $user->pid = $this->parameter->tough('_appid');
-        $user->regdate = time();
-        $user->imei = $this->parameter->get('_imei', '');
-        $user->device_id = $this->parameter->get('_device_id', '');
-        $user->save();
-=======
 
         //平台注册账号
         $user = self::baseRegisterUser([
@@ -78,7 +57,6 @@ class OauthController extends Controller {
             'nickname' => $nickname ?: $username,
             'password' => $password
         ]);
->>>>>>> dev
 
         $user_oauth = new UcuserOauth;
         $user_oauth->ucid = $user->ucid;

@@ -10,12 +10,6 @@ class Basic
 {
     public function handle(Request $request, Closure $next) {
         $request->route()->getController()->before($request);
-<<<<<<< HEAD
-        $response = $next($request);
-        $request->route()->getController()->after($request, $response);
-
-        return $request->route()->getController()->onResponse($request, $response);  
-=======
         
         $response = $next($request);
         if(!$response->exception) {
@@ -25,6 +19,5 @@ class Basic
         $request->route()->getController()->after($request, $response);
         
         return $response;
->>>>>>> dev
     }
 }

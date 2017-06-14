@@ -10,10 +10,6 @@ namespace App\Model;
 
 class IpRefused extends Model
 {
-<<<<<<< HEAD
-    protected $table = 'anfan_iprefused';
-=======
     protected $table = 'iprefused';
->>>>>>> dev
     protected $primaryKey = 'id';
 }

@@ -25,39 +25,23 @@ class SendSMS extends Job
         if(!env('APP_DEBUG')) {
             // 规则4：同一个手机号相同内容，24小时内最多能获取到5条
             if (Redis::GET(sprintf('sms_%s_24hc_%s', $mobile, md5_36($content))) >= 5) {
-<<<<<<< HEAD
-                throw new Exception('短信发送过于频繁，请明天再试');
-=======
                 throw new Exception(trans('messages.sms_text_same_limit'));
->>>>>>> dev
             }
 
             if($is_sendcode) {
                 // 规则1：同一个手机号同一个验证码模板，每30秒只能获取1条
                 if (Redis::EXISTS(sprintf('sms_%s_60st_%s', $mobile, $template_id))) {
-<<<<<<< HEAD
-                    throw new Exception('短信发送过于频繁');
-=======
                     throw new Exception(trans('messages.sms_60s_limit'));
->>>>>>> dev
                 }
 
                 // 规则2：同一个手机号验证码类内容，每小时最多能获取3条
                 if (Redis::GET(sprintf('sms_%s_1ht', $mobile)) >= 3) {
-<<<<<<< HEAD
-                    throw new Exception('短信发送次数超过限制，请稍候再试');
-=======
                     throw new Exception(trans('messages.sms_1h_limit'));
->>>>>>> dev
                 }
 
                 //规则3：同一个手机号验证码类内容，24小时内最多能获取到5条
                 if (Redis::GET(sprintf('sms_%s_24ht', $mobile)) >= 5) {
-<<<<<<< HEAD
-                    throw new Exception('短信发送次数超过限制，请明天再试');
-=======
                     throw new Exception(trans('messages.sms_24h_limit'));
->>>>>>> dev
                 }
             }
         }

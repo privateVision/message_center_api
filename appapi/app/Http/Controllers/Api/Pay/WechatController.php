@@ -121,21 +121,6 @@ class WechatController extends Controller {
         $responseData['package'] = "Sign=WXPay";
         $responseData['sign'] = strtoupper(md5("appid={$config['appid']}&noncestr={$responseData['nonce_str']}&package={$responseData['package']}&partnerid={$config['mch_id']}&prepayid={$responseData['prepay_id']}&timestamp={$responseData['timeStamp']}&key={$config['key']}"));
 
-<<<<<<< HEAD
-        if($restype  == 'protocol') {
-            return ['protocol' => sprintf('weixin://app/%s/pay/?%s', $config['appid'], http_build_query([
-                'nonceStr' => $responseData['nonce_str'],
-                'package' => $responseData['package'],
-                'partnerId' => $config['mch_id'],
-                'prepayId' => $responseData['prepay_id'],
-                'timeStamp' => $responseData['timeStamp'],
-                'sign' => $responseData['sign'],
-            ])), 'restype' => $restype];
-        } else {
-            return $responseData;
-        }
-=======
         return $responseData;
->>>>>>> dev
     }
 }

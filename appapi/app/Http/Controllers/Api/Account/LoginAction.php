@@ -11,12 +11,8 @@ use App\Model\UcuserSession;
 use App\Model\LoginLog;
 use App\Model\UcuserInfo;
 use App\Model\Retailers;
-<<<<<<< HEAD
-use App\Jobs\AdtRequest;
-=======
 use App\Model\LoginLogUUID;
 use App\Model\UcuserSubTotal;
->>>>>>> dev
 
 trait LoginAction {
 
@@ -33,20 +29,12 @@ trait LoginAction {
                 'imei' => $imei,
                 'gameid' => $pid,
                 'rid'=>$rid,
-<<<<<<< HEAD
-                'ucid' => $user->ucid
-=======
                 'ucid' => $user->uid
->>>>>>> dev
             ]))->onQueue('adtinit'));
         }
 
         if($user && $user->is_freeze) {
-<<<<<<< HEAD
-            throw new ApiException(ApiException::AccountFreeze, '账号已被冻结，无法登录', ['ucid' => $user->ucid]);// LANG:freeze_not_login
-=======
             throw new ApiException(ApiException::AccountFreeze, trans('messages.freeze_onlogin'), ['ucid' => $user->ucid]);
->>>>>>> dev
         }
 
         $user_sub_id = $this->getDefaultUserSubId($user);
@@ -55,19 +43,11 @@ trait LoginAction {
         if($user_sub_id) {
             $user_sub = UcuserSub::tableSlice($user->ucid)->from_cache($user_sub_id);
             if(!$user_sub || $user_sub->ucid != $user->ucid || $user_sub->pid != $pid) {
-<<<<<<< HEAD
-                throw new ApiException(ApiException::Remind, "角色不存在，无法登录"); // LANG:role_not_exists
-            }
-
-            if($user_sub->is_freeze) {
-                throw new ApiException(ApiException::UserSubFreeze, '角色已被冻结，无法登录'); // LANG:role_freeze_not_login
-=======
                 throw new ApiException(ApiException::Remind, trans('messages.role_not_exists'));
             }
 
             if($user_sub->is_freeze) {
                 throw new ApiException(ApiException::UserSubFreeze, trans('messages.role_freeze_onlogin'));
->>>>>>> dev
             }
         }
 
@@ -168,10 +148,6 @@ trait LoginAction {
          */
         $login_log->loginDate = intval(($t + 28800) / 86400) - 1;
         $login_log->loginTime = $t % 86400;
-<<<<<<< HEAD
-	    $login_log->loginIP = ip2long(getClientIp());
-        $login_log->asyncSave();
-=======
         $login_log->loginIP = ip2long(getClientIp());
         $login_log->save();
         
@@ -186,7 +162,6 @@ trait LoginAction {
             $login_log_uuid->device_id= $device_id;
             $login_log_uuid->asyncSave();
         }
->>>>>>> dev
 
         $user_info = UcuserInfo::from_cache($user->ucid);
         
@@ -210,11 +185,7 @@ trait LoginAction {
             'balance' => $user->balance,
             'real_name' => $user_info && $user_info->real_name ? (string)$user_info->real_name : "",
             'card_no' => $user_info && $user_info->card_no ? (string)$user_info->card_no : "",
-<<<<<<< HEAD
-            'regtype' => intval($user->regtype),
-=======
             'regtype' => $user->regtype,
->>>>>>> dev
             'rid' => $user->rid,
             'rtype' => $retailers ? $retailers->rtype : 0,
         ];

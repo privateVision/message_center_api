@@ -1,12 +1,4 @@
 .env
-<<<<<<< HEAD
-listen-queue.sh
-.env.test
-.env.sdkv4test
-switchenv.sh
-_ab/
-storage
-=======
 .env.local.sdkapi.com
 .env.sdkapi.novasmobi.com
 .env.sdkv4.qcwan.com
@@ -28,4 +20,3 @@ package.json
 webpack.mix.json
 yarn.lock
 _ab/
->>>>>>> dev

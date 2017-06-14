@@ -149,19 +149,6 @@ function parse_card_id($card_id) {
     return ['birthday' => $birthday, 'gender' => $gender, 'province' => $province];
 }
 
-/**
- * 如果客户端以HTTPS请求接口，则返回的一些涉及到URL的参数也改为HTTPS
- * @param $url
- * @return string
- */
-function httpsurl($url) {
-    if((@$_SERVER['HTTP_X_FORWARDED_PROTO'] == 'https' || app('request')->getScheme() == 'https') && substr($url, 0, 5) == 'http:') {
-        return 'https:' . substr($url, 5);
-    }
-
-    return $url;
-}
-
 function upload_to_cdn($filename, $filepath, $is_delete = true) {
     /*
     200 操作执行成功。
@@ -364,11 +351,7 @@ function send_sms($mobile, $pid, $template_id, $repalce, $code = '') {
     $code = trim($code);
 
     if(!isset($smsconfig['template'][$template_id])) {
-<<<<<<< HEAD
-        throw new \App\Exceptions\Exception("短信模板不存在");
-=======
         throw new \App\Exceptions\Exception(trans('messages.sms_template_not_exists'));
->>>>>>> dev
     }
 
     if(is_array($repalce) && count($repalce)) {
@@ -610,8 +593,6 @@ function getClientIp() {
     if(@$_SERVER['REMOTE_ADDR']) return $_SERVER['REMOTE_ADDR'];
     return '';
 }
-<<<<<<< HEAD
-=======
 
 /**
  * 计算汇率
@@ -653,4 +634,3 @@ if (!function_exists('a'))
         if ($exit) exit();
     }
 }
->>>>>>> dev

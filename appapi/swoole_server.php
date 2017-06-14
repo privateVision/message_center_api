@@ -1,11 +1,6 @@
 <?php
 use Illuminate\Http\Response;
 
-<<<<<<< HEAD
-define('SWOOLE', true);
-
-=======
->>>>>>> dev
 require __DIR__ . '/bootstrap/autoload.php';
 
 $app = require_once __DIR__ . '/bootstrap/app.php';

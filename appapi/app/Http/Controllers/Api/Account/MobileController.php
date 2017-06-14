@@ -34,28 +34,11 @@ class MobileController extends Controller {
             $password = rand(100000, 999999);
         }
 
-<<<<<<< HEAD
-        $user = new Ucuser;
-        $user->uid = $username;
-        $user->email = $username . "@anfan.com";
-        $user->mobile = $mobile;
-        $user->nickname = '暂无昵称';
-        $user->setPassword($password);
-        $user->regtype = static::Type;
-        $user->regip = getClientIp();
-        $user->rid = $this->parameter->tough('_rid');
-        $user->pid = $this->parameter->tough('_appid');
-        $user->regdate = time();
-        $user->imei = $this->parameter->get('_imei', '');
-        $user->device_id = $this->parameter->get('_device_id', '');
-        $user->save();
-=======
         $user = self::baseRegisterUser([
             'uid' => $username,
             'mobile' => $mobile,
             'password' => $password
         ]);
->>>>>>> dev
 
         user_log($user, $this->procedure, 'register', '【手机号码登录】检测到尚未注册，手机号码{%s}，密码[%s]', $mobile, $user->password);
 
