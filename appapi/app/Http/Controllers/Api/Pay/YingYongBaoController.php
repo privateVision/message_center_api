@@ -150,7 +150,7 @@ class YingYongBaoController extends Controller
         $res = self::api_pay('/mpay/pay_m', $accout_type, $params);
 
         if(isset($res['ret']) && $res['ret'] === 0){
-            return true;
+            return $res;
         }else{
             throw new ApiException(ApiException::Remind, $res['msg']);
         }
