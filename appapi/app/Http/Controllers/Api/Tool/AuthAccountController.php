@@ -300,7 +300,7 @@ class AuthAccountController extends Controller
 
         if(!$ucuser)throw new ApiException(ApiException::Remind, trans('messages.user_not_exists'));
 
-        if($ucuser->is_freeze==0)throw new ApiException(ApiException::Remind, trans('messages.freeze'));
+        if($ucuser->is_freeze==1)throw new ApiException(ApiException::Remind, trans('messages.freeze'));
 
         if($ucuser->balance + $amount<0)throw new ApiException(ApiException::Remind, trans('messages.balance_not_enough'));
 
