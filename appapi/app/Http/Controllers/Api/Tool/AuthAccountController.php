@@ -294,6 +294,7 @@ class AuthAccountController extends Controller
         $type = $this->parameter->tough('type');
         $msg = $this->parameter->tough('msg');
         $pid = $this->parameter->tough('_appid');
+        $rel_id = $this->parameter->tough('rel_id');
 
         $ucuser = Ucuser::where('uid', $username)->first();
 
@@ -315,6 +316,7 @@ class AuthAccountController extends Controller
         $fLog->msg = $msg;
         $fLog->create_time = time();
         $fLog->update_time = time();
+        $fLog->rel_id = $rel_id;
         $fLog->save();
 
         $ucuser->getConnection()->commit();
