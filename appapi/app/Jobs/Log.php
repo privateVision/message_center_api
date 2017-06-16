@@ -59,7 +59,7 @@ class Log extends Job
 
             // 淘宝API
             $url = 'http://ip.taobao.com/service/getIpInfo.php?ip=' . $ip;
-            $content = file_get_contents($url);
+            $content = @file_get_contents($url, false, stream_context_create(['http' => ['timeout' => 1]]));
             log_debug('ip2location', ['resdata' => $content], $url);
 
             if($content) {
@@ -86,7 +86,7 @@ class Log extends Job
             if(!$data) {
 
                 $url = 'http://int.dpool.sina.com.cn/iplookup/iplookup.php?format=json&ip=' . $ip;
-                $content = file_get_contents($url);
+                $content = @file_get_contents($url, false, stream_context_create(['http' => ['timeout' => 1]]));
                 log_debug('ip2location', ['resdata' => $content], $url);
 
                 if($content) {
