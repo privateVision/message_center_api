@@ -20,3 +20,4 @@ package.json
 webpack.mix.json
 yarn.lock
 _ab/
+public/qrcode/*

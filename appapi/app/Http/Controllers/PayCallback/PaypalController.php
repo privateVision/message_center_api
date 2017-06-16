@@ -57,38 +57,46 @@ class PaypalController extends Controller
 
         $url = env('APP_DEBUG', true) ? 'https://ipnpb.sandbox.paypal.com/cgi-bin/webscr' : 'https://ipnpb.paypal.com/cgi-bin/webscr';
 
-        $ch = curl_init($url);
-        curl_setopt($ch, CURLOPT_HTTP_VERSION, CURL_HTTP_VERSION_1_1);
-        curl_setopt($ch, CURLOPT_POST, 1);
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-        curl_setopt($ch, CURLOPT_POSTFIELDS, $req);
-        curl_setopt($ch, CURLOPT_SSLVERSION, 6);
-        //curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, 1);
-        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, FALSE);
-        //curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 2);
-        curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, FALSE);
-        // This is often required if the server is missing a global cert bundle, or is using an outdated one.
-        //if ($this->use_local_certs) {
-        //    curl_setopt($ch, CURLOPT_CAINFO, __DIR__ . "/cert/cacert.pem");
-        //}
-        curl_setopt($ch, CURLOPT_FORBID_REUSE, 1);
-        curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 30);
-        curl_setopt($ch, CURLOPT_HTTPHEADER, array('Connection: Close'));
-        $res = curl_exec($ch);
+//        $ch = curl_init($url);
+//        curl_setopt($ch, CURLOPT_HTTP_VERSION, CURL_HTTP_VERSION_1_1);
+//        curl_setopt($ch, CURLOPT_POST, 1);
+//        curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+//        curl_setopt($ch, CURLOPT_POSTFIELDS, $req);
+//        curl_setopt($ch, CURLOPT_SSLVERSION, 6);
+//        //curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, 1);
+//        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, FALSE);
+//        //curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 2);
+//        curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, FALSE);
+//        // This is often required if the server is missing a global cert bundle, or is using an outdated one.
+//        //if ($this->use_local_certs) {
+//        //    curl_setopt($ch, CURLOPT_CAINFO, __DIR__ . "/cert/cacert.pem");
+//        //}
+//        curl_setopt($ch, CURLOPT_FORBID_REUSE, 1);
+//        curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 30);
+//        curl_setopt($ch, CURLOPT_HTTPHEADER, array('Connection: Close'));
+//        $res = curl_exec($ch);
+//
+//        log_info('paypal_verify', ['reqdata' => $req, 'resdata' => $res], $url);
+//
+//        if (!$res) {
+//            curl_close($ch);
+//            return false;
+//        }
+//
+//        $info = curl_getinfo($ch);
+//        curl_close($ch);
+//        $http_code = $info['http_code'];
+//        if ($http_code != 200) {
+//            return false;
+//        }
 
-        log_info('paypal_verify', ['reqdata' => $req, 'resdata' => $res], $url);
-
-        if (!$res) {
-            curl_close($ch);
-            return false;
-        }
-
-        $info = curl_getinfo($ch);
-        curl_close($ch);
-        $http_code = $info['http_code'];
-        if ($http_code != 200) {
-            return false;
-        }
+        $res = http_curl($url, $req, true, array(
+            CURLOPT_HTTP_VERSION=>CURL_HTTP_VERSION_1_1,
+            CURLOPT_SSLVERSION=>6,
+            CURLOPT_FORBID_REUSE=>1,
+            CURLOPT_HTTPHEADER=>array('Connection: Close'),
+            CURLOPT_CONNECTTIMEOUT=>30
+        ), 'str');
 
         if ($res == 'VERIFIED') {
             return true;

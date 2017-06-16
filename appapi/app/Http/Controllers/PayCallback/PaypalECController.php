@@ -42,21 +42,28 @@ class PaypalECController extends Controller
                 'Authorization: Bearer ' . $access_token,
             ];
 
-            $ch = curl_init();
-            curl_setopt($ch, CURLOPT_URL, $order_extend->extra_params['payment']['links']['execute']['href']);
-            curl_setopt($ch, CURLOPT_POST, true);
-            curl_setopt($ch, CURLOPT_POSTFIELDS, "{\"payer_id\": \"{$data['PayerID']}\"}");
-            curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
-            curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-            curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, FALSE);
-            curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, FALSE);
-            curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 60);
-            curl_setopt($ch, CURLOPT_TIMEOUT, 60);
-            curl_setopt($ch, CURLOPT_VERBOSE, true);
-            $response = curl_exec($ch);
-            curl_close($ch);
+//            $ch = curl_init();
+//            curl_setopt($ch, CURLOPT_URL, $order_extend->extra_params['payment']['links']['execute']['href']);
+//            curl_setopt($ch, CURLOPT_POST, true);
+//            curl_setopt($ch, CURLOPT_POSTFIELDS, "{\"payer_id\": \"{$data['PayerID']}\"}");
+//            curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+//            curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+//            curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, FALSE);
+//            curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, FALSE);
+//            curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 60);
+//            curl_setopt($ch, CURLOPT_TIMEOUT, 60);
+//            curl_setopt($ch, CURLOPT_VERBOSE, true);
+//            $response = curl_exec($ch);
+//            curl_close($ch);
+//
+//            log_info('paypal-ec-execute', ['reqdata' => 'grant_type=client_credentials', 'resdata' => $response], $order_extend->extra_params['payment']['links']['execute']['href']);
 
-            log_info('paypal-ec-execute', ['reqdata' => 'grant_type=client_credentials', 'resdata' => $response], $order_extend->extra_params['payment']['links']['execute']['href']);
+            $url = $order_extend->extra_params['payment']['links']['execute']['href'];
+            $params = "{\"payer_id\": \"{$data['PayerID']}\"}";
+            $response = http_curl($url, $params, true, array(
+                CURLOPT_HTTPHEADER=>$headers,
+                CURLOPT_CONNECTTIMEOUT=>60
+            ), 'str');
 
             if(!$response) {
                 return false;
