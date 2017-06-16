@@ -1,7 +1,6 @@
 <?php
 namespace App\Jobs;
 
-use Illuminate\Support\Facades\Redis;
 use App\Model\Orders;
 use App\Model\Procedures;
 
@@ -16,7 +15,7 @@ class OrderNotify extends Job
 
     public function handle() {
         $order = Orders::from_cache($this->order_id);
-        if(!$order || $order->status != Orders::Status_NotifySuccess) return ;
+        if(!$order || $order->status != Orders::Status_Success) return ; // 不是支付成功不允许发货
 
         if(!preg_match('/^https*:\/\/.*$/', $order->notify_url)) return ;
 

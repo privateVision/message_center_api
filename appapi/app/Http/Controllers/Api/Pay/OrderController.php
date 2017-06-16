@@ -11,6 +11,7 @@ use App\Model\ZyCouponLog;
 use App\Model\ZyCoupon;
 use App\Model\ProceduresProducts;
 use App\Model\ForceCloseIaps;
+use Illuminate\Http\Request;
 
 class OrderController extends Controller {
 
@@ -81,23 +82,24 @@ class OrderController extends Controller {
         return $this->getPayConfig();
     }
 
-    public function NewAction() {
+    /**
+     * $product_type是怎么来的？
+     * 在4.0的接口中有一个接口：api/pay/order/f/new，在4.1版本被废弃了，但是必需得让4.0的客户端还能正常调用该接口
+     * 于是api/pay/order/f/new指向了现在这个action，路由为api/pay/order/{product_type}/new
+     * 因此当product_type = 'f'时表示这是一个充值F币的订单
+     */
+    public function NewAction(Request $request, $product_type = null) {
         $zone_id = $this->parameter->get('zone_id', '');
         $zone_name = $this->parameter->get('zone_name', '');
         $role_id = $this->parameter->get('role_id', '');
         $role_level = $this->parameter->get('role_level', '');
         $role_name = $this->parameter->get('role_name', '');
-        $product_type = $this->parameter->get('product_type', 0); // 0 游戏道具，1 F币，2 游币（H5专用）
 
-        // XXX 旧版本如果在4.0以下，则通过此方式判断是否购买F币
-        do {
-            if($product_type == 1) break;
-            if(version_compare('4.1', $this->parameter->get('_version', '4.0'), '>=')) break;
-
-            if(!$this->parameter->get('vorderid') && !$this->parameter->get('notify_url')) {
-                $product_type = 1;
-            }
-        } while(false);
+        if($product_type !== 'f') {
+            $product_type = $this->parameter->get('product_type', 0); // 0 游戏道具，1 F币，2 游币（H5专用）
+        } else {
+            $product_type = 1;
+        }
 
         // 非购买F币需CP订单号
         $vorderid = '';

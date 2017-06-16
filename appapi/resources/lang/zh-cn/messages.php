@@ -68,8 +68,8 @@ return [
     "app_param_type_error"                  => "您好，传递的参数的格式错误！",
     "request_time_out"                      => "您好，请求超时，请重试！",
     "apple_rer_error_type"                  => "苹果返回的数据有误，请重新尝试！",
-    'pay_success'                           => '购买“:name”成功',
-    'pay_fail'                              => '购买“:name”失败，:message',
+    'paycallback_success'                   => '购买“:name”成功',
+    'paycallback_fail'                      => '购买“:name”失败',
     'pay_cancel'                            => '已取消', // 购买“:name”失败，已取消
     'not_set_notify_url'                    => '未设置订单成功通知地址',
     'not_payconfig'                         => '未获取到支付配置', // error

@@ -20,8 +20,10 @@ class MycardController extends Controller {
         $data['ServerId'] = getClientIp();
         $data['CustomerId'] = $order->ucid;
         $data['ProductName'] = $order->subject ?: "props";
-        $data['Amount'] = number_format($real_fee / 100, 2);
+        $data['Amount'] = number_format($real_fee / 100, 2, '.', '');
         $data['Currency'] = 'TWD';
+        $data['PaymentType'] = "";
+        $data['ItemCode'] = "";
         $data['SandBoxMode'] = env('APP_DEBUG') ? 'true' : 'false';
 
         $data['hash'] = static::mycard_hash($data, $config['FacServerKey']);

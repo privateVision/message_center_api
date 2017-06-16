@@ -68,6 +68,7 @@ class MycardController extends Controller
     }
 
     protected function onComplete($data, $order, $order_extend, $isSuccess, $message = null) {
+        $message .= "\n" . urldecode($data['ReturnMsg']);
         return view('pay_callback/callback', ['order' => $order, 'order_extend' => $order_extend, 'is_success' => $isSuccess, 'message' => $message]);
     }
 
