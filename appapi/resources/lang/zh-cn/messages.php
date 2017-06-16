@@ -101,6 +101,8 @@ return [
     'service_limit_1'                       => '一个客服同时只能审核一个账号',
     'error_third_system'                    => '第三方系统错误', // error
     'error_third_params'                    => '第三方参数错误', // error
+    'error_format_json'                     => '第三方返回json格式错误', // error
+    'error_format_xml'                      => '第三方返回xml格式错误', // error
     'currency_not_found'                    => '目标汇率不存在：:currency',
     'abnormal_onlogin'                      => '您的帐号存在异常无法登陆，请联系客服解锁或者通过手机号码修改密码后重试',
     'balance_not_enough'                    => 'f币余额不足',

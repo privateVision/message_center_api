@@ -51,7 +51,7 @@ class VivoController extends Controller
 
         $res = http_curl($url, $params);
 
-        if($res['cd'] == 1 && isset($res['respCode'])){
+        if(isset($res['respCode'])){
             if($res['respCode'] == 200){
                 return $res;
             } else {

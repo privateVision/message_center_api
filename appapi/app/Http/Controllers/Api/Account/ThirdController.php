@@ -49,7 +49,7 @@ class ThirdController extends Controller {
 
         //发送请求
         $res = http_curl($requestUrl, $requestBody);
-        if($res['cd'] == 1 && isset($res['state'])){
+        if(isset($res['state'])){
             if($res['state']['code'] == 1){
                 return $res['data'];
             } else {
@@ -90,11 +90,7 @@ class ThirdController extends Controller {
 
         $url = 'http://passport.lenovo.com/interserver/authen/1.2/getaccountid';
         $res = http_curl($url, $params, false);
-        if($res['cd'] == 1) {
-            return json_decode(json_encode(simplexml_load_string($res['data'])),TRUE);
-        } else {
-            throw new ApiException(ApiException::Remind, $res['rspmsg']);
-        }
+        return $res;
     }
 
     /**
@@ -118,11 +114,11 @@ class ThirdController extends Controller {
 
         $url = 'http://querysdkapi.91.com/CpLoginStateQuery.ashx';
         $res = http_curl($url, $params, true);
-        if($res['cd'] == 1 && $res['Sign']==self::baiduVerify([$appid, $res['ResultCode'], urldecode($res['Content']), $appkey])) {
+        if(isset($res['Sign']) && $res['Sign']==self::baiduVerify([$appid, $res['ResultCode'], urldecode($res['Content']), $appkey])) {
             $result = base64_decode(urldecode($res['Content']));
             return json_decode($result,true);
         } else {
-            throw new ApiException(ApiException::Remind, $res['rspmsg']);
+            throw new ApiException(ApiException::Remind, trans('messages.http_request_error'));
         }
     }
 
@@ -145,14 +141,14 @@ class ThirdController extends Controller {
 
         $url = 'https://usrsys.vivo.com.cn/sdk/user/auth.do';
         $res = http_curl($url, array('authtoken'=>$authtoken), true);
-        if($res['cd'] == 1) {
+        if(isset($res['retcode'])) {
             if($res['retcode'] == 0){
                 return $res['data'];
             } else {
                 throw new ApiException(ApiException::Remind, trans('messages.error_third_system').$res['retcode']);
             }
         } else {
-            throw new ApiException(ApiException::Remind, $res['rspmsg']);
+            throw new ApiException(ApiException::Remind, trans('messages.http_request_error'));
         }
     }
 

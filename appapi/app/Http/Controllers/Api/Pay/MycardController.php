@@ -29,7 +29,7 @@ class MycardController extends Controller {
         $data['hash'] = static::mycard_hash($data, $config['FacServerKey']);
 
         //获取authtoken
-        $result = http_request($config['AuthGlobal'], $data, true);
+        $result = http_curl($config['AuthGlobal'], $data, true, array(), 'str');
 
         log_debug('mycard-authcode-request', ['resdata' => $result, 'reqdata' => $data], $config['AuthGlobal']);
 

@@ -449,40 +449,6 @@ function log_error ($keyword, $content, $desc = '') {
     ]));
 }
 
-function http_request($url, $data, $is_post = true) {
-    $data = http_build_query($data);
-
-    if(!$is_post) {
-        $url = strpos($url, '?') === false ? ($url .'?'. $data) : ($url .'&'. $data);
-    }
-
-    $ch = curl_init();
-    curl_setopt($ch, CURLOPT_URL, $url);
-    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-
-    // is https
-    if (stripos($url,"https://") !== FALSE) {
-        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, FALSE);
-        curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, FALSE);
-    }
-
-    // is post
-    if($is_post) {
-        curl_setopt($ch, CURLOPT_POST, true);
-        curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
-    }
-
-    curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 60); //超时限制
-    curl_setopt($ch, CURLOPT_TIMEOUT, 60);
-    $res = curl_exec($ch);
-    curl_close($ch);
-
-    //打印日志
-    log_info('func-http-request', ['reqdata' => $data, 'resdata' => $res], $url);
-
-    return $res;
-}
-
 /**
  * @param string $url
  * @param array $param
@@ -519,7 +485,7 @@ function http_curl($url, $param = array(), $is_post = true, $opts = array(), $fo
 
     //设置用户标准参数
     $keys = array();
-    if(!emppty($opts)) {
+    if(!empty($opts)) {
         $keys = array_keys($opts);
         //转换cookie参数
         if(isset($opts[CURLOPT_COOKIE])){
@@ -564,11 +530,19 @@ function http_curl($url, $param = array(), $is_post = true, $opts = array(), $fo
 
     //json
     if($format == 'json') {
-        return json_decode($Resp, true);
+        $result_array = json_decode($Resp, true);
+        if (is_null($result_array) || !is_array($result_array)) {
+            throw new \App\Exceptions\Exception(trans('messages.error_format_json'));
+        }
+        return $result_array;
     }
     //xml
     else if($format == 'xml') {
-        return json_decode(json_encode(simplexml_load_string($Resp)),TRUE);
+        $result_array = json_decode(json_encode(simplexml_load_string($Resp)),TRUE);
+        if (is_null($result_array) || !is_array($result_array)) {
+            throw new \App\Exceptions\Exception(trans('messages.error_format_xml'));
+        }
+        return $result_array;
     }
     //str
     else {

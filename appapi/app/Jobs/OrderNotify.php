@@ -46,7 +46,7 @@ class OrderNotify extends Job
         
         //$data['sign'] =  md5(http_build_query($data) ."&sign_key={$appkey}");
 
-        $res = http_request($order->notify_url, $data);
+        $res = http_curl($order->notify_url, $data, false, array(), 'str');
 
         log_info('OrderNotify', ['url' => $order->notify_url, 'reqdata' => $data, 'resdata' => $res, 'signstr' => $str]);
 

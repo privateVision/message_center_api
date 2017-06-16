@@ -62,11 +62,13 @@ class AmigoController extends Controller {
 
         $url = self::PayHttp . $params['url'];
         $herder = array('Authorization: '.$Authorization);
-        $res = http_curl($url, $token, true, 'cd', $herder);
-        if($res['cd'] == 1 && isset($res['r'])) {
+        $res = http_curl($url, $token, true, array(
+            CURLOPT_HTTPHEADER=>$herder
+        ));
+        if(isset($res['r'])) {
             return $res;
         } else {
-            throw new ApiException(ApiException::Remind, $res['rspmsg']);
+            throw new ApiException(ApiException::Remind, trans('messages.http_request_error'));
         }
     }
 
