@@ -89,8 +89,8 @@ class ThirdController extends Controller {
         );
 
         $url = 'http://passport.lenovo.com/interserver/authen/1.2/getaccountid';
-        $res = http_curl($url, $params, false);
-        return $res;
+        $res = http_curl($url, $params, false, array(), 'xml');
+        return (array)$res;
     }
 
     /**
