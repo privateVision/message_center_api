@@ -471,12 +471,20 @@ function http_curl($url, $param = array(), $is_post = true, $opts = array(), $fo
     }
 
     $oCurl = curl_init();
+
     if (stripos($url, "https://") !== FALSE) {
-        curl_setopt($oCurl, CURLOPT_SSL_VERIFYPEER, FALSE);
-        curl_setopt($oCurl, CURLOPT_SSL_VERIFYHOST, FALSE);
+        if(!isset($opts[CURLOPT_SSL_VERIFYPEER])) {
+            curl_setopt($oCurl, CURLOPT_SSL_VERIFYPEER, FALSE);
+        }
+
+        if(!isset($opts[CURLOPT_SSL_VERIFYHOST])) {
+            curl_setopt($oCurl, CURLOPT_SSL_VERIFYHOST, FALSE);
+        }
     }
+
     curl_setopt($oCurl, CURLOPT_URL, $url);
     curl_setopt($oCurl, CURLOPT_RETURNTRANSFER, 1);
+
     //post设置
     if ($is_post) {
         curl_setopt($oCurl, CURLOPT_POST, true);
@@ -526,7 +534,7 @@ function http_curl($url, $param = array(), $is_post = true, $opts = array(), $fo
     curl_close($oCurl);//关闭curl
 
     //打印日志
-    log_info('func-http-curl', ['reqdata' => $param, 'resdata' => $Resp], $url);
+    log_info('curl', ['reqdata' => $param, 'resdata' => $Resp], $url);
 
     //json
     if($format == 'json') {

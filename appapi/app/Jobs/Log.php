@@ -40,13 +40,13 @@ class Log extends Job
         );
 
         error_log($text, 3, $logfile);
-
+        
         // 更新IP库
         $ip = $this->content['ip'];
+        
+        if(!$ip || $ip == '0.0.0.0' || $ip == '127.0.0.1') return;
 
         \App\Redis::mutex_lock('ip2location_' . $ip, function() use($ip) {
-            if(!$ip || $ip == '0.0.0.1' || $ip == '127.0.0.1') return;
-
             $ip2location = IP2Location::find($ip);
             if(!$ip2location) {
                 $ip2location = new IP2Location;
@@ -59,7 +59,7 @@ class Log extends Job
 
             // 淘宝API
             $url = 'http://ip.taobao.com/service/getIpInfo.php?ip=' . $ip;
-            $content = file_get_contents($url);
+            $content = @file_get_contents($url, false, stream_context_create(['http' => ['timeout' => 1]]));
             log_debug('ip2location', ['resdata' => $content], $url);
 
             if($content) {
@@ -74,19 +74,18 @@ class Log extends Job
                     $data['region'] = $content['region'];
                     $data['region_id'] = $content['region_id'];
                     $data['city'] = $content['city'];
-                    $data['city_id'] = $content['city_id'];
+                    $data['city_id'] = $content['city_id'] > 0 ? $content['city_id'] : NULL;
                     $data['county'] = $content['county'];
-                    $data['county_id'] = $content['county_id'];
+                    $data['county_id'] = $content['county_id'] > 0 ? $content['county_id'] : NULL;
                     $data['isp'] = $content['isp'];
-                    $data['isp_id'] = $content['isp_id'];
+                    $data['isp_id'] = $content['isp_id'] > 0 ? $content['isp_id'] : NULL;;
                 }
             }
 
             // 新浪API
             if(!$data) {
-
                 $url = 'http://int.dpool.sina.com.cn/iplookup/iplookup.php?format=json&ip=' . $ip;
-                $content = file_get_contents($url);
+                $content = @file_get_contents($url, false, stream_context_create(['http' => ['timeout' => 1]]));
                 log_debug('ip2location', ['resdata' => $content], $url);
 
                 if($content) {
@@ -95,16 +94,20 @@ class Log extends Job
                         $data['country'] = $content['country'];
                         $data['country_id'] = $content['country'] == '中国' ? 'CN' : '';
 
-                        $area = Area::where('name', 'like', "%{$content['province']}%")->first();
-                        if($area) {
-                            $data['region'] = $area->name;
-                            $data['region_id'] = $area->id;
+                        if($content['province']) {
+                            $area = Area::where('name', 'like', "%{$content['province']}%")->first();
+                            if($area) {
+                                $data['region'] = $area->name;
+                                $data['region_id'] = $area->id;
+                            }
                         }
 
-                        $area = Area::where('name', 'like', "%{$content['city']}%")->first();
-                        if($area) {
-                            $data['city'] = $area->name;
-                            $data['city_id'] = $area->id;
+                        if($content['city']) {
+                            $area = Area::where('name', 'like', "%{$content['city']}%")->first();
+                            if($area) {
+                                $data['city'] = $area->name;
+                                $data['city_id'] = $area->id;
+                            }
                         }
 
                         $data['isp'] = $content['isp'];
@@ -113,12 +116,19 @@ class Log extends Job
             }
 
             if($data) {
-                foreach($data as $k => $v) {
-                    $ip2location->$k = $v;
-                }
-
+                $ip2location->country = @$data['country'];
+                $ip2location->country_id = @$data['country_id'];
+                $ip2location->area = @$data['area'];
+                $ip2location->area_id = @$data['area_id'];
+                $ip2location->region = @$data['region'];
+                $ip2location->region_id = @$data['region_id'];
+                $ip2location->city = @$data['city'];
+                $ip2location->city_id = @$data['city_id'];
+                $ip2location->county = @$data['county'];
+                $ip2location->county_id = @$data['county_id'];
+                $ip2location->isp = @$data['isp'];
+                $ip2location->isp_id = @$data['isp_id'];
                 $ip2location->updated_ts = time();
-
                 $ip2location->save();
             }
         });
