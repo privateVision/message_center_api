@@ -484,50 +484,70 @@ function http_request($url, $data, $is_post = true) {
 }
 
 /**
- * @param $url
+ * @param string $url
  * @param array $param
  * @param bool $is_post
- * @param string $code
- * @param array $header
- * @param array $cookie
+ * @param array $opts    支持参数array(CURLOPT_*=>value)  例如：CURLOPT_TIMEOUT，CURLOPT_VERBOSE，CURLOPT_HTTPHEADER，CURLOPT_COOKIE
+ * @param $rsp 返回值格式  json, xml, str
  * @return array|mixed
  */
-function http_curl($url, $param = array(), $is_post = true, $code = 'cd', $header = array(), $cookie = array()){
+function http_curl($url, $param = array(), $is_post = true, $opts = array(), $format = 'json'){
+    $content = '';
     if (is_string($param)) {
-        $strPOST = $param;
+        $content = $param;
     }
     else if (is_array($param) && count($param)>0) {
-        $strPOST =  makeQueryString($param);
-    }
-    else {
-        $strPOST = '';
+        $content =  makeQueryString($param);
     }
 
     if (!$is_post) {
-        $url = strpos($url, '?') === false ? ($url .'?'. $strPOST) : ($url .'&'. $strPOST);
+        $url = strpos($url, '?') === false ? ($url .'?'. $content) : ($url .'&'. $content);
     }
 
     $oCurl = curl_init();
-    if (stripos($url,"https://") !== FALSE) {
+    if (stripos($url, "https://") !== FALSE) {
         curl_setopt($oCurl, CURLOPT_SSL_VERIFYPEER, FALSE);
         curl_setopt($oCurl, CURLOPT_SSL_VERIFYHOST, FALSE);
     }
     curl_setopt($oCurl, CURLOPT_URL, $url);
-    curl_setopt($oCurl, CURLOPT_RETURNTRANSFER, 1 );
-    curl_setopt($oCurl, CURLOPT_TIMEOUT, 60);
-    curl_setopt($oCurl, CURLOPT_VERBOSE, 1);
+    curl_setopt($oCurl, CURLOPT_RETURNTRANSFER, 1);
+    //post设置
     if ($is_post) {
-        curl_setopt($oCurl, CURLOPT_POST,true);
-        curl_setopt($oCurl, CURLOPT_POSTFIELDS, $strPOST);
-    }
-    if (!empty($header)) {
-        curl_setopt($oCurl, CURLOPT_HTTPHEADER,$header);
-    }
-    if (!empty($cookie)) {
-        curl_setopt($oCurl, CURLOPT_COOKIE, makeCookieString($cookie));
+        curl_setopt($oCurl, CURLOPT_POST, true);
+        curl_setopt($oCurl, CURLOPT_POSTFIELDS, $content);
     }
 
-    $Resp = curl_exec($oCurl);//运行curl
+    //设置用户标准参数
+    $keys = array();
+    if(!emppty($opts)) {
+        $keys = array_keys($opts);
+        //转换cookie参数
+        if(isset($opts[CURLOPT_COOKIE])){
+            $opts[CURLOPT_COOKIE] = makeCookieString($opts[CURLOPT_COOKIE]);
+        }
+        foreach($opts as $k=>$v) {
+            curl_setopt($oCurl, $k, $v);
+        }
+    }
+
+    //设置默认参数
+    //设置超时时间
+    if(!in_array('CURLOPT_TIMEOUT', $keys)) {
+        curl_setopt($oCurl, CURLOPT_TIMEOUT, 60);
+    }
+
+    //设置异常报错
+    if(!in_array('CURLOPT_VERBOSE', $keys)) {
+        curl_setopt($oCurl, CURLOPT_TIMEOUT, 1);
+    }
+
+    //设置浏览器模拟
+    if(!in_array('CURLOPT_USERAGENT', $keys)) {
+        //curl_setopt($oCurl, CURLOPT_USERAGENT, 'Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/59.0.3071.86 Safari/537.36');
+    }
+
+    //运行curl
+    $Resp = curl_exec($oCurl);
     $Err = curl_error($oCurl);
 
     if (false === $Resp || !empty($Err)){
@@ -535,26 +555,25 @@ function http_curl($url, $param = array(), $is_post = true, $code = 'cd', $heade
         $Info = curl_getinfo($oCurl);
         curl_close($oCurl);
 
-        return array(
-             $code => 0,
-            'rspmsg' => $Err,
-            'errno' => $Errno,
-            'info' => $Info,
-        );
+        throw new \App\Exceptions\Exception('error:' . $Err . ', errno:' . $Errno . ', info:' . $Info);
     }
     curl_close($oCurl);//关闭curl
 
     //打印日志
-    log_info('func-http-curl', ['cookie'=>$cookie, 'reqdata' => $param, 'resdata' => $Resp], $url);
+    log_info('func-http-curl', ['reqdata' => $param, 'resdata' => $Resp], $url);
 
-    $res = @json_decode($Resp, true);
-    if (is_array($res)) {
-        $res[$code] = 1;
-    } else {
-        $res = array($code=>1, 'rspmsg'=>'http 200 data error', 'data'=>$Resp);
+    //json
+    if($format == 'json') {
+        return json_decode($Resp, true);
     }
-
-    return $res;
+    //xml
+    else if($format == 'xml') {
+        return json_decode(json_encode(simplexml_load_string($Resp)),TRUE);
+    }
+    //str
+    else {
+        return $Resp;
+    }
 }
 
 //拼接字符串
