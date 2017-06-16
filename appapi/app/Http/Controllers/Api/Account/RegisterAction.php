@@ -102,6 +102,7 @@ trait RegisterAction {
         
         // login_log
         $t = time();
+        $ip2location = \App\Model\IP2Location::find(getClientIp());
 
         $ucuser_login_log = new UcuserLoginLog;
         $ucuser_login_log->ucid = $user->ucid;
@@ -112,10 +113,13 @@ trait RegisterAction {
         $ucuser_login_log->date = date('Ymd', $t);
         $ucuser_login_log->ts = $t;
         $ucuser_login_log->ip = getClientIp();
-        $ucuser_login_log->address =
+        $ucuser_login_log->address = $ip2location ? ($ip2location->region . $ip2location->city . $ip2location->county . $ip2location->isp) : null;
+        $ucuser_login_log->city_id = $ip2location ? $ip2location->city_id : null;
         $ucuser_login_log->imei = $this->parameter->get('_imei', '');
         $ucuser_login_log->device_id = $this->parameter->get('_device_id', '');
         $ucuser_login_log->save();
+
+        // TODO 判断是否在常用地址登陆
 
         $user_info = UcuserInfo::from_cache($user->ucid);
         
