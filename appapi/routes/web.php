@@ -49,4 +49,6 @@ Route::group(['prefix' => 'web'], function () {
     Route::get('test', 'Web\\TestController@indexAction');
     Route::any('login', 'Web\\TestController@loginAction');
     Route::any('sign', 'Web\\TestController@signAction');
+    Route::get('qrtest', 'Web\\QrcodeController@testAction');
+    Route::get('qrcode', 'Web\\QrcodeController@getAction');
 });

@@ -17,4 +17,5 @@ return array(
     'Google_' => array($vendorDir . '/google/apiclient/src'),
     'Doctrine\\Common\\Inflector\\' => array($vendorDir . '/doctrine/inflector/lib'),
     'Barryvdh' => array($vendorDir . '/barryvdh/reflection-docblock/src'),
+    'BaconQrCode' => array($vendorDir . '/bacon/bacon-qr-code/src'),
 );
