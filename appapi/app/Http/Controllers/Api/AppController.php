@@ -209,21 +209,24 @@ class AppController extends Controller
     public function HotupdateAction() {
         $pid = $this->procedure->pid;
 
-        $sdkversion = $this->parameter->get('sdk_version'); // 4.0
-        if(!$sdkversion) {
-            $sdkversion = $this->parameter->tough('_version');// 4.1
+        $update = null;
+
+        $config = configex('common.hotupdate');
+
+        foreach($config as $v) {
+            if(!isset($v['pid']) || count($v['pid']) == 0 || in_array($pid, $v['pid'])) {
+                if(is_array($update) && $update['updateinfo']['version'] < $v['updateinfo']['version']) {
+                    $update = $v;
+                }
+            }
         }
 
-        $manifest = [];
-        $manifest['version'] = '1.0.0';
-        $manifest['bundles'][] = ['type' => 'lib', 'pkg' => 'com.anfeng.pay'];
+        return [
+            'manifest' => $update['manifest'],
+            'updates' => [
+                $update['updateinfo']
+            ]
+        ];
 
-        $updates = [];
-        $updates['pkg'] = 'com.anfeng.pay';
-        $updates['version'] = 411;
-        $updates['use_version'] = 411; // 回退版本，默认与version一致
-        $updates['url'] = httpsurl('http://sdkup.novasmobi.com/com.anfeng.pay.apk');
-
-        return ['manifest'=>$manifest, 'updates'=>[$updates]];
     }
 }

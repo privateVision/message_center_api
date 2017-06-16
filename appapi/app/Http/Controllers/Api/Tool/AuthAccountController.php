@@ -294,12 +294,13 @@ class AuthAccountController extends Controller
         $type = $this->parameter->tough('type');
         $msg = $this->parameter->tough('msg');
         $pid = $this->parameter->tough('_appid');
+        $rel_id = $this->parameter->tough('rel_id');
 
         $ucuser = Ucuser::where('uid', $username)->first();
 
         if(!$ucuser)throw new ApiException(ApiException::Remind, trans('messages.user_not_exists'));
 
-        if($ucuser->is_freeze==0)throw new ApiException(ApiException::Remind, trans('messages.freeze'));
+        if($ucuser->is_freeze==1)throw new ApiException(ApiException::Remind, trans('messages.freeze'));
 
         if($ucuser->balance + $amount<0)throw new ApiException(ApiException::Remind, trans('messages.balance_not_enough'));
 
@@ -315,6 +316,7 @@ class AuthAccountController extends Controller
         $fLog->msg = $msg;
         $fLog->create_time = time();
         $fLog->update_time = time();
+        $fLog->rel_id = $rel_id;
         $fLog->save();
 
         $ucuser->getConnection()->commit();

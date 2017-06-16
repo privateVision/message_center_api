@@ -11,7 +11,6 @@ use App\Model\UcuserSession;
 use App\Model\UcuserLoginLog;
 use App\Model\UcuserInfo;
 use App\Model\Retailers;
-use App\Model\LoginLogUUID;
 use App\Model\UcuserSubTotal;
 
 trait LoginAction {
@@ -95,7 +94,7 @@ trait LoginAction {
                     $user_sub_total->increment('total', 1);
                 }
 
-                $user_sub_id = sprintf('%d%05d%2d', $user->ucid, $pid, $user_sub_total->total);
+                $user_sub_id = sprintf('%d%05d%02d', $user->ucid, $pid, $user_sub_total->total);
 
                 $user_sub = UcuserSub::tableSlice($user->ucid);
                 $user_sub->id = $user_sub_id;
@@ -159,19 +158,7 @@ trait LoginAction {
         $ucuser_login_log->imei = $this->parameter->get('_imei', '');
         $ucuser_login_log->device_id = $this->parameter->get('_device_id', '');
         $ucuser_login_log->save();
-/*
-        // login_log_uuid
-        $imei = $this->parameter->get('_imei', '');
-        $device_id = $this->parameter->get('_device_id', '');
-        if($imei || $device_id) {
-            $login_log_uuid = new LoginLogUUID;
-            $login_log_uuid->id = $ucuser_login_log->id;
-            $login_log_uuid->ucid = $user->ucid;
-            $login_log_uuid->imei = $imei;
-            $login_log_uuid->device_id= $device_id;
-            $login_log_uuid->asyncSave();
-        }
-*/
+
         $user_info = UcuserInfo::from_cache($user->ucid);
         
         $retailers = null;

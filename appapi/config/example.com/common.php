@@ -1,9 +1,22 @@
 <?php
 return [
-    // 帐户安全等级
-    // 0 没有等级
-    // 5 如果一定时间未登陆则帐户提醒异常
-    'account_safe_level' => 0,
+    'hotupdate' => [
+        [
+            'pid' => [], // 哪些pid应用该更新，必须有一个pid是空的，用来作默认值
+            'manifest' => [
+                'version' => '1.0.0',
+                'bundles' => [
+                    ['type' => 'lib', 'pkg' => 'com.anfeng.pay']
+                ],
+            ],
+            'updateinfo' => [
+                'pkg' => 'com.anfeng.pay',
+                'version' => 400,
+                'use_version' => 400,
+                'url' => 'http://afsdkup.qcwan.com/down/com.anfeng.pay.apk',
+            ],
+        ],
+    ],
 
     'basic' => [
         'default_avatar' => 'http://avatar.anfeng.com/avatar_default.png', // 默认头像

@@ -86,7 +86,7 @@ Route::group(['prefix' => 'api'], function () {
     Route::any('user_sub/set_nickname', 'Api\\UserSubController@SetNicknameAction');                        // 设置小号昵称
 
     Route::any('pay/order/new', 'Api\\Pay\\OrderController@NewAction');                                     // 创建订单
-    Route::any('pay/order/f/new', 'Api\\Pay\\OrderController@NewAction');                                   // XXX 4.0 充值F币的订单
+    Route::any('pay/order/{product_type}/new', 'Api\\Pay\\OrderController@NewAction');                      // XXX 4.0 充值F币的订单，原型为：pay/order/f/new
     Route::any('pay/order/info', 'Api\\Pay\\OrderController@InfoAction');                                   // 获取订单信息
     Route::any('pay/order/config', 'Api\\Pay\\OrderController@ConfigAction');                               // 获取订单(支付）配置
 
