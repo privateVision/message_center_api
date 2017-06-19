@@ -41,6 +41,17 @@ class GooglePlayController extends Controller {
             throw new ApiException(ApiException::Remind,  trans('messages.order_extend_info_error'));
         }
 
+        //获取google_play配置文件
+        $cfg = $this->procedure_extend->third_config;
+        if(empty($cfg) || !isset($cfg['project_id'])) {
+            throw new ApiException(ApiException::Remind, trans('messages.error_third_params'));
+        }
+        $file = resource_path('google_play') . DIRECTORY_SEPARATOR . $this->procedure_extend->pid . '_' . md5(json_encode($cfg)) . '.json';
+        if(!file_exists($file)) {
+            file_put_contents($file, json_encode($cfg));
+        }
+        $config['cert'] = $file;
+
         //验证付款状态
         self::handler($config, $product_extend->third_product_id, $packageName, $token);
 
@@ -53,6 +64,30 @@ class GooglePlayController extends Controller {
                 'product_id'=>$product_extend->third_product_id,
                 'token'=>$token
             )
+        ];
+    }
+
+    public function checkPay() {
+        $token = $this->parameter->tough('token');
+        $packageName = $this->procedure_extend->package_name;
+
+        //获取google_play配置文件
+        $cfg = $this->procedure_extend->third_config;
+        if(empty($cfg) || !isset($cfg['project_id'])) {
+            throw new ApiException(ApiException::Remind, trans('messages.error_third_params'));
+        }
+        $file = resource_path('google_play') . DIRECTORY_SEPARATOR . $this->procedure_extend->pid . '_' . md5(json_encode($cfg)) . '.json';
+        if(!file_exists($file)) {
+            file_put_contents($file, json_encode($cfg));
+        }
+        $config['cert'] = $file;
+
+        //验证付款状态
+        self::handler($config, $this->procedure_extend->third_product_id, $packageName, $token);
+
+        return [
+            'token'=>$token,
+            'package_name'=>$packageName
         ];
     }
 

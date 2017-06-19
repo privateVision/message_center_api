@@ -100,6 +100,7 @@ Route::group(['prefix' => 'api'], function () {
 
     Route::any('pay/uc/request', 'Api\\Pay\\UcController@RequestAction');                                   // Uc平台支付
     Route::any('pay/googleplay/request', 'Api\\Pay\\GooglePlayController@RequestAction');                   // GooglePlay平台支付
+    Route::any('pay/googleplay/check', 'Api\\Pay\\GooglePlayController@checkPay');                          // GooglePlay检查支付
     Route::any('pay/baidu/request', 'Api\\Pay\\BaiduController@RequestAction');                             // 百度平台支付
     Route::any('pay/baidu/order', 'Api\\Pay\\BaiduController@getOrderInfoAction');                          // 百度平台获取订单信息
     Route::any('pay/yingyongbao/request', 'Api\\Pay\\YingYongBaoController@RequestAction');                 // 应用宝平台支付
