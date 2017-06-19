@@ -143,6 +143,10 @@ class AppController extends Controller
                 'share' => httpsurl($this->procedure_extend->service_share),
                 'interval' => max(2000, $this->procedure_extend->heartbeat_interval),
                 'af_download' => httpsurl(env('af_download')),
+                'qrcode'=>!empty($this->procedure_extend->service_share)?url('web/qrcode?').http_build_query(
+                    array(
+                        'url'=>urlencode(httpsurl($this->procedure_extend->service_share)),
+                    )):'',
             ],
 
             'bind_phone' => [

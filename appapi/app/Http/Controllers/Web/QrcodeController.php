@@ -110,7 +110,12 @@ class QrcodeController extends \App\Controller {
         if(file_exists($file)) {
             // Directly output the QR code
             header('Content-Type: image/png');
-            echo file_get_contents($file);
+            echo file_get_contents($file);exit;
+
+//            $fb = fopen($file,"rb");
+//            $content = fread($fb, filesize($file));
+//            fclose($fb);
+//            echo $content;
         } else {
             $qrCode = new QrCode($default['url']);
 
