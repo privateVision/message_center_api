@@ -1062,9 +1062,9 @@ def get_game_info_by_gameid(gameid=None):
 # 从mysql中查看是否有用户相关的公告
 def get_user_notice_from_mysql(username=None, rtype=None, vip=None, appid=None, cur_zone=None):
     now = int(time.time())
-    data_list = UsersMessage.objects(Q(type='notice')
+    data_list = UsersMessage.objects(Q(type='notice')&Q(closed=0)
                                      & (
-                                         Q(is_time=0) | (Q(is_time=1) & Q(end_time__gte=now))
+                                         Q(is_time=0) | (Q(is_time=1) & Q(start_time__lte=now) & Q(end_time__gte=now))
                                      )
                                      )
     notice_list = []

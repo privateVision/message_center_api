@@ -22,7 +22,7 @@ import logging
 hdfs_logger = logging.getLogger('message_service_heartbeat')
 hdfs_logger.setLevel(logging.INFO)
 hdfs_fh = TimedRotatingFileHandler('./logs/message_service_heartbeat.log',
-                                   when="d",
+                                   when="D",
                                    interval=1,
                                    backupCount=10)
 hdfs_fh.suffix = "%Y%m%d.log"
@@ -79,6 +79,7 @@ wtforms_json.init()
 
 def create_app():
     app = Flask(__name__)
+
     app.config.from_object(config['development'])  # 加载配置文件
 
     app.config['MONGODB_SETTINGS'] = {

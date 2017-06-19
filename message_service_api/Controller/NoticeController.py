@@ -11,7 +11,7 @@ from MongoModel.MessageModel import UsersMessage
 from MongoModel.UserMessageModel import UserMessage
 from MongoModel.UserReadMessageLogModel import UserReadMessageLog
 from RequestForm.PostNoticesRequestForm import PostNoticesRequestForm
-from Service.StorageService import system_notices_update
+from Service.StorageService import system_notices_update, check_user_has_notice
 from Service.UsersService import get_notice_message_detail_info, get_ucid_by_access_token, \
     sdk_api_request_check, cms_api_request_check, set_message_readed, find_is_message_readed, is_user_in_apks
 from Utils.RedisUtil import RedisHandle
@@ -169,6 +169,8 @@ def v4_sdk_get_notice_list():
                 message_resp['button_url'] = message_info['button_url']
             if is_user_in_apks(appid, message_info['app']):
                 data_list.append(message_resp)
+    if len(data_list) == 0:
+        check_user_has_notice(ucid)
     return response_data(http_code=200, data=data_list)
 
 
