@@ -1,0 +1,5 @@
+nohup.out
+zookeeper.out
+blueware.ini
+uwsgi.ini
+uwsgi_start.sh

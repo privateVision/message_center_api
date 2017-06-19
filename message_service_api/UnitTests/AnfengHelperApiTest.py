@@ -16,25 +16,25 @@ class AnfengHelperApiTest(unittest.TestCase):
     def setUp(self):
         pass
 
-    def test_get_coupon(self):
-        data = {
-            '_appid': 6,
-            '_device_id': '',
-            '_imei': 'b2c401463254650c',
-            '_rid': 1,
-            '_sign_type': 'md5',
-            '_timestamp': '1494413235',
-            '_token': 'ihgne2toexsgwwc8c0k0gk0o',
-            '_type': 'json',
-            'page': 1,
-            'pagesize': 10,
-            'platform_id': 3,
-            'status': 0,
-            'key': 'ebe89a4c54f35e593d86455aab4343a8',
-            '_sign': '9962f08adc2e29e12925018fb3b9dd15'
-        }
-        r = requests.post("http://sdkv4.qcwan.com/msa/anfeng_helper/get_user_coupon", data=data)
-        print r.text
+    # def test_get_coupon(self):
+    #     data = {
+    #         '_appid': 6,
+    #         '_device_id': '',
+    #         '_imei': 'b2c401463254650c',
+    #         '_rid': 1,
+    #         '_sign_type': 'md5',
+    #         '_timestamp': '1494413235',
+    #         '_token': 'ihgne2toexsgwwc8c0k0gk0o',
+    #         '_type': 'json',
+    #         'page': 1,
+    #         'pagesize': 10,
+    #         'platform_id': 3,
+    #         'status': 0,
+    #         'key': 'ebe89a4c54f35e593d86455aab4343a8',
+    #         '_sign': '9962f08adc2e29e12925018fb3b9dd15'
+    #     }
+    #     r = requests.post("http://sdkv4.qcwan.com/msa/anfeng_helper/get_user_coupon", data=data)
+    #     print r.text
 
     # def test_add_coupon(self):
     #     data = {
@@ -121,6 +121,15 @@ class AnfengHelperApiTest(unittest.TestCase):
     #     # sdkv4test.qcwanwan.coms
     #     r = requests.post("http://sdkv4test.qcwanwan.com/msa/anfeng_helper/coupon", data=data)
     #     print r.text
+
+    def test_activity_get_coupon(self):
+        data = {
+            'ucid': 10010,
+            'coupon_id': 1460,
+            '_sign': 'f9a2416b3af5e57214be1349d62e0916'
+        }
+        r = requests.post("http://localhost:5000/msa/v4.2/activity/coupon", data=data)
+        print r.text
 
     def tearDown(self):
         pass

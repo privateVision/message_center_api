@@ -18,7 +18,6 @@ from Service.NotifyEmail import send_notify
 from Service.UsersService import get_game_and_area_and_user_type_and_vip_users
 from Utils.RedisUtil import RedisHandle
 
-
 # def add_message_to_user_message_list(game, users_type, vip_user, specify_user, type, msg_id,
 #                                      start_time, end_time, is_time):
 #     users_list = get_game_and_area_and_user_type_and_vip_users(game, users_type, vip_user)
@@ -57,7 +56,7 @@ def add_message_to_user_message_list(game, users_type, vip_user, specify_user, t
                                      is_time, start_time, end_time)
 
 
-#  分批向指定游戏区服的各种用户类型及等级发送消息
+# 分批向指定游戏区服的各种用户类型及等级发送消息
 def send_message_to_game_area_and_user_type_and_vip_users(game, users_type, vip_user, type, msg_id,
                                                           is_time, start_time, end_time):
     if game is not None:
@@ -69,7 +68,8 @@ def send_message_to_game_area_and_user_type_and_vip_users(game, users_type, vip_
                     for zone in game_info['zone_id_list']:
                         find_user_count_in_game_area_sql = "select count(distinct(ucid)) from ucuser_role_%s " \
                                                            "where pid = %s and zoneName = '%s'" \
-                                                           % (int(int(game_info['apk_id'])/30), game_info['apk_id'], zone)
+                                                           % (int(int(game_info['apk_id']) / 30), game_info['apk_id'],
+                                                              zone)
                         try:
                             total_count = mysql_session.execute(find_user_count_in_game_area_sql).scalar()
                             total_page = int(total_count / 100) + 1
@@ -77,8 +77,9 @@ def send_message_to_game_area_and_user_type_and_vip_users(game, users_type, vip_
                                 start_index = i * 100
                                 find_users_in_game_area_sql = "select distinct(ucid) from ucuser_role_%s " \
                                                               "where pid = %s and zoneName = '%s' limit %s, 100 " \
-                                                              % (int(int(game_info['apk_id'])/30), game_info['apk_id'],
-                                                                 zone, start_index)
+                                                              % (
+                                                              int(int(game_info['apk_id']) / 30), game_info['apk_id'],
+                                                              zone, start_index)
                                 tmp_user_list = mysql_session.execute(find_users_in_game_area_sql).fetchall()
                                 for item in tmp_user_list:
                                     ucid = item['ucid']
@@ -93,14 +94,15 @@ def send_message_to_game_area_and_user_type_and_vip_users(game, users_type, vip_
                             mysql_session.close()
                 else:  # 没传区服信息，那就所有区服咯
                     find_user_count_in_game_area_sql = "select count(distinct(ucid)) from ucuser_role_%s" \
-                                                       " where pid = %s " % (int(int(game_info['apk_id'])/30), game_info['apk_id'])
+                                                       " where pid = %s " % (
+                                                       int(int(game_info['apk_id']) / 30), game_info['apk_id'])
                     try:
                         total_count = mysql_session.execute(find_user_count_in_game_area_sql).scalar()
                         total_page = int(total_count / 100) + 1
                         for i in range(total_page):
                             start_index = i * 100
                             find_users_in_game_area_sql = "select distinct(ucid) from ucuser_role_%s where pid = %s " \
-                                                          "limit %s, 100" % (int(int(game_info['apk_id'])/30),
+                                                          "limit %s, 100" % (int(int(game_info['apk_id']) / 30),
                                                                              game_info['apk_id'], start_index)
                             tmp_user_list = mysql_session.execute(find_users_in_game_area_sql).fetchall()
                             for item in tmp_user_list:
@@ -118,14 +120,15 @@ def send_message_to_game_area_and_user_type_and_vip_users(game, users_type, vip_
             game_list = mysql_session.execute(find_game_list_sql).fetchall()
             for game in game_list:
                 pid = game['pid']
-                find_user_count_in_game_area_sql = "select count(distinct(ucid)) from ucuser_role_%s " % (int(int(pid)/30),)
+                find_user_count_in_game_area_sql = "select count(distinct(ucid)) from ucuser_role_%s " % (
+                int(int(pid) / 30),)
                 try:
                     total_count = mysql_session.execute(find_user_count_in_game_area_sql).scalar()
                     total_page = int(total_count / 100) + 1
                     for i in range(total_page):
                         start_index = i * 100
                         find_all_game_users_sql = "select distinct(ucid) from ucuser_role_%s limit %s, 100 " \
-                                                  % (int(int(pid)/30), start_index,)
+                                                  % (int(int(pid) / 30), start_index)
                         tmp_user_list = mysql_session.execute(find_all_game_users_sql).fetchall()
                         for item in tmp_user_list:
                             ucid = item['ucid']
@@ -245,11 +248,11 @@ def check_user_type_and_vip(ucid=None, user_type=None, vip=None):
                     return True
                 else:
                     return False
-                # find_user_info_exist_sql = "select count(*) from ucuser_info as u where u.ucid = %s " % (ucid,)
-                # is_user_info_exist = mysql_session.execute(find_user_info_exist_sql).scalar()
-                # if is_user_info_exist is None or is_user_info_exist == 0:
-                #     if vip == 0:
-                #         return True
+                    # find_user_info_exist_sql = "select count(*) from ucuser_info as u where u.ucid = %s " % (ucid,)
+                    # is_user_info_exist = mysql_session.execute(find_user_info_exist_sql).scalar()
+                    # if is_user_info_exist is None or is_user_info_exist == 0:
+                    #     if vip == 0:
+                    #         return True
             return True
         except Exception, err:
             service_logger.error(err.message)
@@ -265,12 +268,13 @@ def check_user_is_in_game(ucid=None, game_id=None, zone=None):
     from run import mysql_session
     if zone is None:
         find_users_by_game_sql = "select count(*) from ucuser_role_%s as u where u.ucid = %s and u.pid = %s " \
-                                 % (int(int(game_id)/30), ucid, game_id)
+                                 % (int(int(game_id) / 30), ucid, game_id)
     else:
         find_users_by_game_sql = "select count(*) from ucuser_role_%s as u where u.ucid = %s and u.pid = %s " \
-                                 "and u.zoneName = '%s' " % (int(int(game_id)/30), ucid, game_id, zone)
+                                 "and u.zoneName = '%s' " % (int(int(game_id) / 30), ucid, game_id, zone)
     try:
         is_exist = mysql_session.execute(find_users_by_game_sql).scalar()
+        mysql_session.commit()
         if is_exist is None or is_exist == 0:
             return False
         return True
@@ -670,7 +674,7 @@ def system_rebate_persist(data_json=None, update_user_message=True):
             add_to_every_related_users_message_list(users_message)
 
 
-#  卡券领取通知回调
+# 卡券领取通知回调
 def coupon_notify_callback(data_json=None, offset=None):
     if data_json is not None:
         data = {
@@ -696,3 +700,54 @@ def coupon_notify_callback(data_json=None, offset=None):
             service_logger.info("卡券通知回调异常：%s" % (response.text,))
             raise KafkaConsumeError('kafka 消费异常', 1001)
 
+
+# 主动检查用户是否有公告
+def check_user_has_notice(ucid=None):
+    specify_user_list = [ucid]
+    now = int(time.time())
+    data_list = UsersMessage.objects(Q(type='notice') & Q(closed=0)
+                                     & (
+                                         Q(is_time=0) | (Q(is_time=1) & Q(start_time__lte=now) & Q(end_time__gte=now))
+                                     )
+                                     )
+    for notice_item in data_list:
+        game = notice_item['app']
+        users_type = notice_item['rtype']
+        vip_user = notice_item['vip']
+        type = 'notice'
+        msg_id = notice_item['mysql_id']
+        is_time = notice_item['is_time']
+        start_time = notice_item['start_time']
+        end_time = notice_item['end_time']
+        if game is not None:
+            if game[0]['apk_id'] != 'all':
+                for game_info in game:
+                    if game_info.has_key('zone_id_list'):
+                        for zone in game_info['zone_id_list']:
+                            try:
+                                for user in specify_user_list:
+                                    is_right = check_user_is_in_game(user, game_info['apk_id'], zone)
+                                    is_user_in_users_type_and_vip = check_user_type_and_vip(user, users_type,
+                                                                                            vip_user[0])
+                                    if is_right is True and is_user_in_users_type_and_vip is True:
+                                        add_user_messsage(user, type, msg_id, is_time, start_time, end_time, game)
+                            except Exception, err:
+                                service_logger.error("添加消息到每个用户的消息列表发生异常：%s" % (err.message,))
+                    else:
+                        try:
+                            for user in specify_user_list:
+                                is_right = check_user_is_in_game(user, game_info['apk_id'])
+                                is_user_in_users_type_and_vip = check_user_type_and_vip(user, users_type, vip_user[0])
+                                if is_right is True and is_user_in_users_type_and_vip is True:
+                                    add_user_messsage(user, type, msg_id, is_time, start_time, end_time, game)
+                        except Exception, err:
+                            service_logger.error("添加消息到每个用户的消息列表发生异常：%s" % (err.message,))
+            else:
+                try:
+                    for user in specify_user_list:
+                        is_user_in_users_type_and_vip = check_user_type_and_vip(user, users_type, vip_user[0])
+                        service_logger.info("检查指定用户列表的用户类型和vip,用于过滤，结果为：%s" % (is_user_in_users_type_and_vip,))
+                        if is_user_in_users_type_and_vip is True:
+                            add_user_messsage(user, type, msg_id, is_time, start_time, end_time, game)
+                except Exception, err:
+                    service_logger.error("添加消息到每个用户的消息列表发生异常：%s" % (err.message,))

@@ -69,7 +69,9 @@ class RedisHandle(object):
             "message": 0,
             "gift_num": 0
         }
-
+        import time
+        from MiddleWare import service_logger
+        stime = time.time()
         # 获取用户的广播数据
         from Service.UsersService import get_user_broadcast_list
         broadcast_data = get_user_broadcast_list(key_name)
@@ -79,11 +81,14 @@ class RedisHandle(object):
         from Service.UsersService import get_user_unread_message_count
         user_mark['message'] = get_user_unread_message_count(key_name)
         RedisHandle.hset(key_name, 'message', user_mark['message'])
-
+        etime = time.time()
+        service_logger.info("debug1-处理时间：%s" % (etime - stime,))
         # 获取用户未领取的礼包数
         from Service.UsersService import get_user_gift_count
         user_mark['gift_num'] = get_user_gift_count(key_name, appid)
         RedisHandle.hset(key_name, 'gift_num', user_mark['gift_num'])
+        etime = time.time()
+        service_logger.info("debug2-处理时间：%s" % (etime - stime,))
         # RedisHandle.set_key_exipre(key_name, 14400)
 
         # from Service.UsersService import get_user_gift_count

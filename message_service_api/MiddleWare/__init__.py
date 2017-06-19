@@ -22,7 +22,7 @@ import logging
 hdfs_logger = logging.getLogger('message_service_heartbeat')
 hdfs_logger.setLevel(logging.INFO)
 hdfs_fh = TimedRotatingFileHandler('./logs/message_service_heartbeat.log',
-                                   when="d",
+                                   when="D",
                                    interval=1,
                                    backupCount=10)
 hdfs_fh.suffix = "%Y%m%d.log"
@@ -79,6 +79,7 @@ wtforms_json.init()
 
 def create_app():
     app = Flask(__name__)
+
     app.config.from_object(config['development'])  # 加载配置文件
 
     app.config['MONGODB_SETTINGS'] = {
@@ -94,12 +95,6 @@ def create_app():
     redis_store.init_app(app)
 
     kafka_producer = KafkaProducer(bootstrap_servers=app.config.get('KAFKA_URL'))
-    # kafka_consumer = KafkaConsumer(bootstrap_servers=app.config.get('KAFKA_URL'), group_id='dev_anfeng_message_service')
-    # kafka_consumer.subscribe([app.config.get('KAFKA_TOPIC')])
-    # from Service.KafkaHandler import kafka_consume_func
-    # kafka_consumer_thread = threading.Thread(target=kafka_consume_func, args=(kafka_consumer,))
-    # kafka_consumer_thread.setDaemon(True)
-    # kafka_consumer_thread.start()
 
     app.config['SQLALCHEMY_DATABASE_URI'] = app.config.get('SQLALCHEMY_DATABASE_URI')
     mysql_engine = create_engine(app.config['SQLALCHEMY_DATABASE_URI'], encoding="utf-8", echo=True,
@@ -110,4 +105,8 @@ def create_app():
                                      pool_recycle=28800, poolclass=SingletonThreadPool)
     mysql_cms_session = sessionmaker(autocommit=False, bind=mysql_cms_engine)
 
-    return app, kafka_producer, mysql_session(), mysql_cms_session()
+    mysql_cms_read_engine = create_engine(app.config['SQLALCHEMY_CMS_READ_DATABASE_URI'], encoding="utf-8", echo=True,
+                                          pool_recycle=28800, poolclass=SingletonThreadPool)
+    mysql_cms_read_session = sessionmaker(autocommit=False, bind=mysql_cms_read_engine)
+
+    return app, kafka_producer, mysql_session(), mysql_cms_session(), mysql_cms_read_session()

@@ -5,8 +5,6 @@ import unittest
 import requests
 from mongoengine import Q, connect
 
-from Utils.EncryptUtils import get_cms_md5_sign
-
 """
 卡券功能测试
 """
@@ -17,81 +15,75 @@ class CouponFunctionTest(unittest.TestCase):
         connect('users_message', host='localhost', port=27017)
 
     # def test_add_coupon(self):
+    #     from MongoModel.MessageModel import UsersMessage
+    #     from MongoModel.UserMessageModel import UserMessage
+    #     from MongoModel.UserReadMessageLogModel import UserReadMessageLog
+    #     UsersMessage.objects(Q(type='coupon')).delete()
+    #     UserMessage.objects(Q(type='coupon')).delete()
+    #     UserReadMessageLog.objects(Q(type='coupon')).delete()
     #     data = {
-    #         "game": [{"apk_id": 783}],
+    #         "game": "[{\"apk_id\": 783}]",
     #         "users_type": "255,3",
-    #         "vip_user": "3",
+    #         "vip_user": "3,4",
     #         "specify_user": "123,324",
-    #         "id": 1,
+    #         "id": "1",
     #         "title": "测试卡券",
-    #         "stime": 123234533,
-    #         "etime": 123432453,
-    #         "is_first": 1,
+    #         "stime": "123234533",
+    #         "etime": "123432453",
+    #         "is_first": "1",
     #         "info": "简单描述",
-    #         "full": 1231223,
-    #         "money": 41223,
+    #         "full": "1231223",
+    #         "money": "41223",
     #         "method": "使用方法",
-    #         "num": 11
+    #         "num": "11"
     #     }
-    #     headers = {"Content-Type": "application/json"}
-    #     data_json = json.dumps(data)
-    #     sign = get_cms_md5_sign(data_json)
-    #     r = requests.post("http://dev.sdkapi.com/msa/v4/coupon?sign=%s" % (sign,), data=data_json, headers=headers)
+    #     from Utils.EncryptUtils import get_md5_sign
+    #     sign = get_md5_sign(data)
+    #     r = requests.post("http://localhost:5000/v4/coupon?sign=%s" % (sign,), data=data)
     #     self.assertEqual(r.status_code, 200)
     #     print r.text
-    #
+
     # def test_update_coupon(self):
     #     data = {
-    #         "game": [{"apk_id": 783}],
+    #         "game": "[{\"apk_id\": 783}]",
     #         "users_type": "255,3",
-    #         "vip_user": "3",
+    #         "vip_user": "3,4",
     #         "specify_user": "123,324",
-    #         "id": 1,
+    #         "id": "1",
     #         "title": "测试卡券(更新)",
-    #         "stime": 123234300,
-    #         "etime": 123432333,
-    #         "is_first": 1,
+    #         "stime": "123234300",
+    #         "etime": "123432333",
+    #         "is_first": "1",
     #         "info": "简单描述（更新）",
-    #         "full": 1231223,
-    #         "money": 41223,
+    #         "full": "1231223",
+    #         "money": "41223",
     #         "method": "使用方法（更新）",
-    #         "num": 2
+    #         "num": "2"
     #     }
-    #     headers = {"Content-Type": "application/json"}
-    #     data_json = json.dumps(data)
-    #     sign = get_cms_md5_sign(data_json)
-    #     r = requests.put("http://dev.sdkapi.com/msa/v4/coupon?sign=%s" % (sign,), data=data_json, headers=headers)
+    #     from Utils.EncryptUtils import get_md5_sign
+    #     sign = get_md5_sign(data)
+    #     r = requests.put("http://localhost:5000/v4/coupon?sign=%s" % (sign,), data=data)
     #     self.assertEqual(r.status_code, 200)
     #     print r.text
-    #
+
     # def test_delete_coupon(self):
     #     data = {
-    #         "id": 1
+    #         "id": "1"
     #     }
-    #     headers = {"Content-Type": "application/json"}
-    #     data_json = json.dumps(data)
-    #     sign = get_cms_md5_sign(data_json)
-    #     r = requests.delete("http://dev.sdkapi.com/msa/v4/coupon?sign=%s" % (sign,), data=data_json, headers=headers)
+    #     from Utils.EncryptUtils import get_md5_sign
+    #     sign = get_md5_sign(data)
+    #     r = requests.delete("http://localhost:5000/v4/coupon?sign=%s" % (sign,), data=data)
     #     self.assertEqual(r.status_code, 200)
     #     print r.text
 
     def test_get_coupon_list(self):
         body_data = {
-            '_sign': '1782d3e2be950dc66aaa04d7e31f6d2e',
-            '_token': 'baqycky5i08og8okoggwskkwg',
-            '_appid': 778,
-            'page': 1,
-            'count': 10
+            '_sign': '141aa24d6419b7ba2850bdcab13e95da',
+            '_token': 'c31fc6b6b2f7b993713c124f8104209d',
+            '_appid': 2
         }
-        r = requests.post('http://sdkv4test.qcwanwan.com/msa/v4/coupons', data=body_data)
+        r = requests.post('http://localhost:5000/msa/v4/coupons', data=body_data)
         print r.text
-
-    # def test_get_notice(self):
-    #     from Service.UsersService import get_user_notice_from_mysql
-    #     list = get_user_notice_from_mysql(username='223', rtype='3', vip='4', appid='2', cur_zone='湖北3区')
-    #     print len(list)
-    #     for item in list:
-    #         print "%s-%s" % (item['type'], item['mysql_id'])
 
     def tearDown(self):
         pass

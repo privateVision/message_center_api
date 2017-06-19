@@ -257,7 +257,7 @@ def get_user_unread_message_count(ucid=None):
 
 # 获取用户可领的礼包数
 def get_user_gift_count(ucid=None, appid=None):
-    from run import mysql_cms_session
+    from run import mysql_cms_read_session
     from run import SDK_PLATFORM_ID
     now = int(time.time())
     game = get_game_info_by_appid(appid)
@@ -265,111 +265,124 @@ def get_user_gift_count(ucid=None, appid=None):
         return 0
 
     # 找到用户已经领取的礼包，需要排除掉
+    not_specify_count = 0
+    specify_count = 0
+    try:
+        find_user_already_get_gift_id_sql = "select distinct(giftId) from cms_gameGiftLog where gameId = %s" \
+                                            " and status = 'normal' and uid = %s " % (game['id'], ucid)
+        gift_id_list = mysql_cms_read_session.execute(find_user_already_get_gift_id_sql).fetchall()
+        already_get_gift_id_list = []
+        for gift_id in gift_id_list:
+            already_get_gift_id_list.append(str(gift_id['giftId']))
+        already_get_gift_id_list_str = ",".join(already_get_gift_id_list)
 
-    find_user_already_get_gift_id_sql = "select distinct(giftId) from cms_gameGiftLog where gameId = %s" \
-                                        " and status = 'normal' and uid = %s " % (game['id'], ucid)
-    gift_id_list = mysql_cms_session.execute(find_user_already_get_gift_id_sql).fetchall()
-    already_get_gift_id_list = []
-    for gift_id in gift_id_list:
-        already_get_gift_id_list.append(str(gift_id['giftId']))
-    already_get_gift_id_list_str = ",".join(already_get_gift_id_list)
+        # 找到游戏下的礼包列表
+        from Service.StorageService import get_uid_by_ucid
+        uid = get_uid_by_ucid(ucid)
+        now = int(time.time())
+        game_gift_list_sql = "select id from cms_gameGift where status = 'normal' and failTime > %s and gameId = %s" \
+                             % (now, game['id'])
+        game_gift_list = mysql_cms_read_session.execute(game_gift_list_sql).fetchall()
+        game_gift_array = []
+        for game_gift in game_gift_list:
+            game_gift_array.append(str(game_gift['id']))
+        game_gift_array_str = ",".join(game_gift_array)
 
-    # 找到游戏下的礼包列表
-    from Service.StorageService import get_uid_by_ucid
-    uid = get_uid_by_ucid(ucid)
-    now = int(time.time())
-    game_gift_list_sql = "select id from cms_gameGift where status = 'normal' and failTime > %s and gameId = %s" \
-                         % (now, game['id'])
-    game_gift_list = mysql_cms_session.execute(game_gift_list_sql).fetchall()
-    game_gift_array = []
-    for game_gift in game_gift_list:
-        game_gift_array.append(str(game_gift['id']))
-    game_gift_array_str = ",".join(game_gift_array)
+        # 找到指定用户的礼包，并且当前用户在指定列表之中的礼包
+        specify_user_gift_id_list = []
+        if len(game_gift_array) > 0:
+            find_specify_user_gift_id_sql = "select distinct(giftId) from cms_gameGiftSpecify where giftId in (%s)" \
+                                            " and value = '%s' " % (game_gift_array_str, uid)
+            append_gift_id_list = mysql_cms_read_session.execute(find_specify_user_gift_id_sql).fetchall()
+            for gift_id in append_gift_id_list:
+                specify_user_gift_id_list.append(str(gift_id['giftId']))
+            specify_user_gift_id_list_str = ",".join(specify_user_gift_id_list)
 
-    # 找到指定用户的礼包，并且当前用户在指定列表之中的礼包
-    specify_user_gift_id_list = []
-    if len(game_gift_array) > 0:
-        find_specify_user_gift_id_sql = "select distinct(giftId) from cms_gameGiftSpecify where giftId in (%s)" \
-                                        " and value = '%s' " % (game_gift_array_str, uid)
-        append_gift_id_list = mysql_cms_session.execute(find_specify_user_gift_id_sql).fetchall()
-        for gift_id in append_gift_id_list:
-            specify_user_gift_id_list.append(str(gift_id['giftId']))
-        specify_user_gift_id_list_str = ",".join(specify_user_gift_id_list)
-
-    if len(already_get_gift_id_list) > 0:
-        # 获取没有指定用户的还有剩余礼包的礼包数
-        get_not_specify_user_gift_count_sql = "select count(*) from cms_gameGift as gift join cms_gameGiftAssign " \
-                                              "as assign" \
-                                              " on gift.id=assign.giftId where gift.status='normal' " \
-                                              "and gift.failTime > %s and assign.platformId = %s and gift.gameId = %s " \
-                                              "and assign.status='normal' and assign.assignNum>0 " \
-                                              "and gift.isSpecify=0 " \
-                                              "and gift.id not in(%s)" % (
-                                                  now, SDK_PLATFORM_ID, game['id'], already_get_gift_id_list_str)
-        if len(specify_user_gift_id_list) > 0:
-            # 获取指定了用户的还有剩余礼包的礼包数
-            get_specify_user_gift_count_sql = "select count(*) from cms_gameGift as gift join cms_gameGiftAssign " \
-                                              "as assign" \
-                                              " on gift.id=assign.giftId where gift.status='normal' " \
-                                              "and gift.failTime > %s and assign.platformId = %s " \
-                                              "and assign.status='normal' and assign.assignNum>0 " \
-                                              "and gift.isSpecify=1 and gift.gameId = %s " \
-                                              "and gift.id in(%s) and gift.id not in(%s) " \
-                                              % (now, SDK_PLATFORM_ID, game['id'], specify_user_gift_id_list_str,
-                                                 already_get_gift_id_list_str)
+        if len(already_get_gift_id_list) > 0:
+            # 获取没有指定用户的还有剩余礼包的礼包数
+            get_not_specify_user_gift_count_sql = "select count(*) from cms_gameGift as gift join cms_gameGiftAssign " \
+                                                  "as assign" \
+                                                  " on gift.id=assign.giftId where gift.status='normal' " \
+                                                  "and gift.failTime > %s and assign.platformId = %s and gift.gameId = %s " \
+                                                  "and assign.status='normal' and assign.assignNum>0 " \
+                                                  "and gift.isSpecify=0 " \
+                                                  "and gift.id not in(%s)" % (
+                                                      now, SDK_PLATFORM_ID, game['id'], already_get_gift_id_list_str)
+            if len(specify_user_gift_id_list) > 0:
+                # 获取指定了用户的还有剩余礼包的礼包数
+                get_specify_user_gift_count_sql = "select count(*) from cms_gameGift as gift join cms_gameGiftAssign " \
+                                                  "as assign" \
+                                                  " on gift.id=assign.giftId where gift.status='normal' " \
+                                                  "and gift.failTime > %s and assign.platformId = %s " \
+                                                  "and assign.status='normal' and assign.assignNum>0 " \
+                                                  "and gift.isSpecify=1 and gift.gameId = %s " \
+                                                  "and gift.id in(%s) and gift.id not in(%s) " \
+                                                  % (now, SDK_PLATFORM_ID, game['id'], specify_user_gift_id_list_str,
+                                                     already_get_gift_id_list_str)
+            else:
+                # 获取指定了用户的还有剩余礼包的礼包数
+                get_specify_user_gift_count_sql = None
         else:
-            # 获取指定了用户的还有剩余礼包的礼包数
-            get_specify_user_gift_count_sql = None
-    else:
-        # 获取没有指定用户的还有剩余礼包的礼包数
-        get_not_specify_user_gift_count_sql = "select count(*) from cms_gameGift as gift join cms_gameGiftAssign " \
-                                              "as assign" \
-                                              " on gift.id=assign.giftId where gift.status='normal' " \
-                                              "and gift.failTime > %s and assign.platformId = %s and gift.gameId = %s " \
-                                              "and assign.status='normal' and assign.assignNum>0 " \
-                                              "and gift.isSpecify=0 " \
-                                              % (now, SDK_PLATFORM_ID, game['id'])
-        if len(specify_user_gift_id_list) > 0:
-            # 获取指定了用户的还有剩余礼包的礼包数
-            get_specify_user_gift_count_sql = "select count(*) from cms_gameGift as gift join cms_gameGiftAssign" \
-                                              " as assign" \
-                                              " on gift.id=assign.giftId where gift.status='normal' " \
-                                              "and gift.failTime > %s and assign.platformId = %s " \
-                                              "and assign.status='normal' and assign.assignNum>0 " \
-                                              "and gift.isSpecify=1 and gift.gameId = %s " \
-                                              "and gift.id in(%s)" \
-                                              % (now, SDK_PLATFORM_ID, game['id'], specify_user_gift_id_list_str)
+            # 获取没有指定用户的还有剩余礼包的礼包数
+            get_not_specify_user_gift_count_sql = "select count(*) from cms_gameGift as gift join cms_gameGiftAssign " \
+                                                  "as assign" \
+                                                  " on gift.id=assign.giftId where gift.status='normal' " \
+                                                  "and gift.failTime > %s and assign.platformId = %s and gift.gameId = %s " \
+                                                  "and assign.status='normal' and assign.assignNum>0 " \
+                                                  "and gift.isSpecify=0 " \
+                                                  % (now, SDK_PLATFORM_ID, game['id'])
+            if len(specify_user_gift_id_list) > 0:
+                # 获取指定了用户的还有剩余礼包的礼包数
+                get_specify_user_gift_count_sql = "select count(*) from cms_gameGift as gift join cms_gameGiftAssign" \
+                                                  " as assign" \
+                                                  " on gift.id=assign.giftId where gift.status='normal' " \
+                                                  "and gift.failTime > %s and assign.platformId = %s " \
+                                                  "and assign.status='normal' and assign.assignNum>0 " \
+                                                  "and gift.isSpecify=1 and gift.gameId = %s " \
+                                                  "and gift.id in(%s)" \
+                                                  % (now, SDK_PLATFORM_ID, game['id'], specify_user_gift_id_list_str)
+            else:
+                # 获取指定了用户的还有剩余礼包的礼包数
+                get_specify_user_gift_count_sql = None
+        not_specify_count = mysql_cms_read_session.execute(get_not_specify_user_gift_count_sql).scalar()
+        if get_specify_user_gift_count_sql is not None:
+            specify_count = mysql_cms_read_session.execute(get_specify_user_gift_count_sql).scalar()
         else:
-            # 获取指定了用户的还有剩余礼包的礼包数
-            get_specify_user_gift_count_sql = None
-    not_specify_count = mysql_cms_session.execute(get_not_specify_user_gift_count_sql).scalar()
-    if get_specify_user_gift_count_sql is not None:
-        specify_count = mysql_cms_session.execute(get_specify_user_gift_count_sql).scalar()
-    else:
-        specify_count = 0
-    mysql_cms_session.close()
+            specify_count = 0
+    except Exception, err:
+        service_logger.error(err.message)
+        mysql_cms_read_session.rollback()
+    finally:
+        mysql_cms_read_session.close()
     return not_specify_count + specify_count
 
 
 # 获取用户可以看到的礼包数
 def get_user_can_see_gift_count(ucid=None, appid=None):
-    from run import mysql_cms_session
+    from run import mysql_cms_read_session
     game = get_game_info_by_appid(appid)
     if game is None:
         return 0
     now = int(time.time())
+    already_get_gift_count = 0
     find_user_already_get_gift_count_sql = "select count(distinct(log.giftId)) from cms_gameGiftLog as log " \
                                            "join cms_gameGift as gift on log.giftId = gift.id where log.gameId = %s" \
                                            " and gift.status='normal' and log.status = 'normal'" \
                                            " and gift.failTime > %s and log.uid = %s " % (game['id'], now, ucid)
-    already_get_gift_count = mysql_cms_session.execute(find_user_already_get_gift_count_sql).scalar()
+    try:
+        already_get_gift_count = mysql_cms_read_session.execute(find_user_already_get_gift_count_sql).scalar()
+    except Exception, err:
+        service_logger.error(err.message)
+        mysql_cms_read_session.rollback()
+    finally:
+        mysql_cms_read_session.close()
     unget_count = get_user_gift_count(ucid, appid)
     return unget_count + already_get_gift_count
 
 
 # 获取用户已经领取的并且在今天发布的礼包列表
 def get_user_already_get_and_today_publish_gift_id_list(ucid=None, game_id=None):
-    from run import mysql_cms_session
+    from run import mysql_cms_read_session
     now = int(time.time())
     start_timestamp = int(now - (now % 86400) + time.timezone)
     end_timestamp = int(start_timestamp + 86399)
@@ -379,8 +392,15 @@ def get_user_already_get_and_today_publish_gift_id_list(ucid=None, game_id=None)
                                      " and gift.publishTime > %s and gift.publishTime < %s " \
                                      " and gift.failTime > %s and log.uid = %s " % (game_id, start_timestamp,
                                                                                     end_timestamp, now, ucid)
-    already_get_gift_list = mysql_cms_session.execute(find_user_already_get_gift_sql).fetchall()
+    already_get_gift_list = []
     gift_id_list = []
+    try:
+        already_get_gift_list = mysql_cms_read_session.execute(find_user_already_get_gift_sql).fetchall()
+    except Exception, err:
+        service_logger.error(err.message)
+        mysql_cms_read_session.rollback()
+    finally:
+        mysql_cms_read_session.close()
     for gift in already_get_gift_list:
         gift_id_list.append(str(gift['giftId']))
     return gift_id_list
@@ -388,107 +408,114 @@ def get_user_already_get_and_today_publish_gift_id_list(ucid=None, game_id=None)
 
 # 获取用户可以看到的礼包列表
 def get_user_can_see_gift_list(ucid=None, game_id=None, start_index=None, end_index=None):
-    from run import mysql_cms_session
+    from run import mysql_cms_read_session
     from run import SDK_PLATFORM_ID
     now = int(time.time())
-    find_user_already_get_gift_id_sql = "select distinct(giftId) from cms_gameGiftLog where gameId = %s" \
-                                        " and status = 'normal' and uid = %s " % (game_id, ucid)
-    gift_id_list = mysql_cms_session.execute(find_user_already_get_gift_id_sql).fetchall()
-    already_get_gift_id_list = []
-    for gift_id in gift_id_list:
-        already_get_gift_id_list.append(str(gift_id['giftId']))
-    already_get_gift_id_list_str = ",".join(already_get_gift_id_list)
+    unget_gifts_page_list = []
+    try:
+        find_user_already_get_gift_id_sql = "select distinct(giftId) from cms_gameGiftLog where gameId = %s" \
+                                            " and status = 'normal' and uid = %s " % (game_id, ucid)
+        gift_id_list = mysql_cms_read_session.execute(find_user_already_get_gift_id_sql).fetchall()
+        already_get_gift_id_list = []
+        for gift_id in gift_id_list:
+            already_get_gift_id_list.append(str(gift_id['giftId']))
+        already_get_gift_id_list_str = ",".join(already_get_gift_id_list)
 
-    from Service.StorageService import get_uid_by_ucid
-    uid = get_uid_by_ucid(ucid)
-    game_gift_list_sql = "select id from cms_gameGift where status = 'normal' and gameId = %s" % (game_id,)
-    game_gift_list = mysql_cms_session.execute(game_gift_list_sql).fetchall()
-    game_gift_array = []
-    for game_gift in game_gift_list:
-        game_gift_array.append(str(game_gift['id']))
-    game_gift_array_str = ",".join(game_gift_array)
+        from Service.StorageService import get_uid_by_ucid
+        uid = get_uid_by_ucid(ucid)
+        game_gift_list_sql = "select id from cms_gameGift where status = 'normal' and gameId = %s" % (game_id,)
+        game_gift_list = mysql_cms_read_session.execute(game_gift_list_sql).fetchall()
+        game_gift_array = []
+        for game_gift in game_gift_list:
+            game_gift_array.append(str(game_gift['id']))
+        game_gift_array_str = ",".join(game_gift_array)
 
-    append_gift_id_list = []
-    if len(game_gift_array) > 0:
-        find_specify_user_gift_id_sql = "select distinct(giftId) from cms_gameGiftSpecify where giftId in (%s)" \
-                                        " and value = '%s' " % (game_gift_array_str, uid)
-        append_gift_id_list = mysql_cms_session.execute(find_specify_user_gift_id_sql).fetchall()
+        append_gift_id_list = []
+        if len(game_gift_array) > 0:
+            find_specify_user_gift_id_sql = "select distinct(giftId) from cms_gameGiftSpecify where giftId in (%s)" \
+                                            " and value = '%s' " % (game_gift_array_str, uid)
+            append_gift_id_list = mysql_cms_read_session.execute(find_specify_user_gift_id_sql).fetchall()
 
-    specify_user_gift_id_list = []
-    for gift_id in append_gift_id_list:
-        specify_user_gift_id_list.append(str(gift_id['giftId']))
-    specify_user_gift_id_list_str = ",".join(specify_user_gift_id_list)
+        specify_user_gift_id_list = []
+        for gift_id in append_gift_id_list:
+            specify_user_gift_id_list.append(str(gift_id['giftId']))
+        specify_user_gift_id_list_str = ",".join(specify_user_gift_id_list)
 
-    if len(already_get_gift_id_list) > 0:
-        if len(specify_user_gift_id_list) > 0:
-            unget_gifts_page_list_sql = "select * from (select a.id,a.gameId,a.gameName,a.name,a.gift," \
-                                        "a.isAfReceive, a.isBindPhone, a.isVerified, c.forTime as forTime," \
-                                        "a.content,a.label,a.uid,a.publishTime,a.failTime,a.status," \
-                                        "b.num, b.assignNum, ifnull(c.code,'') as code,if(c.code<>'', 1, 0) " \
-                                        "as is_get from cms_gameGift as a join cms_gameGiftAssign as b " \
-                                        "on a.id=b.giftId " \
-                                        "left outer join cms_gameGiftLog as c on c.giftId=a.id and c.uid= %s " \
-                                        "where a.gameId=%s and a.failTime > %s and b.platformId=%s " \
-                                        "and a.status='normal' and b.status='normal' " \
-                                        "and ((a.assignNum > 0 and b.assignNum > 0) " \
-                                        "and ((a.isSpecify=1 and a.id in (%s)) or (a.isSpecify=0)) or a.id in (%s) ) " \
-                                        ") as d " \
-                                        "where d.code<>'' or (d.assignNum>0 and d.code='')" \
-                                        " order by d.is_get asc , d.forTime desc, d.id desc limit %s, %s " \
-                                        % (ucid, game_id, now, SDK_PLATFORM_ID, specify_user_gift_id_list_str,
-                                           already_get_gift_id_list_str, start_index, end_index)
+        if len(already_get_gift_id_list) > 0:
+            if len(specify_user_gift_id_list) > 0:
+                unget_gifts_page_list_sql = "select * from (select a.id,a.gameId,a.gameName,a.name,a.gift," \
+                                            "a.isAfReceive, a.isBindPhone, a.isVerified, c.forTime as forTime," \
+                                            "a.content,a.label,a.uid,a.publishTime,a.failTime,a.status," \
+                                            "b.num, b.assignNum, ifnull(c.code,'') as code,if(c.code<>'', 1, 0) " \
+                                            "as is_get from cms_gameGift as a join cms_gameGiftAssign as b " \
+                                            "on a.id=b.giftId " \
+                                            "left outer join cms_gameGiftLog as c on c.giftId=a.id and c.uid= %s " \
+                                            "where a.gameId=%s and a.failTime > %s and b.platformId=%s " \
+                                            "and a.status='normal' and b.status='normal' " \
+                                            "and ((a.assignNum > 0 and b.assignNum > 0) " \
+                                            "and ((a.isSpecify=1 and a.id in (%s)) or (a.isSpecify=0)) or a.id in (%s) ) " \
+                                            ") as d " \
+                                            "where d.code<>'' or (d.assignNum>0 and d.code='')" \
+                                            " group by d.id order by d.is_get asc , d.forTime desc, d.id desc limit %s, %s " \
+                                            % (ucid, game_id, now, SDK_PLATFORM_ID, specify_user_gift_id_list_str,
+                                               already_get_gift_id_list_str, start_index, end_index)
+            else:
+                unget_gifts_page_list_sql = "select * from (select a.id,a.gameId,a.gameName,a.name,a.gift," \
+                                            "a.isAfReceive, a.isBindPhone, a.isVerified, c.forTime as forTime," \
+                                            "a.content,a.label,a.uid,a.publishTime,a.failTime,a.status," \
+                                            "b.num, b.assignNum, ifnull(c.code,'') as code,if(c.code<>'', 1, 0) " \
+                                            "as is_get from cms_gameGift as a join cms_gameGiftAssign as b " \
+                                            "on a.id=b.giftId " \
+                                            "left outer join cms_gameGiftLog as c on c.giftId=a.id and c.uid= %s " \
+                                            "where a.gameId=%s and a.failTime > %s and b.platformId=%s " \
+                                            "and a.status='normal' and b.status='normal' " \
+                                            "and ((a.assignNum > 0 and b.assignNum > 0) " \
+                                            "and (a.isSpecify=0) or a.id in (%s) ) " \
+                                            ") as d " \
+                                            "where d.code<>'' or (d.assignNum>0 and d.code='')" \
+                                            " group by d.id order by d.is_get asc , d.forTime desc, d.id desc limit %s, %s " \
+                                            % (ucid, game_id, now, SDK_PLATFORM_ID,
+                                               already_get_gift_id_list_str, start_index, end_index)
         else:
-            unget_gifts_page_list_sql = "select * from (select a.id,a.gameId,a.gameName,a.name,a.gift," \
-                                        "a.isAfReceive, a.isBindPhone, a.isVerified, c.forTime as forTime," \
-                                        "a.content,a.label,a.uid,a.publishTime,a.failTime,a.status," \
-                                        "b.num, b.assignNum, ifnull(c.code,'') as code,if(c.code<>'', 1, 0) " \
-                                        "as is_get from cms_gameGift as a join cms_gameGiftAssign as b " \
-                                        "on a.id=b.giftId " \
-                                        "left outer join cms_gameGiftLog as c on c.giftId=a.id and c.uid= %s " \
-                                        "where a.gameId=%s and a.failTime > %s and b.platformId=%s " \
-                                        "and a.status='normal' and b.status='normal' " \
-                                        "and ((a.assignNum > 0 and b.assignNum > 0) " \
-                                        "and (a.isSpecify=0) or a.id in (%s) ) " \
-                                        ") as d " \
-                                        "where d.code<>'' or (d.assignNum>0 and d.code='')" \
-                                        " order by d.is_get asc , d.forTime desc, d.id desc limit %s, %s " \
-                                        % (ucid, game_id, now, SDK_PLATFORM_ID,
-                                           already_get_gift_id_list_str, start_index, end_index)
-    else:
-        if len(specify_user_gift_id_list) > 0:
-            unget_gifts_page_list_sql = "select * from (select a.id,a.gameId,a.gameName,a.name,a.gift," \
-                                        "a.isAfReceive, a.isBindPhone, a.isVerified, c.forTime as forTime," \
-                                        "a.content,a.label,a.uid,a.publishTime,a.failTime,a.status," \
-                                        "b.num, b.assignNum, ifnull(c.code,'') as code,if(c.code<>'', 1, 0) " \
-                                        "as is_get from cms_gameGift as a join cms_gameGiftAssign as b " \
-                                        "on a.id=b.giftId " \
-                                        "left outer join cms_gameGiftLog as c on c.giftId=a.id and c.uid= %s " \
-                                        "where ((a.isSpecify = 1 and a.id in (%s)) or (a.isSpecify = 0)) " \
-                                        "and a.gameId=%s and a.failTime > %s and b.platformId=%s " \
-                                        "and a.status='normal' and b.status='normal' " \
-                                        "and (a.assignNum > 0 and b.assignNum > 0) " \
-                                        ") as d " \
-                                        "where d.code<>'' or (d.assignNum>0 and d.code='')" \
-                                        " order by d.is_get asc , d.forTime desc, d.id desc limit %s, %s " \
-                                        % (ucid, specify_user_gift_id_list_str, game_id, now, SDK_PLATFORM_ID,
-                                           start_index, end_index)
-        else:
-            unget_gifts_page_list_sql = "select * from (select a.id,a.gameId,a.gameName,a.name,a.gift," \
-                                        "a.isAfReceive, a.isBindPhone, a.isVerified, c.forTime as forTime," \
-                                        "a.content,a.label,a.uid,a.publishTime,a.failTime,a.status," \
-                                        "b.num, b.assignNum, ifnull(c.code,'') as code,if(c.code<>'', 1, 0) " \
-                                        "as is_get from cms_gameGift as a join cms_gameGiftAssign as b " \
-                                        "on a.id=b.giftId " \
-                                        "left outer join cms_gameGiftLog as c on c.giftId=a.id and c.uid= %s " \
-                                        "where a.isSpecify = 0 " \
-                                        "and a.gameId=%s and a.failTime > %s and b.platformId=%s " \
-                                        "and a.status='normal' and b.status='normal' " \
-                                        "and (a.assignNum > 0 and b.assignNum > 0) " \
-                                        ") as d " \
-                                        "where d.code<>'' or (d.assignNum>0 and d.code='')" \
-                                        " order by d.is_get asc , d.forTime desc, d.id desc limit %s, %s " \
-                                        % (ucid, game_id, now, SDK_PLATFORM_ID, start_index, end_index)
-    unget_gifts_page_list = mysql_cms_session.execute(unget_gifts_page_list_sql).fetchall()
+            if len(specify_user_gift_id_list) > 0:
+                unget_gifts_page_list_sql = "select * from (select a.id,a.gameId,a.gameName,a.name,a.gift," \
+                                            "a.isAfReceive, a.isBindPhone, a.isVerified, c.forTime as forTime," \
+                                            "a.content,a.label,a.uid,a.publishTime,a.failTime,a.status," \
+                                            "b.num, b.assignNum, ifnull(c.code,'') as code,if(c.code<>'', 1, 0) " \
+                                            "as is_get from cms_gameGift as a join cms_gameGiftAssign as b " \
+                                            "on a.id=b.giftId " \
+                                            "left outer join cms_gameGiftLog as c on c.giftId=a.id and c.uid= %s " \
+                                            "where ((a.isSpecify = 1 and a.id in (%s)) or (a.isSpecify = 0)) " \
+                                            "and a.gameId=%s and a.failTime > %s and b.platformId=%s " \
+                                            "and a.status='normal' and b.status='normal' " \
+                                            "and (a.assignNum > 0 and b.assignNum > 0) " \
+                                            ") as d " \
+                                            "where d.code<>'' or (d.assignNum>0 and d.code='')" \
+                                            " order by d.is_get asc , d.forTime desc, d.id desc limit %s, %s " \
+                                            % (ucid, specify_user_gift_id_list_str, game_id, now, SDK_PLATFORM_ID,
+                                               start_index, end_index)
+            else:
+                unget_gifts_page_list_sql = "select * from (select a.id,a.gameId,a.gameName,a.name,a.gift," \
+                                            "a.isAfReceive, a.isBindPhone, a.isVerified, c.forTime as forTime," \
+                                            "a.content,a.label,a.uid,a.publishTime,a.failTime,a.status," \
+                                            "b.num, b.assignNum, ifnull(c.code,'') as code,if(c.code<>'', 1, 0) " \
+                                            "as is_get from cms_gameGift as a join cms_gameGiftAssign as b " \
+                                            "on a.id=b.giftId " \
+                                            "left outer join cms_gameGiftLog as c on c.giftId=a.id and c.uid= %s " \
+                                            "where a.isSpecify = 0 " \
+                                            "and a.gameId=%s and a.failTime > %s and b.platformId=%s " \
+                                            "and a.status='normal' and b.status='normal' " \
+                                            "and (a.assignNum > 0 and b.assignNum > 0) " \
+                                            ") as d " \
+                                            "where d.code<>'' or (d.assignNum>0 and d.code='')" \
+                                            " order by d.is_get asc , d.forTime desc, d.id desc limit %s, %s " \
+                                            % (ucid, game_id, now, SDK_PLATFORM_ID, start_index, end_index)
+        unget_gifts_page_list = mysql_cms_read_session.execute(unget_gifts_page_list_sql).fetchall()
+    except Exception, err:
+        service_logger.error(err.message)
+        mysql_cms_read_session.rollback()
+    finally:
+        mysql_cms_read_session.close()
     return unget_gifts_page_list
 
 
@@ -589,9 +616,9 @@ def get_stored_value_card_list(ucid, status=0, start_index=0, end_index=10):
                     'method': ''
                 }
                 if card['startTime']:
-                    item['start_time'] = card['startTime']
+                    item['start_time'] = "%s" % (card['startTime'],)
                 if card['endTime']:
-                    item['end_time'] = card['endTime']
+                    item['end_time'] = "%s" % (card['endTime'],)
                 if card['untimed'] == 1:
                     item['unlimited_time'] = True
                 if game_info:
@@ -849,7 +876,7 @@ def anfeng_helper_get_gift_real_time_count(ids_list_str):
 
 
 def anfeng_helper_get_user_gifts(ucid, start_index, end_index):
-    from run import mysql_cms_session
+    from run import mysql_cms_read_session
     gift_list = []
     data = {
         'total_count': 0,
@@ -863,8 +890,8 @@ def anfeng_helper_get_user_gifts(ucid, start_index, end_index):
                         " where gift.status = 'normal' and log.status = 'normal' and log.uid = %s limit %s, %s" \
                         % (ucid, start_index, end_index)
     try:
-        total_count = mysql_cms_session.execute(user_gift_total_count_sql).scalar()
-        user_gift_list = mysql_cms_session.execute(get_user_gift_sql).fetchall()
+        total_count = mysql_cms_read_session.execute(user_gift_total_count_sql).scalar()
+        user_gift_list = mysql_cms_read_session.execute(get_user_gift_sql).fetchall()
         for gift in user_gift_list:
             game = get_game_info_by_gameid(gift['gameId'])
             gift_info = {
@@ -889,10 +916,10 @@ def anfeng_helper_get_user_gifts(ucid, start_index, end_index):
         data['total_count'] = total_count
         data['gift_list'] = gift_list
     except Exception, err:
-        mysql_cms_session.rollback()
+        mysql_cms_read_session.rollback()
         return anfeng_helper_get_user_gifts(ucid, start_index, end_index)
     finally:
-        mysql_cms_session.close()
+        mysql_cms_read_session.close()
     return data
 
 
@@ -982,17 +1009,17 @@ def get_game_info_by_gameid(game_id=0):
 
 #  获取用户淘号的总次数
 def get_user_tao_gift_total_count(ucid=None, platform_id=4):
-    from run import mysql_cms_session
+    from run import mysql_cms_read_session
     find_tao_gift_total_count_sql = "select count(*) from cms_gameGiftLog where status = 'normal' and " \
                                     " platformId = %s and type = 1 and uid = %s " % (platform_id, ucid)
     try:
-        total_count = mysql_cms_session.execute(find_tao_gift_total_count_sql).scalar()
+        total_count = mysql_cms_read_session.execute(find_tao_gift_total_count_sql).scalar()
         return total_count
     except Exception, err:
         service_logger.error("获取用户淘号总次数发生异常：%s" % (err.message,))
-        mysql_cms_session.rollback()
+        mysql_cms_read_session.rollback()
     finally:
-        mysql_cms_session.close()
+        mysql_cms_read_session.close()
     return 0
 
 
@@ -1035,9 +1062,9 @@ def get_game_info_by_gameid(gameid=None):
 # 从mysql中查看是否有用户相关的公告
 def get_user_notice_from_mysql(username=None, rtype=None, vip=None, appid=None, cur_zone=None):
     now = int(time.time())
-    data_list = UsersMessage.objects(Q(type='notice')
+    data_list = UsersMessage.objects(Q(type='notice')&Q(closed=0)
                                      & (
-                                         Q(is_time=0) | (Q(is_time=1) & Q(end_time__gte=now))
+                                         Q(is_time=0) | (Q(is_time=1) & Q(start_time__lte=now) & Q(end_time__gte=now))
                                      )
                                      )
     notice_list = []
@@ -1140,16 +1167,20 @@ def sdk_api_request_check(func):
         # 数据库连接状态检测
         from run import mysql_session
         from run import mysql_cms_session
+        from run import mysql_cms_read_session
         try:
             mysql_session.execute('select 1').scalar()
             mysql_cms_session.execute('select 1').scalar()
+            mysql_cms_read_session.execute('select 1').scalar()
         except Exception, err:
             mysql_session.rollback()
             mysql_cms_session.rollback()
+            mysql_cms_read_session.rollback()
             service_logger.error(err.message)
         finally:
             mysql_session.close()
             mysql_cms_session.close()
+            mysql_cms_read_session.close()
         from Utils.EncryptUtils import sdk_api_params_check, sdk_api_check_sign
         is_params_checked = sdk_api_params_check(request)
         if is_params_checked is False:

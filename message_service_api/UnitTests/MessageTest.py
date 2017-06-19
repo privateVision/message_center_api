@@ -1,11 +1,10 @@
 # _*_ coding: utf8 _*_
 import json
 import unittest
+from urllib import urlencode
 
 import requests
 from mongoengine import Q, connect
-
-from Utils.EncryptUtils import get_cms_md5_sign
 
 """
 消息功能测试
@@ -17,64 +16,86 @@ class MessageFunctionTest(unittest.TestCase):
         connect('users_message', host='localhost', port=27017)
 
     # def test_add_message(self):
-    #     from MongoModel.MessageModel import UsersMessage
-    #     from MongoModel.UserMessageModel import UserMessage
-    #     from MongoModel.UserReadMessageLogModel import UserReadMessageLog
-    #     UsersMessage.objects(Q(type='message')).delete()
-    #     UserMessage.objects(Q(type='message')).delete()
-    #     UserReadMessageLog.objects(Q(type='message')).delete()
     #     data = {
-    #         "game": [{"apk_id": 766, "zone_id_list":["S1帝国时代"]}],
-    #         "users_type":"255,3",
-    #         "vip_user":"3",
-    #         "specify_user":"312,612",
-    #         "id":2,
-    #         "type": 2,
-    #         "title":"测试消息",
-    #         "description":"消息摘要",
-    #         "content":"消息详细内容",
-    #         "url":"http://baidu.com",
-    #         "img":"http://img-url/1.jpg",
-    #         "msg_type":"image_text",
-    #         "send_time":1488426631,
-    #         "create_time":223234533
+    #         "ucid": 10010,
+    #         "title":"223123",
+    #         "description":"哎呀4.2",
+    #         "content":"呵呵呵呵呵",
+    #         "_sign": '8a5b4898853549be53cf2065a8d74ff7'
     #     }
-    #     headers = {"Content-Type": "application/json"}
-    #     data_json = json.dumps(data)
-    #     sign = get_cms_md5_sign(data_json)
-    #     r = requests.post("http://dev.sdkapi.com/msa/v4/message?sign=%s" % (sign,), data=data_json, headers=headers)
-    #     self.assertEqual(r.status_code, 200)
-    #     print r.text
-    #
-    # def test_delete_message(self):
-    #     data = {
-    #         "id": 2
-    #     }
-    #     headers = {"Content-Type": "application/json"}
-    #     data_json = json.dumps(data)
-    #     sign = get_cms_md5_sign(data_json)
-    #     r = requests.delete("http://localhost:5000/v4/message?sign=%s" % (sign,), data=data_json, headers=headers)
+    #     r = requests.post("http://localhost:5000/msa/v4.2/account_message", data=data)
     #     self.assertEqual(r.status_code, 200)
     #     print r.text
 
-    def test_get_message_list(self):
-        body_data = {
-            '_sign': '7004f02a9d4f466c79c9dace143541e7',
-            '_token': 'a1bg7dhi95440sosoggk40ss8',
-            '_appid': 778
-        }
-        r = requests.post('http://sdkv4test.qcwanwan.com/msa/v4/messages', data=body_data)
-        print r.text
+    # def test_delete_message(self):
+    #     data = {
+    #         "id": "2"
+    #     }
+    #     from Utils.EncryptUtils import get_md5_sign
+    #     sign = get_md5_sign(data)
+    #     r = requests.delete("http://localhost:5000/v4/message?sign=%s" % (sign,), data=data)
+    #     self.assertEqual(r.status_code, 200)
+    #     print r.text
+
+    # def test_get_message_list(self):
+    #     body_data = {
+    #         '_sign': '141aa24d6419b7ba2850bdcab13e95da',
+    #         '_token': 'c31fc6b6b2f7b993713c124f8104209d',
+    #         '_appid': 2
+    #     }
+    #     r = requests.post('http://localhost:5000/msa/v4/messages', data=body_data)
+    #     print r.text
 
     # def test_set_message_readed(self):
     #     body_data = {
-    #         '_sign': '57a94a14cd75f480b506c35063f6e26a',
-    #         '_token': '9jxmym7tin8kgcsg8c4w0scks',
+    #         '_sign': 'ed81ac86bc1fca205703c27d16d0d70e',
+    #         '_token': 'bb427a702d53dbb0cdd4f001fb301620',
     #         'type': 'message',
-    #         'message_id': 6855,
-    #         '_appid': 778
+    #         'message_id': 2,
+    #         '_appid': 2
     #     }
-    #     r = requests.post('http://sdkv4test.qcwanwan.com/msa/v4/message/read', data=body_data)
+    #     r = requests.post('http://dev.sdkapi.com/msa/v4/message/read', data=body_data)
+    #     print r.text
+
+
+    # def test_delete_message_list(self):
+    #     body_data = {
+    #         '_sign': 'ed81ac86bc1fca205703c27d16d0d70e',
+    #         '_token': '4da803965a27ce16aba27c597819b17c',
+    #         'id_list': "[1497403898, 1497404654]",
+    #         '_appid': 2
+    #     }
+    #     r = requests.delete('http://localhost:5000/msa/v4.2/messages', data=body_data)
+    #     print r.text
+
+    # def test_delete_all_message(self):
+    #     body_data = {
+    #         '_sign': 'ed81ac86bc1fca205703c27d16d0d70e',
+    #         '_token': '4da803965a27ce16aba27c597819b17c',
+    #         'delete_all': 1,
+    #         '_appid': 2
+    #     }
+    #     r = requests.delete('http://localhost:5000/msa/v4.2/messages', data=body_data)
+    #     print r.text
+
+    # def test_set_message_list_readed(self):
+    #     body_data = {
+    #         '_sign': 'ed81ac86bc1fca205703c27d16d0d70e',
+    #         '_token': '4da803965a27ce16aba27c597819b17c',
+    #         'id_list': "[1497403898]",
+    #         '_appid': 2
+    #     }
+    #     r = requests.post('http://localhost:5000/msa/v4.2/message/read', data=body_data)
+    #     print r.text
+
+    # def test_set_all_message_readed(self):
+    #     body_data = {
+    #         '_sign': 'ed81ac86bc1fca205703c27d16d0d70e',
+    #         '_token': '4da803965a27ce16aba27c597819b17c',
+    #         'read_all': 1,
+    #         '_appid': 2
+    #     }
+    #     r = requests.post('http://localhost:5000/msa/v4.2/message/read', data=body_data)
     #     print r.text
 
     def tearDown(self):
