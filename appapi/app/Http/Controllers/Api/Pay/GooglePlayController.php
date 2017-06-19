@@ -105,8 +105,8 @@ class GooglePlayController extends Controller {
         $resp = $service->purchases_products->get( $packageName, $productId, $token, $optps );
         log_info('googleplay', ['resdata'=>$resp], 'googleplay平台检查付款');
 
-        if($resp['consumptionState'] == 1 && $resp['purchaseState'] == 0) {
-            return true;
+        if(isset($resp['purchaseState']) && $resp['purchaseState'] === 0) {
+            return $resp;
         } else {
             throw new ApiException(ApiException::Remind,  trans('messages.error_googlepaly_verify'));
         }
