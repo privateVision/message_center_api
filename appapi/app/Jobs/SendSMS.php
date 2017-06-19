@@ -80,7 +80,7 @@ class SendSMS extends Job
             'text' => $this->content,
         ];
 
-        $restext = http_request($this->smsconfig['sender'], $data);
+        $restext = http_curl($this->smsconfig['sender'], $data, false, array(), 'str');
 
         log_debug('sendsms', ['req' => $data, 'res' => $restext]);
 

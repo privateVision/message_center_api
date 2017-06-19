@@ -34,3 +34,6 @@ CREATE TABLE `service_question` (
   `update_time` int(11) DEFAULT NULL,
   PRIMARY KEY (`id`)
 ) ENGINE=MyISAM AUTO_INCREMENT=7 DEFAULT CHARSET=utf8;
+
+/**20170614**/
+ALTER TABLE `procedures_products` CHANGE `pay_method` `pay_method` VARCHAR(255) NULL COMMENT '商品可用的支付方式，多种支付方式逗号分隔，见procedures_extend.pay_method字段，从0开始每4位加1：0:wechat,\n1:alipay,\n2:unionpay,\n3:mycard,\n4:nowpay_wechat,\n5:paypal';

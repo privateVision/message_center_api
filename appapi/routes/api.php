@@ -86,7 +86,7 @@ Route::group(['prefix' => 'api'], function () {
     Route::any('user_sub/set_nickname', 'Api\\UserSubController@SetNicknameAction');                        // 设置小号昵称
 
     Route::any('pay/order/new', 'Api\\Pay\\OrderController@NewAction');                                     // 创建订单
-    Route::any('pay/order/f/new', 'Api\\Pay\\OrderController@NewAction');                                   // XXX 4.0 充值F币的订单
+    Route::any('pay/order/{product_type}/new', 'Api\\Pay\\OrderController@NewAction');                      // XXX 4.0 充值F币的订单，原型为：pay/order/f/new
     Route::any('pay/order/info', 'Api\\Pay\\OrderController@InfoAction');                                   // 获取订单信息
     Route::any('pay/order/config', 'Api\\Pay\\OrderController@ConfigAction');                               // 获取订单(支付）配置
 
@@ -126,6 +126,8 @@ Route::group(['prefix' => 'api'], function () {
     Route::any('tool/user/auth', 'Api\\Tool\\AuthAccountController@AuthAccountAction');                     // 检查用户认证
     Route::any('tool/user_sub/freeze', 'Api\\Tool\\AuthAccountController@FreezeSubAction');                 // 检查用户账号冻结
     Route::any('tool/coupon/used_num', 'Api\\Tool\\CouponController@GetCouponUsedAction');                  // 获取优惠券发放、使用情况
+    Route::any('tool/auth_account/change_f', 'Api\\Tool\\AuthAccountController@ChangeFAction');             // f币变动
+
     
     Route::any('v1.0/cp/info/order','Api\\CP\\OrderController@GetOrderInfoAction');                          // 获取订单信息
     Route::any('v1.0/cp/user/auth','Api\\CP\\UserController@CheckAuthAction');                               // 验证登陆是否有效

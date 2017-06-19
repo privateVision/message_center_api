@@ -76,25 +76,35 @@ class WechatController extends Controller {
             $rootNode->appendChild($node);
         }
 
-        // curl
-        $ch = curl_init();
-        curl_setopt($ch, CURLOPT_URL, 'https://api.mch.weixin.qq.com/pay/unifiedorder');
-        curl_setopt($ch, CURLOPT_TIMEOUT, 10);
-        curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 10);
-        curl_setopt($ch,CURLOPT_SSLCERTTYPE,'PEM');
-        curl_setopt($ch,CURLOPT_SSLCERT, $config['pemfile_cert']);
-        curl_setopt($ch,CURLOPT_SSLKEYTYPE,'PEM');
-        curl_setopt($ch,CURLOPT_SSLKEY, $config['pemfile_key']);
-        curl_setopt($ch, CURLOPT_NOSIGNAL, 1);
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-        curl_setopt($ch, CURLOPT_HTTPHEADER, array('Expect:'));
-        curl_setopt($ch, CURLOPT_POST, true);
-        curl_setopt($ch, CURLOPT_POSTFIELDS, $dom->saveXML());
+//        // curl
+//        $ch = curl_init();
+//        curl_setopt($ch, CURLOPT_URL, 'https://api.mch.weixin.qq.com/pay/unifiedorder');
+//        curl_setopt($ch, CURLOPT_TIMEOUT, 10);
+//        curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 10);
+//        curl_setopt($ch,CURLOPT_SSLCERTTYPE,'PEM');
+//        curl_setopt($ch,CURLOPT_SSLCERT, $config['pemfile_cert']);
+//        curl_setopt($ch,CURLOPT_SSLKEYTYPE,'PEM');
+//        curl_setopt($ch,CURLOPT_SSLKEY, $config['pemfile_key']);
+//        curl_setopt($ch, CURLOPT_NOSIGNAL, 1);
+//        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+//        curl_setopt($ch, CURLOPT_HTTPHEADER, array('Expect:'));
+//        curl_setopt($ch, CURLOPT_POST, true);
+//        curl_setopt($ch, CURLOPT_POSTFIELDS, $dom->saveXML());
+//
+//        $result = curl_exec($ch);
+//        curl_close($ch);
+//
+//        log_debug('微信统一下单', ['url' => 'https://api.mch.weixin.qq.com/pay/unifiedorder', 'reqdata' => $data, 'resdata' => $result]);
 
-        $result = curl_exec($ch);
-        curl_close($ch);
-
-        log_debug('微信统一下单', ['url' => 'https://api.mch.weixin.qq.com/pay/unifiedorder', 'reqdata' => $data, 'resdata' => $result]);
+        $result = http_curl('https://api.mch.weixin.qq.com/pay/unifiedorder', $dom->saveXML(), true, array(
+            CURLOPT_CONNECTTIMEOUT=>10,
+            CURLOPT_SSLCERTTYPE=>'PEM',
+            CURLOPT_SSLCERT=>$config['pemfile_cert'],
+            CURLOPT_SSLKEYTYPE=>'PEM',
+            CURLOPT_SSLKEY=>$config['pemfile_key'],
+            CURLOPT_NOSIGNAL=>1,
+            CURLOPT_HTTPHEADER=>array('Expect:')
+        ), 'str');
 
         if(!$result) {
             throw new ApiException(ApiException::Remind, trans('messages.pay_fail'));

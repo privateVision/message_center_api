@@ -66,12 +66,12 @@ class BaiduController extends Controller {
         );
 
         $url = self::PayHttp . 'CpOrderQuery.ashx';
-        $res = http_curl($url, $params, true);
-        if($res['cd'] == 1 && $res['Sign']==self::verify([$cfg['app_id'], $res['ResultCode'], urldecode($res['Content']), $cfg['app_key']])) {
+        $res = http_curl($url, $params);
+        if(isset($res['Sign']) && $res['Sign']==self::verify([$cfg['app_id'], $res['ResultCode'], urldecode($res['Content']), $cfg['app_key']])) {
             $result = base64_decode(urldecode($res['Content']));
-            return json_decode($result,true);
+            return json_decode($result, true);
         } else {
-            throw new ApiException(ApiException::Remind, $res['rspmsg']);
+            throw new ApiException(ApiException::Remind, trans('messages.http_request_error'));
         }
     }
 

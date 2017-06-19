@@ -143,6 +143,10 @@ class AppController extends Controller
                 'share' => httpsurl($this->procedure_extend->service_share),
                 'interval' => max(2000, $this->procedure_extend->heartbeat_interval),
                 'af_download' => httpsurl(env('af_download')),
+                'qrcode'=>!empty($this->procedure_extend->service_share)?url('web/qrcode?').http_build_query(
+                    array(
+                        'url'=>urlencode(httpsurl($this->procedure_extend->service_share)),
+                    )):'',
             ],
 
             'bind_phone' => [
@@ -209,33 +213,24 @@ class AppController extends Controller
     public function HotupdateAction() {
         $pid = $this->procedure->pid;
 
-        $sdkversion = $this->parameter->get('sdk_version'); // 4.0
-        if(!$sdkversion) {
-            $sdkversion = $this->parameter->tough('_version');// 4.1
+        $update = null;
+
+        $config = configex('common.hotupdate');
+
+        foreach($config as $v) {
+            if(!isset($v['pid']) || count($v['pid']) == 0 || in_array($pid, $v['pid'])) {
+                if(is_array($update) && $update['updateinfo']['version'] < $v['updateinfo']['version']) {
+                    $update = $v;
+                }
+            }
         }
 
-        if(in_array($pid, [1452, 1533, 1530])) {
-            $manifest = [];
-            $manifest['version'] = '1.0.0';
-            $manifest['bundles'][] = ['type' => 'lib', 'pkg' => 'com.anfeng.pay'];
+        return [
+            'manifest' => $update['manifest'],
+            'updates' => [
+                $update['updateinfo']
+            ]
+        ];
 
-            $updates = [];
-            $updates['pkg'] = 'com.anfeng.pay';
-            $updates['version'] = 403;
-            $updates['use_version'] = 403; // 回退版本，默认与version一致
-            $updates['url'] = httpsurl('http://afsdkhot.qcwan.com/anfeng/down/com.anfeng.pay403.apk');
-        } else {
-            $manifest = [];
-            $manifest['version'] = '1.0.0';
-            $manifest['bundles'][] = ['type'=>'lib','pkg'=>'com.anfeng.pay'];
-
-            $updates = [];
-            $updates['pkg'] = 'com.anfeng.pay';
-            $updates['version'] = 40;
-            $updates['use_version'] = 40; // 回退版本，默认与version一致
-            $updates['url'] = httpsurl('http://afsdkup.qcwan.com/down/com.anfeng.pay.apk');
-        }
-
-        return ['manifest'=>$manifest, 'updates'=>[$updates]];
     }
 }

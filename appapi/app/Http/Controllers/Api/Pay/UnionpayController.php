@@ -38,7 +38,7 @@ class UnionpayController extends Controller {
         ksort($data);
         $data['signature'] = static::rsaSign(sha1(static::encode($data)), $cert['pkey']);
 
-        $res = http_request($config['trade_url'], $data, true);
+        $res = http_curl($config['trade_url'], $data, true, array(), 'str');
 
         log_info('unionpayRequest', ['reqdata' => $data, 'resdata' => $res]);
 

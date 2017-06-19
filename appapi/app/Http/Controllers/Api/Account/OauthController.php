@@ -109,26 +109,12 @@ class OauthController extends Controller {
 
                 $username = username();
                 $password = rand(100000, 999999);
-                
-//                $user = new Ucuser;
-//                $user->uid = $username;
-//                $user->email = $username . "@anfan.com";
-//                $user->mobile = '';
-//                $user->nickname = $nickname ?: $username;
-//                $user->setPassword($password);
-//                $user->regtype = static::Type;
-//                $user->regip = getClientIp();
-//                $user->rid = $this->parameter->tough('_rid');
-//                $user->pid = $this->procedure->pid;
-//                $user->regdate = time();
-//                $user->save();
-                $udt = array(
+
+                $user = self::baseRegisterUser([
                     'uid'=>$username,
                     'nickname'=>$nickname ?: $username,
                     'password'=>$password
-                );
-                //平台注册账号
-                $user = self::baseRegisterUser($udt);
+                ]);
                 
                 $user_oauth = new UcuserOauth;
                 $user_oauth->ucid = $user->ucid;
@@ -142,7 +128,7 @@ class OauthController extends Controller {
                 $user_info->avatar = $avatar ? $avatar : env('default_avatar');
                 $user_info->saveAndCache();
 
-                //user_log($user, $this->procedure, 'register', '【注册】通过%s注册，密码[%s]', $ctype['text'], $user->password);
+                user_log($user, $this->procedure, 'register', '【注册】通过%s注册，密码[%s]', $ctype['text'], $user->password);
             } else {
                 throw new ApiException(ApiException::OauthNotRegister, trans('messages.not_register'));
             }

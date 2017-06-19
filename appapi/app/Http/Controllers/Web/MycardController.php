@@ -110,7 +110,7 @@ class MycardController extends \App\Controller {
 
             // 确认交易
             $resdata = ['AuthCode' => $order_extend->extra_params['AuthCode']];
-            $result = http_request($config['TradeQuery'], $resdata, true);
+            $result = http_curl($config['TradeQuery'], $resdata, true, array(), 'str');
             log_debug('mycardTradeQuery', ['result' => $result], $config['TradeQuery']);
 
             if(!$result) {
@@ -130,7 +130,7 @@ class MycardController extends \App\Controller {
             }
 
             // 开始请款交易
-            $result = http_request($config['PaymentConfirm'], $resdata, true);
+            $result = http_curl($config['PaymentConfirm'], $resdata, true, array(), 'str');
             log_debug('mycardPaymentConfirm', ['result' => $result], $config['PaymentConfirm']);
 
             if(!$result) {

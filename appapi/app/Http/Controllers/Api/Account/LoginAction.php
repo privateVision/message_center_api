@@ -8,22 +8,29 @@ use App\Model\Ucuser;
 use App\Model\UcuserSubService;
 use App\Model\UcuserSub;
 use App\Model\UcuserSession;
-use App\Model\LoginLog;
+use App\Model\UcuserLoginLog;
 use App\Model\UcuserInfo;
 use App\Model\Retailers;
-use App\Model\LoginLogUUID;
 use App\Model\UcuserSubTotal;
+use App\Model\UcuserLogin;
 
 trait LoginAction {
 
     public function LoginAction() {
         $pid = $this->procedure->pid;
         $rid = $this->parameter->tough('_rid');
+
+        $imei = $this->parameter->get('_imei', '');
+        if($pid >= 100 && version_compare($this->parameter->get('_version'), '4.2', '>=')) {
+            $device_id = $this->parameter->tough('_device_id');
+        } else {
+            $device_id = $this->parameter->get('_device_id', '');
+        }
         
         $user = $this->getLoginUser();
+        $user->asyncSave();
 
         // 广告统计，加入另一个队列由其它项目处理
-        $imei = $this->parameter->get('_imei');
         if($imei) {
             dispatch((new AdtRequest([
                 'imei' => $imei,
@@ -33,8 +40,20 @@ trait LoginAction {
             ]))->onQueue('adtinit'));
         }
 
-        if($user && $user->is_freeze) {
+        if($user->is_freeze === Ucuser::IsFreeze_Freeze) { // 冻结
             throw new ApiException(ApiException::AccountFreeze, trans('messages.freeze_onlogin'), ['ucid' => $user->ucid]);
+        }
+
+        if(configex('common.login_check_abnormal', false) && $user->last_login_at/*SDK2.0 没有插入 last_login_at*/) {
+            $last_login_at = strtotime($user->last_login_at);
+            if($last_login_at && (time() - $last_login_at) >= 15552000) { // 半年未登陆，设为异常
+                $user->is_freeze = Ucuser::IsFreeze_Abnormal;
+                user_log($user, $this->procedure, 'abnormal', '【帐号异常】长时间未登陆');
+            }
+        }
+
+        if($user->is_freeze === Ucuser::IsFreeze_Abnormal) { // 异常
+            throw new ApiException(ApiException::AccountAbnormal, trans('messages.abnormal_onlogin'), ['ucid' => $user->ucid]);
         }
 
         $user_sub_id = $this->getDefaultUserSubId($user);
@@ -81,7 +100,7 @@ trait LoginAction {
                     $user_sub_total->increment('total', 1);
                 }
 
-                $user_sub_id = sprintf('%d%05d%2d', $user->ucid, $pid, $user_sub_total->total);
+                $user_sub_id = sprintf('%d%05d%02d', $user->ucid, $pid, $user_sub_total->total);
 
                 $user_sub = UcuserSub::tableSlice($user->ucid);
                 $user_sub->id = $user_sub_id;
@@ -125,42 +144,79 @@ trait LoginAction {
         }
         $usession->session_token = $session->token;
         $usession->saveAndCache();
-        
-        //$user->uuid = $session->token;
+
         $user->last_login_at = datetime();
         $user->last_login_ip = getClientIp();
         $user->save();
-        $user->updateCache();
 
         $t = time();
 
-        $login_log = new LoginLog;
-        $login_log->ucid = $user->ucid;
-        $login_log->pid = $pid;
-        /**
-         * XXX 兼容旧的问题，后台显示是强制
-         * SELECT id,loginDate,loginTime,FROM_UNIXTIME(
-         *   CASE
-         *     WHEN loginTime < 57600 THEN (loginDate+1)*86400+loginTime
-         *     ELSE loginDate*86400+loginTime
-         *   END + 8*3600
-         * ) AS stamp FROM login_log_161013
-         */
-        $login_log->loginDate = intval(($t + 28800) / 86400) - 1;
-        $login_log->loginTime = $t % 86400;
-        $login_log->loginIP = ip2long(getClientIp());
-        $login_log->save();
-        
-        // login_log_uuid
-        $imei = $this->parameter->get('_imei', '');
-        $device_id = $this->parameter->get('_device_id', '');
-        if($imei || $device_id) {
-            $login_log_uuid = new LoginLogUUID;
-            $login_log_uuid->id = $login_log->id;
-            $login_log_uuid->ucid = $user->ucid;
-            $login_log_uuid->imei = $imei;
-            $login_log_uuid->device_id= $device_id;
-            $login_log_uuid->asyncSave();
+        $ip2location = \App\Model\IP2Location::find(getClientIp());
+
+        $ucuser_login_log = new UcuserLoginLog;
+        $ucuser_login_log->ucid = $user->ucid;
+        $ucuser_login_log->pid = $pid;
+        $ucuser_login_log->loginDate = intval(($t + 28800) / 86400) - 1;
+        $ucuser_login_log->loginTime = $t % 86400;
+        $ucuser_login_log->loginIP = ip2long(getClientIp());
+        $ucuser_login_log->date = date('Ymd', $t);
+        $ucuser_login_log->ts = $t;
+        $ucuser_login_log->ip = getClientIp();
+        $ucuser_login_log->address = $ip2location ? ($ip2location->region . $ip2location->city . $ip2location->county . $ip2location->isp) : null;
+        $ucuser_login_log->city_id = $ip2location ? $ip2location->city_id : null;
+        $ucuser_login_log->imei = $imei;
+        $ucuser_login_log->device_id = $device_id;
+        $ucuser_login_log->save();
+
+        $ucuser_login = UcuserLogin::find($user->ucid);
+        if($ucuser_login) {
+            // 地点和设备都不同，异地登陆提醒
+            if(($ip2location && $ucuser_login->city_id && $ucuser_login->city_id != $ip2location->city_id) && ($device_id && $ucuser_login->device_id && $ucuser_login->device_id != $device_id)) {
+                if($user->mobile) {
+                    sendsms($user->mobile, $pid, 'account_abnormal', [
+                        'username' => $user->uid,
+                        'month' => date('m', $t),
+                        'day' => date('d', $t),
+                        'time' => date('H:i:s', $t),
+                    ]);
+                }
+            }
+            // 设备不同，连续三次都是这个设备，更改常用设备
+            elseif ($device_id && $ucuser_login->last_device_id != $device_id) {
+                $is_commonly = true;
+                $ucuser_login_log = UcuserLoginLog::where('ucid', $user->ucid)->orderBy('ts', 'desc')->limit(3)->get();
+                foreach($ucuser_login_log as $v) {
+                    if($v->device_id != $device_id) {
+                        $is_commonly = false;
+                        break;
+                    }
+                }
+
+                if($is_commonly) {
+                    $ucuser_login->device_id = $device_id;
+                    $ucuser_login->save();
+                }
+            }
+            // 登陆地点不同，连续三天都是这个地址，更改常用地址
+            elseif($ip2location && $ucuser_login->city_id != $ip2location->city_id) {
+                $day3 = [
+                    date('Ymd', $t),
+                    date('Ymd', $t - 86400),
+                    date('Ymd', $t - 172800),
+                ];
+                
+                $count = UcuserLoginLog::where('city_id', '!=', $ip2location->city_id)->whereIn('date', $day3)->count();
+                if($count == 0) {
+                    $ucuser_login->city_id = $ip2location->city_id;
+                    $ucuser_login->save();
+                }
+            }
+        } else {
+            $ucuser_login = new UcuserLogin;
+            $ucuser_login->ucid = $user->ucid;
+            $ucuser_login->city_id = $ip2location ? $ip2location->city_id : '';
+            $ucuser_login->device_id = $device_id;
+            $ucuser_login->save();
         }
 
         $user_info = UcuserInfo::from_cache($user->ucid);

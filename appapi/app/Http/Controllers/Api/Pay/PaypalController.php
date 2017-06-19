@@ -57,6 +57,12 @@ class PaypalController extends Controller {
 
         log_info('paypal-ec-get_access_token', ['reqdata' => 'grant_type=client_credentials', 'resdata' => $response], $config['access_token_url']);
 
+        //$response = http_curl($config['access_token_url'], 'grant_type=client_credentials', true, array(
+        //    CURLOPT_USERPWD=>"{$config['ClientID']}:{$config['Secret']}",
+        //    CURLOPT_HTTPHEADER=>$headers,
+        //    CURLOPT_CONNECTTIMEOUT=>60
+        //), 'str');
+
         if(!$response) {
             throw new ApiException(ApiException::Remind, trans("pay_fail"));
         }
@@ -132,6 +138,11 @@ JSON;
         curl_close($ch);
 
         log_info('paypal-ec-payment', ['reqdata' => $data, 'resdata' => $response], $config['payment_url']);
+
+//        $response = http_curl($config['payment_url'], $data, true, array(
+//            CURLOPT_HTTPHEADER=>$headers,
+//            CURLOPT_CONNECTTIMEOUT=>60
+//        ), 'str');
 
         if(!$response) {
             throw new ApiException(ApiException::Remind, trans("pay_fail"));

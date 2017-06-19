@@ -1,5 +1,27 @@
 <?php
 return [
+    'ip2location' => true, // 自动将客户端IP地址转换成省市
+
+    'login_check_abnormal' => true, // 在登陆时检查登陆是否异常（长时间内未登陆，再次登陆就算异常）
+
+    'hotupdate' => [
+        [
+            'pid' => [], // 哪些pid应用该更新，必须有一个pid是空的，用来作默认值
+            'manifest' => [
+                'version' => '1.0.0',
+                'bundles' => [
+                    ['type' => 'lib', 'pkg' => 'com.anfeng.pay']
+                ],
+            ],
+            'updateinfo' => [
+                'pkg' => 'com.anfeng.pay',
+                'version' => 400,
+                'use_version' => 400,
+                'url' => 'http://afsdkup.qcwan.com/down/com.anfeng.pay.apk',
+            ],
+        ],
+    ],
+
     'basic' => [
         'default_avatar' => 'http://avatar.anfeng.com/avatar_default.png', // 默认头像
         'service_share' => 'http://www.anfeng.cn/app', // 分享页面
@@ -49,6 +71,8 @@ return [
             'unbind_phone'  =>  '【安锋游戏】验证码为：#code#，您正在通过该手机号码解绑安锋账号，请勿向任何人泄露您的验证码。',
             //  手机号码+验证码登录
             'login_phone'  =>  '【安锋游戏】验证码为：#code#，您正在使用该手机号码登录安锋游戏，请勿向任何人泄露您的验证码。',
+            // 帐号异常
+            'account_abnormal' => '【安锋游戏】您的账户#username#于#month#月#day#日 #time# 在陌生设备与地区登录，如果非本人操作，请尽快修改密码，以免虚拟财产损失',
         ]
     ],
 

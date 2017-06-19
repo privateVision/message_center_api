@@ -12,6 +12,7 @@
 		"aporat/store-receipt-validator": "^2.0",
 		"aws/aws-sdk-php": "~3.0",
 		"barryvdh/laravel-cors": "^0.8.6",
+		"endroid/qrcode": "^2.2",
 		"google/apiclient": "^2.0",
 		"guzzlehttp/guzzle": "^6.2",
 		"illuminate/mail": "^5.4",
@@ -20,6 +21,7 @@
 		"jeremeamia/SuperClosure": "^2.3",
 		"laravel/framework": "5.4.*",
 		"laravel/tinker": "~1.0",
+		"naux/iplocation": "dev-master",
 		"pda/pheanstalk": "~3.0",
 		"predis/predis": "*",
 		"qiniu/php-sdk": "^7.1"
@@ -63,5 +65,11 @@
 		"preferred-install" : "dist",
 		"sort-packages" : true,
 		"optimize-autoloader" : true
+	},
+	"repositories": {
+		"packagist": {
+			"type": "composer",
+			"url": "https://packagist.phpcomposer.com"
+		}
 	}
 }

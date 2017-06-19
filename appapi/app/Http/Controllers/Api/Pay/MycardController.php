@@ -20,16 +20,16 @@ class MycardController extends Controller {
         $data['ServerId'] = getClientIp();
         $data['CustomerId'] = $order->ucid;
         $data['ProductName'] = $order->subject ?: "props";
-        $data['Amount'] = number_format($real_fee / 100, 2);
+        $data['Amount'] = number_format($real_fee / 100, 2, '.', '');
         $data['Currency'] = 'TWD';
+        $data['PaymentType'] = "";
+        $data['ItemCode'] = "";
         $data['SandBoxMode'] = env('APP_DEBUG') ? 'true' : 'false';
 
         $data['hash'] = static::mycard_hash($data, $config['FacServerKey']);
 
         //获取authtoken
-        $result = http_request($config['AuthGlobal'], $data, true);
-
-        log_debug('mycard-authcode-request', ['resdata' => $result, 'reqdata' => $data], $config['AuthGlobal']);
+        $result = http_curl($config['AuthGlobal'], $data, true, array(), 'str');
 
         // json decode
         $result = json_decode($result, true);

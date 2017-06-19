@@ -21,6 +21,7 @@ class ApiException extends Exception
     const AlreadyBindMobile = 107;      // 账号已经绑定了手机号码，无法再次绑定
     const AlreadyBindOauthOther = 109;  // 平台账号已经绑定了其它账号
     const NotRealName = 110;            // 未实名制
+    const AccountAbnormal = 111;        // 帐号异常
     
     protected $data = null;
 

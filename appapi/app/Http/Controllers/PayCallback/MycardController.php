@@ -29,8 +29,7 @@ class MycardController extends Controller
 
         // 验证交易结果
         $resdata = ['AuthCode' => $order_extend->extra_params['AuthCode']];
-        $result = http_request($config['TradeQuery'], $resdata, true);
-        log_debug('mycardTradeQuery', ['result' => $result], $config['TradeQuery']);
+        $result = http_curl($config['TradeQuery'], $resdata, true, [], 'str');
 
         if(!$result) {
             throw new Exception(trans('messages.order_handle_fail'), 0);
@@ -46,8 +45,7 @@ class MycardController extends Controller
         }
 
         // 开始请款交易
-        $result = http_request($config['PaymentConfirm'], $resdata, true);
-        log_debug('mycardPaymentConfirm', ['result' => $result], $config['PaymentConfirm']);
+        $result = http_curl($config['PaymentConfirm'], $resdata, true, array(), 'str');
 
         if(!$result) {
             throw new Exception(trans('messages.order_handle_fail'), 0);
@@ -68,6 +66,7 @@ class MycardController extends Controller
     }
 
     protected function onComplete($data, $order, $order_extend, $isSuccess, $message = null) {
+        $message .= "\n" . urldecode($data['ReturnMsg']);
         return view('pay_callback/callback', ['order' => $order, 'order_extend' => $order_extend, 'is_success' => $isSuccess, 'message' => $message]);
     }
 

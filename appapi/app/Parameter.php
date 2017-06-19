@@ -66,6 +66,12 @@ class Parameter
         return $data;
     }
 
+    // TODO 如何获取到 $this->parameter->get('_version') ???
+    //public function vget($key, $version, $default = null, $type_fun_regex = null) {
+    //    list($s, $v) = explode(' ', $version);
+    //    if(version_compare())
+    //}
+
     protected function mobile($mobile) {
         $mobile = trim($mobile, '　 ');
 

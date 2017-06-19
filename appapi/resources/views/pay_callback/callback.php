@@ -18,9 +18,9 @@ if(!is_object($order)) {
 }
 
 if($is_success) {
-    $message = trans('messages.pay_success', ['name' => $order ? $order->subject : '']);
+    $message = trans('messages.paycallback_success', ['name' => $order ? $order->subject : '']) . $message;
 } else {
-    $message = trans('messages.pay_fail', ['name' => $order ? $order->subject : '', 'message' => $message]);
+    $message = trans('messages.paycallback_fail', ['name' => $order ? $order->subject : '']) . $message;
 }
 
 if($order_extend && $order_extend->callback) {
@@ -54,6 +54,6 @@ if($order_extend && $order_extend->callback) {
 }
 ?>
 </script>
-<div style="padding: 30px;text-align: center;"><?=$message?></div>
+<div style="padding: 30px;text-align: center;"><?=nl2br($message)?></div>
 </body>
 </html>

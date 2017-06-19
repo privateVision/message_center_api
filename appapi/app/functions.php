@@ -48,7 +48,6 @@ function httpsurl($url) {
     return $url;
 }
 
-
 /**
  * 3DES解密
  * @param  [type] $data [description]
@@ -449,106 +448,107 @@ function log_error ($keyword, $content, $desc = '') {
     ]));
 }
 
-function http_request($url, $data, $is_post = true) {
-    $data = http_build_query($data);
-
-    if(!$is_post) {
-        $url = strpos($url, '?') === false ? ($url .'?'. $data) : ($url .'&'. $data);
-    }
-
-    $ch = curl_init();
-    curl_setopt($ch, CURLOPT_URL, $url);
-    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-
-    // is https
-    if (stripos($url,"https://") !== FALSE) {
-        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, FALSE);
-        curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, FALSE);
-    }
-
-    // is post
-    if($is_post) {
-        curl_setopt($ch, CURLOPT_POST, true);
-        curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
-    }
-
-    curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 60); //超时限制
-    curl_setopt($ch, CURLOPT_TIMEOUT, 60);
-    $res = curl_exec($ch);
-    curl_close($ch);
-
-    return $res;
-}
-
 /**
- * @param $url
+ * @param string $url
  * @param array $param
  * @param bool $is_post
- * @param string $code
- * @param array $header
- * @param array $cookie
+ * @param array $opts    支持参数array(CURLOPT_*=>value)  例如：CURLOPT_TIMEOUT，CURLOPT_VERBOSE，CURLOPT_HTTPHEADER，CURLOPT_COOKIE
+ * @param $rsp 返回值格式  json, xml, str
  * @return array|mixed
  */
-function http_curl($url, $param = array(), $is_post = true, $code = 'cd', $header = array(), $cookie = array()){
-    if (is_string($param)) {
-        $strPOST = $param;
-    }
-    else if (is_array($param) && count($param)>0) {
-        $strPOST =  makeQueryString($param);
-    }
-    else {
-        $strPOST = '';
+function http_curl($url, $param = array(), $is_post = true, $opts = array(), $format = 'json'){
+    $content = '';
+    if (is_array($param)) {
+        $content =  makeQueryString($param);
+    } else {
+        $content = strval($param);
     }
 
     if (!$is_post) {
-        $url = strpos($url, '?') === false ? ($url .'?'. $strPOST) : ($url .'&'. $strPOST);
+        $url = strpos($url, '?') === false ? ($url .'?'. $content) : ($url .'&'. $content);
     }
 
-    $oCurl = curl_init();
-    if (stripos($url,"https://") !== FALSE) {
-        curl_setopt($oCurl, CURLOPT_SSL_VERIFYPEER, FALSE);
-        curl_setopt($oCurl, CURLOPT_SSL_VERIFYHOST, FALSE);
+    $ch = curl_init();
+
+    if (stripos($url, "https://") !== FALSE) {
+        if(!isset($opts[CURLOPT_SSL_VERIFYPEER])) {
+            curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, FALSE);
+        }
+
+        if(!isset($opts[CURLOPT_SSL_VERIFYHOST])) {
+            curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, FALSE);
+        }
     }
-    curl_setopt($oCurl, CURLOPT_URL, $url);
-    curl_setopt($oCurl, CURLOPT_RETURNTRANSFER, 1 );
-    curl_setopt($oCurl, CURLOPT_TIMEOUT, 60);
-    curl_setopt($oCurl, CURLOPT_VERBOSE, 1);
+
+    curl_setopt($ch, CURLOPT_URL, $url);
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+
+    //post设置
     if ($is_post) {
-        curl_setopt($oCurl, CURLOPT_POST,true);
-        curl_setopt($oCurl, CURLOPT_POSTFIELDS, $strPOST);
-    }
-    if (!empty($header)) {
-        curl_setopt($oCurl, CURLOPT_HTTPHEADER,$header);
-    }
-    if (!empty($cookie)) {
-        curl_setopt($oCurl, CURLOPT_COOKIE, makeCookieString($cookie));
+        curl_setopt($ch, CURLOPT_POST, true);
+        curl_setopt($ch, CURLOPT_POSTFIELDS, $content);
     }
 
-    $Resp = curl_exec($oCurl);//运行curl
-    $Err = curl_error($oCurl);
+    //设置用户标准参数
+    if(!empty($opts)) {
+        //转换cookie参数
+        if(isset($opts[CURLOPT_COOKIE]) && is_array($opts[CURLOPT_COOKIE])){
+            $opts[CURLOPT_COOKIE] = makeCookieString($opts[CURLOPT_COOKIE]);
+        }
 
-    if (false === $Resp || !empty($Err)){
-        $Errno = curl_errno($oCurl);
-        $Info = curl_getinfo($oCurl);
-        curl_close($oCurl);
-
-        return array(
-             $code => 0,
-            'rspmsg' => $Err,
-            'errno' => $Errno,
-            'info' => $Info,
-        );
-    }
-    curl_close($oCurl);//关闭curl
-
-    $res = @json_decode($Resp, true);
-    if (is_array($res)) {
-        $res[$code] = 1;
-    } else {
-        $res = array($code=>1, 'rspmsg'=>'http 200 data error', 'data'=>$Resp);
+        foreach($opts as $k=>$v) {
+            curl_setopt($ch, $k, $v);
+        }
     }
 
-    return $res;
+    //设置超时时间
+    if(!isset($opts[CURLOPT_TIMEOUT])) {
+        curl_setopt($ch, CURLOPT_TIMEOUT, 30);
+    }
+    
+    if(!isset($opts[CURLOPT_CONNECTTIMEOUT])) {
+        curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 15);
+    }
+
+    //运行curl
+    $res = curl_exec($ch);
+    $err = curl_error($ch);
+    $info = curl_getinfo($ch);
+    curl_close($ch);
+    
+    log_info('curl', ['http' => $info, 'reqdata' => $param, 'resdata' => $res, 'error' => $err, 'method' => $is_post ? 'POST' : 'GET'], $url);
+    
+    if($err) {
+        throw new \App\Exceptions\Exception($url .' '. $err);
+    }
+    
+    if($info['http_code'] != 200) {
+        throw new \App\Exceptions\Exception($url .' http_code:'. $info['http_code']);
+    }
+
+    //json
+    if($format == 'json') {
+        $res = json_decode($res, true);
+        if($res === false) {
+            throw new \App\Exceptions\Exception(trans('messages.http_res_format_error'));
+        }
+        
+        return $res;
+    }
+
+    //xml
+    else if($format == 'xml') {
+        $res = simplexml_load_string($res);
+        if($res === false) {
+            throw new \App\Exceptions\Exception(trans('messages.http_res_format_error'));
+        }
+        
+        return $res;
+    }
+
+    else {
+        return $res;
+    }
 }
 
 //拼接字符串
@@ -615,6 +615,33 @@ function exchange_rate($n, $currency) {
     }
 
     return $n;
+}
+
+function ip2location($ip) {
+    if(!configex('common.ip2location', false)) return;
+
+    $ip = trim($ip);
+    
+    // 特殊IP
+    if($ip == '' || $ip == '0.0.0.0' || $ip == '127.0.0.1') {
+        return;
+    }
+    // 内网IP A 10.0.0.0 ~ 10.255.255.255
+    if(substr($ip, 0, 3) == '10.') {
+        return;
+    }
+
+    // 内网IP B 172.16.0.0 ~ 172.31.255.255
+    if(version_compare($ip, '172.16.0.0', '>=') && version_compare($ip, '172.31.255.255', '<=')) {
+        return;
+    }
+
+    // 内网IP C 192.168.0.0 ~ 192.168.255.255
+    if(substr($ip, 0, 8) == '192.168.') {
+        return;
+    }
+    
+    Queue::push(new \App\Jobs\IP2Location($ip));
 }
 
 /**

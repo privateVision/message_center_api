@@ -2,9 +2,6 @@
 
 namespace App\Jobs;
 
-use App\Model\MongoDB\AppApiLog;
-use Illuminate\Support\Facades\Mail;
-
 class Log extends Job
 {
     protected $content;

@@ -68,8 +68,8 @@ return [
     "app_param_type_error"                  => "您好，传递的参数的格式错误！",
     "request_time_out"                      => "您好，请求超时，请重试！",
     "apple_rer_error_type"                  => "苹果返回的数据有误，请重新尝试！",
-    'pay_success'                           => '购买“:name”成功',
-    'pay_fail'                              => '购买“:name”失败，:message',
+    'paycallback_success'                   => '购买“:name”成功',
+    'paycallback_fail'                      => '购买“:name”失败',
     'pay_cancel'                            => '已取消', // 购买“:name”失败，已取消
     'not_set_notify_url'                    => '未设置订单成功通知地址',
     'not_payconfig'                         => '未获取到支付配置', // error
@@ -101,7 +101,11 @@ return [
     'service_limit_1'                       => '一个客服同时只能审核一个账号',
     'error_third_system'                    => '第三方系统错误', // error
     'error_third_params'                    => '第三方参数错误', // error
+    'http_res_format_error'                 => 'Http请求返回数据格式错误', // error
     'currency_not_found'                    => '目标汇率不存在：:currency',
+    'abnormal_onlogin'                      => '您的帐号存在异常无法登陆，请联系客服解锁或者通过手机号码修改密码后重试',
+    'balance_not_enough'                    => 'f币余额不足',
+    'app_not_config'                        => '应用尚未配置', // procedures_extend not found
 ];
 /*
 return [

@@ -20,8 +20,6 @@ class TokenController extends Controller {
             throw new ApiException(ApiException::Remind, trans('messages.invalid_token'));
         }
 
-        // todo: 验证token有效期
-
         if(!$session->ucid) {
             throw new ApiException(ApiException::Remind, trans('messages.invalid_token'));
         }

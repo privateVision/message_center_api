@@ -42,17 +42,18 @@ class IOSController extends Controller {
 
         $reqdata = json_encode(['receipt-data' => $receipt]);
 
-        $ch = curl_init($verify_receipt_url);
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-        curl_setopt($ch, CURLOPT_POST, true);
-        curl_setopt($ch, CURLOPT_POSTFIELDS, $reqdata);
-        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, 0);  //这两行一定要加，不加会报SSL 错误
-        curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 0);
-        $response = curl_exec($ch);
-        curl_close($ch);
+//        $ch = curl_init($verify_receipt_url);
+//        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+//        curl_setopt($ch, CURLOPT_POST, true);
+//        curl_setopt($ch, CURLOPT_POSTFIELDS, $reqdata);
+//        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, 0);  //这两行一定要加，不加会报SSL 错误
+//        curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 0);
+//        $response = curl_exec($ch);
+//        curl_close($ch);
+//
+//        log_debug('ios_verify_receipt', ['resdata' => $response], $verify_receipt_url);
 
-        log_debug('ios_verify_receipt', ['resdata' => $response], $verify_receipt_url);
-
+        $response = http_curl($verify_receipt_url, $reqdata, true, array(), 'str');
         if(!$response) {
             throw new ApiException(ApiException::Remind, trans("messages.ios_verify_fail"));
         }
