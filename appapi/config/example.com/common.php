@@ -1,5 +1,7 @@
 <?php
 return [
+    'login_check_abnormal' => true, // 在登陆时检查登陆是否异常（长时间内未登陆，再次登陆就算异常）
+
     'hotupdate' => [
         [
             'pid' => [], // 哪些pid应用该更新，必须有一个pid是空的，用来作默认值

@@ -48,7 +48,6 @@ function httpsurl($url) {
     return $url;
 }
 
-
 /**
  * 3DES解密
  * @param  [type] $data [description]
@@ -470,91 +469,86 @@ function http_curl($url, $param = array(), $is_post = true, $opts = array(), $fo
         $url = strpos($url, '?') === false ? ($url .'?'. $content) : ($url .'&'. $content);
     }
 
-    $oCurl = curl_init();
+    $ch = curl_init();
 
     if (stripos($url, "https://") !== FALSE) {
         if(!isset($opts[CURLOPT_SSL_VERIFYPEER])) {
-            curl_setopt($oCurl, CURLOPT_SSL_VERIFYPEER, FALSE);
+            curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, FALSE);
         }
 
         if(!isset($opts[CURLOPT_SSL_VERIFYHOST])) {
-            curl_setopt($oCurl, CURLOPT_SSL_VERIFYHOST, FALSE);
+            curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, FALSE);
         }
     }
 
-    curl_setopt($oCurl, CURLOPT_URL, $url);
-    curl_setopt($oCurl, CURLOPT_RETURNTRANSFER, 1);
+    curl_setopt($ch, CURLOPT_URL, $url);
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
 
     //post设置
     if ($is_post) {
-        curl_setopt($oCurl, CURLOPT_POST, true);
-        curl_setopt($oCurl, CURLOPT_POSTFIELDS, $content);
+        curl_setopt($ch, CURLOPT_POST, true);
+        curl_setopt($ch, CURLOPT_POSTFIELDS, $content);
     }
 
     //设置用户标准参数
-    $keys = array();
     if(!empty($opts)) {
-        $keys = array_keys($opts);
         //转换cookie参数
-        if(isset($opts[CURLOPT_COOKIE])){
+        if(isset($opts[CURLOPT_COOKIE]) && is_array($opts[CURLOPT_COOKIE])){
             $opts[CURLOPT_COOKIE] = makeCookieString($opts[CURLOPT_COOKIE]);
         }
+
         foreach($opts as $k=>$v) {
-            curl_setopt($oCurl, $k, $v);
+            curl_setopt($ch, $k, $v);
         }
     }
 
-    //设置默认参数
     //设置超时时间
-    if(!in_array('CURLOPT_TIMEOUT', $keys)) {
-        curl_setopt($oCurl, CURLOPT_TIMEOUT, 60);
+    if(!isset($opts[CURLOPT_TIMEOUT])) {
+        curl_setopt($ch, CURLOPT_TIMEOUT, 30);
     }
-
-    //设置异常报错
-    if(!in_array('CURLOPT_VERBOSE', $keys)) {
-        curl_setopt($oCurl, CURLOPT_TIMEOUT, 1);
-    }
-
-    //设置浏览器模拟
-    if(!in_array('CURLOPT_USERAGENT', $keys)) {
-        //curl_setopt($oCurl, CURLOPT_USERAGENT, 'Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/59.0.3071.86 Safari/537.36');
+    
+    if(!isset($opts[CURLOPT_CONNECTTIMEOUT])) {
+        curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 15);
     }
 
     //运行curl
-    $Resp = curl_exec($oCurl);
-    $Err = curl_error($oCurl);
-
-    if (false === $Resp || !empty($Err)){
-        $Errno = curl_errno($oCurl);
-        $Info = curl_getinfo($oCurl);
-        curl_close($oCurl);
-
-        throw new \App\Exceptions\Exception('error:' . $Err . ', errno:' . $Errno . ', info:' . $Info);
+    $res = curl_exec($ch);
+    $err = curl_error($ch);
+    $info = curl_getinfo($ch);
+    curl_close($ch);
+    
+    log_info('curl', ['http' => $info, 'reqdata' => $param, 'resdata' => $res, 'error' => $err, 'method' => $is_post ? 'POST' : 'GET'], $url);
+    
+    if($err) {
+        throw new \App\Exceptions\Exception($url .' '. $err);
     }
-    curl_close($oCurl);//关闭curl
-
-    //打印日志
-    log_info('curl', ['reqdata' => $param, 'resdata' => $Resp], $url);
+    
+    if($info['http_code'] != 200) {
+        throw new \App\Exceptions\Exception($url .' http_code:'. $info['http_code']);
+    }
 
     //json
     if($format == 'json') {
-        $result_array = json_decode($Resp, true);
-        if (is_null($result_array) || !is_array($result_array)) {
-            throw new \App\Exceptions\Exception(trans('messages.error_format_json'));
+        $res = json_decode($res, true);
+        if($res === false) {
+            throw new \App\Exceptions\Exception(trans('messages.http_res_format_error'));
         }
-        return $result_array;
+        
+        return $res;
     }
+
     //xml
     else if($format == 'xml') {
-        $result_array = json_decode(json_encode(simplexml_load_string($Resp)),TRUE);
-        if (is_null($result_array) || !is_array($result_array)) {
-            throw new \App\Exceptions\Exception(trans('messages.error_format_xml'));
+        $res = simplexml_load_string($res);
+        if($res === false) {
+            throw new \App\Exceptions\Exception(trans('messages.http_res_format_error'));
         }
-        return $result_array;
+        
+        return $res;
     }
-    //str
+
     else {
-        return $Resp;
+        return $res;
     }
 }
 
@@ -622,6 +616,31 @@ function exchange_rate($n, $currency) {
     }
 
     return $n;
+}
+
+function ip2location($ip) {
+    $ip = trim($ip);
+    
+    // 特殊IP
+    if($ip == '' || $ip == '0.0.0.0' || $ip == '127.0.0.1') {
+        return;
+    }
+    // 内网IP A 10.0.0.0 ~ 10.255.255.255
+    if(substr($ip, 0, 3) == '10.') {
+        return;
+    }
+
+    // 内网IP B 172.16.0.0 ~ 172.31.255.255
+    if(version_compare($ip, '172.16.0.0', '>=') && version_compare($ip, '172.31.255.255', '<=')) {
+        return;
+    }
+
+    // 内网IP C 192.168.0.0 ~ 192.168.255.255
+    if(substr($ip, 0, 8) == '192.168.') {
+        return;
+    }
+    
+    Queue::push(new \App\Jobs\IP2Location($ip));
 }
 
 /**

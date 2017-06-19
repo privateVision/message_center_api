@@ -38,7 +38,7 @@ trait LoginAction {
         }
 
         // SDK2.0 没有插入 last_login_at
-        if($user->last_login_at) {
+        if(configex('common.login_check_abnormal') && $user->last_login_at) {
             $last_login_at = strtotime($user->last_login_at);
             if($last_login_at && (time() - $last_login_at) >= 15552000) { // 半年未登陆，设为异常
                 $user->is_freeze = Ucuser::IsFreeze_Abnormal;
@@ -145,6 +145,8 @@ trait LoginAction {
 
         $t = time();
 
+        $ip2location = \App\Model\IP2Location::find(getClientIp());
+
         $ucuser_login_log = new UcuserLoginLog;
         $ucuser_login_log->ucid = $user->ucid;
         $ucuser_login_log->pid = $pid;
@@ -154,10 +156,13 @@ trait LoginAction {
         $ucuser_login_log->date = date('Ymd', $t);
         $ucuser_login_log->ts = $t;
         $ucuser_login_log->ip = getClientIp();
-        $ucuser_login_log->address =
+        $ucuser_login_log->address = $ip2location ? ($ip2location->region . $ip2location->city . $ip2location->county . $ip2location->isp) : null;
+        $ucuser_login_log->city_id = $ip2location ? $ip2location->city_id : null;
         $ucuser_login_log->imei = $this->parameter->get('_imei', '');
         $ucuser_login_log->device_id = $this->parameter->get('_device_id', '');
         $ucuser_login_log->save();
+
+        // TODO 判断是否在常用地址登陆
 
         $user_info = UcuserInfo::from_cache($user->ucid);
         
