@@ -92,29 +92,23 @@ class GooglePlayController extends Controller {
     }
 
     protected function handler($config, $productId, $packageName, $token){
-         try {
-            putenv('GOOGLE_APPLICATION_CREDENTIALS=' .$config['cert']);
+        putenv('GOOGLE_APPLICATION_CREDENTIALS=' .$config['cert']);
 
-            $client = new \Google_Client();
-            $client->useApplicationDefaultCredentials();
-            $client->addScope(\Google_Service_AndroidPublisher::ANDROIDPUBLISHER);
+        $client = new \Google_Client();
+        $client->useApplicationDefaultCredentials();
+        $client->addScope(\Google_Service_AndroidPublisher::ANDROIDPUBLISHER);
 
-            //初始化服务
-            $service = new \Google_Service_AndroidPublisher( $client );
+        //初始化服务
+        $service = new \Google_Service_AndroidPublisher( $client );
 
-            $optps = array();
-            $resp = $service->purchases_products->get( $packageName, $productId, $token, $optps );
-            log_info('googleplay', ['resdata'=>$resp], 'googleplay平台检查付款');
+        $optps = array();
+        $resp = $service->purchases_products->get( $packageName, $productId, $token, $optps );
+        log_info('googleplay', ['resdata'=>$resp], 'googleplay平台检查付款');
 
-            if($resp['consumptionState'] == 1 && $resp['purchaseState'] == 0) {
-                return true;
-            } else {
-                throw new ApiException(ApiException::Remind,  trans('messages.error_googlepaly_verify'));
-            }
-        } catch (\Exception $e) {
-            log_error('googleplay_error',['code'=>$e->getCode(),'msg'=>$e->getMessage()], 'googleplay平台检查付款');
-
-            throw new ApiException(ApiException::Remind,  trans('messages.error_googlepaly_system'));
+        if($resp['consumptionState'] == 1 && $resp['purchaseState'] == 0) {
+            return true;
+        } else {
+            throw new ApiException(ApiException::Remind,  trans('messages.error_googlepaly_verify'));
         }
     }
 }
