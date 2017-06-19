@@ -168,7 +168,7 @@ trait LoginAction {
         $ucuser_login_log->device_id = $device_id;
         $ucuser_login_log->save();
 
-        $ucuser_login = UcuserLogin::find('ucid', $user->ucid);
+        $ucuser_login = UcuserLogin::find($user->ucid);
         if($ucuser_login) {
             // 地点和设备都不同，异地登陆提醒
             if(($ip2location && $ucuser_login->city_id && $ucuser_login->city_id != $ip2location->city_id) && ($device_id && $ucuser_login->device_id && $ucuser_login->device_id != $device_id)) {
@@ -184,7 +184,7 @@ trait LoginAction {
             // 设备不同，连续三次都是这个设备，更改常用设备
             elseif ($device_id && $ucuser_login->last_device_id != $device_id) {
                 $is_commonly = true;
-                $ucuser_login_log = UcuserLoginLog::where('ucid', $user->ucid)->orderBy('ts', desc)->limit(3)->get();
+                $ucuser_login_log = UcuserLoginLog::where('ucid', $user->ucid)->orderBy('ts', 'desc')->limit(3)->get();
                 foreach($ucuser_login_log as $v) {
                     if($v->device_id != $device_id) {
                         $is_commonly = false;
@@ -218,26 +218,7 @@ trait LoginAction {
             $ucuser_login->device_id = $device_id;
             $ucuser_login->save();
         }
-/*
-        if($ip2location && $ip2location->city_id) {
-            $ucuser_login = UcuserLogin::find('ucid', $user->ucid);
-            if($ucuser_login) {
-                if($ucuser_login->city_id != $ip2location->city_id) { // 异地登陆提醒
 
-                }
-            } else {
-                $ucuser_login = new UcuserLogin;
-                $ucuser_login->ucid = $user->ucid;
-                $ucuser_login->city_id = $ip2location->city_id;
-                $ucuser_login->imei = $imei;
-                $ucuser_login->device_id = $device_id;
-                $ucuser_login->last_city_id = $ip2location->city_id;
-                $ucuser_login->last_imei = $imei;
-                $ucuser_login->last_device_id = $device_id;
-                $ucuser_login->save();
-            }
-        }
-*/
         $user_info = UcuserInfo::from_cache($user->ucid);
         
         $retailers = null;

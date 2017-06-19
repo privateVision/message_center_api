@@ -31,8 +31,6 @@ class MycardController extends Controller {
         //获取authtoken
         $result = http_curl($config['AuthGlobal'], $data, true, array(), 'str');
 
-        log_debug('mycard-authcode-request', ['resdata' => $result, 'reqdata' => $data], $config['AuthGlobal']);
-
         // json decode
         $result = json_decode($result, true);
         if(!$result) {

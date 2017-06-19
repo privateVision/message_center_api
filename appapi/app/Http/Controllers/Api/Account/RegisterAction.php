@@ -126,18 +126,23 @@ trait RegisterAction {
         $ucuser_login_log->device_id = $device_id;
         $ucuser_login_log->save();
 
-        $ucuser_login = UcuserLogin::find('ucid', $user->ucid);
+        $ucuser_login = UcuserLogin::find($user->ucid);
         if($ucuser_login) {
             // 地点和设备都不同，异地登陆提醒
             if(($ip2location && $ucuser_login->city_id != $ip2location->city_id) && ($device_id && $ucuser_login->device_id != $device_id)) {
-                //$ucuser_login->last_city_id = $ip2location ? $ip2location->city_id : '';
-                //$ucuser_login->last_device_id = $device_id;
-                //$ucuser_login->save();
+                if($user->mobile) {
+                    sendsms($user->mobile, $pid, 'account_abnormal', [
+                        'username' => $user->uid,
+                        'month' => date('m', $t),
+                        'day' => date('d', $t),
+                        'time' => date('H:i:s', $t),
+                    ]);
+                }
             }
             // 设备不同，连续三次都是这个设备，更改常用设备
             elseif ($device_id && $ucuser_login->last_device_id != $device_id) {
                 $is_commonly = true;
-                $ucuser_login_log = UcuserLoginLog::where('ucid', $user->ucid)->orderBy('ts', desc)->limit(3)->get();
+                $ucuser_login_log = UcuserLoginLog::where('ucid', $user->ucid)->orderBy('ts', 'desc')->limit(3)->get();
                 foreach($ucuser_login_log as $v) {
                     if($v->device_id != $device_id) {
                         $is_commonly = false;
