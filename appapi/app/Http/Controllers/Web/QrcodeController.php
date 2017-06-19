@@ -43,7 +43,7 @@ class QrcodeController extends \App\Controller {
 
     /**
      * 获取二维码
-     * @param url   必须urlencode
+     * @param url   必须   自动支持urlencode
      * @param size   可选  像素
      * @param margin 可选  边框像素
      * @param f_rgb  可选 前景色
@@ -55,12 +55,17 @@ class QrcodeController extends \App\Controller {
      */
     public function getAction(Request $request){
         $data = $request->all();
-        if(!isset($data['url'])) {
+        if(!isset($data['url']) || empty($data['url'])) {
             echo 'qrcode url is empty';exit;
         }
 
+        //检测数据是否urlencode
+        if(strpos($data['url'], '%') !== false || strpos($data['url'], '+') !== false){
+            $data['url'] = urldecode($data['url']);
+        }
+
         $default = array(
-            'url'=>urldecode($data['url']),
+            'url'=>$data['url'],
             'size'=>300,
             'margin'=>10,
             'f_rgb'=>array(0,0,0),
