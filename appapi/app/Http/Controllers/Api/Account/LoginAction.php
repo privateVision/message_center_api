@@ -12,18 +12,25 @@ use App\Model\UcuserLoginLog;
 use App\Model\UcuserInfo;
 use App\Model\Retailers;
 use App\Model\UcuserSubTotal;
+use App\Model\UcuserLogin;
 
 trait LoginAction {
 
     public function LoginAction() {
         $pid = $this->procedure->pid;
         $rid = $this->parameter->tough('_rid');
+
+        $imei = $this->parameter->get('_imei', '');
+        if($pid >= 100 && version_compare($this->parameter->get('_version'), '4.2', '>=')) {
+            $device_id = $this->parameter->tough('_device_id');
+        } else {
+            $device_id = $this->parameter->get('_device_id', '');
+        }
         
         $user = $this->getLoginUser();
         $user->asyncSave();
 
         // 广告统计，加入另一个队列由其它项目处理
-        $imei = $this->parameter->get('_imei');
         if($imei) {
             dispatch((new AdtRequest([
                 'imei' => $imei,
@@ -37,8 +44,7 @@ trait LoginAction {
             throw new ApiException(ApiException::AccountFreeze, trans('messages.freeze_onlogin'), ['ucid' => $user->ucid]);
         }
 
-        // SDK2.0 没有插入 last_login_at
-        if(configex('common.login_check_abnormal', false) && $user->last_login_at) {
+        if(configex('common.login_check_abnormal', false) && $user->last_login_at/*SDK2.0 没有插入 last_login_at*/) {
             $last_login_at = strtotime($user->last_login_at);
             if($last_login_at && (time() - $last_login_at) >= 15552000) { // 半年未登陆，设为异常
                 $user->is_freeze = Ucuser::IsFreeze_Abnormal;
@@ -158,12 +164,80 @@ trait LoginAction {
         $ucuser_login_log->ip = getClientIp();
         $ucuser_login_log->address = $ip2location ? ($ip2location->region . $ip2location->city . $ip2location->county . $ip2location->isp) : null;
         $ucuser_login_log->city_id = $ip2location ? $ip2location->city_id : null;
-        $ucuser_login_log->imei = $this->parameter->get('_imei', '');
-        $ucuser_login_log->device_id = $this->parameter->get('_device_id', '');
+        $ucuser_login_log->imei = $imei;
+        $ucuser_login_log->device_id = $device_id;
         $ucuser_login_log->save();
 
-        // TODO 判断是否在常用地址登陆
+        $ucuser_login = UcuserLogin::find('ucid', $user->ucid);
+        if($ucuser_login) {
+            // 地点和设备都不同，异地登陆提醒
+            if(($ip2location && $ucuser_login->city_id && $ucuser_login->city_id != $ip2location->city_id) && ($device_id && $ucuser_login->device_id && $ucuser_login->device_id != $device_id)) {
+                if($user->mobile) {
+                    sendsms($user->mobile, $pid, 'account_abnormal', [
+                        'username' => $user->uid,
+                        'month' => date('m', $t),
+                        'day' => date('d', $t),
+                        'time' => date('H:i:s', $t),
+                    ]);
+                }
+            }
+            // 设备不同，连续三次都是这个设备，更改常用设备
+            elseif ($device_id && $ucuser_login->last_device_id != $device_id) {
+                $is_commonly = true;
+                $ucuser_login_log = UcuserLoginLog::where('ucid', $user->ucid)->orderBy('ts', desc)->limit(3)->get();
+                foreach($ucuser_login_log as $v) {
+                    if($v->device_id != $device_id) {
+                        $is_commonly = false;
+                        break;
+                    }
+                }
 
+                if($is_commonly) {
+                    $ucuser_login->device_id = $device_id;
+                    $ucuser_login->save();
+                }
+            }
+            // 登陆地点不同，连续三天都是这个地址，更改常用地址
+            elseif($ip2location && $ucuser_login->city_id != $ip2location->city_id) {
+                $day3 = [
+                    date('Ymd', $t),
+                    date('Ymd', $t - 86400),
+                    date('Ymd', $t - 172800),
+                ];
+                
+                $count = UcuserLoginLog::where('city_id', '!=', $ip2location->city_id)->whereIn('date', $day3)->count();
+                if($count == 0) {
+                    $ucuser_login->city_id = $ip2location->city_id;
+                    $ucuser_login->save();
+                }
+            }
+        } else {
+            $ucuser_login = new UcuserLogin;
+            $ucuser_login->ucid = $user->ucid;
+            $ucuser_login->city_id = $ip2location ? $ip2location->city_id : '';
+            $ucuser_login->device_id = $device_id;
+            $ucuser_login->save();
+        }
+/*
+        if($ip2location && $ip2location->city_id) {
+            $ucuser_login = UcuserLogin::find('ucid', $user->ucid);
+            if($ucuser_login) {
+                if($ucuser_login->city_id != $ip2location->city_id) { // 异地登陆提醒
+
+                }
+            } else {
+                $ucuser_login = new UcuserLogin;
+                $ucuser_login->ucid = $user->ucid;
+                $ucuser_login->city_id = $ip2location->city_id;
+                $ucuser_login->imei = $imei;
+                $ucuser_login->device_id = $device_id;
+                $ucuser_login->last_city_id = $ip2location->city_id;
+                $ucuser_login->last_imei = $imei;
+                $ucuser_login->last_device_id = $device_id;
+                $ucuser_login->save();
+            }
+        }
+*/
         $user_info = UcuserInfo::from_cache($user->ucid);
         
         $retailers = null;
