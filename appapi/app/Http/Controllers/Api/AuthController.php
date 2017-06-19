@@ -12,7 +12,6 @@ use Illuminate\Http\Response;
 class AuthController extends Controller {
 
 	protected $user = null;
-	protected $user_info = null;
 	protected $session = null;
 
 	public function before(Request $request) {

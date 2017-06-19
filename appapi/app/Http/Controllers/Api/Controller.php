@@ -62,6 +62,8 @@ class Controller extends \App\Controller
     {
         parent::before($request);
 
+        ip2location(getClientIp());
+
         // 封ip
         $data = IpRefused::where('ip', getClientIp())->where('unlock_time', '>', time())->first();
         if ($data) {
@@ -111,30 +113,10 @@ class Controller extends \App\Controller
             $this->parameter->set('_rid', $__rid);
         }
 
-        // -------- procedures_extend --------
-
         $this->procedure_extend = ProceduresExtend::find($this->procedure->pid);
         if (!$this->procedure_extend) {
-            $this->procedure_extend = new ProceduresExtend;
-            $this->procedure_extend->pid = $this->procedure->pid;
-            $this->procedure_extend->service_qq = env('service_qq');
-            $this->procedure_extend->service_page = env('service_page');
-            $this->procedure_extend->service_phone = env('service_phone');
-            $this->procedure_extend->service_share = env('service_share');
-            $this->procedure_extend->heartbeat_data_refresh = 60000;
-            $this->procedure_extend->heartbeat_interval = 2000;
-            $this->procedure_extend->enable = (1 << 4) | (1 << 2) | 1; // 绑定手机（不强制）、支付实名（不强制） 、登陆实名（不强制）
-            $this->procedure_extend->bind_phone_interval = 259200000;
-            $this->procedure_extend->logout_img = env('logout_img');
-            $this->procedure_extend->logout_redirect = env('logout_redirect');
-            $this->procedure_extend->logout_inside = true;
-            $this->procedure_extend->allow_num = 1;
-            $this->procedure_extend->create_time = time();
-            $this->procedure_extend->update_time = time();
-            $this->procedure_extend->save();
+            throw new ApiException(ApiException::Remind, trans('app_not_config'));
         }
-
-        // --------------- end ---------------
 
         $this->request = $request;
     }

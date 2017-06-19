@@ -1,5 +1,7 @@
 <?php
 return [
+    'ip2location' => true, // 自动将客户端IP地址转换成省市
+
     'login_check_abnormal' => true, // 在登陆时检查登陆是否异常（长时间内未登陆，再次登陆就算异常）
 
     'hotupdate' => [

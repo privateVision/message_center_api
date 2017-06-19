@@ -105,6 +105,7 @@ return [
     'currency_not_found'                    => '目标汇率不存在：:currency',
     'abnormal_onlogin'                      => '您的帐号存在异常无法登陆，请联系客服解锁或者通过手机号码修改密码后重试',
     'balance_not_enough'                    => 'f币余额不足',
+    'app_not_config'                        => '应用尚未配置', // procedures_extend not found
 ];
 /*
 return [

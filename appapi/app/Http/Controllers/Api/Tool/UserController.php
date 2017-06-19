@@ -27,27 +27,19 @@ class UserController extends AuthController
 
     public function FreezeAction() {
         $status = $this->parameter->tough('status');
+        $comment = $this->parameter->get('comment');
         $admin_user = $this->parameter->tough('admin_user');
 
-        $is_freeze = $status > 0 ? true : false;
-        if($is_freeze) {
-            $comment = $this->parameter->tough('comment');
-        }
-
-        $this->user->is_freeze = $is_freeze;
+        $this->user->is_freeze = $status;
         $this->user->save();
 
-        if($is_freeze) {
-            user_log($this->user, $this->procedure, 'freeze', '【冻结账号】%s，由%s操作', $comment, $admin_user);
-        } else {
-            user_log($this->user, $this->procedure, 'unfreeze', '【解冻账号】由%s操作', $admin_user);
-        }
+        user_log($this->user, $this->procedure, 'freeze', '【账号状态改变】%s:%s，由%s操作', $status, $comment, $admin_user);
 
         $usession = UcuserSession::where('ucid', $this->user->ucid)->get();
         foreach($usession as $v) {
             $s = Session::find($v->session_token);
             if($s) {
-                $s->freeze = $is_freeze ? 1 : 0;
+                $s->freeze = $status == 1 ? 1 : $s->freeze;
                 $s->save();
             }
         }

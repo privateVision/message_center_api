@@ -41,27 +41,27 @@ class PaypalController extends Controller {
             'Accept-Language: en_US',
         ];
 
-//        $ch = curl_init();
-//        curl_setopt($ch, CURLOPT_URL, $config['access_token_url']);
-//        curl_setopt($ch, CURLOPT_USERPWD, "{$config['ClientID']}:{$config['Secret']}");
-//        curl_setopt($ch, CURLOPT_POST, true);
-//        curl_setopt($ch, CURLOPT_POSTFIELDS, 'grant_type=client_credentials');
-//        curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
-//        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-//        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, FALSE);
-//        curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, FALSE);
-//        curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 60);
-//        curl_setopt($ch, CURLOPT_TIMEOUT, 60);
-//        $response = curl_exec($ch);
-//        curl_close($ch);
-//
-//        log_info('paypal-ec-get_access_token', ['reqdata' => 'grant_type=client_credentials', 'resdata' => $response], $config['access_token_url']);
+        $ch = curl_init();
+        curl_setopt($ch, CURLOPT_URL, $config['access_token_url']);
+        curl_setopt($ch, CURLOPT_USERPWD, "{$config['ClientID']}:{$config['Secret']}");
+        curl_setopt($ch, CURLOPT_POST, true);
+        curl_setopt($ch, CURLOPT_POSTFIELDS, 'grant_type=client_credentials');
+        curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, FALSE);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, FALSE);
+        curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 60);
+        curl_setopt($ch, CURLOPT_TIMEOUT, 60);
+        $response = curl_exec($ch);
+        curl_close($ch);
 
-        $response = http_curl($config['access_token_url'], 'grant_type=client_credentials', true, array(
-            CURLOPT_USERPWD=>"{$config['ClientID']}:{$config['Secret']}",
-            CURLOPT_HTTPHEADER=>$headers,
-            CURLOPT_CONNECTTIMEOUT=>60
-        ), 'str');
+        log_info('paypal-ec-get_access_token', ['reqdata' => 'grant_type=client_credentials', 'resdata' => $response], $config['access_token_url']);
+
+        //$response = http_curl($config['access_token_url'], 'grant_type=client_credentials', true, array(
+        //    CURLOPT_USERPWD=>"{$config['ClientID']}:{$config['Secret']}",
+        //    CURLOPT_HTTPHEADER=>$headers,
+        //    CURLOPT_CONNECTTIMEOUT=>60
+        //), 'str');
 
         if(!$response) {
             throw new ApiException(ApiException::Remind, trans("pay_fail"));
@@ -123,26 +123,26 @@ JSON;
             "Authorization: Bearer " . $access_token
         ];
 
-//        $ch = curl_init();
-//        curl_setopt($ch, CURLOPT_URL, $config['payment_url']);
-//        curl_setopt($ch, CURLOPT_POST, true);
-//        curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
-//        curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
-//        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-//        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, FALSE);
-//        curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, FALSE);
-//        curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 60);
-//        curl_setopt($ch, CURLOPT_TIMEOUT, 60);
-//        curl_setopt($ch, CURLOPT_VERBOSE, true);
-//        $response = curl_exec($ch);
-//        curl_close($ch);
-//
-//        log_info('paypal-ec-payment', ['reqdata' => $data, 'resdata' => $response], $config['payment_url']);
+        $ch = curl_init();
+        curl_setopt($ch, CURLOPT_URL, $config['payment_url']);
+        curl_setopt($ch, CURLOPT_POST, true);
+        curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
+        curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, FALSE);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, FALSE);
+        curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 60);
+        curl_setopt($ch, CURLOPT_TIMEOUT, 60);
+        curl_setopt($ch, CURLOPT_VERBOSE, true);
+        $response = curl_exec($ch);
+        curl_close($ch);
 
-        $response = http_curl($config['payment_url'], $data, true, array(
-            CURLOPT_HTTPHEADER=>$headers,
-            CURLOPT_CONNECTTIMEOUT=>60
-        ), 'str');
+        log_info('paypal-ec-payment', ['reqdata' => $data, 'resdata' => $response], $config['payment_url']);
+
+//        $response = http_curl($config['payment_url'], $data, true, array(
+//            CURLOPT_HTTPHEADER=>$headers,
+//            CURLOPT_CONNECTTIMEOUT=>60
+//        ), 'str');
 
         if(!$response) {
             throw new ApiException(ApiException::Remind, trans("pay_fail"));

@@ -458,11 +458,10 @@ function log_error ($keyword, $content, $desc = '') {
  */
 function http_curl($url, $param = array(), $is_post = true, $opts = array(), $format = 'json'){
     $content = '';
-    if (is_string($param)) {
-        $content = $param;
-    }
-    else if (is_array($param) && count($param)>0) {
+    if (is_array($param)) {
         $content =  makeQueryString($param);
+    } else {
+        $content = strval($param);
     }
 
     if (!$is_post) {
@@ -619,6 +618,8 @@ function exchange_rate($n, $currency) {
 }
 
 function ip2location($ip) {
+    if(!configex('common.ip2location', false)) return;
+
     $ip = trim($ip);
     
     // 特殊IP

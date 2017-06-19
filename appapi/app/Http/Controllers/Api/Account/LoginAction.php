@@ -38,7 +38,7 @@ trait LoginAction {
         }
 
         // SDK2.0 没有插入 last_login_at
-        if(configex('common.login_check_abnormal') && $user->last_login_at) {
+        if(configex('common.login_check_abnormal', false) && $user->last_login_at) {
             $last_login_at = strtotime($user->last_login_at);
             if($last_login_at && (time() - $last_login_at) >= 15552000) { // 半年未登陆，设为异常
                 $user->is_freeze = Ucuser::IsFreeze_Abnormal;

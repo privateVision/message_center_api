@@ -8,6 +8,8 @@ use App\Model\Orders;
 use App\Model\UcuserOauth;
 use App\Model\UcuserInfo;
 use App\Model\Retailers;
+use App\Model\UcuserLoginLog;
+use App\Model\Procedures;
 
 class UserController extends AuthController
 {
@@ -588,6 +590,37 @@ class UserController extends AuthController
         $this->user->save();
 
         return ['result' => true];
+    }
+    
+    public function LoginListAction() {
+        $page = $this->parameter->get('page', 1);
+        $limit = $this->parameter->get('count', 10);
+
+        $offset = max(0, ($page - 1) * $limit);
+        
+        $ucuser_login_log = UcuserLoginLog::where('ucid', $this->user->ucid);
+        $count = $ucuser_login_log->count();
+        $list = $ucuser_login_log->orderBy('ts', 'desc')->offset($offset)->limit($limit)->get();
+        
+        $data = [];
+
+        foreach($list as $k => $v) {
+            $item['ip'] = $v->ip;
+            $item['address'] = $v->address;
+            $item['pid'] = $v->pid;
+            $item['ts'] = $v->ts;
+            
+            $procedure = Procedures::find($v->pid);
+            if($procedure) {
+                $item['pname'] = $procedure->pname;
+            } else {
+                $item['pname'] = '';
+            }
+            
+            $data[] = $item;
+        }
+        
+        return ['count' => $count, 'list' => $data];
     }
 
     public function EventAction() {
