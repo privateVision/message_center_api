@@ -123,10 +123,10 @@ def v4_sdk_get_notice_list():
     appid = int(request.form['_appid'])
     # 查询用户相关的公告列表
     current_timestamp = get_current_timestamp()
+    check_user_has_notice(ucid, 'notice')
     message_list = UserMessage.objects(
         Q(type='notice')
         & Q(closed=0)
-        # & Q(is_read=0)
         & Q(start_time__lte=current_timestamp)
         & Q(end_time__gte=current_timestamp)
         & Q(ucid=ucid)).order_by('-sortby', '-create_timestamp')[0:1]
@@ -169,8 +169,6 @@ def v4_sdk_get_notice_list():
                 message_resp['button_url'] = message_info['button_url']
             if is_user_in_apks(appid, message_info['app']):
                 data_list.append(message_resp)
-    if len(data_list) == 0:
-        check_user_has_notice(ucid)
     return response_data(http_code=200, data=data_list)
 
 

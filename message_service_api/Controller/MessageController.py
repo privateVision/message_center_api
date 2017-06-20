@@ -13,6 +13,7 @@ from MongoModel.MessageModel import UsersMessage
 from MongoModel.UserMessageModel import UserMessage
 from RequestForm.PostAccountMessagesRequestForm import PostAccountMessagesRequestForm
 from RequestForm.PostMessagesRequestForm import PostMessagesRequestForm
+from Service.StorageService import check_user_has_notice
 from Service.UsersService import get_ucid_by_access_token, get_message_detail_info, \
     sdk_api_request_check, cms_api_request_check, anfeng_helper_request_check, set_message_readed
 from Utils.RedisUtil import RedisHandle
@@ -121,6 +122,8 @@ def v4_sdk_get_message_list():
     service_logger.info("用户：%s 获取消息列表，数据从%s到%s" % (ucid, start_index, end_index))
     # 查询用户相关的公告列表
     current_timestamp = get_current_timestamp()
+    if start_index == 0:
+        check_user_has_notice(ucid, 'message')
     message_list = UserMessage.objects(
         Q(type='message')
         & Q(ucid=ucid)

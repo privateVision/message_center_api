@@ -197,8 +197,13 @@ def add_user_messsage(ucid, type, msg_id, is_time, start_time, end_time, game):
             if user_message.is_time != 0:
                 user_message.expireAt = datetime.datetime.utcfromtimestamp(user_message.end_time)
         message_info = UsersMessage.objects(Q(type=type) & Q(mysql_id=msg_id)).first()
+        user_message_info = UserMessage.objects(Q(_id=user_message.id)).first()
         if message_info is not None:
             user_message.create_timestamp = message_info['create_timestamp']
+            if user_message_info is not None:
+                user_message.closed = user_message_info['closed']
+                if 'is_read' in user_message_info:
+                    user_message.is_read = user_message_info['is_read']
         user_message.save()
         if type == 'broadcast':
             add_mark_to_user_redis(ucid, type)
@@ -248,11 +253,6 @@ def check_user_type_and_vip(ucid=None, user_type=None, vip=None):
                     return True
                 else:
                     return False
-                    # find_user_info_exist_sql = "select count(*) from ucuser_info as u where u.ucid = %s " % (ucid,)
-                    # is_user_info_exist = mysql_session.execute(find_user_info_exist_sql).scalar()
-                    # if is_user_info_exist is None or is_user_info_exist == 0:
-                    #     if vip == 0:
-                    #         return True
             return True
         except Exception, err:
             service_logger.error(err.message)
@@ -701,20 +701,35 @@ def coupon_notify_callback(data_json=None, offset=None):
             raise KafkaConsumeError('kafka 消费异常', 1001)
 
 
-# 主动检查用户是否有公告
-def check_user_has_notice(ucid=None):
+# 主动检查用户是否有公告等消息
+def check_user_has_notice(ucid=None, msg_type='notice'):
     specify_user_list = [ucid]
+    uid = get_uid_by_ucid(ucid)
     now = int(time.time())
-    data_list = UsersMessage.objects(Q(type='notice') & Q(closed=0)
-                                     & (
-                                         Q(is_time=0) | (Q(is_time=1) & Q(start_time__lte=now) & Q(end_time__gte=now))
-                                     )
-                                     )
+    data_list = []
+    if msg_type == 'notice':
+        data_list = UsersMessage.objects(Q(type=msg_type) & Q(closed=0)
+                                         & (
+                                             Q(is_time=0) | (Q(is_time=1) & Q(start_time__lte=now) & Q(end_time__gte=now))
+                                         )
+                                         )
+    if msg_type == 'message':
+        data_list = UsersMessage.objects(Q(type=msg_type) & Q(closed=0) & Q(start_time__lte=now))
+    if msg_type == 'broadcast':
+        data_list = UsersMessage.objects(Q(type=msg_type) & Q(closed=0) & Q(start_time__lte=now) &
+                                         Q(end_time__gte=now))
     for notice_item in data_list:
         game = notice_item['app']
-        users_type = notice_item['rtype']
-        vip_user = notice_item['vip']
-        type = 'notice'
+        users_type = None
+        users = []
+        if 'rtype' in notice_item:
+            users_type = notice_item['rtype']
+        vip_user = None
+        if 'vip' in notice_item:
+            vip_user = notice_item['vip']
+        if 'users' in notice_item:
+            users = notice_item['users']
+        type = msg_type
         msg_id = notice_item['mysql_id']
         is_time = notice_item['is_time']
         start_time = notice_item['start_time']
@@ -727,27 +742,42 @@ def check_user_has_notice(ucid=None):
                             try:
                                 for user in specify_user_list:
                                     is_right = check_user_is_in_game(user, game_info['apk_id'], zone)
-                                    is_user_in_users_type_and_vip = check_user_type_and_vip(user, users_type,
-                                                                                            vip_user[0])
-                                    if is_right is True and is_user_in_users_type_and_vip is True:
-                                        add_user_messsage(user, type, msg_id, is_time, start_time, end_time, game)
+                                    if users_type is not None:
+                                        is_user_in_users_type_and_vip = check_user_type_and_vip(user, users_type,
+                                                                                                vip_user[0])
+                                        if is_right is True and is_user_in_users_type_and_vip is True:
+                                            add_user_messsage(user, type, msg_id, is_time, start_time, end_time, game)
+                                    else:
+                                        # 判断用户是不是在指定用户列表
+                                        if uid in users and is_right is True:
+                                            add_user_messsage(user, type, msg_id, is_time, start_time, end_time, game)
                             except Exception, err:
                                 service_logger.error("添加消息到每个用户的消息列表发生异常：%s" % (err.message,))
                     else:
                         try:
                             for user in specify_user_list:
                                 is_right = check_user_is_in_game(user, game_info['apk_id'])
-                                is_user_in_users_type_and_vip = check_user_type_and_vip(user, users_type, vip_user[0])
-                                if is_right is True and is_user_in_users_type_and_vip is True:
-                                    add_user_messsage(user, type, msg_id, is_time, start_time, end_time, game)
+                                if users_type is not None:
+                                    is_user_in_users_type_and_vip = check_user_type_and_vip(user, users_type, vip_user[0])
+                                    if is_right is True and is_user_in_users_type_and_vip is True:
+                                        add_user_messsage(user, type, msg_id, is_time, start_time, end_time, game)
+                                else:
+                                    # 判断用户是不是在指定用户列表
+                                    if uid in users and is_right is True:
+                                        add_user_messsage(user, type, msg_id, is_time, start_time, end_time, game)
                         except Exception, err:
                             service_logger.error("添加消息到每个用户的消息列表发生异常：%s" % (err.message,))
             else:
                 try:
                     for user in specify_user_list:
-                        is_user_in_users_type_and_vip = check_user_type_and_vip(user, users_type, vip_user[0])
-                        service_logger.info("检查指定用户列表的用户类型和vip,用于过滤，结果为：%s" % (is_user_in_users_type_and_vip,))
-                        if is_user_in_users_type_and_vip is True:
-                            add_user_messsage(user, type, msg_id, is_time, start_time, end_time, game)
+                        if users_type is not None:
+                            is_user_in_users_type_and_vip = check_user_type_and_vip(user, users_type, vip_user[0])
+                            service_logger.info("检查指定用户列表的用户类型和vip,用于过滤，结果为：%s" % (is_user_in_users_type_and_vip,))
+                            if is_user_in_users_type_and_vip is True:
+                                add_user_messsage(user, type, msg_id, is_time, start_time, end_time, game)
+                        else:
+                            # 判断用户是不是在指定用户列表
+                            if uid in users:
+                                add_user_messsage(user, type, msg_id, is_time, start_time, end_time, game)
                 except Exception, err:
                     service_logger.error("添加消息到每个用户的消息列表发生异常：%s" % (err.message,))

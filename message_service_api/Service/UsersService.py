@@ -10,7 +10,6 @@ from mongoengine import Q
 from Controller.BaseController import response_data
 from LanguageConf import get_tips
 from MiddleWare import service_logger, hdfs_logger
-from MongoModel.AppRulesModel import AppVipRules
 from MongoModel.MessageModel import UsersMessage
 from MongoModel.UserMessageModel import UserMessage
 from MongoModel.UserReadMessageLogModel import UserReadMessageLog
@@ -223,6 +222,8 @@ def check_user_multi_point_login_token_in_db(appid=None, token=None):
 
 # 根据用户id获取广播列表
 def get_user_broadcast_list(ucid=None):
+    from Service.StorageService import check_user_has_notice
+    check_user_has_notice(ucid, 'broadcast')
     current_timestamp = get_current_timestamp()
     broadcast_list = UserMessage.objects(
         Q(type='broadcast')
