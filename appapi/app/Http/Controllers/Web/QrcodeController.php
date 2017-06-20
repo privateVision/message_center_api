@@ -142,12 +142,15 @@ class QrcodeController extends \App\Controller {
                        ->setLogoWidth($default['logo_width']);
             }
 
-            // Directly output the QR code
-            header('Content-Type: '.$qrCode->getContentType());
-            echo $qrCode->writeString();
-
             //save file
             $qrCode->writeFile($file);
+
+            // Directly output the QR code
+            header('Content-Type: '.$qrCode->getContentType());
+            //echo $qrCode->writeString();
+            echo file_get_contents($file);exit;
+
+            //return new Response($qrCode->writeString(), Response::HTTP_OK, ['Content-Type' => $qrCode->getContentType()]);
         }
     }
 
