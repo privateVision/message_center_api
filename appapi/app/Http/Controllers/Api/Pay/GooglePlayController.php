@@ -77,7 +77,7 @@ class GooglePlayController extends Controller {
         if(empty($cfg) || !isset($cfg['project_id'])) {
             throw new ApiException(ApiException::Remind, trans('messages.error_third_params'));
         }
-        $file = resource_path('google_play') . DIRECTORY_SEPARATOR . $this->procedure_extend->pid . '_' . md5(json_encode($cfg)) . '.json';
+        $file = storage_path('googleplay') . DIRECTORY_SEPARATOR . $this->procedure_extend->pid . '_' . md5(json_encode($cfg)) . '.json';
         if(!file_exists($file)) {
             file_put_contents($file, json_encode($cfg));
         }
