@@ -151,11 +151,6 @@ return [
             'PaymentConfirm' => env('APP_DEBUG') ? 'https://test.b2b.mycard520.com.tw/MyBillingPay/api/PaymentConfirm' : 'https://b2b.mycard520.com.tw/MyBillingPay/api/PaymentConfirm',
         ],
 
-        //https://console.developers.google.com/iam-admin/serviceaccounts/project?project=api-project-70324813277
-        'googleplay'=>[
-            'cert' => __DIR__ . '/google_play.json'  //通过google play控制台生产秘钥账号
-        ],
-
         'IOS' => [
             'verify_receipt_sandbox' => 'https://sandbox.itunes.apple.com/verifyReceipt',
             'verify_receipt' => 'https://buy.itunes.apple.com/verifyReceipt',
