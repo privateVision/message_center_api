@@ -27,7 +27,7 @@ class GooglePlayController extends Controller {
      * @return array
      */
     public function getData($config, Orders $order, OrderExtend $order_extend, $real_fee) {
-        $packageName = $this->procedure_extend->package_name;
+        $package_name = $this->procedure_extend->package_name;
         $token = $this->parameter->tough('token');
 
         //获取订单扩展信息
@@ -53,15 +53,15 @@ class GooglePlayController extends Controller {
         $config['cert'] = $file;
 
         //验证付款状态
-        self::handler($config, $product_extend->third_product_id, $packageName, $token);
+        self::handler($config, $product_extend->third_product_id, $package_name, $token);
 
         //支付成功
         order_success($order->id);
 
         return [
             'data' => array(
-                'package_name'=>$packageName,
-                'product_id'=>$product_extend->third_product_id,
+                'package_name'=>$package_name,
+                'third_product_id'=>$product_extend->third_product_id,
                 'token'=>$token
             )
         ];
@@ -69,7 +69,8 @@ class GooglePlayController extends Controller {
 
     public function checkPay() {
         $token = $this->parameter->tough('token');
-        $packageName = $this->procedure_extend->package_name;
+        $third_product_id = $this->parameter->tough('third_product_id');
+        $package_name = $this->procedure_extend->package_name;
 
         //获取google_play配置文件
         $cfg = $this->procedure_extend->third_config;
@@ -83,11 +84,12 @@ class GooglePlayController extends Controller {
         $config['cert'] = $file;
 
         //验证付款状态
-        self::handler($config, $this->procedure_extend->third_product_id, $packageName, $token);
+        self::handler($config, $third_product_id, $package_name, $token);
 
         return [
             'token'=>$token,
-            'package_name'=>$packageName
+            'package_name'=>$package_name,
+            'third_product_id'=>$third_product_id
         ];
     }
 
