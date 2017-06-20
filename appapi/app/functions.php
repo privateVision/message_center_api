@@ -754,14 +754,16 @@ if (!function_exists('a'))
 function user_kick($ucid, $status, $pid = 0) {
     $type = min($pid, 100);
 
-    $usession = \App\Model\UcuserSession::where('ucid', $ucid)->get();
+    $usession = \App\Model\UcuserSession::where('ucid', $ucid);
+    if($type) {
+        $usession = $usession->where('type', $type)->get();
+    }
+
     foreach($usession as $v) {
-        if(($type != 0 && $v->type == $type) || $type == 0) {
-            $s = Session::find($v->session_token);
-            if($s) {
-                $s->freeze = $status;
-                $s->save();
-            }
+        $s = \App\Session::find($v->session_token);
+        if(($s && $pid != 0 && $pid == $v->pid) || $s) {
+            $s->freeze = $status;
+            $s->save();
         }
     }
 
