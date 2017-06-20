@@ -179,10 +179,7 @@ def is_session_expired_by_access_token(appid=None, access_token=None):
 
 
 def get_user_is_freeze_by_access_token(access_token=None):
-    freeze = RedisHandle.get_user_is_freeze_from_redis_by_token(access_token)
-    if freeze is not None:
-        return freeze
-    return None
+    return RedisHandle.get_user_is_freeze_from_redis_by_token(access_token)
 
 
 #  检查用户多点登录的token是否有效
@@ -1189,19 +1186,23 @@ def sdk_api_request_check(func):
             return response_data(200, 0, '客户端参数错误')
         # 会话是否过期判断
         is_session_expired = is_session_expired_by_access_token(request.form['_appid'], request.form['_token'])
+        data = {
+            '_token': request.form['_token']
+        }
         if is_session_expired:
-            data = {
-                '_token': request.form['_token']
-            }
             return response_data(200, 102, '用户未登录或session已过期', data)
 
         # 检查账号冻结
-        freeze = get_user_is_freeze_by_access_token(request.form['_token'])
-        if freeze is not None:
+        freeze_key, freeze = get_user_is_freeze_by_access_token(request.form['_token'])
+        if freeze_key is None:
+            return response_data(200, 102, '用户未登录或session已过期', data)
+        if freeze_key is not None and freeze is not None:
             if int(freeze) == 1:
                 return response_data(200, 101, get_tips('heartbeat', 'user_account_freezed'))
             if int(freeze) == 2:
                 return response_data(200, 108, get_tips('heartbeat', 'sub_user_account_freezed'))
+            if int(freeze) == 3:
+                return response_data(200, 101, get_tips('heartbeat', 'user_account_abnormal'))
 
         is_sign_true = sdk_api_check_sign(request)
         if is_sign_true is True:

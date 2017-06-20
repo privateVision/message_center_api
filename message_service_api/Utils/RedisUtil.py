@@ -135,11 +135,12 @@ class RedisHandle(object):
     def get_user_is_freeze_from_redis_by_token(token=None):
         get_token_key = 's_%s' % (token,)
         get_token_value = redis_store.hgetall(get_token_key)
-        if get_token_value is None:
-            return None
-        if get_token_value.has_key('freeze'):
-            return get_token_value['freeze']
-        return None
+        if get_token_value is not None:
+            if get_token_value.has_key('freeze'):
+                return True, get_token_value['freeze']
+            else:
+                return True, None
+        return None, None
 
     @staticmethod
     def get_ucuser_session_id_by_token(token=None):
