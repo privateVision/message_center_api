@@ -1,11 +1,18 @@
 <?php
 return [
     'product_default_name'                  => '道具', // 比如：购买道具失败
+    'store_card'                            => '储值卡',
+    'ticket_card'                           => '优惠券',
+    'fb'                                    => 'F币',
+
+    'datetime_1'                            => 'Y年m月d日 H:i:s', // 日期格式
+
     'freeze_onlogin'                        => '账号已被冻结，无法登录',
     'role_not_exists'                       => '角色不存在，无法登录',
     'role_freeze_onlogin'                   => '角色已被冻结，无法登录',
     '3th_not_register'                      => '未注册第三方账号，请注册',
     'freeze'                                => '账号被冻结',
+    'abnormal'                              => '账号异常',
     'invalid_token'                         => '会话失效，请重新登录',
     'invalid_smscode'                       => '验证码不正确，或已过期',
     'unionid_empty'                         => 'unionid不允许为空',
@@ -106,43 +113,21 @@ return [
     'abnormal_onlogin'                      => '您的帐号存在异常无法登陆，请联系客服解锁或者通过手机号码修改密码后重试',
     'balance_not_enough'                    => 'f币余额不足',
     'app_not_config'                        => '应用尚未配置', // procedures_extend not found
+    'ms' => [ // message service
+        'OnConsume' => [
+            'title' => '消费提醒',
+            'desc' => '您于:datetime在:pname中购买了:product_name',
+            'content' => '您于:datetime在:pname中购买了:product_name，支付方式：:paymentMethod，支付金额：:amount元，您购买的:product_name已经支付成功',
+        ],
+        'OnRecharge' => [
+            'title' => '充值提醒',
+            'desc' => '您于:datetime购买了:num个F币',
+            'content' => '您于:datetime购买了:num个F 币，支付方式：:paymentMethod，支付金额：:amount元，您购买的F币已经支付成功',
+        ],
+        'OnCardExpire' => [
+            'title' => '卡券过期提醒',
+            'desc' => '您的卡券｛卡券名称｝即将于YYYY 年MM 月DD 日 HH:MM:SS 过期，请尽快使用',
+            'content' => '您的卡券｛卡券名称｝即将于YYYY 年MM 月DD 日 HH:MM:SS 过期，请尽快使用。适用游戏｛游戏名称｝',
+        ],
+    ],
 ];
-/*
-return [
-    'phone_unbind_code'             => "【安峰网】您好，您的验证码是",
-    'unbind_newname '               => "【安锋网】您好，你解绑后，为君生成新名",
-    "bind error"                    => "【安锋网】您好，绑定错误！" ,
-    "mobile_bind_success"           => "【安锋网】手机绑定成功！" ,
-    "mobile_bind_faild"             => "【安锋网】手机绑定失败！" ,
-    "please_bind_mobile"            => "该安锋平台账号尚未绑定手机，为了账号安全所出售账号必须绑定手机号，请您在安锋助手或安锋官网（www.anfeng.cn）绑定手机号。",
-    "auth_code_error"               => "【安锋网】验证码错误！" ,
-    "user_freeze"                   => "【安锋网】您好，账号已冻结！",
-    "user_freeze_faild"             => " 您好，账号冻结失败！",
-    "user_message_notfound"         =>  "您好账户信息未找到！",
-    "unfreeze_success"              => "账号成功解冻！",
-    "unfreeze_faild"                => "【安锋网】你好账号解冻失败！",
-    "name_type_error"               => "【安锋网】您好，名字的格式不正确！",
-    "fpay0"                         => "【安锋网】您好，F币支付成功！",
-    "fpay1"                         => "【安锋网】您好，F币支付失败！",
-    "nomoney"                       => "对不起,您的安锋账号充值金额不足",
-    "error_user_message"            => "您输入的账号或密码不正确，请重新输入。",
-    "sms_code"                      => "【安锋网】您好，您的验证码是:{0}",
-    "sms_code_error"                => "【安锋网】您好，你的短信验证码错误！",
-    "sms_code_success"              => "【安锋网】您好短信，验证码成功！",
-    "money_format_error"            => "您好金额的格式不正确！"          ,
-    "password_type_error"           => "您好，密码格式不正确！",
-    "mobile_type_error"             => "请填写正确的，手机号格式",
-    'phone_register'                => "【安锋网】恭喜您注册成功，用户名：:username  密码：:password", // 手机一键登陆成功后给发送用户帐户信息
-    "sms_limit_code"                => "您好，每天最多发送三次!",
-    "app_buy_faild"                 => "您好，充值失败！",
-    "request_time_out"              => "您好，请求超时，请重试！",
-    "apple_rer_error_type"          => "苹果返回的数据有误，请重新尝试！",
-    "apple_buy_success"             => "苹果购买成功！",
-    "app_param_type_error"          => "您好，传递的参数的格式错误！",
-    //loginAction
-    "order_info_error"              => "订单信息有误",
-    "param_type_error"              => "参数格式不正确",
-    "product_not_found"             => "您好产品信息未找到" ,
-
-];
-*/

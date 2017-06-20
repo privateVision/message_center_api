@@ -27,7 +27,7 @@ class GooglePlayController extends Controller {
      * @return array
      */
     public function getData($config, Orders $order, OrderExtend $order_extend, $real_fee) {
-        $packageName = $this->procedure_extend->package_name;
+        $package_name = $this->procedure_extend->package_name;
         $token = $this->parameter->tough('token');
 
         //获取订单扩展信息
@@ -41,45 +41,76 @@ class GooglePlayController extends Controller {
             throw new ApiException(ApiException::Remind,  trans('messages.order_extend_info_error'));
         }
 
+        //获取google_play配置文件
+        $cfg = $this->procedure_extend->third_config;
+        if(empty($cfg) || !isset($cfg['project_id'])) {
+            throw new ApiException(ApiException::Remind, trans('messages.error_third_params'));
+        }
+        $file = storage_path('googleplay') . DIRECTORY_SEPARATOR . $this->procedure_extend->pid . '_' . md5(json_encode($cfg)) . '.json';
+        if(!file_exists($file)) {
+            file_put_contents($file, json_encode($cfg));
+        }
+        $config['cert'] = $file;
+
         //验证付款状态
-        self::handler($config, $product_extend->third_product_id, $packageName, $token);
+        self::handler($config, $product_extend->third_product_id, $package_name, $token);
 
         //支付成功
         order_success($order->id);
 
         return [
             'data' => array(
-                'package_name'=>$packageName,
-                'product_id'=>$product_extend->third_product_id,
+                'package_name'=>$package_name,
+                'third_product_id'=>$product_extend->third_product_id,
                 'token'=>$token
             )
         ];
     }
 
+    public function checkPay() {
+        $token = $this->parameter->tough('token');
+        $third_product_id = $this->parameter->tough('third_product_id');
+        $package_name = $this->procedure_extend->package_name;
+
+        //获取google_play配置文件
+        $cfg = $this->procedure_extend->third_config;
+        if(empty($cfg) || !isset($cfg['project_id'])) {
+            throw new ApiException(ApiException::Remind, trans('messages.error_third_params'));
+        }
+        $file = storage_path('googleplay') . DIRECTORY_SEPARATOR . $this->procedure_extend->pid . '_' . md5(json_encode($cfg)) . '.json';
+        if(!file_exists($file)) {
+            file_put_contents($file, json_encode($cfg));
+        }
+        $config['cert'] = $file;
+
+        //验证付款状态
+        self::handler($config, $third_product_id, $package_name, $token);
+
+        return [
+            'token'=>$token,
+            'package_name'=>$package_name,
+            'third_product_id'=>$third_product_id
+        ];
+    }
+
     protected function handler($config, $productId, $packageName, $token){
-         try {
-            putenv('GOOGLE_APPLICATION_CREDENTIALS=' .$config['cert']);
+        putenv('GOOGLE_APPLICATION_CREDENTIALS=' .$config['cert']);
 
-            $client = new \Google_Client();
-            $client->useApplicationDefaultCredentials();
-            $client->addScope(\Google_Service_AndroidPublisher::ANDROIDPUBLISHER);
+        $client = new \Google_Client();
+        $client->useApplicationDefaultCredentials();
+        $client->addScope(\Google_Service_AndroidPublisher::ANDROIDPUBLISHER);
 
-            //初始化服务
-            $service = new \Google_Service_AndroidPublisher( $client );
+        //初始化服务
+        $service = new \Google_Service_AndroidPublisher( $client );
 
-            $optps = array();
-            $resp = $service->purchases_products->get( $packageName, $productId, $token, $optps );
-            log_info('googleplay', ['resdata'=>$resp], 'googleplay平台检查付款');
+        $optps = array();
+        $resp = $service->purchases_products->get( $packageName, $productId, $token, $optps );
+        log_info('googleplay', ['resdata'=>$resp], 'googleplay平台检查付款');
 
-            if($resp['consumptionState'] == 1 && $resp['purchaseState'] == 0) {
-                return true;
-            } else {
-                throw new ApiException(ApiException::Remind,  trans('messages.error_googlepaly_verify'));
-            }
-        } catch (\Exception $e) {
-            log_error('googleplay_error',['code'=>$e->getCode(),'msg'=>$e->getMessage()], 'googleplay平台检查付款');
-
-            throw new ApiException(ApiException::Remind,  trans('messages.error_googlepaly_system'));
+        if(isset($resp['purchaseState']) && $resp['purchaseState'] === 0) {
+            return true;
+        } else {
+            throw new ApiException(ApiException::Remind,  trans('messages.error_googlepaly_verify'));
         }
     }
 }

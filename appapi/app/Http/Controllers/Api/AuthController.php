@@ -19,27 +19,31 @@ class AuthController extends Controller {
 
 		$token = $this->parameter->tough('_token');
 		if(!$token) {
-			throw new ApiException(ApiException::Expire, trans('messages.invalid_token')); // LANG:must_login
+			throw new ApiException(ApiException::Expire, trans('messages.invalid_token'));
 		}
 
-		$usession = UcuserSession::from_cache_session_token($token);
+		$usession = UcuserSession::where('session_token', $token)->first();
 		if(!$usession) {
-			throw new ApiException(ApiException::Expire, trans('messages.invalid_token')); // LANG:session_invalid_relogin
+			throw new ApiException(ApiException::Expire, trans('messages.invalid_token'));
 		}
 
-		$user = Ucuser::from_cache($usession->ucid);
+		$user = Ucuser::find($usession->ucid);
 		if(!$user) {
-			throw new ApiException(ApiException::Expire, trans('messages.invalid_token')); // LANG:session_invalid_relogin
+			throw new ApiException(ApiException::Expire, trans('messages.invalid_token'));
 		}
 
 		$session = Session::find($token);
 		if(!$session) {
-			throw new ApiException(ApiException::Expire, trans('messages.invalid_token')); // LANG:session_invalid_relogin
+			throw new ApiException(ApiException::Expire, trans('messages.invalid_token'));
 		}
 
-		if($user->is_freeze) {
-			throw new ApiException(ApiException::AccountFreeze, trans('messages.freeze')); // LANG:freeze
-		}
+		if($user->is_freeze == Ucuser::IsFreeze_Freeze) {
+            throw new ApiException(ApiException::AccountFreeze, trans('messages.freeze'));
+        }
+
+        if($user->is_freeze == Ucuser::IsFreeze_Abnormal) {
+            throw new ApiException(ApiException::AccountFreeze, trans('messages.abnormal'));
+        }
 
 		$this->session = $session;
 		$this->user = $user;

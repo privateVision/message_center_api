@@ -36,7 +36,7 @@ Route::group(['prefix' => 'api'], function () {
     Route::any('app/verify_sms', 'Api\\AppController@VerifySMSAction');                                     // 验证手机验证码是否正确
     Route::any('app/uuid', 'Api\\AppController@UuidAction');                                                // 获取一个UUID，用户无法获取设备UUID时
     Route::any('app/logout', 'Api\\AppController@LogoutAction');                                            // 退出客户端
-    Route::any('app/hotupdate','Api\\AppController@HotupdateAction');                                       //获取热更新数据
+    Route::any('app/hotupdate','Api\\AppController@HotupdateAction');                                       // 获取热更新数据
     Route::any('account/token/login', 'Api\\Account\\TokenController@LoginAction');                         // 自动登录
     Route::any('account/login', 'Api\\Account\\UserController@LoginAction');                                // 用户名或手机号码登陆
     Route::any('account/register', 'Api\\Account\\UserController@RegisterAction');                          // 用户名注册
@@ -57,6 +57,7 @@ Route::group(['prefix' => 'api'], function () {
     Route::any('account/third/baidu', 'Api\\Account\\ThirdController@baiduAction');                         // 百度平台获取用户信息
     Route::any('account/third/vivo', 'Api\\Account\\ThirdController@vivoAction');                           // vivo平台获取用户信息
 
+    Route::any('user/login_list', 'Api\\UserController@LoginListAction');                                   // 用户登陆记录
     Route::any('user/recharge', 'Api\\UserController@RechargeAction');                                      // 充值记录（充F币）
     Route::any('user/consume', 'Api\\UserController@ConsumeAction');                                        // 消费记录
     Route::any('user/hide_order', 'Api\\UserController@HideOrderAction');                                   // 隐藏订单
@@ -100,6 +101,7 @@ Route::group(['prefix' => 'api'], function () {
 
     Route::any('pay/uc/request', 'Api\\Pay\\UcController@RequestAction');                                   // Uc平台支付
     Route::any('pay/googleplay/request', 'Api\\Pay\\GooglePlayController@RequestAction');                   // GooglePlay平台支付
+    Route::any('pay/googleplay/check', 'Api\\Pay\\GooglePlayController@checkPay');                          // GooglePlay检查支付
     Route::any('pay/baidu/request', 'Api\\Pay\\BaiduController@RequestAction');                             // 百度平台支付
     Route::any('pay/baidu/order', 'Api\\Pay\\BaiduController@getOrderInfoAction');                          // 百度平台获取订单信息
     Route::any('pay/yingyongbao/request', 'Api\\Pay\\YingYongBaoController@RequestAction');                 // 应用宝平台支付

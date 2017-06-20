@@ -91,7 +91,7 @@ class AppController extends Controller
                 );
             }
         }
-
+// if PROJECT != novasmobi
         $oauth_params = sprintf('appid=%d&rid=%d&device_id=%s', $pid, $rid, $uuid);
         $oauth_qq = env('oauth_url_qq');
         $oauth_qq .= (strpos($oauth_qq, '?') === false ? '?' : '&') . $oauth_params;
@@ -99,7 +99,7 @@ class AppController extends Controller
         $oauth_weixin .= (strpos($oauth_weixin, '?') === false ? '?' : '&') . $oauth_params;
         $oauth_weibo = env('oauth_url_weibo');
         $oauth_weibo .= (strpos($oauth_weibo, '?') === false ? '?' : '&') . $oauth_params;
-        
+/// endif
         // ios
         $ios_app_config = new \stdClass();
         if($os == 1) {
@@ -118,6 +118,7 @@ class AppController extends Controller
             'allow_sub_num' => $this->procedure_extend->allow_num,
             'af_login' => ($this->procedure_extend->enable & (1 << 6)) != 0,
             'oauth_login' => [
+// if PROJECT != novasmobi
                 'qq' => [
                     'url' => httpsurl($oauth_qq),
                 ],
@@ -127,6 +128,7 @@ class AppController extends Controller
                 'weibo' => [
                     'url' => httpsurl($oauth_weibo),
                 ]
+/// endif
             ],
 
             'protocol' => [
@@ -143,10 +145,7 @@ class AppController extends Controller
                 'share' => httpsurl($this->procedure_extend->service_share),
                 'interval' => max(2000, $this->procedure_extend->heartbeat_interval),
                 'af_download' => httpsurl(env('af_download')),
-                'qrcode'=>!empty($this->procedure_extend->service_share)?url('web/qrcode?').http_build_query(
-                    array(
-                        'url'=>urlencode(httpsurl($this->procedure_extend->service_share)),
-                    )):'',
+                'qrcode_url' => $this->procedure_extend->service_share ? httpsurl(qrcode($this->procedure_extend->service_share)) : "",
             ],
 
             'bind_phone' => [
@@ -167,8 +166,9 @@ class AppController extends Controller
             'enable_fb' => $this->procedure_extend->isEnableFB(), // 是否禁用F币功能,
             
             'dataeye_id' => $this->procedure->dataeye_id,
-
+// if PROJECT = novasmobi
             'facebook_home_url' => $this->procedure_extend->facebook_home_url,
+// endif
         ];
     }
 

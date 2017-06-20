@@ -95,6 +95,7 @@ class OrderController extends Controller {
         $role_level = $this->parameter->get('role_level', '');
         $role_name = $this->parameter->get('role_name', '');
 
+        // XXX 4.0
         if($product_type !== 'f') {
             $product_type = $this->parameter->get('product_type', 0); // 0 游戏道具，1 F币，2 游币（H5专用）
         } else {
@@ -145,7 +146,6 @@ class OrderController extends Controller {
             $body = strval($product->name);
             $subject = strval($product->desc);
         }
-
 
         $order = new Orders;
         $order->getConnection()->beginTransaction();

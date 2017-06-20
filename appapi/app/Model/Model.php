@@ -97,7 +97,6 @@ abstract class Model extends Eloquent
     }
 
     public function save(array $options = []) {
-        $this->is_delay_save = false;
         return parent::save($options);
     }
 

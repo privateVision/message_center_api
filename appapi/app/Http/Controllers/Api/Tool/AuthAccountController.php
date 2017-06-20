@@ -101,6 +101,8 @@ class AuthAccountController extends Controller
                 $ucuserSubServiceLog->status = $status;
                 $ucuserSubServiceLog->save();
 
+                user_kick($srcUcid, 2, $userSub->pid);//踢下线
+
                 $ucuserSubService->getConnection()->commit();
 
                 if(!$serviceid)throw new ApiException(ApiException::Error);

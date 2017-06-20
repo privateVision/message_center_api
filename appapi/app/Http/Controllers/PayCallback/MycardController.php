@@ -25,6 +25,8 @@ class MycardController extends Controller
     }
 
     protected function handler($data, $order, $order_extend) {
+        if($data['ReturnCode'] != 1) return;
+
         $config = configex('common.payconfig.mycard');
 
         // 验证交易结果

@@ -216,6 +216,86 @@ function upload_to_cdn($filename, $filepath, $is_delete = true) {
     return $config['base_url'] . $filename;
 }
 
+/**
+ * 获取二维码
+ * @param url   必须   自动支持urlencode
+ * @param size   可选  像素
+ * @param margin 可选  边框像素
+ * @param f_rgb  可选 前景色  例:FF33FF
+ * @param b_rgb  可选 背景色  例:FF33FF
+ * @param label  可选 tip
+ * @param logo   可选
+ * @param logo_width 可选
+ * @return image url
+ */
+function qrcode($options){
+    if(is_string($options)) $options = ['url' => $options];
+
+    if(!isset($options['url']) || empty($options['url'])) {
+        $options['url'] = '"url" is empty';
+    }
+
+    $options = array_merge(array(
+        'size' => 300,
+        'margin' => 10,
+        'f_rgb' => '000000',
+        'b_rgb' => 'FFFFFF',
+        'label' => '',
+        'logo' => '',
+        'logo_width' => 150
+    ), $options);
+
+    ksort($options);
+
+    $file = 'qrcode/'.joinkey(...array_values($options)).'.png';
+
+    $options['f_rgb'] = [
+        'r' => base_convert(substr($options['f_rgb'], 0, 2), 16, 10),
+        'g' => base_convert(substr($options['f_rgb'], 2, 2), 16, 10),
+        'b' => base_convert(substr($options['f_rgb'], 4, 2), 16, 10),
+    ];
+
+    $options['b_rgb'] = [
+        'r' => base_convert(substr($options['b_rgb'], 0, 2), 16, 10),
+        'g' => base_convert(substr($options['b_rgb'], 2, 2), 16, 10),
+        'b' => base_convert(substr($options['b_rgb'], 4, 2), 16, 10),
+    ];
+
+    if(file_exists(storage_path($file))) {
+        $cdn_config = configex('common.storage_cdn');
+        return $cdn_config['qiniu']['base_url'] . $file;
+    }
+
+    $qrCode = new \Endroid\QrCode\QrCode($options['url']);
+
+    //默认参数
+    $qrCode ->setWriterByName('png')
+        ->setEncoding('UTF-8')
+        ->setErrorCorrectionLevel(\Endroid\QrCode\ErrorCorrectionLevel::LOW)
+        ->setValidateResult(false);
+
+    //设置参数
+    $qrCode ->setSize($options['size'])
+        ->setMargin($options['margin'])
+        ->setForegroundColor($options['f_rgb'])
+        ->setBackgroundColor($options['b_rgb']);
+
+    //设置label
+    if(!empty($default['label'])) {
+        $qrCode ->setLabel($options['label'], 16, public_path('res/qr/noto_sans.otf'), \Endroid\QrCode\LabelAlignment::CENTER);
+    }
+
+    //设置logo
+    if(!empty($default['logo'])) {
+        $qrCode->setLogoPath($options['logo'])->setLogoWidth($options['logo_width']);
+    }
+
+    //save file
+    $qrCode->writeFile(storage_path($file));
+
+    return upload_to_cdn($file, storage_path($file), false);
+}
+
 //更新七牛缓存文件
 function updateQnCache($url){
     $data = ["urls"=>[$url]];
@@ -519,18 +599,18 @@ function http_curl($url, $param = array(), $is_post = true, $opts = array(), $fo
     log_info('curl', ['http' => $info, 'reqdata' => $param, 'resdata' => $res, 'error' => $err, 'method' => $is_post ? 'POST' : 'GET'], $url);
     
     if($err) {
-        throw new \App\Exceptions\Exception($url .' '. $err);
+        throw new \Exception($url .' '. $err);
     }
     
     if($info['http_code'] != 200) {
-        throw new \App\Exceptions\Exception($url .' http_code:'. $info['http_code']);
+        throw new \Exception($url .' http_code:'. $info['http_code']);
     }
 
     //json
     if($format == 'json') {
         $res = json_decode($res, true);
         if($res === false) {
-            throw new \App\Exceptions\Exception(trans('messages.http_res_format_error'));
+            throw new \Exception(trans('messages.http_res_format_error'));
         }
         
         return $res;
@@ -540,7 +620,7 @@ function http_curl($url, $param = array(), $is_post = true, $opts = array(), $fo
     else if($format == 'xml') {
         $res = simplexml_load_string($res);
         if($res === false) {
-            throw new \App\Exceptions\Exception(trans('messages.http_res_format_error'));
+            throw new \Exception(trans('messages.http_res_format_error'));
         }
         
         return $res;
@@ -660,4 +740,32 @@ if (!function_exists('a'))
 
         if ($exit) exit();
     }
+}
+
+// --- 用户相关，函数全部以user_开头 ----
+
+/**
+ * 设置用户标记，使下线
+ * @param $ucid
+ * @param int status  标记状态，1:冻结，2:子帐号被冻结，3:帐号异常
+ * @param int $pid
+ * @return bool
+ */
+function user_kick($ucid, $status, $pid = 0) {
+    $type = min($pid, 100);
+
+    $usession = \App\Model\UcuserSession::where('ucid', $ucid);
+    if($type) {
+        $usession = $usession->where('type', $type)->get();
+    }
+
+    foreach($usession as $v) {
+        $s = \App\Session::find($v->session_token);
+        if(($s && $pid != 0 && $pid == $v->pid) || $s) {
+            $s->freeze = $status;
+            $s->save();
+        }
+    }
+
+    return true;
 }

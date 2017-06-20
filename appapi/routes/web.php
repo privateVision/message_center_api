@@ -1,8 +1,13 @@
 <?php
-Route::any('/test', function() {
-    //http_curl('http://192.168.1.101/test/2.php');
-    //var_dump(json_decode('null', true));
-    ip2location('106.'.rand(1,255).'.'.rand(1,255).'.190');
+Route::any('/test', function(\Illuminate\Http\Request $request) {
+    //putenv('TEST='.$request->get('t'));
+    //sleep(5);
+    //echo getenv('TEST');
+    //$GLOBALS['TEST'] += 1;
+    //sleep(5);
+    //return 'hello world';//strval($GLOBALS['TEST']);
+    //var_dump(@$GLOBALS['TEST']);
+    //return 'hello world';
 });
 
 Route::group(['prefix' => 'web'], function () {

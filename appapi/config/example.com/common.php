@@ -45,9 +45,14 @@ return [
         'qiniu' => [
             'access_key' => 'VN1T4HyOswCiFxhsg92BrHU9_oCxmVfvz8PWPW8l',
             'secret_key' => 'LUjILsCuVLX99qMgI8fpPFKIGNgceWMioUfS1_nQ',
-            'base_url' => 'http://avatar.anfeng.com/',
             'bucket' => 'anfeng-avatar',
+            'base_url' => 'http://avatar.anfeng.com/', // 每一种CDN必配这个值
         ]
+    ],
+
+    'MessageService' => [
+        'key' => 'ebe89a4c54f35e593d86455aab4343a8',
+        'baseurl' => 'example.com',
     ],
 
     'smsconfig' => [
@@ -144,11 +149,6 @@ return [
             'TradeQuery' => env('APP_DEBUG') ? 'https://test.b2b.mycard520.com.tw/MyBillingPay/api/TradeQuery' : 'https://b2b.mycard520.com.tw/MyBillingPay/api/TradeQuery',
             'TradeQueryHost' => env('APP_DEBUG') ? '218.32.37.148' : '220.130.127.125',
             'PaymentConfirm' => env('APP_DEBUG') ? 'https://test.b2b.mycard520.com.tw/MyBillingPay/api/PaymentConfirm' : 'https://b2b.mycard520.com.tw/MyBillingPay/api/PaymentConfirm',
-        ],
-
-        //https://console.developers.google.com/iam-admin/serviceaccounts/project?project=api-project-70324813277
-        'googleplay'=>[
-            'cert' => __DIR__ . '/google_play.json'  //通过google play控制台生产秘钥账号
         ],
 
         'IOS' => [

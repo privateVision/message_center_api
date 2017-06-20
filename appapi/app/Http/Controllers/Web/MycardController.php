@@ -40,19 +40,19 @@ class MycardController extends \App\Controller {
 
             $order = Orders::find($v->oid);
 
-            $response .= @$v->extra_params['callback']['PaymentType'] ?: $v->extra_params['TradeQuery']['PaymentType'];
+            $response .= @$v->extra_params['callback']['PaymentType'] ?: @$v->extra_params['TradeQuery']['PaymentType'];
             $response .= ",";
             $response .= @$v->extra_params['TradeSeq'];
             $response .= ",";
             $response .= $v->third_order_no;
             $response .= ",";
-            $response .= @$v->extra_params['callback']['FacTradeSeq'] ?: $v->extra_params['TradeQuery']['FacTradeSeq'];
+            $response .= @$v->extra_params['callback']['FacTradeSeq'] ?: @$v->extra_params['TradeQuery']['FacTradeSeq'];
             $response .= ",";
             $response .= $order->ucid;
             $response .= ",";
-            $response .= @$v->extra_params['callback']['Amount'] ?: $v->extra_params['TradeQuery']['Amount'];
+            $response .= @$v->extra_params['callback']['Amount'] ?: @$v->extra_params['TradeQuery']['Amount'];
             $response .= ",";
-            $response .= @$v->extra_params['callback']['Currency'] ?: $v->extra_params['TradeQuery']['Currency'];
+            $response .= @$v->extra_params['callback']['Currency'] ?: @$v->extra_params['TradeQuery']['Currency'];
             $response .= ",";
             $response .= date('Y-m-d\\TH:i:s', $order->callback_ts);
             $response .= "<BR>";
@@ -111,7 +111,6 @@ class MycardController extends \App\Controller {
             // 确认交易
             $resdata = ['AuthCode' => $order_extend->extra_params['AuthCode']];
             $result = http_curl($config['TradeQuery'], $resdata, true, array(), 'str');
-            log_debug('mycardTradeQuery', ['result' => $result], $config['TradeQuery']);
 
             if(!$result) {
                 $response .= $FacTradeSeq . ':TradeQueryFail,';
@@ -129,9 +128,10 @@ class MycardController extends \App\Controller {
                 continue;
             }
 
+            $order_extend->extra_params = ['TradeQuery' => $result];
+
             // 开始请款交易
-            $result = http_curl($config['PaymentConfirm'], $resdata, true, array(), 'str');
-            log_debug('mycardPaymentConfirm', ['result' => $result], $config['PaymentConfirm']);
+            $result = http_curl($config['PaymentConfirm'], $resdata, true, [], 'str');
 
             if(!$result) {
                 $response .= $FacTradeSeq . ':PaymentConfirmFail,';
