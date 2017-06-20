@@ -128,6 +128,8 @@ class MycardController extends \App\Controller {
                 continue;
             }
 
+            $order_extend->extra_params = ['TradeQuery' => $result];
+
             // 开始请款交易
             $result = http_curl($config['PaymentConfirm'], $resdata, true, [], 'str');
 

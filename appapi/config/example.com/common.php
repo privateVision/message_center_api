@@ -45,8 +45,8 @@ return [
         'qiniu' => [
             'access_key' => 'VN1T4HyOswCiFxhsg92BrHU9_oCxmVfvz8PWPW8l',
             'secret_key' => 'LUjILsCuVLX99qMgI8fpPFKIGNgceWMioUfS1_nQ',
-            'base_url' => 'http://avatar.anfeng.com/',
             'bucket' => 'anfeng-avatar',
+            'base_url' => 'http://avatar.anfeng.com/', // 每一种CDN必配这个值
         ]
     ],
 

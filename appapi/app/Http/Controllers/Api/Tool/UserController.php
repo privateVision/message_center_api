@@ -39,7 +39,7 @@ class UserController extends AuthController
         foreach($usession as $v) {
             $s = Session::find($v->session_token);
             if($s) {
-                $s->freeze = $status == 1 ? 1 : $s->freeze;
+                $s->freeze = $status;
                 $s->save();
             }
         }

@@ -606,7 +606,7 @@ class UserController extends AuthController
 
         foreach($list as $k => $v) {
             $item['ip'] = $v->ip;
-            $item['address'] = $v->address;
+            $item['address'] = strval($v->address);
             $item['pid'] = $v->pid;
             $item['ts'] = $v->ts;
             

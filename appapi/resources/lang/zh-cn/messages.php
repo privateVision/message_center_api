@@ -12,6 +12,7 @@ return [
     'role_freeze_onlogin'                   => '角色已被冻结，无法登录',
     '3th_not_register'                      => '未注册第三方账号，请注册',
     'freeze'                                => '账号被冻结',
+    'abnormal'                              => '账号异常',
     'invalid_token'                         => '会话失效，请重新登录',
     'invalid_smscode'                       => '验证码不正确，或已过期',
     'unionid_empty'                         => 'unionid不允许为空',
