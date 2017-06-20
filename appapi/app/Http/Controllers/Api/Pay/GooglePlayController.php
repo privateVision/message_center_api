@@ -106,7 +106,7 @@ class GooglePlayController extends Controller {
         log_info('googleplay', ['resdata'=>$resp], 'googleplay平台检查付款');
 
         if(isset($resp['purchaseState']) && $resp['purchaseState'] === 0) {
-            return $resp;
+            return true;
         } else {
             throw new ApiException(ApiException::Remind,  trans('messages.error_googlepaly_verify'));
         }
