@@ -38,6 +38,8 @@ class OrderSuccess extends Job
 
                 $user = Ucuser::from_cache($order->ucid);
 
+                $paymentMethod = $order->paymentMethod;
+
                 do {
                     if(!$user) break;
 
@@ -52,6 +54,9 @@ class OrderSuccess extends Job
                             if($coupon && !$coupon->is_used) {
                                 $coupon->is_used = true;
                                 $coupon->save();
+
+                                $paymentMethod .= ' + ' . trans('messages.ticket_card');
+
                                 continue;
                             }
 
@@ -64,6 +69,8 @@ class OrderSuccess extends Job
                                 $is_s = false;
                             } else {
                                  UcusersVC::where('ucid', $order->ucid)->where('vcid', $v->vcid)->decrement('balance', $fee / 100); // todo: 联合主键，ORM不支持
+
+                                $paymentMethod .= ' + ' . trans('messages.store_card') . ($fee / 100);
                             }
                         } elseif($v->vcid == 0) { // vcid == 0：F币
                             if(intval($user->balance * 100) < $fee) {
@@ -71,6 +78,7 @@ class OrderSuccess extends Job
                                 $is_s = false;
                             } else {
                                 $user->decrement('balance', $fee / 100);
+                                $paymentMethod .= ' + ' . trans('messages.fb') . ($fee / 100);
                             }
                         }
                     }
@@ -116,6 +124,8 @@ class OrderSuccess extends Job
                     $total_fee_per_user->increment('total_fee', $order->real_fee / 100);
                 }
 
+                $order->paymentMethod = $paymentMethod;
+
                 $order_extend = OrderExtend::find($order->id);
 
                 // XXX 4.1和以上版本直接判断$order_extend->is_f()即可
@@ -126,10 +136,44 @@ class OrderSuccess extends Job
                     $user->increment('balance', $order->fee); // 原子操作很重要
                     $order->status = Orders::Status_NotifySuccess;
                     $order->save();
+
+                    \App\MessageService::SendMessage(
+                        $order->ucid,
+                        trans('messages.ms.OnRecharge.title'),
+                        trans('messages.ms.OnRecharge.content', [
+                            'datatime' => date(trans('messages.datetime_1')),
+                            'num' => $order->fee,
+                            'paymentMethod' => $paymentMethod,
+                            'amount' => $order->fee,
+                        ]),
+                        trans('messages.ms.OnRecharge.desc', [
+                            'datatime' => date(trans('messages.datetime_1')),
+                            'num' => $order->fee,
+                        ])
+                    );
                 } else {
+                    $procedure = \App\Model\Procedures::find($order->vid);
+
                     $order->status = Orders::Status_Success;
                     $order->save();
                     Queue::push(new OrderNotify($this->order_id));
+
+                    \App\MessageService::SendMessage(
+                        $order->ucid,
+                        trans('messages.ms.OnConsume.title'),
+                        trans('messages.ms.OnConsume.content', [
+                            'datatime' => date(trans('messages.datetime_1')),
+                            'product_name' => $order->subject,
+                            'pname' => $procedure ? $procedure->pname : '',
+                            'paymentMethod' => $paymentMethod,
+                            'amount' => $order->fee,
+                        ]),
+                        trans('messages.ms.OnConsume.desc', [
+                            'datatime' => date(trans('messages.datetime_1')),
+                            'product_name' => $order->subject,
+                            'pname' => $procedure ? $procedure->pname : '',
+                        ])
+                    );
                 }
 
                 $order->getConnection()->commit();

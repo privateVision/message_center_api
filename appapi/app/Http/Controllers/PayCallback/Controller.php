@@ -40,7 +40,7 @@ abstract class Controller extends \App\Controller
             }
 
             $order_extend->extra_params = ['callback' => $data];
-            $order_extend->asyncSave();
+            $order_extend->delaySave();
 
             if (!$this->verifySign($data, $order, $order_extend)) {
                 throw new Exception(trans('messages.sign_error'), 0);

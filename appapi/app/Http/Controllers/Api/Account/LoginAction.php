@@ -28,7 +28,7 @@ trait LoginAction {
         }
         
         $user = $this->getLoginUser();
-        $user->asyncSave();
+        $user->delaySave();
 
         // 广告统计，加入另一个队列由其它项目处理
         if($imei) {

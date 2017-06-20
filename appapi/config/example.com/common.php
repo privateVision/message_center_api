@@ -50,6 +50,11 @@ return [
         ]
     ],
 
+    'MessageService' => [
+        'key' => 'ebe89a4c54f35e593d86455aab4343a8',
+        'baseurl' => 'example.com',
+    ],
+
     'smsconfig' => [
         'receiver' => '10690735126170',
         'apikey' => '560ff300cabf7b7df7e3c02f892bfd43',

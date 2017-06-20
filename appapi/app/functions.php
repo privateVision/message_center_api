@@ -519,18 +519,18 @@ function http_curl($url, $param = array(), $is_post = true, $opts = array(), $fo
     log_info('curl', ['http' => $info, 'reqdata' => $param, 'resdata' => $res, 'error' => $err, 'method' => $is_post ? 'POST' : 'GET'], $url);
     
     if($err) {
-        throw new \App\Exceptions\Exception($url .' '. $err);
+        throw new \Exception($url .' '. $err);
     }
     
     if($info['http_code'] != 200) {
-        throw new \App\Exceptions\Exception($url .' http_code:'. $info['http_code']);
+        throw new \Exception($url .' http_code:'. $info['http_code']);
     }
 
     //json
     if($format == 'json') {
         $res = json_decode($res, true);
         if($res === false) {
-            throw new \App\Exceptions\Exception(trans('messages.http_res_format_error'));
+            throw new \Exception(trans('messages.http_res_format_error'));
         }
         
         return $res;
@@ -540,7 +540,7 @@ function http_curl($url, $param = array(), $is_post = true, $opts = array(), $fo
     else if($format == 'xml') {
         $res = simplexml_load_string($res);
         if($res === false) {
-            throw new \App\Exceptions\Exception(trans('messages.http_res_format_error'));
+            throw new \Exception(trans('messages.http_res_format_error'));
         }
         
         return $res;
