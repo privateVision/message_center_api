@@ -20,5 +20,3 @@ package.json
 webpack.mix.json
 yarn.lock
 _ab/
-public/qrcode/*
-resources/google_play/*
